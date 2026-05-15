@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CinemaVerse — Hệ Thống Rạp Chiếu Phim</title>
+<meta name="description" content="Đặt vé xem phim trực tuyến nhanh chóng, tiện lợi. Phim đang chiếu, sắp chiếu, chọn ghế và thanh toán online."/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════ NAVBAR ═══════════════════ -->
+<nav class="navbar" id="navbar">
+  <a href="#" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3h-2zM8 17H6v-2h2v2zm0-4H6v-2h2v2zm0-4H6V7h2v2zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"/></svg>
+    </div>
+    Cinema<span>Verse</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#" class="active">Trang Chủ</a></li>
+    <li><a href="#now-showing">Đang Chiếu</a></li>
+    <li><a href="#coming-soon">Sắp Chiếu</a></li>
+    <li><a href="#">Rạp Chiếu</a></li>
+    <li><a href="#">Khuyến Mãi</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="btn-search" aria-label="Tìm kiếm">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </button>
+    <button class="btn-login">Đăng Nhập</button>
+    <button class="btn-register">Đăng Ký</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero" id="hero">
+  <video class="hero-video" id="heroVideo" autoplay muted loop playsinline>
+    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"/>
+  </video>
+  <div class="hero-gradient"></div>
+  <div class="hero-content">
+    <div class="hero-badge"><span></span> Đang Chiếu Hôm Nay</div>
+    <h1 class="hero-title">STELLAR<br/><span class="hl">VOID</span></h1>
+    <div class="hero-meta">
+      <span class="rating">★ 8.4</span>
+      <span class="dot"></span>
+      <span>Sci-Fi / Hành Động</span>
+      <span class="dot"></span>
+      <span>142 phút</span>
+      <span class="dot"></span>
+      <span>T13</span>
+    </div>
+    <p class="hero-desc">Trong kỷ nguyên mà bóng tối vũ trụ nuốt chửng từng vì sao, một phi hành đoàn dũng cảm lao vào khoảng không vô tận để cứu vãn nhân loại khỏi sự diệt vong.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" id="btnBookHero" onclick="showBooking()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-9 3h2v5h-2V7zm0 7h2v2h-2v-2z"/></svg>
+        Đặt Vé Ngay
+      </button>
+      <button class="btn-outline" id="btnTrailer" onclick="openTrailer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Xem Trailer
+      </button>
+    </div>
+  </div>
+  <div class="hero-indicators">
+    <div class="ind active" onclick="switchHero(0)"></div>
+    <div class="ind" onclick="switchHero(1)"></div>
+    <div class="ind" onclick="switchHero(2)"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════ NOW SHOWING ═══════════════════ -->
+<section class="section" id="now-showing">
+  <div class="section-header">
+    <h2 class="section-title">Phim <span>Đang Chiếu</span></h2>
+    <a href="#" class="see-all">Xem tất cả ›</a>
+  </div>
+  <div class="movies-grid" id="nowShowingGrid">
+    <!-- JS rendered -->
+  </div>
+</section>
+
+<!-- ═══════════════════ COMING SOON ═══════════════════ -->
+<section class="section" id="coming-soon" style="background:linear-gradient(to bottom,var(--bg),var(--bg2),var(--bg))">
+  <div class="section-header">
+    <h2 class="section-title">Phim <span>Sắp Chiếu</span></h2>
+    <a href="#" class="see-all">Xem tất cả ›</a>
+  </div>
+  <div class="movies-grid" id="comingSoonGrid"></div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer>
+  <div>
+    <div class="footer-logo">Cinema<span>Verse</span></div>
+    <p class="footer-desc">Hệ thống rạp chiếu phim hiện đại. Đặt vé nhanh, chọn ghế real-time, trải nghiệm điện ảnh đỉnh cao.</p>
+  </div>
+  <div class="footer-col">
+    <h4>Khám Phá</h4>
+    <ul>
+      <li><a href="#">Phim Đang Chiếu</a></li>
+      <li><a href="#">Phim Sắp Chiếu</a></li>
+      <li><a href="#">Lịch Chiếu</a></li>
+      <li><a href="#">Khuyến Mãi</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Hỗ Trợ</h4>
+    <ul>
+      <li><a href="#">Trung Tâm Hỗ Trợ</a></li>
+      <li><a href="#">Chính Sách Đổi Trả</a></li>
+      <li><a href="#">Điều Khoản Sử Dụng</a></li>
+      <li><a href="#">Liên Hệ</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Về Chúng Tôi</h4>
+    <ul>
+      <li><a href="#">Giới Thiệu</a></li>
+      <li><a href="#">Hệ Thống Rạp</a></li>
+      <li><a href="#">Tuyển Dụng</a></li>
+      <li><a href="#">Tin Tức</a></li>
+    </ul>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <p>© 2026 <span>CinemaVerse</span>. All rights reserved.</p>
+  <p>Designed with ♥ by SWP391 Team</p>
+</div>
+
+<!-- ═══════════════════ CHATBOT ═══════════════════ -->
+<button class="chatbot-btn" id="chatbotBtn" onclick="toggleChat()" aria-label="Mở chatbot">
+  <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+</button>
+<div class="chatbot-popup" id="chatPopup">
+  <div class="chat-header">
+    <div class="chat-avatar">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+    </div>
+    <div>
+      <div class="chat-name">CineBot AI</div>
+      <div class="chat-status">● Đang hoạt động</div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="msg bot">Xin chào! 🎬 Tôi là CineBot. Tôi có thể giúp bạn tìm phim, đặt vé hoặc kiểm tra lịch chiếu!</div>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chatInput" type="text" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter')sendMsg()"/>
+    <button class="chat-send" onclick="sendMsg()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════ TRAILER MODAL ═══════════════════ -->
+<div id="trailerModal" style="display:none;position:fixed;inset:0;z-index:300;background:#000c;backdrop-filter:blur(8px);align-items:center;justify-content:center" onclick="closeTrailer(event)">
+  <div style="position:relative;width:90%;max-width:900px;aspect-ratio:16/9;border-radius:16px;overflow:hidden;border:1px solid #39ff1433">
+    <button onclick="closeTrailer()" style="position:absolute;top:12px;right:16px;z-index:1;background:none;border:none;color:#fff;font-size:1.8rem;cursor:pointer">✕</button>
+    <iframe id="trailerFrame" width="100%" height="100%" src="" frameborder="0" allowfullscreen style="border:none"></iframe>
+  </div>
+</div>
+
+<script>
+// ── Movie Data ─────────────────────────────────────────────
+const nowShowing = [
+  { id:1, title:'Stellar Void',    genre:'Sci-Fi',   rating:'8.4', duration:'142 phút', poster:'assets/images/posters/poster_stellar_void.png',    badge:'hot' },
+  { id:2, title:'Crimson Eclipse', genre:'Thriller', rating:'7.9', duration:'118 phút', poster:'assets/images/posters/poster_crimson_eclipse.png', badge:'' },
+  { id:3, title:'Neon Dynasty',    genre:'Action',   rating:'8.1', duration:'135 phút', poster:'assets/images/posters/poster_neon_dynasty.png',    badge:'new' },
+  { id:4, title:'Dark Meridian',   genre:'Drama',    rating:'7.5', duration:'126 phút', poster:'',                                                  badge:'' },
+  { id:5, title:'Iron Protocol',   genre:'Action',   rating:'8.0', duration:'138 phút', poster:'',                                                  badge:'' },
+];
+
+const comingSoon = [
+  { id:6, title:'Phantom Protocol', genre:'Spy',    rating:'7.6', duration:'128 phút', poster:'', days:12 },
+  { id:7, title:'Abyss Rising',     genre:'Horror', rating:'7.3', duration:'110 phút', poster:'', days:24 },
+  { id:8, title:'Solar Requiem',    genre:'Drama',  rating:'8.2', duration:'145 phút', poster:'', days:38 },
+  { id:9, title:'Code Zero',        genre:'Sci-Fi', rating:'7.8', duration:'119 phút', poster:'', days:55 },
+];
+
+// ── Render Cards ───────────────────────────────────────────
+function posterHTML(p, title) {
+  if (p) return `<img src="${p}" alt="${title}" loading="lazy" onerror="this.parentElement.innerHTML=placeholderSVG('${title}')"/>`;
+  return placeholderSVG(title);
+}
+function placeholderSVG(title) {
+  const colors = ['#1a2a1a','#1a1a2a','#2a1a1a','#1a2a2a'];
+  const c = colors[Math.abs(title.charCodeAt(0)) % colors.length];
+  return `<div class="poster-placeholder" style="background:${c}"><svg viewBox="0 0 24 24" fill="#39ff1433"><path d="M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3h-2z"/></svg><span style="font-size:.8rem;color:#39ff1466;font-weight:700">${title}</span></div>`;
+}
+function renderNowShowing() {
+  document.getElementById('nowShowingGrid').innerHTML = nowShowing.map(m => `
+    <div class="movie-card fade-in" onclick="goToMovie(${m.id})">
+      <div class="movie-poster">
+        ${posterHTML(m.poster, m.title)}
+        <div class="movie-rating">★ ${m.rating}</div>
+        ${m.badge==='hot'?'<div class="badge-hot">🔥 Hot</div>':m.badge==='new'?'<div class="badge-new">New</div>':''}
+        <div class="movie-overlay"><button class="btn-book" onclick="event.stopPropagation();showBooking(${m.id})">🎟 Đặt Vé</button></div>
+      </div>
+      <div class="movie-info">
+        <div class="movie-genre">${m.genre}</div>
+        <div class="movie-title">${m.title}</div>
+        <div class="movie-duration">⏱ ${m.duration}</div>
+      </div>
+    </div>`).join('');
+}
+function renderComingSoon() {
+  document.getElementById('comingSoonGrid').innerHTML = comingSoon.map(m => `
+    <div class="movie-card fade-in">
+      <div class="movie-poster">
+        ${posterHTML(m.poster, m.title)}
+        <div class="movie-rating">★ ${m.rating}</div>
+        <div class="movie-overlay"><button class="btn-book" style="background:#ffffff22;color:#fff;border:1px solid #fff4" onclick="event.stopPropagation()">🔔 Nhắc Nhở</button></div>
+      </div>
+      <div class="movie-info">
+        <div class="movie-genre">${m.genre}</div>
+        <div class="movie-title">${m.title}</div>
+        <div class="countdown">
+          <div class="cd-block"><div class="cd-num" id="cd-d-${m.id}">--</div><div class="cd-label">Ngày</div></div>
+          <div class="cd-block"><div class="cd-num" id="cd-h-${m.id}">--</div><div class="cd-label">Giờ</div></div>
+          <div class="cd-block"><div class="cd-num" id="cd-m-${m.id}">--</div><div class="cd-label">Phút</div></div>
+        </div>
+      </div>
+    </div>`).join('');
+  comingSoon.forEach(m => startCountdown(m.id, m.days));
+}
+
+// ── Countdown ──────────────────────────────────────────────
+function startCountdown(id, days) {
+  const target = Date.now() + days * 864e5;
+  const tick = () => {
+    const diff = target - Date.now();
+    if (diff <= 0) return;
+    const d = Math.floor(diff/864e5), h = Math.floor((diff%864e5)/36e5), mn = Math.floor((diff%36e5)/6e4);
+    const set = (el, v) => { if(el) el.textContent = String(v).padStart(2,'0'); };
+    set(document.getElementById(`cd-d-${id}`), d);
+    set(document.getElementById(`cd-h-${id}`), h);
+    set(document.getElementById(`cd-m-${id}`), mn);
+  };
+  tick(); setInterval(tick, 60000);
+}
+
+// ── Navbar scroll ──────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ── Hero slides ────────────────────────────────────────────
+const heroData = [
+  { title:'STELLAR<br/><span class="hl">VOID</span>', genre:'Sci-Fi / Hành Động', rating:'8.4', dur:'142 phút', desc:'Trong kỷ nguyên mà bóng tối vũ trụ nuốt chửng từng vì sao...', id:1 },
+  { title:'CRIMSON<br/><span class="hl">ECLIPSE</span>', genre:'Thriller / Kinh Dị', rating:'7.9', dur:'118 phút', desc:'Một thành phố chìm trong bóng tối khi nhật thực đỏ xuất hiện...', id:2 },
+  { title:'NEON<br/><span class="hl">DYNASTY</span>', genre:'Action / Sci-Fi', rating:'8.1', dur:'135 phút', desc:'Thành phố tương lai nơi ánh đèn neon che giấu những bí mật chết người...', id:3 },
+];
+let heroIdx = 0;
+function switchHero(i) {
+  heroIdx = i;
+  const h = heroData[i];
+  document.querySelector('.hero-title').innerHTML = h.title;
+  document.querySelector('.hero-meta').innerHTML = `<span class="rating">★ ${h.rating}</span><span class="dot"></span><span>${h.genre}</span><span class="dot"></span><span>${h.dur}</span>`;
+  document.querySelector('.hero-desc').textContent = h.desc;
+  document.querySelectorAll('.ind').forEach((el,j) => el.classList.toggle('active', j===i));
+}
+setInterval(() => switchHero((heroIdx+1) % heroData.length), 6000);
+
+// ── Trailer Modal ──────────────────────────────────────────
+function openTrailer() {
+  const m = document.getElementById('trailerModal');
+  document.getElementById('trailerFrame').src = 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1';
+  m.style.display = 'flex';
+}
+function closeTrailer(e) {
+  if (!e || e.target === document.getElementById('trailerModal')) {
+    document.getElementById('trailerModal').style.display = 'none';
+    document.getElementById('trailerFrame').src = '';
+  }
+}
+
+// ── Booking nav ────────────────────────────────────────────
+function showBooking(id) { alert(`🎬 Tính năng đặt vé cho phim #${id||1} sẽ được tích hợp ở trang booking!`); }
+function goToMovie(id) { console.log('Navigate to movie', id); }
+
+// ── Chatbot ────────────────────────────────────────────────
+const botReplies = [
+  'Bạn muốn xem phim gì hôm nay? 🎬',
+  'Phim Stellar Void đang chiếu! Còn ghế lúc 19:00 và 21:30 nhé.',
+  'Bạn có thể đặt vé tại mục "Đặt Vé Ngay" trên banner.',
+  'Giá vé Standard: 90.000₫ | VIP: 120.000₫ | IMAX: 160.000₫',
+  'Khuyến mãi hôm nay: Mua 2 tặng 1 bắp rang! 🍿',
+];
+let botIdx = 0;
+function toggleChat() {
+  const p = document.getElementById('chatPopup');
+  p.classList.toggle('open');
+}
+function sendMsg() {
+  const inp = document.getElementById('chatInput');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  const box = document.getElementById('chatMessages');
+  box.innerHTML += `<div class="msg user">${txt}</div>`;
+  inp.value = '';
+  setTimeout(() => {
+    box.innerHTML += `<div class="msg bot">${botReplies[botIdx % botReplies.length]}</div>`;
+    botIdx++; box.scrollTop = box.scrollHeight;
+  }, 600);
+  box.scrollTop = box.scrollHeight;
+}
+
+// ── Init ───────────────────────────────────────────────────
+renderNowShowing();
+renderComingSoon();
+</script>
+</body>
+</html>
