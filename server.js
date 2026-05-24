@@ -30,14 +30,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 const authRoutes = require('./routes/authRoutes');
 const movieRoutes = require('./routes/movieRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
-const staffRoutes = require('./routes/staffRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 app.use('/api/auth', authRoutes);     // Đăng ký, Đăng nhập
 app.use('/api/movies', movieRoutes);    // Thông tin phim & lịch chiếu
 app.use('/api/bookings', bookingRoutes);  // Đặt vé, lịch sử, voucher
-app.use('/api/staff', staffRoutes);    // Nhân viên tại quầy
-app.use('/api/admin', adminRoutes);    // Quản lý, thống kê
+app.use('/api/admin', adminRoutes);    // Quản lý, thống kê (chỉ Super Admin)
 
 // ─── Health-check ────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
