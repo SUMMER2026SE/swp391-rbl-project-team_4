@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | D-CINEMA</title>
+    <meta name="description" content="Manage your D-CINEMA account, view booking history and membership points.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+
+<body>
+
+    <!-- ── NAVBAR ── -->
+    <header class="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo">
+                <span class="logo-d">D</span>-CINEMA
+            </a>
+            <nav class="nav-links">
+                <a href="movies.html">Movies</a>
+                <a href="booking.html">Cinemas</a>
+                <a href="promotions.html">Offers</a>
+                <a href="#">Membership</a>
+            </nav>
+            <div class="nav-right">
+                <div class="search-wrap">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <input type="text" placeholder="Search movies..." class="search-inp">
+                </div>
+                <button class="nav-bell" aria-label="Notifications">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                </button>
+                <div class="nav-avatar" id="navAvatar" title="My Account">U</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── PAGE BODY ── -->
+    <div class="page-wrap">
+
+        <!-- ══ SIDEBAR ══ -->
+        <aside class="sidebar">
+
+            <!-- Avatar & user info -->
+            <div class="avatar-block">
+                <div class="avatar-ring">
+                    <div class="avatar" id="avatarCircle">
+                        <span id="userInitials">TA</span>
+                    </div>
+                    <button class="avatar-edit-btn" title="Change photo">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="user-name" id="displayFullName">Tuấn Anh</div>
+                <div class="user-email" id="displayEmail">tuananh@dcinema.vn</div>
+                <div class="member-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Gold Member
+                </div>
+            </div>
+
+            <!-- Sidebar nav -->
+            <nav class="sidebar-nav">
+                <button class="sn-item active" data-tab="info" onclick="switchTab('info', this)">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Personal Info
+                </button>
+                <button class="sn-item" data-tab="tickets" onclick="switchTab('tickets', this)">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                        <path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/>
+                    </svg>
+                    My Tickets
+                </button>
+                <button class="sn-item" data-tab="password" onclick="switchTab('password', this)">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Change Password
+                </button>
+                <button class="sn-item danger" onclick="logout()">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Sign Out
+                </button>
+            </nav>
+
+        </aside>
+
+        <!-- ══ MAIN CONTENT ══ -->
+        <main class="main-col">
+
+            <!-- ── TAB: PERSONAL INFO ── -->
+            <div class="tab-panel active" id="tab-info">
+
+                <!-- Membership card -->
+                <div class="membership-card">
+                    <div class="mc-bg"></div>
+                    <div class="mc-left">
+                        <div class="mc-brand">
+                            <span class="logo-d">D</span>-CINEMA
+                        </div>
+                        <div class="mc-tier">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            GOLD MEMBER
+                        </div>
+                        <div class="mc-name" id="mcName">Nguyễn Tuấn Anh</div>
+                        <div class="mc-since">Member since Jan 2022</div>
+                    </div>
+                    <div class="mc-right">
+                        <div class="mc-points-label">REWARD POINTS</div>
+                        <div class="mc-points">1,250</div>
+                        <div class="mc-progress-wrap">
+                            <div class="mc-progress-track">
+                                <div class="mc-progress-fill" style="width:62%"></div>
+                            </div>
+                            <div class="mc-progress-text">750 pts to Platinum</div>
+                        </div>
+                    </div>
+                    <div class="mc-card-number">DC &bull; 0042 &bull; 8891</div>
+                </div>
+
+                <!-- Personal info form -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            Personal Information
+                        </div>
+                        <button class="btn-save" onclick="saveProfile()" id="btnSave">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+                            </svg>
+                            Save Changes
+                        </button>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="inputFullName" value="Nguyễn Tuấn Anh" placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control readonly" id="inputEmail" value="tuananh.cine@gmail.com" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="inputPhone" value="098 765 4321" placeholder="Enter your phone">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" id="inputDob" value="1995-12-05">
+                        </div>
+                        <div class="form-group span-2">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" rows="2" id="inputAddress" placeholder="Enter your address">Quận 1, TP. Hồ Chí Minh, Việt Nam</textarea>
+                        </div>
+                    </div>
+
+                    <div class="save-success" id="saveSuccess">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Changes saved successfully!
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ── TAB: MY TICKETS ── -->
+            <div class="tab-panel" id="tab-tickets">
+                <div class="content-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                            </svg>
+                            Booking History
+                        </div>
+                        <div class="tickets-count">3 tickets</div>
+                    </div>
+
+                    <!-- Ticket items -->
+                    <div class="ticket-list">
+
+                        <div class="ticket-item">
+                            <img src="images/movie_neon_dreams.png" alt="" class="t-poster">
+                            <div class="t-info">
+                                <div class="t-title">NEON DREAMS: 2049</div>
+                                <div class="t-meta">
+                                    <span>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                        24 May 2024 • 19:45
+                                    </span>
+                                    <span>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        Hall 4 (IMAX)
+                                    </span>
+                                    <span>Seats: J12, J13</span>
+                                </div>
+                            </div>
+                            <div class="t-right">
+                                <div class="t-status upcoming">Upcoming</div>
+                                <div class="t-price">$33.50</div>
+                                <button class="btn-view-ticket" onclick="window.location.href='payment-success.html'">View Ticket</button>
+                            </div>
+                        </div>
+
+                        <div class="ticket-item">
+                            <img src="images/movie_odyssey.png" alt="" class="t-poster">
+                            <div class="t-info">
+                                <div class="t-title">SPACE ODYSSEY</div>
+                                <div class="t-meta">
+                                    <span>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                        10 May 2024 • 20:00
+                                    </span>
+                                    <span>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        Hall 2
+                                    </span>
+                                    <span>Seats: E5, E6, E7</span>
+                                </div>
+                            </div>
+                            <div class="t-right">
+                                <div class="t-status watched">Watched</div>
+                                <div class="t-price">$42.00</div>
+                                <button class="btn-view-ticket secondary">Download</button>
+                            </div>
+                        </div>
+
+                        <div class="ticket-item">
+                            <img src="images/movie_interstellar.png" alt="" class="t-poster">
+                            <div class="t-info">
+                                <div class="t-title">INTERSTELLAR</div>
+                                <div class="t-meta">
+                                    <span>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                        28 Apr 2024 • 17:30
+                                    </span>
+                                    <span>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        Hall 1
+                                    </span>
+                                    <span>Seats: A12</span>
+                                </div>
+                            </div>
+                            <div class="t-right">
+                                <div class="t-status watched">Watched</div>
+                                <div class="t-price">$16.00</div>
+                                <button class="btn-view-ticket secondary">Download</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── TAB: CHANGE PASSWORD ── -->
+            <div class="tab-panel" id="tab-password">
+                <div class="content-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            Change Password
+                        </div>
+                    </div>
+
+                    <div class="form-grid pw-grid">
+                        <div class="form-group span-2">
+                            <label class="form-label">Current Password</label>
+                            <div class="pw-wrap">
+                                <input type="password" class="form-control" id="pwCurrent" placeholder="Enter current password">
+                                <button class="pw-toggle" onclick="togglePw('pwCurrent', this)" tabindex="-1">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            <div class="pw-wrap">
+                                <input type="password" class="form-control" id="pwNew" placeholder="Min. 8 characters">
+                                <button class="pw-toggle" onclick="togglePw('pwNew', this)" tabindex="-1">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm New Password</label>
+                            <div class="pw-wrap">
+                                <input type="password" class="form-control" id="pwConfirm" placeholder="Re-enter new password">
+                                <button class="pw-toggle" onclick="togglePw('pwConfirm', this)" tabindex="-1">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password strength bar -->
+                    <div class="pw-strength" id="pwStrength" style="display:none;">
+                        <div class="pw-strength-bar" id="pwStrengthBar"></div>
+                        <span class="pw-strength-label" id="pwStrengthLabel"></span>
+                    </div>
+
+                    <div class="save-success" id="pwSuccess" style="display:none;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Password updated successfully!
+                    </div>
+
+                    <button class="btn-save full-width" onclick="changePassword()" style="margin-top:20px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        Update Password
+                    </button>
+
+                </div>
+
+                <!-- Security tips card -->
+                <div class="content-card tips-card">
+                    <div class="card-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        Security Tips
+                    </div>
+                    <ul class="tips-list">
+                        <li>Use at least 8 characters with uppercase, lowercase and numbers</li>
+                        <li>Avoid using your name, email or common words</li>
+                        <li>Don't reuse passwords from other sites</li>
+                        <li>Enable two-factor authentication for extra security</li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- ── FOOTER ── -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <a href="index.html" class="nav-logo">
+                    <span class="logo-d">D</span>-CINEMA
+                </a>
+                <p>Premium cinematic experience with cutting-edge technology.</p>
+            </div>
+            <div class="footer-col">
+                <h4>ABOUT</h4>
+                <a href="#">About Us</a>
+                <a href="#">Cinemas</a>
+                <a href="#">Careers</a>
+            </div>
+            <div class="footer-col">
+                <h4>SUPPORT</h4>
+                <a href="#">Help Center</a>
+                <a href="#">Contact</a>
+                <a href="#">FAQ</a>
+            </div>
+            <div class="footer-col">
+                <h4>LEGAL</h4>
+                <a href="#">Terms</a>
+                <a href="#">Privacy</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 D-CINEMA. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+    <script>
+    /* ─── Load user data ─── */
+    document.addEventListener('DOMContentLoaded', () => {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) { window.location.href = 'auth.html'; return; }
+
+        try {
+            const user = JSON.parse(userStr);
+            const name = user.fullName || 'User';
+            const email = user.email || '';
+
+            document.getElementById('displayFullName').textContent = name;
+            document.getElementById('displayEmail').textContent = email;
+            document.getElementById('inputFullName').value = name;
+            document.getElementById('inputEmail').value = email;
+            document.getElementById('mcName').textContent = name;
+
+            const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('userInitials').textContent = initials;
+            document.getElementById('navAvatar').textContent = initials.charAt(0);
+            document.getElementById('navAvatar').title = name;
+            document.getElementById('navAvatar').onclick = () => window.location.href = 'profile.html';
+        } catch(e) {}
+    });
+
+    /* ─── Tab switching ─── */
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.sn-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    /* ─── Save profile ─── */
+    function saveProfile() {
+        const btn = document.getElementById('btnSave');
+        btn.disabled = true;
+        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-9-9"/></svg> Saving…`;
+
+        setTimeout(() => {
+            const name = document.getElementById('inputFullName').value.trim();
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                user.fullName = name;
+                localStorage.setItem('user', JSON.stringify(user));
+                document.getElementById('displayFullName').textContent = name;
+                document.getElementById('mcName').textContent = name;
+                const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                document.getElementById('userInitials').textContent = initials;
+            }
+            btn.disabled = false;
+            btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Changes`;
+
+            const msg = document.getElementById('saveSuccess');
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 3000);
+        }, 900);
+    }
+
+    /* ─── Password visibility toggle ─── */
+    function togglePw(id, btn) {
+        const inp = document.getElementById(id);
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            btn.style.color = 'var(--accent)';
+        } else {
+            inp.type = 'password';
+            btn.style.color = '';
+        }
+    }
+
+    /* ─── Password strength ─── */
+    document.addEventListener('input', e => {
+        if (e.target.id !== 'pwNew') return;
+        const val = e.target.value;
+        const wrap = document.getElementById('pwStrength');
+        const bar  = document.getElementById('pwStrengthBar');
+        const lbl  = document.getElementById('pwStrengthLabel');
+
+        if (!val) { wrap.style.display = 'none'; return; }
+        wrap.style.display = 'flex';
+
+        let score = 0;
+        if (val.length >= 8)           score++;
+        if (/[A-Z]/.test(val))         score++;
+        if (/[0-9]/.test(val))         score++;
+        if (/[^A-Za-z0-9]/.test(val))  score++;
+
+        const levels = [
+            { w:'25%', c:'#e8192c', t:'Weak' },
+            { w:'50%', c:'#f5a623', t:'Fair' },
+            { w:'75%', c:'#f5c518', t:'Good' },
+            { w:'100%',c:'#22c55e', t:'Strong' }
+        ];
+        const l = levels[score - 1] || levels[0];
+        bar.style.width = l.w;
+        bar.style.background = l.c;
+        lbl.textContent = l.t;
+        lbl.style.color = l.c;
+    });
+
+    /* ─── Change password ─── */
+    function changePassword() {
+        const curr    = document.getElementById('pwCurrent').value;
+        const newPw   = document.getElementById('pwNew').value;
+        const confirm = document.getElementById('pwConfirm').value;
+
+        if (!curr || !newPw || !confirm) { alert('Please fill in all fields.'); return; }
+        if (newPw.length < 8)           { alert('New password must be at least 8 characters.'); return; }
+        if (newPw !== confirm)           { alert('Passwords do not match.'); return; }
+
+        const msg = document.getElementById('pwSuccess');
+        msg.style.display = 'flex';
+        msg.classList.add('show');
+        document.getElementById('pwCurrent').value = '';
+        document.getElementById('pwNew').value = '';
+        document.getElementById('pwConfirm').value = '';
+        document.getElementById('pwStrength').style.display = 'none';
+        setTimeout(() => { msg.classList.remove('show'); setTimeout(() => { msg.style.display = 'none'; }, 400); }, 3500);
+    }
+
+    /* ─── Logout ─── */
+    function logout() {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        window.location.href = 'auth.html';
+    }
+    </script>
+
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+
+</body>
+</html>

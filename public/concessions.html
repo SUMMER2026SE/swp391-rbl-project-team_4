@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concessions | CINESTAR</title>
+    <meta name="description" content="Complete your movie experience with our fresh combos, snacks and drinks at CINESTAR Cinemas.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/concessions.css">
+</head>
+
+<body>
+
+    <!-- ── NAVBAR ── -->
+    <header class="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo">CINE<span>STAR</span></a>
+
+            <nav class="nav-links">
+                <a href="movies.html">Movies</a>
+                <a href="booking.html">Cinemas</a>
+                <a href="promotions.html">Offers</a>
+                <a href="#" class="active">Membership</a>
+            </nav>
+
+            <div class="nav-right">
+                <div class="search-wrap">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <input type="text" placeholder="Search..." class="search-inp" id="navSearch">
+                </div>
+                <button class="nav-bell" aria-label="Notifications">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                </button>
+                <div class="nav-avatar" id="navAvatar" title="My Account">U</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── MAIN AREA ── -->
+    <main class="page-wrap">
+
+        <!-- ══ LEFT COLUMN ══ -->
+        <section class="left-col">
+
+            <!-- Page Heading -->
+            <div class="page-heading">
+                <h1>CONCESSIONS</h1>
+                <p>Complete your movie experience with our fresh combos.</p>
+            </div>
+
+            <!-- Category Tabs -->
+            <div class="tabs-row">
+                <button class="tab-btn active" data-tab="combos" onclick="switchTab('combos', this)">Combos</button>
+                <button class="tab-btn" data-tab="snacks" onclick="switchTab('snacks', this)">Snacks</button>
+                <button class="tab-btn" data-tab="drinks" onclick="switchTab('drinks', this)">Drinks</button>
+            </div>
+
+            <!-- ── COMBOS GRID ── -->
+            <div class="items-grid" id="tab-combos">
+
+                <!-- Mega Combo -->
+                <div class="item-card" id="card-mega">
+                    <div class="card-img-wrap">
+                        <span class="badge-bestseller">Best Seller</span>
+                        <img src="images/combo_mega.png" alt="Mega Combo" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-top-row">
+                            <span class="item-name">Mega Combo</span>
+                            <span class="item-price">$24.00</span>
+                        </div>
+                        <p class="item-desc">1x Extra Large Popcorn (Sweet or Salted), 2x Large Soft Drinks, and 1x Premium…</p>
+                        <div class="card-actions">
+                            <div class="qty-control">
+                                <button class="qty-btn minus" onclick="changeQty('mega', -1)" aria-label="Decrease">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                                <span class="qty-num" id="qty-mega">0</span>
+                                <button class="qty-btn plus" onclick="changeQty('mega', 1)" aria-label="Increase">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                            </div>
+                            <button class="btn-add" id="btn-mega" onclick="addToCart('mega')">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Couple Combo -->
+                <div class="item-card" id="card-couple">
+                    <div class="card-img-wrap">
+                        <img src="images/combo_couple.png" alt="Couple Combo" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-top-row">
+                            <span class="item-name">Couple Combo</span>
+                            <span class="item-price">$18.50</span>
+                        </div>
+                        <p class="item-desc">2x Medium Popcorn, 2x Medium Soft Drinks. Perfect sharing size for two mo…</p>
+                        <div class="card-actions">
+                            <div class="qty-control">
+                                <button class="qty-btn minus" onclick="changeQty('couple', -1)" aria-label="Decrease">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                                <span class="qty-num" id="qty-couple">0</span>
+                                <button class="qty-btn plus" onclick="changeQty('couple', 1)" aria-label="Increase">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                            </div>
+                            <button class="btn-add" id="btn-couple" onclick="addToCart('couple')">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solo Feast -->
+                <div class="item-card" id="card-solo">
+                    <div class="card-img-wrap">
+                        <img src="images/combo_solo.png" alt="Solo Feast" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-top-row">
+                            <span class="item-name">Solo Feast</span>
+                            <span class="item-price">$14.00</span>
+                        </div>
+                        <p class="item-desc">1x Regular Popcorn, 1x Hot Dog, and 1x Soft Drink (500ml). The ultimate solo…</p>
+                        <div class="card-actions">
+                            <div class="qty-control">
+                                <button class="qty-btn minus" onclick="changeQty('solo', -1)" aria-label="Decrease">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                                <span class="qty-num" id="qty-solo">0</span>
+                                <button class="qty-btn plus" onclick="changeQty('solo', 1)" aria-label="Increase">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                            </div>
+                            <button class="btn-add" id="btn-solo" onclick="addToCart('solo')">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kids Pack -->
+                <div class="item-card" id="card-kids">
+                    <div class="card-img-wrap">
+                        <img src="images/combo_kids.png" alt="Kids Pack" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-top-row">
+                            <span class="item-name">Kids Pack</span>
+                            <span class="item-price">$9.50</span>
+                        </div>
+                        <p class="item-desc">1x Small Popcorn, 1x Fruit Juice, and a small surprise toy for our little movie…</p>
+                        <div class="card-actions">
+                            <div class="qty-control">
+                                <button class="qty-btn minus" onclick="changeQty('kids', -1)" aria-label="Decrease">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                                <span class="qty-num" id="qty-kids">0</span>
+                                <button class="qty-btn plus" onclick="changeQty('kids', 1)" aria-label="Increase">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                            </div>
+                            <button class="btn-add" id="btn-kids" onclick="addToCart('kids')">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end combos grid -->
+
+            <!-- ── SNACKS GRID ── -->
+            <div class="items-grid hidden" id="tab-snacks">
+                <div class="item-card">
+                    <div class="card-img-wrap">
+                        <img src="images/combo_popcorn.png" alt="Large Popcorn" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-top-row">
+                            <span class="item-name">Large Popcorn</span>
+                            <span class="item-price">$6.50</span>
+                        </div>
+                        <p class="item-desc">Extra large bucket of freshly popped butter popcorn. Choose sweet or salted.</p>
+                        <div class="card-actions">
+                            <div class="qty-control">
+                                <button class="qty-btn minus" onclick="changeQty('lpopcorn', -1)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                                <span class="qty-num" id="qty-lpopcorn">0</span>
+                                <button class="qty-btn plus" onclick="changeQty('lpopcorn', 1)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                            </div>
+                            <button class="btn-add" id="btn-lpopcorn" onclick="addToCart('lpopcorn')">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-card">
+                    <div class="card-img-wrap">
+                        <img src="images/combo_solo.png" alt="Hot Dog" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-top-row">
+                            <span class="item-name">Hot Dog</span>
+                            <span class="item-price">$5.00</span>
+                        </div>
+                        <p class="item-desc">Classic beef hot dog with ketchup, mustard, and your choice of toppings.</p>
+                        <div class="card-actions">
+                            <div class="qty-control">
+                                <button class="qty-btn minus" onclick="changeQty('hotdog', -1)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                                <span class="qty-num" id="qty-hotdog">0</span>
+                                <button class="qty-btn plus" onclick="changeQty('hotdog', 1)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                            </div>
+                            <button class="btn-add" id="btn-hotdog" onclick="addToCart('hotdog')">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── DRINKS GRID ── -->
+            <div class="items-grid hidden" id="tab-drinks">
+                <div class="item-card">
+                    <div class="card-img-wrap">
+                        <img src="images/combo_solo.png" alt="Mineral Water" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-top-row">
+                            <span class="item-name">Mineral Water</span>
+                            <span class="item-price">$2.50</span>
+                        </div>
+                        <p class="item-desc">Chilled mineral water 500ml. Refreshing and hydrating for your movie experience.</p>
+                        <div class="card-actions">
+                            <div class="qty-control">
+                                <button class="qty-btn minus" onclick="changeQty('water', -1)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                                <span class="qty-num" id="qty-water">0</span>
+                                <button class="qty-btn plus" onclick="changeQty('water', 1)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                            </div>
+                            <button class="btn-add" id="btn-water" onclick="addToCart('water')">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-card">
+                    <div class="card-img-wrap">
+                        <img src="images/combo_couple.png" alt="Large Soft Drink" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-top-row">
+                            <span class="item-name">Large Soft Drink</span>
+                            <span class="item-price">$4.50</span>
+                        </div>
+                        <p class="item-desc">Large 700ml fountain drink. Choose from Coke, Sprite, Fanta, or Iced Tea.</p>
+                        <div class="card-actions">
+                            <div class="qty-control">
+                                <button class="qty-btn minus" onclick="changeQty('soda', -1)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                                <span class="qty-num" id="qty-soda">0</span>
+                                <button class="qty-btn plus" onclick="changeQty('soda', 1)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                            </div>
+                            <button class="btn-add" id="btn-soda" onclick="addToCart('soda')">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section><!-- end left-col -->
+
+        <!-- ══ RIGHT SIDEBAR – ORDER SUMMARY ══ -->
+        <aside class="sidebar">
+            <div class="sidebar-inner">
+
+                <!-- Header -->
+                <div class="order-header">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="3" width="15" height="13" rx="2"/>
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                        <circle cx="5.5" cy="18.5" r="2.5"/>
+                        <circle cx="18.5" cy="18.5" r="2.5"/>
+                    </svg>
+                    <h2>Order Summary</h2>
+                </div>
+
+                <!-- Movie Info -->
+                <div class="movie-card">
+                    <img src="images/movie_oppenheimer.png" alt="Oppenheimer" class="movie-thumb" id="summaryPoster">
+                    <div class="movie-info">
+                        <div class="movie-title" id="summaryTitle">Oppenheimer</div>
+                        <div class="movie-meta-row">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span id="summaryDate">24 May, 2024</span>
+                        </div>
+                        <div class="movie-meta-row">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span id="summaryTime">19:45 • Hall 4</span>
+                        </div>
+                        <div class="movie-meta-row seats-row">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0Z"/></svg>
+                            <span class="seats-val" id="summarySeats">Seats: J12, J13</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-divider"></div>
+
+                <!-- Ticket Lines -->
+                <div class="order-lines" id="ticketLines">
+                    <div class="order-line">
+                        <span class="line-label">Adult Tickets (x2)</span>
+                        <span class="line-val">$32.00</span>
+                    </div>
+                    <div class="order-line">
+                        <span class="line-label">Booking Fee</span>
+                        <span class="line-val">$1.50</span>
+                    </div>
+                </div>
+
+                <!-- Food & Beverage Lines -->
+                <div class="fb-section" id="fbSection" style="display:none;">
+                    <div class="fb-label">FOOD &amp; BEVERAGE</div>
+                    <div id="fbLines"></div>
+                </div>
+
+                <div class="order-divider"></div>
+
+                <!-- Total -->
+                <div class="total-row">
+                    <span class="total-lbl">Total Amount</span>
+                    <span class="total-val" id="totalAmount">$33.50</span>
+                </div>
+
+                <!-- CTA Button -->
+                <button class="btn-continue" id="btnContinue" onclick="goToPayment()">
+                    Continue to Payment
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+
+                <p class="terms-note">By clicking continue, you agree to our <a href="#">Terms of Service</a>.</p>
+
+                <!-- Progress Steps -->
+                <div class="steps-row">
+                    <div class="step done">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">SEATS</div>
+                    </div>
+                    <div class="step-line done-line"></div>
+                    <div class="step active">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">F&amp;B</div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">PAY</div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- ── FOOTER ── -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <a href="index.html" class="footer-logo">CINE<span>STAR</span></a>
+            <p class="footer-copy">© 2024 CINESTAR Cinemas. All rights reserved.</p>
+            <nav class="footer-links">
+                <a href="#">About Us</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Contact</a>
+                <a href="#">FAQs</a>
+            </nav>
+        </div>
+    </footer>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+    <script>
+    /* ──────────────────────────────────────
+       PRODUCT CATALOGUE
+    ────────────────────────────────────── */
+    const PRODUCTS = {
+        mega:     { name: 'Mega Combo',       price: 24.00 },
+        couple:   { name: 'Couple Combo',     price: 18.50 },
+        solo:     { name: 'Solo Feast',       price: 14.00 },
+        kids:     { name: 'Kids Pack',        price: 9.50  },
+        lpopcorn: { name: 'Large Popcorn',    price: 6.50  },
+        hotdog:   { name: 'Hot Dog',          price: 5.00  },
+        water:    { name: 'Mineral Water',    price: 2.50  },
+        soda:     { name: 'Large Soft Drink', price: 4.50  }
+    };
+
+    // qty state
+    const quantities = {};
+    Object.keys(PRODUCTS).forEach(k => quantities[k] = 0);
+
+    const BASE_TICKET = 33.50; // tickets + booking fee
+
+    /* ──────────────────────────────────────
+       TAB SWITCHING
+    ────────────────────────────────────── */
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.items-grid').forEach(g => g.classList.add('hidden'));
+        document.getElementById('tab-' + tabId).classList.remove('hidden');
+    }
+
+    /* ──────────────────────────────────────
+       QUANTITY CONTROL
+    ────────────────────────────────────── */
+    function changeQty(id, delta) {
+        quantities[id] = Math.max(0, (quantities[id] || 0) + delta);
+        const el = document.getElementById('qty-' + id);
+        if (el) el.textContent = quantities[id];
+        updateOrderSummary();
+    }
+
+    /* ──────────────────────────────────────
+       ADD TO CART / UPDATE
+    ────────────────────────────────────── */
+    function addToCart(id) {
+        const qty = quantities[id];
+        const btn = document.getElementById('btn-' + id);
+        if (!btn) return;
+
+        if (qty > 0) {
+            btn.textContent = 'Update';
+            btn.classList.add('btn-update');
+        }
+        updateOrderSummary();
+
+        // Flash animation
+        btn.classList.add('btn-flash');
+        setTimeout(() => btn.classList.remove('btn-flash'), 400);
+    }
+
+    /* ──────────────────────────────────────
+       ORDER SUMMARY
+    ────────────────────────────────────── */
+    function updateOrderSummary() {
+        const fbSection = document.getElementById('fbSection');
+        const fbLines = document.getElementById('fbLines');
+        const totalEl = document.getElementById('totalAmount');
+
+        let fbTotal = 0;
+        let fbHtml = '';
+
+        Object.keys(PRODUCTS).forEach(id => {
+            const qty = quantities[id];
+            if (qty > 0) {
+                const product = PRODUCTS[id];
+                const subtotal = (qty * product.price).toFixed(2);
+                fbTotal += qty * product.price;
+                fbHtml += `
+                    <div class="order-line">
+                        <span class="line-label">${qty} ${product.name}</span>
+                        <span class="line-val">$${subtotal}</span>
+                    </div>`;
+            }
+        });
+
+        if (fbTotal > 0) {
+            fbSection.style.display = 'block';
+            fbLines.innerHTML = fbHtml;
+        } else {
+            fbSection.style.display = 'none';
+            fbLines.innerHTML = '';
+        }
+
+        totalEl.textContent = '$' + (BASE_TICKET + fbTotal).toFixed(2);
+    }
+
+    /* ──────────────────────────────────────
+       NAVIGATION
+    ────────────────────────────────────── */
+    function goToPayment() {
+        window.location.href = 'checkout.html';
+    }
+
+    /* ──────────────────────────────────────
+       LOAD SESSION DATA
+    ────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+        // User avatar
+        const userStr = localStorage.getItem('user');
+        const avatarEl = document.getElementById('navAvatar');
+        if (userStr && avatarEl) {
+            try {
+                const user = JSON.parse(userStr);
+                const initial = (user.fullName || user.email || 'U').charAt(0).toUpperCase();
+                avatarEl.textContent = initial;
+                avatarEl.title = user.fullName || user.email || 'Account';
+                avatarEl.onclick = () => window.location.href = 'profile.html';
+            } catch(e) {}
+        }
+
+        // Booking info from sessionStorage / localStorage
+        const booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
+        if (booking.movieTitle) {
+            document.getElementById('summaryTitle').textContent = booking.movieTitle;
+        }
+        if (booking.date) {
+            document.getElementById('summaryDate').textContent = booking.date;
+        }
+        if (booking.time && booking.hall) {
+            document.getElementById('summaryTime').textContent = booking.time + ' • ' + booking.hall;
+        }
+        if (booking.seats) {
+            document.getElementById('summarySeats').textContent = 'Seats: ' + booking.seats;
+        }
+        if (booking.poster) {
+            document.getElementById('summaryPoster').src = booking.poster;
+        }
+    });
+    </script>
+
+</body>
+</html>

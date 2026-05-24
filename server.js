@@ -3,20 +3,23 @@
 //  Port: 9999  |  Socket.IO ready for real-time seat locking
 // ============================================================
 const express = require('express');
-const http    = require('http');
+const cors = require('cors');
+const http = require('http');
 const { Server } = require('socket.io');
-const path    = require('path');
+const path = require('path');
+const { getPool } = require('./config/db');
 
 // ─── App & Server ────────────────────────────────────────────
-const app    = express();
+const app = express();
 const server = http.createServer(app);
-const io     = new Server(server, {
+const io = new Server(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] },
 });
 
 const PORT = process.env.PORT || 9999;
 
 // ─── Middleware ───────────────────────────────────────────────
+app.use(cors());                            // Cho phép cross-origin requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -24,59 +27,50 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── API Routes ───────────────────────────────────────────────
-const movieRoutes   = require('./routes/movieRoutes');
+const authRoutes = require('./routes/authRoutes');
+const movieRoutes = require('./routes/movieRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
+const staffRoutes = require('./routes/staffRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
-app.use('/api/movies',   movieRoutes);
-app.use('/api/bookings', bookingRoutes);
+app.use('/api/auth', authRoutes);     // Đăng ký, Đăng nhập
+app.use('/api/movies', movieRoutes);    // Thông tin phim & lịch chiếu
+app.use('/api/bookings', bookingRoutes);  // Đặt vé, lịch sử, voucher
+app.use('/api/staff', staffRoutes);    // Nhân viên tại quầy
+app.use('/api/admin', adminRoutes);    // Quản lý, thống kê
 
-// Health-check
+// ─── Health-check ────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString(), port: PORT });
 });
 
-// SPA fallback — trả về index.html cho mọi route không khớp (Express 5)
+// ─── 404 Handler (API) ───────────────────────────────────────
+app.use('/api', (req, res) => {
+  res.status(404).json({ success: false, message: `Route ${req.method} ${req.path} không tồn tại.` });
+});
+
+// ─── Explicit page routes ────────────────────────────────────
+app.get('/auth', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'auth.html'));
+});
+app.get('/profile', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'profile.html'));
+});
+app.get('/booking', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'booking.html'));
+});
+
+// ─── SPA Fallback — trả về index.html cho mọi route khác ─────
 app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ─── Socket.IO — Real-time seat locking ───────────────────────
-// lockedSeats: { [showtimeId]: Set<seatId> }
-const lockedSeats = {};
-
-io.on('connection', (socket) => {
-  console.log(`[Socket] 🟢 Client connected: ${socket.id}`);
-
-  // Client chọn ghế → lock tạm thời
-  socket.on('lock-seat', ({ showtimeId, seatId }) => {
-    if (!lockedSeats[showtimeId]) lockedSeats[showtimeId] = new Set();
-    if (lockedSeats[showtimeId].has(seatId)) {
-      socket.emit('seat-lock-failed', { seatId, reason: 'Ghế đang được người khác chọn' });
-      return;
-    }
-    lockedSeats[showtimeId].add(seatId);
-    socket.join(`showtime-${showtimeId}`);
-    // Thông báo tới tất cả client trong cùng suất chiếu
-    io.to(`showtime-${showtimeId}`).emit('seat-locked', { seatId, lockedBy: socket.id });
-    console.log(`[Socket] 🔒 Locked seat ${seatId} | showtime ${showtimeId}`);
-  });
-
-  // Client bỏ chọn ghế → unlock
-  socket.on('unlock-seat', ({ showtimeId, seatId }) => {
-    lockedSeats[showtimeId]?.delete(seatId);
-    io.to(`showtime-${showtimeId}`).emit('seat-unlocked', { seatId });
-    console.log(`[Socket] 🔓 Unlocked seat ${seatId} | showtime ${showtimeId}`);
-  });
-
-  // Client disconnect → tự động unlock tất cả ghế đang lock
-  socket.on('disconnect', () => {
-    console.log(`[Socket] 🔴 Client disconnected: ${socket.id}`);
-    // TODO: track socket→seats mapping để unlock đúng ghế khi disconnect
-  });
-});
+const socketManager = require('./sockets/socketManager');
+socketManager(io);
 
 // ─── Start Server ─────────────────────────────────────────────
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log('');
   console.log('  ██████╗██╗███╗   ██╗███████╗███╗   ███╗ █████╗ ');
   console.log(' ██╔════╝██║████╗  ██║██╔════╝████╗ ████║██╔══██╗');
@@ -88,4 +82,11 @@ server.listen(PORT, () => {
   console.log(`  🎬  CinemaVerse Server đang chạy tại http://localhost:${PORT}`);
   console.log(`  🔌  Socket.IO sẵn sàng cho real-time seat locking`);
   console.log('');
+
+  // Khởi tạo kết nối DB ngay khi server start
+  try {
+    await getPool();
+  } catch (err) {
+    console.error('  ⚠️  Không thể kết nối DB. Kiểm tra lại config/db.js');
+  }
 });

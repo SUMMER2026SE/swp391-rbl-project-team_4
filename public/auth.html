@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D-Cinema — Đăng Nhập / Đăng Ký</title>
+    <meta name="description"
+        content="Đăng nhập hoặc đăng ký tài khoản D-Cinema để đặt vé, tích điểm và trải nghiệm điện ảnh đỉnh cao.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+
+<body>
+
+    <!-- ═══════════════ TOAST NOTIFICATION ═══════════════ -->
+    <div id="toast" class="toast"></div>
+
+    <!-- ═══════════════ MAIN AUTH WRAPPER ═══════════════ -->
+    <div class="auth-page">
+
+        <!-- ─── Left Panel: Cinema Hero ─── -->
+        <div class="auth-hero">
+            <div class="hero-overlay"></div>
+            <div class="hero-particles" id="heroParticles"></div>
+
+            <!-- Brand -->
+            <a href="index.html" class="hero-brand" id="heroBrand">
+                <span class="brand-icon">D</span>
+                <span class="brand-name">D-CINEMA</span>
+            </a>
+
+            <!-- Floating cinema image -->
+            <div class="hero-visual">
+                <div class="cinema-frame">
+                    <img src="images/hero_banner.png" alt="Rạp chiếu phim D-Cinema" class="cinema-img" id="cinemaImg">
+                    <div class="frame-glow"></div>
+                </div>
+            </div>
+
+            <!-- Tagline -->
+            <div class="hero-tagline">
+                <p class="tagline-label">TRẢI NGHIỆM ĐIỆN ẢNH</p>
+                <h1 class="tagline-heading">MỖI KHUNG HÌNH<br>LÀ MỘT <span class="tagline-accent">TUYỆT TÁC.</span></h1>
+            </div>
+
+            <!-- Decorative scan lines -->
+            <div class="scanlines"></div>
+        </div>
+
+        <!-- ─── Right Panel: Auth Forms ─── -->
+        <div class="auth-form-panel">
+            <div class="form-wrapper">
+
+                <!-- Welcome header -->
+                <div class="form-header" id="formHeader">
+                    <h2 class="welcome-title" id="welcomeTitle">Chào mừng trở lại</h2>
+                    <p class="welcome-sub" id="welcomeSub">Đăng nhập để tiếp tục hành trình điện ảnh của bạn.</p>
+                </div>
+
+                <!-- ─── Tab Switcher ─── -->
+                <div class="tab-switcher">
+                    <button class="tab-btn active" id="tabLogin" data-tab="login">ĐĂNG NHẬP</button>
+                    <button class="tab-btn" id="tabRegister" data-tab="register">ĐĂNG KÝ</button>
+                    <div class="tab-indicator" id="tabIndicator"></div>
+                </div>
+
+                <!-- ═══════════ LOGIN FORM ═══════════ -->
+                <form id="loginForm" class="auth-form active" autocomplete="on">
+                    <!-- Email -->
+                    <div class="input-group">
+                        <label for="loginEmail">EMAIL HOẶC SỐ ĐIỆN THOẠI</label>
+                        <div class="input-wrapper">
+                            <input type="email" id="loginEmail" name="email" placeholder="name@example.com" required
+                                autocomplete="email">
+                            <span class="input-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="input-group">
+                        <div class="label-row">
+                            <label for="loginPassword">MẬT KHẨU</label>
+                            <a href="#" class="forgot-link">Quên mật khẩu?</a>
+                        </div>
+                        <div class="input-wrapper">
+                            <input type="password" id="loginPassword" name="password" placeholder="••••••••" required
+                                autocomplete="current-password">
+                            <button type="button" class="toggle-password" data-target="loginPassword"
+                                aria-label="Hiển thị mật khẩu">
+                                <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" style="display:none">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember me -->
+                    <div class="remember-row">
+                        <label class="custom-checkbox">
+                            <input type="checkbox" id="rememberMe">
+                            <span class="checkmark"></span>
+                            <span class="check-label">Ghi nhớ đăng nhập</span>
+                        </label>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" class="btn-submit" id="btnLogin">
+                        <span class="btn-text">ĐĂNG NHẬP NGAY</span>
+                        <span class="btn-loader" style="display:none">
+                            <svg class="spinner" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
+                                    stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+                            </svg>
+                        </span>
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="divider-row">
+                        <span class="divider-line"></span>
+                        <span class="divider-text">HOẶC TIẾP TỤC VỚI</span>
+                        <span class="divider-line"></span>
+                    </div>
+
+                    <!-- Social login -->
+                    <button type="button" class="btn-social" id="btnGoogle">
+                        <svg width="20" height="20" viewBox="0 0 48 48">
+                            <path fill="#FFC107"
+                                d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
+                            <path fill="#FF3D00"
+                                d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" />
+                            <path fill="#4CAF50"
+                                d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z" />
+                            <path fill="#1976D2"
+                                d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z" />
+                        </svg>
+                        <span>Google</span>
+                    </button>
+                </form>
+
+                <!-- ═══════════ REGISTER FORM ═══════════ -->
+                <form id="registerForm" class="auth-form" autocomplete="on">
+                    <!-- Full Name -->
+                    <div class="input-group">
+                        <label for="regFullName">HỌ VÀ TÊN</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="regFullName" name="fullName" placeholder="Nguyễn Văn A" required
+                                autocomplete="name">
+                            <span class="input-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="input-group">
+                        <label for="regEmail">EMAIL</label>
+                        <div class="input-wrapper">
+                            <input type="email" id="regEmail" name="email" placeholder="name@example.com" required
+                                autocomplete="email">
+                            <span class="input-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="input-group">
+                        <label for="regPhone">SỐ ĐIỆN THOẠI</label>
+                        <div class="input-wrapper">
+                            <input type="tel" id="regPhone" name="phone" placeholder="0901 234 567" autocomplete="tel">
+                            <span class="input-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="input-group">
+                        <label for="regPassword">MẬT KHẨU</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="regPassword" name="password" placeholder="Tối thiểu 6 ký tự"
+                                required minlength="6" autocomplete="new-password">
+                            <button type="button" class="toggle-password" data-target="regPassword"
+                                aria-label="Hiển thị mật khẩu">
+                                <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" style="display:none">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                        </div>
+                        <!-- Password strength bar -->
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strengthFill"></div>
+                            </div>
+                            <span class="strength-label" id="strengthLabel"></span>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="input-group">
+                        <label for="regConfirmPassword">XÁC NHẬN MẬT KHẨU</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="regConfirmPassword" name="confirmPassword"
+                                placeholder="Nhập lại mật khẩu" required autocomplete="new-password">
+                            <button type="button" class="toggle-password" data-target="regConfirmPassword"
+                                aria-label="Hiển thị mật khẩu">
+                                <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" style="display:none">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" class="btn-submit btn-register" id="btnRegister">
+                        <span class="btn-text">TẠO TÀI KHOẢN</span>
+                        <span class="btn-loader" style="display:none">
+                            <svg class="spinner" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
+                                    stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+                            </svg>
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Toggle prompt -->
+                <div class="toggle-prompt" id="togglePrompt">
+                    <span id="promptText">Chưa có tài khoản?</span>
+                    <a href="#" id="promptLink">Đăng ký ngay</a>
+                </div>
+
+                <!-- Language selector -->
+                <div class="lang-selector">
+                    <button class="lang-btn active" id="langBtn">
+                        <img src="https://flagcdn.com/w20/vn.png" alt="VN" width="16" height="11">
+                        Tiếng Việt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,462 @@
+[
+  {
+    "TABLE_NAME": "Roles",
+    "COLUMN_NAME": "RoleID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Roles",
+    "COLUMN_NAME": "RoleName",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Users",
+    "COLUMN_NAME": "UserID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Users",
+    "COLUMN_NAME": "RoleID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Users",
+    "COLUMN_NAME": "FullName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "Users",
+    "COLUMN_NAME": "Email",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Users",
+    "COLUMN_NAME": "PasswordHash",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Users",
+    "COLUMN_NAME": "Phone",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Users",
+    "COLUMN_NAME": "CreatedAt",
+    "DATA_TYPE": "datetime"
+  },
+  {
+    "TABLE_NAME": "Cinemas",
+    "COLUMN_NAME": "CinemaID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Cinemas",
+    "COLUMN_NAME": "Name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "Cinemas",
+    "COLUMN_NAME": "Address",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "Cinemas",
+    "COLUMN_NAME": "City",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "Cinemas",
+    "COLUMN_NAME": "ManagerID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Rooms",
+    "COLUMN_NAME": "RoomID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Rooms",
+    "COLUMN_NAME": "CinemaID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Rooms",
+    "COLUMN_NAME": "RoomName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "Rooms",
+    "COLUMN_NAME": "TotalSeats",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Seats",
+    "COLUMN_NAME": "SeatID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Seats",
+    "COLUMN_NAME": "RoomID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Seats",
+    "COLUMN_NAME": "SeatRow",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Seats",
+    "COLUMN_NAME": "SeatNumber",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Seats",
+    "COLUMN_NAME": "SeatType",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Seats",
+    "COLUMN_NAME": "PriceMultiplier",
+    "DATA_TYPE": "decimal"
+  },
+  {
+    "TABLE_NAME": "Movies",
+    "COLUMN_NAME": "MovieID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Movies",
+    "COLUMN_NAME": "Title",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "Movies",
+    "COLUMN_NAME": "Description",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "Movies",
+    "COLUMN_NAME": "Director",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "Movies",
+    "COLUMN_NAME": "Duration",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Movies",
+    "COLUMN_NAME": "AgeRating",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Movies",
+    "COLUMN_NAME": "TrailerURL",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Movies",
+    "COLUMN_NAME": "PosterURL",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Movies",
+    "COLUMN_NAME": "Status",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Showtimes",
+    "COLUMN_NAME": "ShowtimeID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Showtimes",
+    "COLUMN_NAME": "MovieID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Showtimes",
+    "COLUMN_NAME": "RoomID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Showtimes",
+    "COLUMN_NAME": "StartTime",
+    "DATA_TYPE": "datetime"
+  },
+  {
+    "TABLE_NAME": "Showtimes",
+    "COLUMN_NAME": "EndTime",
+    "DATA_TYPE": "datetime"
+  },
+  {
+    "TABLE_NAME": "Showtimes",
+    "COLUMN_NAME": "BasePrice",
+    "DATA_TYPE": "decimal"
+  },
+  {
+    "TABLE_NAME": "FoodBeverages",
+    "COLUMN_NAME": "FbID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "FoodBeverages",
+    "COLUMN_NAME": "Name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "FoodBeverages",
+    "COLUMN_NAME": "Description",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "FoodBeverages",
+    "COLUMN_NAME": "Price",
+    "DATA_TYPE": "decimal"
+  },
+  {
+    "TABLE_NAME": "FoodBeverages",
+    "COLUMN_NAME": "ImageURL",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Vouchers",
+    "COLUMN_NAME": "VoucherCode",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Vouchers",
+    "COLUMN_NAME": "DiscountPercent",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Vouchers",
+    "COLUMN_NAME": "MaxDiscountAmount",
+    "DATA_TYPE": "decimal"
+  },
+  {
+    "TABLE_NAME": "Vouchers",
+    "COLUMN_NAME": "ValidFrom",
+    "DATA_TYPE": "datetime"
+  },
+  {
+    "TABLE_NAME": "Vouchers",
+    "COLUMN_NAME": "ValidTo",
+    "DATA_TYPE": "datetime"
+  },
+  {
+    "TABLE_NAME": "Vouchers",
+    "COLUMN_NAME": "Quantity",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Tickets",
+    "COLUMN_NAME": "TicketID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Tickets",
+    "COLUMN_NAME": "UserID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Tickets",
+    "COLUMN_NAME": "ShowtimeID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Tickets",
+    "COLUMN_NAME": "SeatID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Tickets",
+    "COLUMN_NAME": "VoucherCode",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Tickets",
+    "COLUMN_NAME": "TotalPrice",
+    "DATA_TYPE": "decimal"
+  },
+  {
+    "TABLE_NAME": "Tickets",
+    "COLUMN_NAME": "BookingTime",
+    "DATA_TYPE": "datetime"
+  },
+  {
+    "TABLE_NAME": "Tickets",
+    "COLUMN_NAME": "PaymentMethod",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Tickets",
+    "COLUMN_NAME": "Status",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Tickets",
+    "COLUMN_NAME": "QRCode",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Ticket_FnB",
+    "COLUMN_NAME": "TicketID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Ticket_FnB",
+    "COLUMN_NAME": "FbID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Ticket_FnB",
+    "COLUMN_NAME": "Quantity",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Genres",
+    "COLUMN_NAME": "GenreID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Genres",
+    "COLUMN_NAME": "GenreName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "Movie_Genres",
+    "COLUMN_NAME": "MovieID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Movie_Genres",
+    "COLUMN_NAME": "GenreID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Reviews",
+    "COLUMN_NAME": "ReviewID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Reviews",
+    "COLUMN_NAME": "UserID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Reviews",
+    "COLUMN_NAME": "MovieID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Reviews",
+    "COLUMN_NAME": "Rating",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Reviews",
+    "COLUMN_NAME": "Comment",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_NAME": "Reviews",
+    "COLUMN_NAME": "CreatedAt",
+    "DATA_TYPE": "datetime"
+  },
+  {
+    "TABLE_NAME": "Staff_Shifts",
+    "COLUMN_NAME": "ShiftID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Staff_Shifts",
+    "COLUMN_NAME": "CinemaID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Staff_Shifts",
+    "COLUMN_NAME": "StaffID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Staff_Shifts",
+    "COLUMN_NAME": "ShiftDate",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_NAME": "Staff_Shifts",
+    "COLUMN_NAME": "StartTime",
+    "DATA_TYPE": "time"
+  },
+  {
+    "TABLE_NAME": "Staff_Shifts",
+    "COLUMN_NAME": "EndTime",
+    "DATA_TYPE": "time"
+  },
+  {
+    "TABLE_NAME": "Inventory_FnB",
+    "COLUMN_NAME": "CinemaID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Inventory_FnB",
+    "COLUMN_NAME": "FbID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Inventory_FnB",
+    "COLUMN_NAME": "StockQuantity",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Inventory_FnB",
+    "COLUMN_NAME": "LastUpdated",
+    "DATA_TYPE": "datetime"
+  },
+  {
+    "TABLE_NAME": "Retail_Orders",
+    "COLUMN_NAME": "OrderID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Retail_Orders",
+    "COLUMN_NAME": "CinemaID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Retail_Orders",
+    "COLUMN_NAME": "StaffID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Retail_Orders",
+    "COLUMN_NAME": "TotalPrice",
+    "DATA_TYPE": "decimal"
+  },
+  {
+    "TABLE_NAME": "Retail_Orders",
+    "COLUMN_NAME": "OrderTime",
+    "DATA_TYPE": "datetime"
+  },
+  {
+    "TABLE_NAME": "Retail_Orders",
+    "COLUMN_NAME": "PaymentMethod",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_NAME": "Retail_Order_FnB",
+    "COLUMN_NAME": "OrderID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Retail_Order_FnB",
+    "COLUMN_NAME": "FbID",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_NAME": "Retail_Order_FnB",
+    "COLUMN_NAME": "Quantity",
+    "DATA_TYPE": "int"
+  }
+]

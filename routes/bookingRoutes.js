@@ -1,15 +1,28 @@
-// routes/bookingRoutes.js
-const express = require('express');
-const router = express.Router();
-const bookingController = require('../controllers/bookingController');
+// ============================================================
+//  routes/bookingRoutes.js  –  Booking Routes
+//  Tất cả routes đều yêu cầu đăng nhập (verifyToken)
+// ============================================================
+const express      = require('express');
+const router       = express.Router();
+const bookingCtrl  = require('../controllers/bookingController');
+const { verifyToken, isCustomer } = require('../middleware/authMiddleware');
 
-// GET  /api/bookings/showtimes/:movieId
-router.get('/showtimes/:movieId', bookingController.getShowtimes);
+// Áp dụng verifyToken cho toàn bộ booking routes
+router.use(verifyToken);
 
-// GET  /api/bookings/seats/:showtimeId
-router.get('/seats/:showtimeId', bookingController.getSeats);
+// GET  /api/bookings/food-beverages         — Danh sách F&B
+router.get('/food-beverages',               bookingCtrl.getFoodBeverages);
 
-// POST /api/bookings
-router.post('/', bookingController.createBooking);
+// POST /api/bookings/validate-voucher       — Kiểm tra voucher
+router.post('/validate-voucher',            bookingCtrl.validateVoucher);
+
+// GET  /api/bookings/my-bookings            — Lịch sử đặt vé của tôi
+router.get('/my-bookings',                  bookingCtrl.getMyBookings);
+
+// GET  /api/bookings/:ticketId              — Chi tiết một vé
+router.get('/:ticketId',                    bookingCtrl.getBookingDetail);
+
+// POST /api/bookings                        — Tạo đơn đặt vé mới
+router.post('/',                            bookingCtrl.createBooking);
 
 module.exports = router;

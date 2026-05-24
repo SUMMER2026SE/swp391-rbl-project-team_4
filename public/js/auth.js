@@ -1,0 +1,506 @@
+// ============================================================
+//  public/js/auth.js  –  Authentication Logic
+//  Handles Login, Register, Role-based Redirect, UI interactions
+// ============================================================
+
+(function () {
+  'use strict';
+
+  // ─── API Base URL ───
+  const API_BASE = '/api/auth';
+
+  // ─── Role → Page Mapping ───
+  const ROLE_REDIRECTS = {
+    'Customer':      'index.html',
+    'Staff':         'pos.html',
+    'Manager':       'manager.html',
+    'Cinema Manager':'manager.html',
+    'Admin':         'admin.html',
+    'Super Admin':   'admin.html',
+  };
+
+  // ─── DOM References ───
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => document.querySelectorAll(sel);
+
+  const dom = {
+    // Tabs
+    tabLogin:      $('#tabLogin'),
+    tabRegister:   $('#tabRegister'),
+    tabIndicator:  $('#tabIndicator'),
+
+    // Forms
+    loginForm:     $('#loginForm'),
+    registerForm:  $('#registerForm'),
+
+    // Login fields
+    loginEmail:    $('#loginEmail'),
+    loginPassword: $('#loginPassword'),
+
+    // Register fields
+    regFullName:        $('#regFullName'),
+    regEmail:           $('#regEmail'),
+    regPhone:           $('#regPhone'),
+    regPassword:        $('#regPassword'),
+    regConfirmPassword: $('#regConfirmPassword'),
+
+    // Buttons
+    btnLogin:    $('#btnLogin'),
+    btnRegister: $('#btnRegister'),
+
+    // Header text
+    welcomeTitle: $('#welcomeTitle'),
+    welcomeSub:   $('#welcomeSub'),
+
+    // Toggle prompt
+    promptText: $('#promptText'),
+    promptLink: $('#promptLink'),
+
+    // Password strength
+    passwordStrength: $('#passwordStrength'),
+    strengthFill:     $('#strengthFill'),
+    strengthLabel:    $('#strengthLabel'),
+
+    // Toast
+    toast: $('#toast'),
+
+    // Particles
+    heroParticles: $('#heroParticles'),
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  //  TAB SWITCHING
+  // ═══════════════════════════════════════════════════════════
+  let currentTab = 'login';
+
+  function switchTab(tab) {
+    if (tab === currentTab) return;
+    currentTab = tab;
+
+    // Tab buttons
+    dom.tabLogin.classList.toggle('active', tab === 'login');
+    dom.tabRegister.classList.toggle('active', tab === 'register');
+
+    // Indicator slide
+    dom.tabIndicator.classList.toggle('right', tab === 'register');
+
+    // Forms
+    dom.loginForm.classList.toggle('active', tab === 'login');
+    dom.registerForm.classList.toggle('active', tab === 'register');
+
+    // Re-trigger animation
+    const activeForm = tab === 'login' ? dom.loginForm : dom.registerForm;
+    activeForm.style.animation = 'none';
+    activeForm.offsetHeight; // force reflow
+    activeForm.style.animation = '';
+
+    // Update header text
+    if (tab === 'login') {
+      dom.welcomeTitle.textContent = 'Chào mừng trở lại';
+      dom.welcomeSub.textContent   = 'Đăng nhập để tiếp tục hành trình điện ảnh của bạn.';
+      dom.promptText.textContent   = 'Chưa có tài khoản?';
+      dom.promptLink.textContent   = 'Đăng ký ngay';
+    } else {
+      dom.welcomeTitle.textContent = 'Tạo tài khoản mới';
+      dom.welcomeSub.textContent   = 'Đăng ký để đặt vé, tích điểm và nhận ưu đãi hấp dẫn.';
+      dom.promptText.textContent   = 'Đã có tài khoản?';
+      dom.promptLink.textContent   = 'Đăng nhập';
+    }
+
+    // Clear errors
+    clearAllErrors();
+  }
+
+  // Tab click handlers
+  dom.tabLogin.addEventListener('click',    () => switchTab('login'));
+  dom.tabRegister.addEventListener('click', () => switchTab('register'));
+  dom.promptLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    switchTab(currentTab === 'login' ? 'register' : 'login');
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  //  PASSWORD VISIBILITY TOGGLE
+  // ═══════════════════════════════════════════════════════════
+  $$('.toggle-password').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.target;
+      const input = document.getElementById(targetId);
+      const eyeOpen   = btn.querySelector('.eye-open');
+      const eyeClosed = btn.querySelector('.eye-closed');
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeOpen.style.display   = 'none';
+        eyeClosed.style.display = 'block';
+      } else {
+        input.type = 'password';
+        eyeOpen.style.display   = 'block';
+        eyeClosed.style.display = 'none';
+      }
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  //  PASSWORD STRENGTH METER
+  // ═══════════════════════════════════════════════════════════
+  dom.regPassword.addEventListener('input', () => {
+    const val = dom.regPassword.value;
+
+    if (val.length === 0) {
+      dom.passwordStrength.classList.remove('visible');
+      return;
+    }
+
+    dom.passwordStrength.classList.add('visible');
+
+    let score = 0;
+    if (val.length >= 6) score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const fill  = dom.strengthFill;
+    const label = dom.strengthLabel;
+
+    // Clear classes
+    fill.className  = 'strength-fill';
+    label.className = 'strength-label';
+
+    if (score <= 2) {
+      fill.classList.add('weak');
+      label.classList.add('weak');
+      label.textContent = 'Yếu';
+    } else if (score <= 3) {
+      fill.classList.add('medium');
+      label.classList.add('medium');
+      label.textContent = 'Trung bình';
+    } else {
+      fill.classList.add('strong');
+      label.classList.add('strong');
+      label.textContent = 'Mạnh';
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  //  TOAST NOTIFICATION
+  // ═══════════════════════════════════════════════════════════
+  let toastTimeout = null;
+
+  function showToast(message, type = 'info') {
+    clearTimeout(toastTimeout);
+
+    const icons = {
+      success: '✅',
+      error:   '❌',
+      info:    'ℹ️',
+    };
+
+    dom.toast.className = `toast ${type}`;
+    dom.toast.innerHTML = `<span>${icons[type] || ''}</span> <span>${message}</span>`;
+    dom.toast.classList.add('show');
+
+    toastTimeout = setTimeout(() => {
+      dom.toast.classList.remove('show');
+    }, 4000);
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  VALIDATION HELPERS
+  // ═══════════════════════════════════════════════════════════
+  function setError(input, msg) {
+    input.classList.add('error');
+    input.classList.remove('success');
+
+    // Remove existing error msg if any
+    const existing = input.closest('.input-group').querySelector('.field-error');
+    if (existing) existing.remove();
+
+    const errorEl = document.createElement('p');
+    errorEl.className = 'field-error';
+    errorEl.style.cssText = 'color: #ef4444; font-size: 0.75rem; margin-top: 6px; font-weight: 500;';
+    errorEl.textContent = msg;
+    input.closest('.input-wrapper').insertAdjacentElement('afterend', errorEl);
+  }
+
+  function clearError(input) {
+    input.classList.remove('error');
+    const existing = input.closest('.input-group').querySelector('.field-error');
+    if (existing) existing.remove();
+  }
+
+  function clearAllErrors() {
+    $$('.input-wrapper input').forEach((inp) => {
+      inp.classList.remove('error', 'success');
+    });
+    $$('.field-error').forEach((el) => el.remove());
+  }
+
+  function validateEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  BUTTON LOADING STATE
+  // ═══════════════════════════════════════════════════════════
+  function setLoading(btn, loading) {
+    const text   = btn.querySelector('.btn-text');
+    const loader = btn.querySelector('.btn-loader');
+
+    if (loading) {
+      btn.disabled = true;
+      text.style.display   = 'none';
+      loader.style.display = 'flex';
+    } else {
+      btn.disabled = false;
+      text.style.display   = 'inline';
+      loader.style.display = 'none';
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  LOGIN HANDLER
+  // ═══════════════════════════════════════════════════════════
+  dom.loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAllErrors();
+
+    const email    = dom.loginEmail.value.trim();
+    const password = dom.loginPassword.value;
+
+    // Client validation
+    let hasError = false;
+
+    if (!email) {
+      setError(dom.loginEmail, 'Vui lòng nhập email.');
+      hasError = true;
+    } else if (!validateEmail(email)) {
+      setError(dom.loginEmail, 'Email không hợp lệ.');
+      hasError = true;
+    }
+
+    if (!password) {
+      setError(dom.loginPassword, 'Vui lòng nhập mật khẩu.');
+      hasError = true;
+    }
+
+    if (hasError) {
+      dom.loginForm.classList.add('shake');
+      setTimeout(() => dom.loginForm.classList.remove('shake'), 500);
+      return;
+    }
+
+    // Call API
+    setLoading(dom.btnLogin, true);
+
+    try {
+      const res = await fetch(`${API_BASE}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        showToast(data.message || 'Đăng nhập thất bại.', 'error');
+        setLoading(dom.btnLogin, false);
+        return;
+      }
+
+      // ─── Đăng nhập thành công ───
+      // Lưu JWT vào localStorage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      showToast(data.message || 'Đăng nhập thành công!', 'success');
+
+      // ─── Rẽ nhánh theo Role ───
+      const role = data.user.role || data.role;
+      const redirectPage = ROLE_REDIRECTS[role] || 'index.html';
+
+      console.log(`[Auth] Role: ${role} → Redirect to: ${redirectPage}`);
+
+      // Delay chuyển trang 1s để user thấy toast
+      setTimeout(() => {
+        window.location.href = redirectPage;
+      }, 1000);
+
+    } catch (err) {
+      console.error('[Auth] Login error:', err);
+      showToast('Không thể kết nối tới server. Vui lòng thử lại.', 'error');
+      setLoading(dom.btnLogin, false);
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  //  REGISTER HANDLER
+  // ═══════════════════════════════════════════════════════════
+  dom.registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAllErrors();
+
+    const fullName        = dom.regFullName.value.trim();
+    const email           = dom.regEmail.value.trim();
+    const phone           = dom.regPhone.value.trim();
+    const password        = dom.regPassword.value;
+    const confirmPassword = dom.regConfirmPassword.value;
+
+    // Client validation
+    let hasError = false;
+
+    if (!fullName) {
+      setError(dom.regFullName, 'Vui lòng nhập họ tên.');
+      hasError = true;
+    }
+
+    if (!email) {
+      setError(dom.regEmail, 'Vui lòng nhập email.');
+      hasError = true;
+    } else if (!validateEmail(email)) {
+      setError(dom.regEmail, 'Email không hợp lệ.');
+      hasError = true;
+    }
+
+    if (!password) {
+      setError(dom.regPassword, 'Vui lòng nhập mật khẩu.');
+      hasError = true;
+    } else if (password.length < 6) {
+      setError(dom.regPassword, 'Mật khẩu phải có ít nhất 6 ký tự.');
+      hasError = true;
+    }
+
+    if (!confirmPassword) {
+      setError(dom.regConfirmPassword, 'Vui lòng xác nhận mật khẩu.');
+      hasError = true;
+    } else if (password !== confirmPassword) {
+      setError(dom.regConfirmPassword, 'Mật khẩu xác nhận không khớp.');
+      hasError = true;
+    }
+
+    if (hasError) {
+      dom.registerForm.classList.add('shake');
+      setTimeout(() => dom.registerForm.classList.remove('shake'), 500);
+      return;
+    }
+
+    // Call API
+    setLoading(dom.btnRegister, true);
+
+    try {
+      const res = await fetch(`${API_BASE}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, password, phone: phone || null }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        showToast(data.message || 'Đăng ký thất bại.', 'error');
+        setLoading(dom.btnRegister, false);
+        return;
+      }
+
+      // ─── Đăng ký thành công ───
+      // Lưu JWT vào localStorage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      showToast(data.message || 'Đăng ký thành công!', 'success');
+
+      // Customer mặc định → chuyển về trang chủ
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1200);
+
+    } catch (err) {
+      console.error('[Auth] Register error:', err);
+      showToast('Không thể kết nối tới server. Vui lòng thử lại.', 'error');
+      setLoading(dom.btnRegister, false);
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  //  FLOATING PARTICLES (Decorative)
+  // ═══════════════════════════════════════════════════════════
+  function createParticles() {
+    if (!dom.heroParticles) return;
+
+    for (let i = 0; i < 20; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left  = `${Math.random() * 100}%`;
+      particle.style.top   = `${30 + Math.random() * 60}%`;
+      particle.style.width = particle.style.height = `${2 + Math.random() * 3}px`;
+      particle.style.animationDelay    = `${Math.random() * 8}s`;
+      particle.style.animationDuration = `${6 + Math.random() * 6}s`;
+      dom.heroParticles.appendChild(particle);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  INPUT MICRO-INTERACTIONS
+  // ═══════════════════════════════════════════════════════════
+  // Add success class when valid and blur
+  $$('.input-wrapper input').forEach((input) => {
+    input.addEventListener('blur', () => {
+      if (input.value.trim() && !input.classList.contains('error')) {
+        input.classList.add('success');
+      }
+    });
+
+    input.addEventListener('focus', () => {
+      clearError(input);
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  //  CHECK AUTH ON LOAD (redirect if already logged in)
+  // ═══════════════════════════════════════════════════════════
+  function checkExistingAuth() {
+    const token = localStorage.getItem('token');
+    const user  = localStorage.getItem('user');
+
+    if (token && user) {
+      try {
+        const parsed = JSON.parse(user);
+        const role   = parsed.role;
+        const redirect = ROLE_REDIRECTS[role] || 'index.html';
+        window.location.href = redirect;
+      } catch (e) {
+        // Invalid stored data, clear it
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  URL PARAMS (for deep linking: ?tab=register)
+  // ═══════════════════════════════════════════════════════════
+  function handleURLParams() {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab === 'register') {
+      switchTab('register');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  INIT
+  // ═══════════════════════════════════════════════════════════
+  function init() {
+    checkExistingAuth();
+    createParticles();
+    handleURLParams();
+  }
+
+  // Start when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

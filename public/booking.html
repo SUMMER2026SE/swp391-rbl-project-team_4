@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinemas | D-Cinema</title>
+    <link rel="stylesheet" href="css/booking-new.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-d">D</span>
+                <span class="logo-text">D-CINEMA</span>
+            </a>
+            <nav class="nav-links">
+                <a href="movies.html" id="nav-phim">Movies</a>
+                <a href="booking.html" id="nav-rap" class="active">Cinemas</a>
+                <a href="promotions.html" id="nav-promo">Promotions</a>
+            </nav>
+            <div class="nav-actions">
+                <div class="search-box">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <input type="text" placeholder="Search movies..." class="search-input" id="searchInput">
+                </div>
+                <a href="profile.html" class="nav-user-icon" title="Profile">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </a>
+                <a href="auth.html" class="btn-login" id="btnLogin">Sign in</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Location Selection -->
+    <div class="location-selector">
+        <div class="container">
+            <div class="selector-content">
+                <div class="selector-group">
+                    <span class="selector-label">SELECT LOCATION</span>
+                    <div class="location-buttons">
+                        <button class="location-btn active" onclick="selectLocation(this, 'hcm')">Hồ Chí Minh</button>
+                        <button class="location-btn" onclick="selectLocation(this, 'hn')">Hà Nội</button>
+                    </div>
+                </div>
+                <div class="selector-group">
+                    <span class="selector-label">CHOOSE CINEMA BRANCH</span>
+                    <select class="cinema-select">
+                        <option value="diamond">CINEMA+ District 1 - Diamond Plaza</option>
+                        <option value="hai">CINEMA+ Hải Bà Trưng</option>
+                        <option value="vincom">CINEMA+ Vincom Bình Dương</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Selection -->
+    <div class="date-selector">
+        <div class="container">
+            <div class="date-pills">
+                <div class="date-pill active" onclick="selectDate(this)">
+                    <div class="day-label">TODAY</div>
+                    <div class="date-number">24</div>
+                    <div class="month-label">May</div>
+                </div>
+                <div class="date-pill" onclick="selectDate(this)">
+                    <div class="day-label">SAT</div>
+                    <div class="date-number">25</div>
+                    <div class="month-label">May</div>
+                </div>
+                <div class="date-pill" onclick="selectDate(this)">
+                    <div class="day-label">SUN</div>
+                    <div class="date-number">26</div>
+                    <div class="month-label">May</div>
+                </div>
+                <div class="date-pill" onclick="selectDate(this)">
+                    <div class="day-label">MON</div>
+                    <div class="date-number">27</div>
+                    <div class="month-label">May</div>
+                </div>
+                <div class="date-pill" onclick="selectDate(this)">
+                    <div class="day-label">TUE</div>
+                    <div class="date-number">28</div>
+                    <div class="month-label">May</div>
+                </div>
+                <div class="date-pill" onclick="selectDate(this)">
+                    <div class="day-label">WED</div>
+                    <div class="date-number">29</div>
+                    <div class="month-label">May</div>
+                </div>
+                <div class="date-pill" onclick="selectDate(this)">
+                    <div class="day-label">THU</div>
+                    <div class="date-number">30</div>
+                    <div class="month-label">May</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Showtimes -->
+    <section class="showtimes-section">
+        <div class="container">
+            <h2 class="section-title">Available Showtimes</h2>
+
+            <!-- Showtime Card 1 -->
+            <div class="showtime-card">
+                <div class="showtime-poster">
+                    <img src="images/movie_nebula.png" alt="Nebula Ascendance">
+                </div>
+                <div class="showtime-info">
+                    <div class="movie-header">
+                        <span class="age-badge">T16</span>
+                        <span class="genre">Action, Sci-Fi</span>
+                        <span class="duration">• 142 mins</span>
+                    </div>
+                    <h3 class="showtime-title">NEBULA ASCENDANCE</h3>
+
+                    <div class="format-block">
+                        <div class="format-label">2D VIETNAMESE SUBTITLES</div>
+                        <div class="time-buttons">
+                            <button class="time-btn">09:30</button>
+                            <button class="time-btn active">12:15</button>
+                            <button class="time-btn">15:00</button>
+                            <button class="time-btn">17:45</button>
+                            <button class="time-btn">20:30</button>
+                            <button class="time-btn">23:15</button>
+                        </div>
+                    </div>
+
+                    <div class="format-block">
+                        <div class="format-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            IMAX 3D
+                        </div>
+                        <div class="time-buttons">
+                            <button class="time-btn">14:00</button>
+                            <button class="time-btn">19:30</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Showtime Card 2 -->
+            <div class="showtime-card">
+                <div class="showtime-poster">
+                    <img src="images/movie_woods.png" alt="The Whispering Woods">
+                </div>
+                <div class="showtime-info">
+                    <div class="movie-header">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="color: #f5c518;">
+                            <polygon
+                                points="12 2 15.09 10.26 23.77 10.35 17.16 16.71 19.85 25 12 19.54 4.15 25 6.84 16.71 0.23 10.35 8.91 10.26 12 2" />
+                        </svg>
+                        <span class="genre">Animation, Adventure</span>
+                        <span class="duration">• 105 mins</span>
+                    </div>
+                    <h3 class="showtime-title">THE WHISPERING WOODS</h3>
+
+                    <div class="format-block">
+                        <div class="format-label">2D DUBBED (VIETNAMESE)</div>
+                        <div class="time-buttons">
+                            <button class="time-btn">10:00</button>
+                            <button class="time-btn">11:45</button>
+                            <button class="time-btn">13:30</button>
+                            <button class="time-btn">15:15</button>
+                            <button class="time-btn">17:00</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Showtime Card 3 -->
+            <div class="showtime-card">
+                <div class="showtime-poster">
+                    <img src="images/movie_shadow.png" alt="Shadow Protocol">
+                </div>
+                <div class="showtime-info">
+                    <div class="movie-header">
+                        <span class="age-badge">T18</span>
+                        <span class="genre">Thriller, Crime</span>
+                        <span class="duration">• 118 mins</span>
+                    </div>
+                    <h3 class="showtime-title">SHADOW PROTOCOL</h3>
+
+                    <div class="format-block">
+                        <div class="format-label">2D VIETNAMESE SUBTITLES</div>
+                        <div class="time-buttons">
+                            <button class="time-btn">18:45</button>
+                            <button class="time-btn">21:15</button>
+                            <button class="time-btn">23:45</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Branch Information -->
+    <section class="branch-section">
+        <div class="container">
+            <h2 class="section-title">Branch Information</h2>
+            <div class="branch-grid">
+                <!-- Branch Card -->
+                <div class="branch-card">
+                    <h3 class="branch-name">Diamond Plaza Location</h3>
+                    <p class="branch-address">34 Le Duan Street, Ben Nghe Ward, District 1, Ho Chi Minh City. Located on
+                        the 13th Floor with panoramic city views.</p>
+                    <div class="branch-amenities">
+                        <span class="amenity" title="Parking">P</span>
+                        <span class="amenity" title="Food & Beverage">🍿</span>
+                        <span class="amenity" title="Accessibility">♿</span>
+                        <span class="amenity" title="WiFi">📶</span>
+                    </div>
+                </div>
+                <!-- Member Perks Card -->
+                <div class="perks-card">
+                    <div class="perks-icon">👑</div>
+                    <h3 class="perks-title">Member Perks</h3>
+                    <p class="perks-desc">Earn double points on every ticket booked at this branch.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div class="footer-col footer-brand">
+                <a href="index.html" class="logo">
+                    <span class="logo-d">D</span>
+                    <span class="logo-text">D-CINEMA</span>
+                </a>
+                <p>Premium cinematic experience with cutting-edge technology and immersive entertainment.</p>
+                <div class="footer-socials">
+                    <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="5" r="3" />
+                            <circle cx="6" cy="12" r="3" />
+                            <circle cx="18" cy="19" r="3" />
+                            <path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98" />
+                        </svg></a>
+                    <a href="#" aria-label="Email"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2" />
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                        </svg></a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>ABOUT</h4>
+                <a href="#">About Us</a>
+                <a href="#">Cinemas</a>
+                <a href="#">Promotions</a>
+            </div>
+            <div class="footer-col">
+                <h4>SUPPORT</h4>
+                <a href="#">Help Center</a>
+                <a href="#">Contact Us</a>
+                <a href="#">FAQ</a>
+            </div>
+            <div class="footer-col">
+                <h4>LEGAL</h4>
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Careers</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 D-CINEMA. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+    <script>
+        function selectLocation(btn, location) {
+            document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function selectDate(btn) {
+            document.querySelectorAll('.date-pill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function goToCheckout(time) {
+            window.location.href = 'checkout.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Time buttons navigate to checkout
+            document.querySelectorAll('.time-btn').forEach(btn => {
+                btn.addEventListener('click', () => goToCheckout(btn.textContent));
+            });
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                const btnLogin = document.getElementById('btnLogin');
+                if (btnLogin) {
+                    btnLogin.textContent = user.fullName || 'Account';
+                    btnLogin.onclick = (e) => { e.preventDefault(); window.location.href = 'profile.html'; };
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

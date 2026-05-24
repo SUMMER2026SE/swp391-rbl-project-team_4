@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review & Pay | D-CINEMA+</title>
+    <meta name="description" content="Complete your cinema ticket booking – Review your order and pay securely with MoMo, ZaloPay, or card.">
+    <link rel="stylesheet" href="css/checkout.css">
+</head>
+
+<body>
+
+    <!-- ── TOP NAV ── -->
+    <header class="top-nav">
+        <a href="index.html" class="nav-logo">CINEMA<span>+</span></a>
+
+        <div class="nav-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            SECURE CHECKOUT
+        </div>
+
+        <div class="nav-right">
+            <a href="#" class="nav-bell" aria-label="Notifications">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <span class="bell-dot"></span>
+            </a>
+            <div class="nav-avatar" id="navAvatar" title="My Account">U</div>
+        </div>
+    </header>
+
+    <!-- ── MAIN CHECKOUT AREA ── -->
+    <main class="checkout-wrap">
+
+        <!-- ══ LEFT COLUMN ══ -->
+        <div class="left-col">
+
+            <!-- Page heading -->
+            <div class="page-heading">
+                <a href="booking.html" class="back-btn" aria-label="Go back">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M19 12H5M12 5l-7 7 7 7"/>
+                    </svg>
+                </a>
+                <h1>Review &amp; Pay</h1>
+            </div>
+
+            <!-- ── Booking Summary Card ── -->
+            <div class="booking-summary">
+                <!-- Left: Movie info -->
+                <div class="movie-info-block">
+                    <img src="images/movie_neon_dreams.png" alt="NEON DREAMS: 2049" class="movie-thumb">
+                    <div class="movie-meta">
+                        <div class="now-showing-tag">NOW SHOWING</div>
+                        <div class="movie-title">NEON DREAMS:<br>2049</div>
+                        <div class="movie-venue">
+                            <div class="venue-row">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                Cinema 04 &bull; Hall 2
+                            </div>
+                            <div class="venue-row">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                Today, 19:30 PM
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Reservation details -->
+                <div class="reservation-block">
+                    <div class="res-label">Reservation Details</div>
+                    <div class="res-row">
+                        <span class="res-key">Seats</span>
+                        <span class="res-val" id="seatsDisplay">F12, F13, F14</span>
+                    </div>
+                    <div class="res-row">
+                        <span class="res-key">Combos</span>
+                        <span class="res-val" id="combosDisplay">2x Large Popcorn, 3x Coke</span>
+                    </div>
+                    <div class="digital-badge">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                        Digital Tickets only
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Payment Method ── -->
+            <div class="section-card">
+                <div class="section-title">Payment Method</div>
+
+                <div class="payment-grid">
+
+                    <!-- MoMo -->
+                    <div class="pay-method selected" id="method-momo" onclick="selectMethod('momo')">
+                        <div class="pay-icon icon-momo">M</div>
+                        <div class="pay-name">
+                            <strong>MoMo E-Wallet</strong>
+                            <span>Instant &amp; Secure</span>
+                        </div>
+                        <div class="pay-radio"></div>
+                    </div>
+
+                    <!-- ZaloPay -->
+                    <div class="pay-method" id="method-zalo" onclick="selectMethod('zalo')">
+                        <div class="pay-icon icon-zalo">Z</div>
+                        <div class="pay-name">
+                            <strong>ZaloPay</strong>
+                            <span>Fast Checkout</span>
+                        </div>
+                        <div class="pay-radio"></div>
+                    </div>
+
+                    <!-- Visa / Card -->
+                    <div class="pay-method" id="method-card" onclick="selectMethod('card')">
+                        <div class="pay-icon icon-card">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                        </div>
+                        <div class="pay-name">
+                            <strong>Visa / Mastercard / ATM</strong>
+                            <span>International &amp; Local Cards</span>
+                        </div>
+                        <div class="pay-radio"></div>
+                    </div>
+
+                    <!-- Card form (expands for 'card') -->
+                    <div class="card-form-panel" id="cardFormPanel">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Card Number</label>
+                                <input type="text" class="form-input" id="cardNumber"
+                                    placeholder="0000  0000  0000  0000" maxlength="19">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cardholder Name</label>
+                                <input type="text" class="form-input" id="cardName" placeholder="FULL NAME ON CARD">
+                            </div>
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label class="form-label">Expiry Date</label>
+                                    <input type="text" class="form-input" id="cardExpiry" placeholder="MM / YY" maxlength="7">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">CVV</label>
+                                    <input type="password" class="form-input" id="cardCvv" placeholder="•••" maxlength="4">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div><!-- end left-col -->
+
+        <!-- ══ RIGHT SIDEBAR ══ -->
+        <aside class="sidebar">
+
+            <!-- Voucher -->
+            <div class="voucher-box">
+                <div class="voucher-label">Voucher Code</div>
+                <div class="voucher-row">
+                    <input type="text" class="voucher-input" id="voucherInput" placeholder="Enter code">
+                    <button class="voucher-btn" id="voucherBtn" onclick="applyVoucher()">APPLY</button>
+                </div>
+                <div class="voucher-success" id="voucherSuccess">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Voucher applied! –50,000 VND
+                </div>
+            </div>
+
+            <!-- Order Total -->
+            <div class="order-box">
+                <div class="order-heading">Order Total</div>
+
+                <div class="order-line">
+                    <span class="lbl">Ticket Price (3x)</span>
+                    <span class="val" id="ticketPrice">360,000 VND</span>
+                </div>
+                <div class="order-line">
+                    <span class="lbl">Food &amp; Beverage</span>
+                    <span class="val" id="fbPrice">185,000 VND</span>
+                </div>
+                <div class="order-line">
+                    <span class="lbl">Tax (VAT 10%)</span>
+                    <span class="val" id="taxPrice">54,500 VND</span>
+                </div>
+
+                <!-- Discount line (hidden until voucher applied) -->
+                <div class="order-line discount-line" id="discountLine" style="display:none;">
+                    <span class="lbl">Voucher Discount</span>
+                    <span class="val" id="discountVal">–50,000 VND</span>
+                </div>
+
+                <div class="order-divider"></div>
+
+                <div class="order-total-row">
+                    <span class="total-lbl">Total Amount</span>
+                    <span class="total-val" id="totalAmount">599,500 VND</span>
+                </div>
+
+                <button class="btn-pay" id="btnPayNow" onclick="processPayment()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                    PAY NOW
+                </button>
+
+                <p class="pay-note">
+                    By clicking Pay Now, you agree to our
+                    <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>.
+                </p>
+            </div>
+
+            <!-- Session timer -->
+            <div class="session-bar">
+                Session expires in <strong id="sessionTimer">14:57</strong>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <!-- ── FOOTER ── -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-logo">CINEMA<span>+</span></div>
+            <div class="footer-copy">© 2024 CINEMA+ Cinemas. All rights reserved.</div>
+            <nav class="footer-links">
+                <a href="#">About Us</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Contact</a>
+                <a href="#">FAQs</a>
+            </nav>
+        </div>
+    </footer>
+
+    <!-- ── SUCCESS MODAL ── -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-box">
+            <div class="modal-icon">🎬</div>
+            <h2>Booking Confirmed!</h2>
+            <p>Your tickets for <strong>NEON DREAMS: 2049</strong> have been booked successfully.<br>
+               Digital tickets have been sent to your registered email.</p>
+            <button class="btn-modal-close" onclick="closeModal()">Back to Home</button>
+        </div>
+    </div>
+
+    <!-- ── SCRIPTS ── -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+    <script>
+    /* ─── Payment Method Selection ─── */
+    const methods = ['momo', 'zalo', 'card'];
+    let currentMethod = 'momo';
+
+    function selectMethod(id) {
+        currentMethod = id;
+        methods.forEach(m => {
+            const el = document.getElementById('method-' + m);
+            if (el) el.classList.toggle('selected', m === id);
+        });
+
+        // Toggle card form
+        const panel = document.getElementById('cardFormPanel');
+        if (panel) panel.classList.toggle('open', id === 'card');
+    }
+
+    /* ─── Voucher ─── */
+    const VALID_CODES = { 'CINEMA50': 50000, 'VIP30': 30000, 'STUDENT20': 20000 };
+    let discountAmt = 0;
+    const BASE_TOTAL = 599500;
+
+    function applyVoucher() {
+        const code = document.getElementById('voucherInput').value.trim().toUpperCase();
+        const successEl = document.getElementById('voucherSuccess');
+        const discountLine = document.getElementById('discountLine');
+        const discountVal  = document.getElementById('discountVal');
+        const totalEl      = document.getElementById('totalAmount');
+
+        if (VALID_CODES[code]) {
+            discountAmt = VALID_CODES[code];
+            successEl.style.display = 'flex';
+            successEl.textContent = `✓  Voucher applied! –${discountAmt.toLocaleString()} VND`;
+            discountLine.style.display = 'flex';
+            discountVal.textContent = `–${discountAmt.toLocaleString()} VND`;
+            totalEl.textContent = (BASE_TOTAL - discountAmt).toLocaleString() + ' VND';
+            document.getElementById('voucherInput').disabled = true;
+            document.getElementById('voucherBtn').disabled = true;
+            document.getElementById('voucherBtn').style.opacity = '0.5';
+        } else if (code === '') {
+            alert('Please enter a voucher code.');
+        } else {
+            alert('❌ Invalid voucher code. Please try again.');
+        }
+    }
+
+    /* Voucher input: Enter key */
+    document.getElementById('voucherInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') applyVoucher();
+    });
+
+    /* ─── Card number formatting ─── */
+    const cardInput = document.getElementById('cardNumber');
+    if (cardInput) {
+        cardInput.addEventListener('input', function () {
+            let v = this.value.replace(/\D/g, '').substring(0, 16);
+            this.value = v.replace(/(.{4})/g, '$1  ').trim();
+        });
+    }
+
+    const expiryInput = document.getElementById('cardExpiry');
+    if (expiryInput) {
+        expiryInput.addEventListener('input', function () {
+            let v = this.value.replace(/\D/g, '').substring(0, 4);
+            if (v.length > 2) v = v.slice(0,2) + ' / ' + v.slice(2);
+            this.value = v;
+        });
+    }
+
+    /* ─── Pay Now ─── */
+    function processPayment() {
+        if (currentMethod === 'card') {
+            const num  = (document.getElementById('cardNumber').value || '').replace(/\s/g,'');
+            const name = (document.getElementById('cardName').value || '').trim();
+            const exp  = (document.getElementById('cardExpiry').value || '').trim();
+            const cvv  = (document.getElementById('cardCvv').value || '').trim();
+            if (num.length < 16 || !name || exp.length < 7 || cvv.length < 3) {
+                alert('Please fill in all card details correctly.');
+                return;
+            }
+        }
+        const btn = document.getElementById('btnPayNow');
+        btn.disabled = true;
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-9-9"/></svg> Processing…`;
+
+        // Simulate processing → redirect to success page
+        setTimeout(() => {
+            window.location.href = 'payment-success.html';
+        }, 2200);
+    }
+
+    function closeModal() {
+        document.getElementById('successModal').classList.remove('show');
+        setTimeout(() => { window.location.href = 'index.html'; }, 300);
+    }
+
+    /* ─── Session countdown timer ─── */
+    let totalSecs = 14 * 60 + 57;
+    const timerEl = document.getElementById('sessionTimer');
+
+    const timerInterval = setInterval(() => {
+        totalSecs--;
+        if (totalSecs <= 0) {
+            clearInterval(timerInterval);
+            timerEl.textContent = '00:00';
+            timerEl.style.color = '#e50914';
+            alert('⏰ Your session has expired. Please re-select your seats.');
+            window.location.href = 'booking.html';
+            return;
+        }
+        const m = String(Math.floor(totalSecs / 60)).padStart(2, '0');
+        const s = String(totalSecs % 60).padStart(2, '0');
+        timerEl.textContent = `${m}:${s}`;
+        if (totalSecs <= 60) timerEl.style.color = '#e50914';
+    }, 1000);
+
+    /* ─── Navbar: user info ─── */
+    document.addEventListener('DOMContentLoaded', () => {
+        const userStr = localStorage.getItem('user');
+        const avatarEl = document.getElementById('navAvatar');
+        if (userStr && avatarEl) {
+            try {
+                const user = JSON.parse(userStr);
+                const initial = (user.fullName || user.email || 'U').charAt(0).toUpperCase();
+                avatarEl.textContent = initial;
+                avatarEl.title = user.fullName || user.email || 'Account';
+                avatarEl.onclick = () => window.location.href = 'profile.html';
+            } catch(e) {}
+        }
+    });
+    </script>
+
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+
+</body>
+</html>
