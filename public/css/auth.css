@@ -287,8 +287,6 @@ input {
    ═══════════════════════════════════════════════════════════ */
 .auth-form-panel {
     display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 40px;
     background: var(--bg-panel);
     overflow-y: auto;
@@ -310,6 +308,7 @@ input {
 .form-wrapper {
     width: 100%;
     max-width: 420px;
+    margin: auto;
     position: relative;
     z-index: 2;
 }

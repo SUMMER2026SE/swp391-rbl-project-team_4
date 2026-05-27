@@ -11,7 +11,7 @@
 
   // ─── Role → Page Mapping ───
   const ROLE_REDIRECTS = {
-    'Customer': 'index.html',
+    'Customer': 'profile.html',
     'Super Admin': 'admin.html',
   };
 
@@ -448,6 +448,15 @@
     } else if (password.length < 6) {
       setError(dom.regPassword, 'Mật khẩu phải có ít nhất 6 ký tự.');
       hasError = true;
+    } else if (!/^[A-Z]/.test(password)) {
+      setError(dom.regPassword, 'Chữ cái đầu tiên phải viết hoa.');
+      hasError = true;
+    } else if (!/\d/.test(password)) {
+      setError(dom.regPassword, 'Mật khẩu phải chứa ít nhất 1 chữ số.');
+      hasError = true;
+    } else if (!/[.\_!@#$%^&*()\-+=<>?]/.test(password)) {
+      setError(dom.regPassword, 'Mật khẩu phải chứa ký tự đặc biệt (VD: ., _, @).');
+      hasError = true;
     }
 
     if (!confirmPassword) {
@@ -483,13 +492,13 @@
       }
 
       // ─── Đăng ký thành công ───
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      showToast(data.message || 'Đăng ký thành công!', 'success');
+      showToast(data.message || 'Đăng ký thành công! Vui lòng đăng nhập.', 'success');
 
       setTimeout(() => {
-        window.location.href = 'index.html';
+        dom.registerForm.reset();
+        switchTab('login');
+        dom.loginEmail.value = email; // Điền sẵn email vào form đăng nhập
+        setLoading(dom.btnRegister, false);
       }, 1200);
 
     } catch (err) {

@@ -3,6 +3,7 @@
 //  Port: 9999  |  Socket.IO ready for real-time seat locking
 // ============================================================
 const express = require('express');
+require('dotenv').config();
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -25,14 +26,18 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve static files từ thư mục public/
 app.use(express.static(path.join(__dirname, 'public')));
+// Serve thư mục uploads để lấy avatar
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ─── API Routes ───────────────────────────────────────────────
 const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
 const movieRoutes = require('./routes/movieRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 app.use('/api/auth', authRoutes);     // Đăng ký, Đăng nhập
+app.use('/api/users', userRoutes);    // Thông tin người dùng (Profile)
 app.use('/api/movies', movieRoutes);    // Thông tin phim & lịch chiếu
 app.use('/api/bookings', bookingRoutes);  // Đặt vé, lịch sử, voucher
 app.use('/api/admin', adminRoutes);    // Quản lý, thống kê (chỉ Super Admin)
