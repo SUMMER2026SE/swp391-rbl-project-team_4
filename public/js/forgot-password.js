@@ -225,16 +225,31 @@
   function setupOtpBoxes() {
     dom.otpBoxes.forEach((box, idx) => {
       box.addEventListener('input', (e) => {
-        const val = e.target.value;
-        // Only allow digits
-        e.target.value = val.replace(/[^0-9]/g, '');
+        let val = e.target.value.replace(/[^0-9]/g, '');
 
-        if (e.target.value && idx < dom.otpBoxes.length - 1) {
-          dom.otpBoxes[idx + 1].focus();
+        if (e.inputType === 'insertFromPaste' || val.length >= 4) {
+          // Xử lý khi Paste hoặc Autofill mã OTP
+          let chars = val.split('');
+          for (let i = 0; i < chars.length; i++) {
+            if (idx + i < dom.otpBoxes.length) {
+              dom.otpBoxes[idx + i].value = chars[i];
+              dom.otpBoxes[idx + i].classList.add('filled');
+            }
+          }
+          let nextFocus = Math.min(idx + chars.length, dom.otpBoxes.length - 1);
+          if (val.length > 0) {
+              dom.otpBoxes[nextFocus].focus();
+          }
+        } else {
+          // Xử lý gõ bình thường hoặc lỗi bàn phím tự động điền thêm số cũ (Android bug)
+          val = val.slice(-1); // Chỉ lấy 1 số cuối cùng
+          e.target.value = val;
+          box.classList.toggle('filled', !!val);
+
+          if (val && idx < dom.otpBoxes.length - 1) {
+            dom.otpBoxes[idx + 1].focus();
+          }
         }
-
-        // Add filled class
-        box.classList.toggle('filled', !!e.target.value);
       });
 
       box.addEventListener('keydown', (e) => {

@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const { getPool, sql } = require('../config/db');
 const { sendOTPEmail } = require('../services/emailService');
-const { sendOTPSms } = require('../services/smsService');
 
 // Giả định bạn đã export JWT_SECRET từ authMiddleware hoặc process.env
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
