@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết khuyến mãi | D-CINEMA</title>
+    <meta name="description" content="Chi tiết chương trình khuyến mãi và ưu đãi từ D-CINEMA.">
+    <link rel="stylesheet" href="css/shared-layout.css">
+    <style>
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .promo-detail-hero {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            padding-bottom: 40px;
+            margin-top: 70px; /* offset navbar */
+        }
+        
+        .promo-detail-hero img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(10,10,12,1) 0%, rgba(10,10,12,0.6) 50%, rgba(10,10,12,0.2) 100%);
+            z-index: 2;
+        }
+
+        .promo-detail-container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            padding: 0 20px;
+        }
+        
+        .pd-badge {
+            display: inline-block;
+            background-color: var(--accent);
+            color: #fff;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            letter-spacing: 0.05em;
+        }
+        
+        .pd-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+        
+        .pd-meta {
+            display: flex;
+            gap: 24px;
+            color: var(--text2);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .pd-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pd-content-section {
+            max-width: 900px;
+            margin: 40px auto 80px;
+            padding: 0 20px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #d1d5db;
+        }
+
+        .pd-content-section h2 {
+            color: #fff;
+            font-size: 1.5rem;
+            margin-top: 32px;
+            margin-bottom: 16px;
+        }
+
+        .pd-content-section ul {
+            padding-left: 20px;
+            margin-bottom: 24px;
+        }
+
+        .pd-content-section li {
+            margin-bottom: 8px;
+        }
+
+        .voucher-box {
+            background-color: var(--surface);
+            border: 1px dashed var(--accent);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .voucher-code {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            margin: 16px 0;
+            padding: 10px 20px;
+            background: rgba(232, 25, 44, 0.1);
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .btn-copy {
+            background-color: #fff;
+            color: var(--bg);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-copy:hover {
+            background-color: var(--accent);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-d">D</span>
+                <span class="logo-text">D-CINEMA</span>
+            </a>
+            <nav class="nav-links">
+                <a href="movies.html" id="nav-phim">Phim</a>
+                <a href="booking.html" id="nav-rap">Rạp</a>
+                <a href="promotions.html" id="nav-promo" class="active">Promotions</a>
+            </nav>
+            <div class="nav-actions">
+                <div class="search-box">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                </div>
+                <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </a>
+                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <div class="promo-detail-hero">
+        <img src="images/promo_voucher.png" alt="Promo Background" onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'">
+        <div class="hero-overlay"></div>
+        <div class="promo-detail-container">
+            <span class="pd-badge">HOT DEAL</span>
+            <h1 class="pd-title">Tặng ngay Voucher 50K khi mua Combo Bắp Nước</h1>
+            <div class="pd-meta">
+                <div class="pd-meta-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    Hạn sử dụng: 31/12/2024
+                </div>
+                <div class="pd-meta-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                        <path d="M12 9v6"/>
+                    </svg>
+                    Áp dụng: Mua vé Online
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="pd-content-section">
+        <p>Tháng này, D-CINEMA mang đến chương trình ưu đãi cực kỳ hấp dẫn dành riêng cho các tín đồ điện ảnh. Khi bạn đặt vé online và mua kèm bất kỳ Combo Bắp Nước nào (Combo 1, Combo 2, Mega Combo), bạn sẽ được giảm ngay 50.000 VNĐ vào tổng hóa đơn thanh toán.</p>
+        
+        <h2>Điều kiện áp dụng:</h2>
+        <ul>
+            <li>Khách hàng phải có tài khoản thành viên tại hệ thống D-CINEMA.</li>
+            <li>Giao dịch phải bao gồm ít nhất 01 vé xem phim và 01 Combo F&B.</li>
+            <li>Mã giảm giá chỉ áp dụng cho hình thức đặt vé và thanh toán Online.</li>
+            <li>Mỗi tài khoản được sử dụng mã tối đa 01 lần trong suốt thời gian diễn ra chương trình.</li>
+            <li>Không áp dụng đồng thời với các chương trình khuyến mãi khác.</li>
+        </ul>
+
+        <h2>Hướng dẫn sử dụng:</h2>
+        <p>Sau khi chọn xong suất chiếu, ghế ngồi và bắp nước, tại màn hình Thanh toán (Checkout), bạn chỉ cần nhập mã Voucher dưới đây vào ô "Mã giảm giá" và nhấn Áp dụng. Tổng tiền sẽ tự động được trừ 50K nếu thỏa mãn đủ điều kiện.</p>
+
+        <div class="voucher-box">
+            <p style="margin:0; color: var(--text2); font-weight: 500;">Sử dụng mã này khi thanh toán:</p>
+            <div class="voucher-code" id="vcode">DCINEMA50K</div>
+            <br>
+            <button class="btn-copy" onclick="copyVoucher()">Sao chép mã</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="margin-top: auto; border-top: 1px solid var(--border); padding: 40px 0; background-color: var(--surface);">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+            <div>
+                <a href="index.html" class="logo" style="margin-bottom: 10px; display: inline-flex;">
+                    <span class="logo-d">D</span>
+                    <span class="logo-text">D-CINEMA</span>
+                </a>
+                <p style="color: var(--text2); font-size: 0.9rem;">&copy; 2024 D-CINEMA. All rights reserved.</p>
+            </div>
+            <div style="display: flex; gap: 20px;">
+                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Về chúng tôi</a>
+                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Điều khoản</a>
+                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Bảo mật</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script>
+        function copyVoucher() {
+            const code = document.getElementById('vcode').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.btn-copy');
+                const origText = btn.innerText;
+                btn.innerText = "Đã chép!";
+                btn.style.backgroundColor = "var(--accent)";
+                btn.style.color = "#fff";
+                setTimeout(() => {
+                    btn.innerText = origText;
+                    btn.style.backgroundColor = "#fff";
+                    btn.style.color = "var(--bg)";
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
