@@ -19,7 +19,13 @@
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <a href="movies.html" id="nav-phim" class="active">Phim</a>
+                <div class="dropdown">
+                    <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
+                    <div class="dropdown-menu">
+                        <a href="movies.html?status=showing" class="dropdown-item">Phim Đang Chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item">Phim Sắp Chiếu</a>
+                    </div>
+                </div>
                 <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
@@ -45,6 +51,8 @@
 
     <!-- Hero Banner -->
     <section class="hero">
+        <div class="hero-bg zoom-animate"></div>
+        <div class="hero-overlay"></div>
         <div class="hero-content">
             <span class="hero-badge">PHIM ĐANG CHIẾU</span>
             <h1 class="hero-title">DUNE: PART TWO</h1>
@@ -62,15 +70,11 @@
                 <button class="btn-secondary" onclick="window.location.href='booking.html'">ĐẶT VÉ</button>
             </div>
         </div>
-        <div class="hero-dots">
-            <span class="dot active"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-        </div>
+        <div class="hero-dots"></div>
     </section>
 
     <!-- Phim Đang Chiếu (Dark Section) -->
-    <section class="section-dark">
+    <section class="section-dark" id="now-showing">
         <div class="container">
             <div class="section-header">
                 <h2>PHIM ĐANG CHIẾU</h2>
@@ -210,7 +214,7 @@
     </section>
 
     <!-- Phim Sắp Chiếu (Light Section) -->
-    <section class="section-light">
+    <section class="section-light" id="coming-soon">
         <div class="container">
             <div class="section-header" style="flex-direction: column; align-items: flex-start;">
                 <h2>PHIM SẮP CHIẾU</h2>
@@ -367,8 +371,176 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>
     <script>
-        // Check login state for navbar
+        // Hero Slider Slideshow logic
+        const heroSlides = [
+            {
+                title: "DUNE: PART TWO",
+                image: "images/dune_hero.png",
+                rating: "★ 9.2",
+                year: "2024",
+                duration: "166 phút",
+                genres: "Hành động, Viễn tưởng",
+                desc: "Paul Atreides hợp nhất với Chani và người Fremen khi đang trên con đường trả thù những kẻ đã hủy hoại gia đình anh. Đối mặt với sự lựa chọn giữa tình yêu của đời mình và số phận của vũ trụ, anh cố gắng ngăn chặn một tương lai...",
+                detailUrl: "movie-detail.html?id=7",
+                bookingUrl: "booking.html?movieId=7"
+            },
+            {
+                title: "DORAEMON: BẢN GIAO HƯỞNG",
+                image: "images/doraemon_orchestra.png",
+                rating: "★ 8.5",
+                year: "2026",
+                duration: "115 phút",
+                genres: "Hoạt hình, Phiêu lưu",
+                desc: "Nobita và những người bạn cùng tham gia vào một cuộc phiêu lưu âm nhạc kỳ thú để giải cứu Trái Đất khỏi hiểm họa diệt vong bằng sức mạnh của những bản giao hưởng kỳ diệu.",
+                detailUrl: "movie-detail.html?id=1",
+                bookingUrl: "booking.html?movieId=1"
+            },
+            {
+                title: "HÀNH TINH KHỈ: VƯƠNG QUỐC",
+                image: "images/ai_forest.png",
+                rating: "★ 8.0",
+                year: "2026",
+                duration: "145 phút",
+                genres: "Hành động, Viễn tưởng",
+                desc: "Nhiều năm sau thời đại của Caesar, một vị vua khỉ độc tài xây dựng đế chế mới, trong khi một chú khỉ trẻ dấn thân vào hành trình định đoạt tương lai của cả khỉ và con người.",
+                detailUrl: "movie-detail.html?id=3",
+                bookingUrl: "booking.html?movieId=3"
+            },
+            {
+                title: "SIÊU COMBO BẮP NƯỚC",
+                image: "images/popcorn_drink_banner.png",
+                rating: "★ 9.9",
+                year: "2026",
+                duration: "Ưu đãi giới hạn",
+                genres: "Concessions, Food & Drinks",
+                desc: "Thưởng thức trọn vẹn từng khoảnh khắc điện ảnh với siêu combo bỏng ngô bơ thơm ngon giòn rụm cùng nước ngọt mát lạnh sảng khoái. Đặt combo Couple hoặc Mega ngay hôm nay để nhận ưu đãi cực hời!",
+                detailUrl: "concessions.html",
+                bookingUrl: "concessions.html"
+            },
+            {
+                title: "LẬT MẶT 7: MỘT ĐIỀU ƯỚC",
+                image: "images/lat_mat_7.png",
+                rating: "★ 8.8",
+                year: "2026",
+                duration: "138 phút",
+                genres: "Tâm lý, Gia đình",
+                desc: "Bộ phim đầy xúc cảm về gia đình của đạo diễn Lý Hải, xoay quanh câu chuyện của người mẹ tảo tần cả đời vì con cái và hành trình của những người con tìm về mái ấm gia đình ấm áp.",
+                detailUrl: "movie-detail.html?id=11",
+                bookingUrl: "booking.html?movieId=11"
+            },
+            {
+                title: "DEADPOOL & WOLVERINE",
+                image: "images/deadpool_wolverine.png",
+                rating: "★ 8.9",
+                year: "2026",
+                duration: "127 phút",
+                genres: "Hành động, Hài hước",
+                desc: "Cặp đôi phản anh hùng lầy lội và phá phách bậc nhất của vũ trụ điện ảnh Marvel cùng đồng hành trong một chuyến hành trình điên rồ xuyên thời gian để cứu lấy quê nhà của họ.",
+                detailUrl: "movie-detail.html?id=2",
+                bookingUrl: "booking.html?movieId=2"
+            }
+        ];
+
+        let currentSlideIdx = 0;
+        let slideInterval = null;
+
+        function showSlide(idx) {
+            const heroBg = document.querySelector('.hero-bg');
+            const content = document.querySelector('.hero-content');
+            const titleEl = document.querySelector('.hero-title');
+            const descEl  = document.querySelector('.hero-desc');
+            const metaSpans = document.querySelectorAll('.hero-meta span');
+            const badgeEl = document.querySelector('.hero-badge');
+            const actionBtnDetail = document.querySelector('.hero-actions .btn-primary');
+            const actionBtnBook = document.querySelector('.hero-actions .btn-secondary');
+            const dots = document.querySelectorAll('.hero-dots .dot');
+
+            currentSlideIdx = idx;
+
+            // Trigger staggered fade out
+            if (content) content.classList.remove('active');
+
+            setTimeout(() => {
+                const slide = heroSlides[idx];
+                
+                // Update background and reset Ken Burns animation
+                if (heroBg) {
+                    heroBg.classList.remove('zoom-animate');
+                    void heroBg.offsetWidth; // force reflow
+                    heroBg.style.backgroundImage = `url('${slide.image}')`;
+                    heroBg.classList.add('zoom-animate');
+                }
+
+                // Update text
+                if (titleEl) titleEl.textContent = slide.title;
+                if (descEl) descEl.textContent = slide.desc;
+                
+                if (badgeEl) {
+                    if (slide.genres.includes("Concessions")) {
+                        badgeEl.textContent = "ƯU ĐÃI ĐẶC BIỆT";
+                        badgeEl.style.background = "#e50914";
+                    } else {
+                        badgeEl.textContent = "PHIM ĐANG CHIẾU";
+                        badgeEl.style.background = "var(--primary)";
+                    }
+                }
+                
+                // Meta updates
+                if (metaSpans && metaSpans.length >= 4) {
+                    metaSpans[0].innerHTML = `<span class="hero-rating">${slide.rating}</span>`;
+                    metaSpans[1].textContent = slide.year;
+                    metaSpans[2].textContent = slide.duration;
+                    metaSpans[3].textContent = slide.genres;
+                }
+                
+                // Actions (Details / Book Buttons)
+                if (actionBtnDetail) {
+                    if (slide.genres.includes("Concessions")) {
+                        actionBtnDetail.innerHTML = "🍿 BẮP & NƯỚC";
+                    } else {
+                        actionBtnDetail.innerHTML = "🎬 CHI TIẾT";
+                    }
+                    actionBtnDetail.setAttribute('onclick', `window.location.href='${slide.detailUrl}'`);
+                }
+
+                if (actionBtnBook) {
+                    if (slide.genres.includes("Concessions")) {
+                        actionBtnBook.textContent = "XEM ƯU ĐÃI";
+                    } else {
+                        actionBtnBook.textContent = "ĐẶT VÉ";
+                    }
+                    actionBtnBook.setAttribute('onclick', `window.location.href='${slide.bookingUrl}'`);
+                }
+
+                // Update dots active class
+                if (dots) {
+                    dots.forEach((dot, dIdx) => {
+                        if (dIdx === idx) dot.classList.add('active');
+                        else dot.classList.remove('active');
+                    });
+                }
+
+                // Staggered slide in
+                if (content) content.classList.add('active');
+            }, 350);
+        }
+
+        function nextSlide() {
+            let next = (currentSlideIdx + 1) % heroSlides.length;
+            showSlide(next);
+        }
+
+        function startAutoplay() {
+            stopAutoplay();
+            slideInterval = setInterval(nextSlide, 6000); // Transition every 6 seconds
+        }
+
+        function stopAutoplay() {
+            if (slideInterval) clearInterval(slideInterval);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Check login state for navbar
             const userStr = localStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
@@ -378,6 +550,27 @@
                     btnLogin.href = 'profile.html';
                 }
             }
+
+            // Dynamically generate dot indicators
+            const dotsContainer = document.querySelector('.hero-dots');
+            if (dotsContainer) {
+                dotsContainer.innerHTML = '';
+                heroSlides.forEach((_, idx) => {
+                    const dot = document.createElement('span');
+                    dot.className = `dot${idx === 0 ? ' active' : ''}`;
+                    dot.addEventListener('click', () => {
+                        showSlide(idx);
+                        startAutoplay(); // Reset timer on click
+                    });
+                    dotsContainer.appendChild(dot);
+                });
+            }
+
+            // Immediately load first slide (Dune) with correct animations on startup
+            showSlide(0);
+
+            // Start autoplay transitions
+            startAutoplay();
         });
     </script>
 </body>

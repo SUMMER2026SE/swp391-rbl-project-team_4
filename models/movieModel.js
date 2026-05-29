@@ -4,11 +4,14 @@ class MovieModel {
   static async getNowShowing() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT MovieID, Title, Genre, Duration, Rating, Description,
-             PosterURL, TrailerURL, ReleaseDate, Status
-      FROM   Movies
-      WHERE  Status = 'now-showing'
-      ORDER BY ReleaseDate DESC
+      SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating, m.TrailerURL, m.PosterURL, m.Status,
+             (SELECT STRING_AGG(g.GenreName, ', ') 
+              FROM Movie_Genres mg 
+              JOIN Genres g ON mg.GenreID = g.GenreID 
+              WHERE mg.MovieID = m.MovieID) AS Genre
+      FROM   Movies m
+      WHERE  m.Status = 'now-showing'
+      ORDER BY m.MovieID DESC
     `);
     return result.recordset;
   }
@@ -16,11 +19,14 @@ class MovieModel {
   static async getComingSoon() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT MovieID, Title, Genre, Duration, Rating, Description,
-             PosterURL, TrailerURL, ReleaseDate, Status
-      FROM   Movies
-      WHERE  Status = 'coming-soon'
-      ORDER BY ReleaseDate ASC
+      SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating, m.TrailerURL, m.PosterURL, m.Status,
+             (SELECT STRING_AGG(g.GenreName, ', ') 
+              FROM Movie_Genres mg 
+              JOIN Genres g ON mg.GenreID = g.GenreID 
+              WHERE mg.MovieID = m.MovieID) AS Genre
+      FROM   Movies m
+      WHERE  m.Status = 'coming-soon'
+      ORDER BY m.MovieID ASC
     `);
     return result.recordset;
   }
@@ -32,23 +38,26 @@ class MovieModel {
     let whereClause = 'WHERE 1=1';
     if (status) {
       request.input('status', sql.NVarChar, status);
-      whereClause += ' AND Status = @status';
+      whereClause += ' AND m.Status = @status';
     }
     if (genre) {
       request.input('genre', sql.NVarChar, genre);
-      whereClause += ' AND Genre = @genre';
+      whereClause += ' AND EXISTS (SELECT 1 FROM Movie_Genres mg2 JOIN Genres g2 ON mg2.GenreID = g2.GenreID WHERE mg2.MovieID = m.MovieID AND g2.GenreName = @genre)';
     }
     if (search) {
       request.input('search', sql.NVarChar, `%${search}%`);
-      whereClause += ' AND Title LIKE @search';
+      whereClause += ' AND m.Title LIKE @search';
     }
 
     const result = await request.query(`
-      SELECT MovieID, Title, Genre, Duration, Rating, Description,
-             PosterURL, TrailerURL, ReleaseDate, Status
-      FROM   Movies
+      SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating, m.TrailerURL, m.PosterURL, m.Status,
+             (SELECT STRING_AGG(g.GenreName, ', ') 
+              FROM Movie_Genres mg 
+              JOIN Genres g ON mg.GenreID = g.GenreID 
+              WHERE mg.MovieID = m.MovieID) AS Genre
+      FROM   Movies m
       ${whereClause}
-      ORDER BY ReleaseDate DESC
+      ORDER BY m.MovieID DESC
     `);
     return result.recordset;
   }
@@ -58,10 +67,13 @@ class MovieModel {
     const result = await pool.request()
       .input('movieId', sql.Int, parseInt(movieId))
       .query(`
-        SELECT MovieID, Title, Genre, Duration, Rating, Description,
-               PosterURL, TrailerURL, ReleaseDate, Status
-        FROM   Movies
-        WHERE  MovieID = @movieId
+        SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating, m.TrailerURL, m.PosterURL, m.Status,
+               (SELECT STRING_AGG(g.GenreName, ', ') 
+                FROM Movie_Genres mg 
+                JOIN Genres g ON mg.GenreID = g.GenreID 
+                WHERE mg.MovieID = m.MovieID) AS Genre
+        FROM   Movies m
+        WHERE  m.MovieID = @movieId
       `);
     return result.recordset.length > 0 ? result.recordset[0] : null;
   }

@@ -18,7 +18,13 @@
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <a href="movies.html" id="nav-phim" class="active">Phim</a>
+                <div class="dropdown">
+                    <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
+                    <div class="dropdown-menu">
+                        <a href="movies.html?status=showing" class="dropdown-item">Phim Đang Chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item">Phim Sắp Chiếu</a>
+                    </div>
+                </div>
                 <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
@@ -54,7 +60,7 @@
                     <h4 class="filter-header">GENRES</h4>
                     <div class="filter-list">
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="action" checked>
+                            <input type="checkbox" name="genre" value="action">
                             <span class="filter-checkbox"></span>
                             <span class="filter-label">Action</span>
                         </label>
@@ -86,7 +92,7 @@
                     <h4 class="filter-header">FORMATS</h4>
                     <div class="filter-list">
                         <label class="filter-item">
-                            <input type="checkbox" name="format" value="2d" checked>
+                            <input type="checkbox" name="format" value="2d">
                             <span class="filter-checkbox"></span>
                             <span class="filter-label">2D</span>
                         </label>
@@ -96,7 +102,7 @@
                             <span class="filter-label">3D</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="format" value="imax" checked>
+                            <input type="checkbox" name="format" value="imax">
                             <span class="filter-checkbox"></span>
                             <span class="filter-label">IMAX</span>
                         </label>
@@ -107,173 +113,34 @@
 
         <!-- Main Content: Movies -->
         <main class="movies-main">
-            <!-- Header: Title & Sort -->
-            <div class="movies-header">
-                <h2 class="movies-title">Now Showing</h2>
+            <!-- Breadcrumbs -->
+            <div class="movies-breadcrumbs">
+                <a href="index.html">Trang chủ</a> &gt; <span>Phim</span> &gt; <span id="breadcrumb-status">Phim Đang Chiếu</span>
+            </div>
+
+            <!-- Header: Title & Tabs -->
+            <div class="movies-title-tabs">
+                <a href="movies.html?status=showing" id="tab-showing" class="tab-title active">Phim Đang Chiếu</a>
+                <a href="movies.html?status=coming" id="tab-coming" class="tab-title">Phim Sắp Chiếu</a>
+            </div>
+
+            <!-- Sorting & Search info header -->
+            <div class="movies-header" style="margin-bottom: 20px;">
+                <h3 id="current-view-title" style="font-size: 1.2rem; font-weight: 700; text-transform: uppercase;">Phim Đang Chiếu</h3>
                 <div class="sort-container">
-                    <label for="sortSelect">Sort by:</label>
+                    <label for="sortSelect">Sắp xếp theo:</label>
                     <select id="sortSelect" class="sort-select">
-                        <option value="popular" selected>Most Popular</option>
-                        <option value="rating">Highest Rated</option>
-                        <option value="newest">Newest</option>
-                        <option value="title">Title (A-Z)</option>
+                        <option value="popular" selected>Phổ biến nhất</option>
+                        <option value="rating">Đánh giá cao nhất</option>
+                        <option value="newest">Mới nhất</option>
+                        <option value="title">Tiêu đề (A-Z)</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Movies Grid -->
-            <div class="movies-grid">
-                <!-- Movie Card 1 -->
-                <div class="movie-card">
-                    <div class="movie-poster">
-                        <span class="rating-badge">T16</span>
-                        <img src="images/movie_cyberhorizon.png" alt="Cyber Horizon">
-                        <div class="movie-overlay">
-                            <button class="btn-tickets" onclick="window.location.href='movie-detail.html'">Get
-                                Tickets</button>
-                        </div>
-                    </div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Cyber Hori...</h3>
-                        <div class="movie-rating">
-                            <span class="stars">★ 4.9</span>
-                            <span class="genres">Sci-Fi, Action</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Movie Card 2 -->
-                <div class="movie-card">
-                    <div class="movie-poster">
-                        <span class="rating-badge age-t13">T13</span>
-                        <img src="images/movie_gilded.png" alt="The Gilded Path">
-                        <div class="movie-overlay">
-                            <button class="btn-tickets" onclick="window.location.href='movie-detail.html'">Get
-                                Tickets</button>
-                        </div>
-                    </div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">The Gilded ...</h3>
-                        <div class="movie-rating">
-                            <span class="stars">★ 4.7</span>
-                            <span class="genres">Fantasy, Adventure</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Movie Card 3 -->
-                <div class="movie-card">
-                    <div class="movie-poster">
-                        <span class="rating-badge age-t16">T16</span>
-                        <img src="images/movie_midnight.png" alt="Midnight Encounter">
-                        <div class="movie-overlay">
-                            <button class="btn-tickets" onclick="window.location.href='movie-detail.html'">Get
-                                Tickets</button>
-                        </div>
-                    </div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Midnight E...</h3>
-                        <div class="movie-rating">
-                            <span class="stars">★ 4.8</span>
-                            <span class="genres">Thriller, Mystery</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Movie Card 4 -->
-                <div class="movie-card">
-                    <div class="movie-poster">
-                        <span class="rating-badge age-all">ALL</span>
-                        <img src="images/movie_skybound.png" alt="Skybound Dreams">
-                        <div class="movie-overlay">
-                            <button class="btn-tickets" onclick="window.location.href='movie-detail.html'">Get
-                                Tickets</button>
-                        </div>
-                    </div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Skybound ...</h3>
-                        <div class="movie-rating">
-                            <span class="stars">★ 4.8</span>
-                            <span class="genres">Animation, Family</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Movie Card 5 -->
-                <div class="movie-card">
-                    <div class="movie-poster">
-                        <span class="rating-badge age-t16">T16</span>
-                        <img src="images/movie_laststand.png" alt="Last Stand">
-                        <div class="movie-overlay">
-                            <button class="btn-tickets" onclick="window.location.href='movie-detail.html'">Get
-                                Tickets</button>
-                        </div>
-                    </div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Last Stand</h3>
-                        <div class="movie-rating">
-                            <span class="stars">★ 4.6</span>
-                            <span class="genres">War, Drama</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Movie Card 6 -->
-                <div class="movie-card">
-                    <div class="movie-poster">
-                        <span class="rating-badge age-t13">T13</span>
-                        <img src="images/movie_laughter.png" alt="Laughter Lines">
-                        <div class="movie-overlay">
-                            <button class="btn-tickets" onclick="window.location.href='movie-detail.html'">Get
-                                Tickets</button>
-                        </div>
-                    </div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Laughter L...</h3>
-                        <div class="movie-rating">
-                            <span class="stars">★ 4.2</span>
-                            <span class="genres">Comedy, Romance</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Movie Card 7 -->
-                <div class="movie-card">
-                    <div class="movie-poster">
-                        <span class="rating-badge age-t16">T16</span>
-                        <img src="images/movie_shadows.png" alt="Shadows of Noir">
-                        <div class="movie-overlay">
-                            <button class="btn-tickets" onclick="window.location.href='movie-detail.html'">Get
-                                Tickets</button>
-                        </div>
-                    </div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Shadows o...</h3>
-                        <div class="movie-rating">
-                            <span class="stars">★ 4.9</span>
-                            <span class="genres">Crime, Noir</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Movie Card 8 -->
-                <div class="movie-card">
-                    <div class="movie-poster">
-                        <span class="rating-badge age-t13">T13</span>
-                        <img src="images/movie_velocity.png" alt="Velocity Pro">
-                        <div class="movie-overlay">
-                            <button class="btn-tickets" onclick="window.location.href='movie-detail.html'">Get
-                                Tickets</button>
-                        </div>
-                    </div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Velocity Pr...</h3>
-                        <div class="movie-rating">
-                            <span class="stars">★ 4.4</span>
-                            <span class="genres">Racing, Hass</span>
-                        </div>
-                    </div>
-                </div>
+            <!-- Movies Grid (Dynamic) -->
+            <div class="movies-grid" id="movies-grid">
+                <!-- Cards will be dynamically rendered here by JavaScript -->
             </div>
 
             <!-- Pagination -->
@@ -356,17 +223,676 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>
     <script>
-        // Pagination
-        function previousPage() {
-            console.log('Previous page');
+        // Mock data fallback matching CGV layout (20 movies each)
+        const mockMoviesNowShowing = [
+            {
+                id: 1,
+                title: "Doraemon: Nobita và Bản Giao Hưởng Địa Cầu",
+                rating: "P",
+                image: "images/doraemon_orchestra.png",
+                genre: "Hoạt Hình, Gia Đình, Phiêu Lưu",
+                duration: "115 phút",
+                releaseDate: "2026-05-24",
+                stars: "8.5",
+                popularScore: 100,
+                ranking: 1
+            },
+            {
+                id: 2,
+                title: "Tạm Biệt Gohan",
+                rating: "K",
+                image: "images/tam_biet_gohan.png",
+                genre: "Gia đình, Drama",
+                duration: "105 phút",
+                releaseDate: "2026-05-15",
+                stars: "9.0",
+                popularScore: 98,
+                ranking: 2
+            },
+            {
+                id: 3,
+                title: "Ngôi Đền Kỳ Quái 5",
+                rating: "T16",
+                image: "images/ngoi_den_ky_quai_5.png",
+                genre: "Hài, Kinh Dị",
+                duration: "110 phút",
+                releaseDate: "2026-05-28",
+                stars: "7.8",
+                popularScore: 95,
+                ranking: 3
+            },
+            {
+                id: 4,
+                title: "Star Wars: Mandalorian và Grogu",
+                rating: "T13",
+                image: "images/mandalorian_grogu.png",
+                genre: "Hành Động, Khoa Học Viễn Tưởng",
+                duration: "120 phút",
+                releaseDate: "2026-05-29",
+                stars: "8.8",
+                popularScore: 92
+            },
+            {
+                id: 5,
+                title: "Interstellar: Hành Trình Giữa Các Vì Sao",
+                rating: "T13",
+                image: "images/movie_interstellar.png",
+                genre: "Drama, Khoa Học Viễn Tưởng",
+                duration: "169 phút",
+                releaseDate: "2026-05-10",
+                stars: "9.1",
+                popularScore: 90
+            },
+            {
+                id: 6,
+                title: "Oppenheimer: Kẻ Hủy Diệt Thế Giới",
+                rating: "T18",
+                image: "images/movie_oppenheimer.png",
+                genre: "Drama, Lịch Sử",
+                duration: "180 phút",
+                releaseDate: "2026-05-12",
+                stars: "8.9",
+                popularScore: 88
+            },
+            {
+                id: 7,
+                title: "Dune: Hành Tinh Cát - Phần 2",
+                rating: "T13",
+                image: "images/dune_poster.png",
+                genre: "Hành Động, Khoa Học Viễn Tưởng",
+                duration: "166 phút",
+                releaseDate: "2026-05-20",
+                stars: "9.0",
+                popularScore: 86
+            },
+            {
+                id: 8,
+                title: "Neon Dreams: Ánh Sáng Đô Thị",
+                rating: "T16",
+                image: "images/movie_neon_dreams.png",
+                genre: "Hành Động, Viễn Tưởng",
+                duration: "115 phút",
+                releaseDate: "2026-05-18",
+                stars: "7.6",
+                popularScore: 84
+            },
+            {
+                id: 9,
+                title: "Velocity: Tốc Độ Kinh Hoàng",
+                rating: "T16",
+                image: "images/movie_velocity.png",
+                genre: "Hành Động, Giật Gân",
+                duration: "128 phút",
+                releaseDate: "2026-05-11",
+                stars: "7.9",
+                popularScore: 82
+            },
+            {
+                id: 10,
+                title: "Last Noir: Vụ Án Cuối Cùng",
+                rating: "T18",
+                image: "images/movie_lastnoir.png",
+                genre: "Drama, Hình Sự",
+                duration: "135 phút",
+                releaseDate: "2026-05-08",
+                stars: "8.2",
+                popularScore: 80
+            },
+            {
+                id: 11,
+                title: "Summer Echoes: Tiếng Vọng Mùa Hè",
+                rating: "P",
+                image: "images/movie_summer_echoes.png",
+                genre: "Drama, Lãng Mạn",
+                duration: "98 phút",
+                releaseDate: "2026-05-06",
+                stars: "8.1",
+                popularScore: 78
+            },
+            {
+                id: 12,
+                title: "Odyssey: Cuộc Phiêu Lưu Vũ Trụ",
+                rating: "P",
+                image: "images/movie_odyssey.png",
+                genre: "Hoạt Hình, Phiêu Lưu",
+                duration: "95 phút",
+                releaseDate: "2026-05-02",
+                stars: "8.4",
+                popularScore: 76
+            },
+            {
+                id: 13,
+                title: "Silent Alley: Hẻm Vắng",
+                rating: "T16",
+                image: "images/movie_silent_alley.png",
+                genre: "Kinh Dị, Giật Gân",
+                duration: "102 phút",
+                releaseDate: "2026-04-28",
+                stars: "7.2",
+                popularScore: 74
+            },
+            {
+                id: 14,
+                title: "Nebula: Tinh Vân Kỳ Bí",
+                rating: "T13",
+                image: "images/movie_nebula.png",
+                genre: "Hành Động, Khoa Học Viễn Tưởng",
+                duration: "125 phút",
+                releaseDate: "2026-04-20",
+                stars: "8.0",
+                popularScore: 72
+            },
+            {
+                id: 15,
+                title: "Doraemon: Cuộc Chiến Vũ Trụ Tí Hon",
+                rating: "P",
+                image: "images/doraemon_orchestra.png",
+                genre: "Hoạt Hình, Gia Đình, Phiêu Lưu",
+                duration: "110 phút",
+                releaseDate: "2026-04-15",
+                stars: "8.3",
+                popularScore: 70
+            },
+            {
+                id: 16,
+                title: "Pee Nak 4: Ngôi Đền Kỳ Quái 4",
+                rating: "T16",
+                image: "images/ngoi_den_ky_quai_5.png",
+                genre: "Hài, Kinh Dị",
+                duration: "112 phút",
+                releaseDate: "2026-04-10",
+                stars: "7.5",
+                popularScore: 68
+            },
+            {
+                id: 17,
+                title: "The Mandalorian: Phần 3",
+                rating: "T13",
+                image: "images/mandalorian_grogu.png",
+                genre: "Hành Động, Khoa Học Viễn Tưởng",
+                duration: "140 phút",
+                releaseDate: "2026-04-05",
+                stars: "8.6",
+                popularScore: 66
+            },
+            {
+                id: 18,
+                title: "Gohan: Người Bạn Bốn Chân",
+                rating: "K",
+                image: "images/tam_biet_gohan.png",
+                genre: "Gia đình, Drama",
+                duration: "100 phút",
+                releaseDate: "2026-04-01",
+                stars: "8.8",
+                popularScore: 64
+            },
+            {
+                id: 19,
+                title: "Kẻ Hủy Diệt: Kỷ Nguyên Mới",
+                rating: "T18",
+                image: "images/movie_oppenheimer.png",
+                genre: "Hành Động, Khoa Học Viễn Tưởng",
+                duration: "135 phút",
+                releaseDate: "2026-03-25",
+                stars: "7.7",
+                popularScore: 60
+            },
+            {
+                id: 20,
+                title: "Trại Chiến Binh",
+                rating: "T16",
+                image: "images/movie_velocity.png",
+                genre: "Hành Động, Giật Gân",
+                duration: "118 phút",
+                releaseDate: "2026-03-20",
+                stars: "7.4",
+                popularScore: 55
+            }
+        ];
+
+        const mockMoviesComingSoon = [
+            {
+                id: 21,
+                title: "Lật Mặt 7: Một Điều Ước",
+                rating: "T13",
+                image: "images/lat_mat_7.png",
+                genre: "Drama, Gia Đình",
+                duration: "138 phút",
+                releaseDate: "2026-06-15",
+                stars: "9.2",
+                popularScore: 100
+            },
+            {
+                id: 22,
+                title: "Deadpool & Wolverine",
+                rating: "T18",
+                image: "images/deadpool_wolverine.png",
+                genre: "Hành Động, Hài, Khoa Học Viễn Tưởng",
+                duration: "127 phút",
+                releaseDate: "2026-07-26",
+                stars: "9.0",
+                popularScore: 98
+            },
+            {
+                id: 23,
+                title: "Inside Out 2 (Những Mảnh Thế Giới Cảm Xúc 2)",
+                rating: "P",
+                image: "images/movie_summer_echoes.png",
+                genre: "Hoạt Hình, Gia Đình, Hài",
+                duration: "96 phút",
+                releaseDate: "2026-06-14",
+                stars: "8.9",
+                popularScore: 95
+            },
+            {
+                id: 24,
+                title: "Despicable Me 4 (Kẻ Trộm Mặt Trăng 4)",
+                rating: "P",
+                image: "images/movie_nebula.png",
+                genre: "Hoạt Hình, Gia Đình, Hài",
+                duration: "94 phút",
+                releaseDate: "2026-07-03",
+                stars: "8.2",
+                popularScore: 92
+            },
+            {
+                id: 25,
+                title: "Captain America: Brave New World",
+                rating: "T13",
+                image: "images/movie_velocity.png",
+                genre: "Hành Động, Khoa Học Viễn Tưởng",
+                duration: "130 phút",
+                releaseDate: "2026-08-15",
+                stars: "8.3",
+                popularScore: 90
+            },
+            {
+                id: 26,
+                title: "Avatar: Fire and Ash",
+                rating: "T13",
+                image: "images/movie_odyssey.png",
+                genre: "Hành Động, Phiêu Lưu, Khoa Học Viễn Tưởng",
+                duration: "160 phút",
+                releaseDate: "2026-12-18",
+                stars: "9.0",
+                popularScore: 88
+            },
+            {
+                id: 27,
+                title: "Joker: Folie à Deux",
+                rating: "T18",
+                image: "images/movie_lastnoir.png",
+                genre: "Drama, Nhạc Kịch",
+                duration: "138 phút",
+                releaseDate: "2026-10-04",
+                stars: "8.1",
+                popularScore: 86
+            },
+            {
+                id: 28,
+                title: "Gladiator II: Võ Sĩ Giác Đấu 2",
+                rating: "T18",
+                image: "images/movie_oppenheimer.png",
+                genre: "Hành Động, Lịch Sự",
+                duration: "145 phút",
+                releaseDate: "2026-11-22",
+                stars: "8.4",
+                popularScore: 84
+            },
+            {
+                id: 29,
+                title: "Wicked: Chuyện Chưa Kể",
+                rating: "P",
+                image: "images/movie_summer_echoes.png",
+                genre: "Fantasy, Nhạc Kịch",
+                duration: "140 phút",
+                releaseDate: "2026-11-27",
+                stars: "8.5",
+                popularScore: 82
+            },
+            {
+                id: 30,
+                title: "Moana 2: Hành Trình Mới",
+                rating: "P",
+                image: "images/doraemon_orchestra.png",
+                genre: "Hoạt Hình, Gia Đình, Phiêu Lưu",
+                duration: "100 phút",
+                releaseDate: "2026-11-27",
+                stars: "8.6",
+                popularScore: 80
+            },
+            {
+                id: 31,
+                title: "Mufasa: The Lion King",
+                rating: "P",
+                image: "images/movie_summer_echoes.png",
+                genre: "Hoạt Hình, Gia Đình, Phiêu Lưu",
+                duration: "120 phút",
+                releaseDate: "2026-12-20",
+                stars: "8.7",
+                popularScore: 78
+            },
+            {
+                id: 32,
+                title: "Sonic the Hedgehog 3",
+                rating: "P",
+                image: "images/movie_velocity.png",
+                genre: "Hoạt Hình, Hài, Phiêu Lưu",
+                duration: "110 phút",
+                releaseDate: "2026-12-25",
+                stars: "8.4",
+                popularScore: 76
+            },
+            {
+                id: 33,
+                title: "The Karate Kid",
+                rating: "T13",
+                image: "images/dune_poster.png",
+                genre: "Hành Động, Drama",
+                duration: "125 phút",
+                releaseDate: "2026-09-12",
+                stars: "7.9",
+                popularScore: 74
+            },
+            {
+                id: 34,
+                title: "Minecraft: The Movie",
+                rating: "P",
+                image: "images/doraemon_orchestra.png",
+                genre: "Hoạt Hình, Hài, Phiêu Lưu",
+                duration: "105 phút",
+                releaseDate: "2026-09-05",
+                stars: "7.5",
+                popularScore: 72
+            },
+            {
+                id: 35,
+                title: "Superman: Legacy",
+                rating: "T13",
+                image: "images/mandalorian_grogu.png",
+                genre: "Hành Động, Khoa Học Viễn Tưởng",
+                duration: "140 phút",
+                releaseDate: "2026-07-11",
+                stars: "8.8",
+                popularScore: 70
+            },
+            {
+                id: 36,
+                title: "The Fantastic Four",
+                rating: "T13",
+                image: "images/movie_nebula.png",
+                genre: "Hành Động, Khoa Học Viễn Tưởng",
+                duration: "135 phút",
+                releaseDate: "2026-07-25",
+                stars: "8.2",
+                popularScore: 68
+            },
+            {
+                id: 37,
+                title: "Jurassic World: Rebirth",
+                rating: "T13",
+                image: "images/dune_poster.png",
+                genre: "Hành Động, Phiêu Lưu",
+                duration: "132 phút",
+                releaseDate: "2026-07-02",
+                stars: "8.0",
+                popularScore: 65
+            },
+            {
+                id: 38,
+                title: "Blade: Kẻ Săn Ma",
+                rating: "T18",
+                image: "images/movie_lastnoir.png",
+                genre: "Hành Động, Kinh Dị",
+                duration: "120 phút",
+                releaseDate: "2026-11-05",
+                stars: "7.8",
+                popularScore: 60
+            },
+            {
+                id: 39,
+                title: "Toy Story 5",
+                rating: "P",
+                image: "images/doraemon_orchestra.png",
+                genre: "Hoạt Hình, Hài, Gia Đình",
+                duration: "95 phút",
+                releaseDate: "2026-06-20",
+                stars: "8.9",
+                popularScore: 58
+            },
+            {
+                id: 40,
+                title: "Avengers: Doomsday",
+                rating: "T13",
+                image: "images/movie_odyssey.png",
+                genre: "Hành Động, Khoa Học Viễn Tưởng",
+                duration: "155 phút",
+                releaseDate: "2026-05-01",
+                stars: "9.3",
+                popularScore: 55
+            }
+        ];
+
+        let allMovies = [];
+        const MOVIES_PER_PAGE = 4;
+        let currentPage = 1;
+
+        function getQueryStatus() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('status') || 'showing';
         }
 
-        function nextPage() {
-            console.log('Next page');
+        function updateTabsUI(status) {
+            const tabShowing = document.getElementById('tab-showing');
+            const tabComing = document.getElementById('tab-coming');
+            const breadcrumbStatus = document.getElementById('breadcrumb-status');
+            const currentViewTitle = document.getElementById('current-view-title');
+
+            if (status === 'coming') {
+                tabShowing.classList.remove('active');
+                tabComing.classList.add('active');
+                breadcrumbStatus.textContent = 'Phim Sắp Chiếu';
+                currentViewTitle.textContent = 'Phim Sắp Chiếu';
+                document.title = 'Phim Sắp Chiếu | D-Cinema';
+            } else {
+                tabShowing.classList.add('active');
+                tabComing.classList.remove('active');
+                breadcrumbStatus.textContent = 'Phim Đang Chiếu';
+                currentViewTitle.textContent = 'Phim Đang Chiếu';
+                document.title = 'Phim Đang Chiếu | D-Cinema';
+            }
         }
 
-        // Check login state for navbar
+        async function loadMovies() {
+            const status = getQueryStatus();
+            updateTabsUI(status);
+            currentPage = 1;
+
+            const apiEndpoint = status === 'coming' ? '/api/movies/coming-soon' : '/api/movies/now-showing';
+            try {
+                const res = await fetch(apiEndpoint);
+                const result = await res.json();
+                if (result.success && result.data && result.data.length > 0) {
+                    allMovies = result.data.map((m, index) => ({
+                        id: m.MovieID,
+                        title: m.Title,
+                        description: m.Description || '',
+                        director: m.Director || '',
+                        duration: m.Duration ? `${m.Duration} phút` : '120 phút',
+                        rating: m.AgeRating || 'P',
+                        image: m.PosterURL || 'images/poster.png',
+                        genre: m.Genre || 'Chưa phân loại',
+                        releaseDate: m.ReleaseDate ? m.ReleaseDate.substring(0, 10) : '2026-05-29',
+                        stars: (9.0 - (index * 0.3)).toFixed(1),
+                        popularScore: 100 - (index * 5),
+                        ranking: (status === 'showing' && index < 3) ? (index + 1) : null
+                    }));
+                } else {
+                    allMovies = status === 'coming' ? mockMoviesComingSoon : mockMoviesNowShowing;
+                }
+            } catch (err) {
+                console.warn("Could not fetch movies from API, loading mock data.", err);
+                allMovies = status === 'coming' ? mockMoviesComingSoon : mockMoviesNowShowing;
+            }
+
+            applyFiltersAndSort();
+        }
+
+        function applyFiltersAndSort() {
+            const checkedGenres = Array.from(document.querySelectorAll('input[name="genre"]:checked')).map(el => el.value.toLowerCase());
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            let filtered = allMovies.filter(m => {
+                if (searchQuery && !m.title.toLowerCase().includes(searchQuery)) {
+                    return false;
+                }
+
+                if (checkedGenres.length > 0) {
+                    let matchesGenre = false;
+                    const mgLower = m.genre.toLowerCase();
+                    checkedGenres.forEach(cg => {
+                        if (cg === 'action' && (mgLower.includes('hành động') || mgLower.includes('action') || mgLower.includes('phiêu lưu'))) matchesGenre = true;
+                        if (cg === 'comedy' && (mgLower.includes('hài') || mgLower.includes('comedy') || mgLower.includes('hoạt hình'))) matchesGenre = true;
+                        if (cg === 'drama' && (mgLower.includes('drama') || mgLower.includes('tâm lý') || mgLower.includes('gia đình'))) matchesGenre = true;
+                        if (cg === 'horror' && (mgLower.includes('kinh dị') || mgLower.includes('horror') || mgLower.includes('ma'))) matchesGenre = true;
+                        if (cg === 'scifi' && (mgLower.includes('khoa học viễn tưởng') || mgLower.includes('viễn tưởng') || mgLower.includes('sci-fi') || mgLower.includes('scifi'))) matchesGenre = true;
+                    });
+                    if (!matchesGenre) return false;
+                }
+
+                return true;
+            });
+
+            const sortVal = document.getElementById('sortSelect').value;
+            if (sortVal === 'popular') {
+                filtered.sort((a, b) => b.popularScore - a.popularScore);
+            } else if (sortVal === 'rating') {
+                filtered.sort((a, b) => parseFloat(b.stars) - parseFloat(a.stars));
+            } else if (sortVal === 'newest') {
+                filtered.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
+            } else if (sortVal === 'title') {
+                filtered.sort((a, b) => a.title.localeCompare(b.title));
+            }
+
+            // Paginate
+            const totalPages = Math.min(5, Math.ceil(filtered.length / MOVIES_PER_PAGE));
+            if (currentPage > totalPages) {
+                currentPage = 1;
+            }
+
+            const startIdx = (currentPage - 1) * MOVIES_PER_PAGE;
+            const paginatedMovies = filtered.slice(startIdx, startIdx + MOVIES_PER_PAGE);
+
+            renderGrid(paginatedMovies);
+            renderPagination(totalPages);
+        }
+
+        function renderGrid(moviesList) {
+            const grid = document.getElementById('movies-grid');
+            if (!moviesList || moviesList.length === 0) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted-light);">Không tìm thấy bộ phim nào phù hợp.</div>`;
+                return;
+            }
+
+            const status = getQueryStatus();
+
+            grid.innerHTML = moviesList.map(m => {
+                let ribbonHTML = '';
+                // Only show ranking medals on the very first page of "Phim Đang Chiếu"
+                if (status === 'showing' && currentPage === 1 && m.ranking && m.ranking <= 3) {
+                    ribbonHTML = `
+                        <div class="rank-badge-container rank-${m.ranking}">
+                            <div class="rank-medal">${m.ranking}</div>
+                            <div class="rank-ribbon-tail"></div>
+                        </div>
+                    `;
+                }
+
+                const ratingClass = `age-${m.rating.toLowerCase()}`;
+                const releaseFormatted = formatDate(m.releaseDate);
+
+                return `
+                    <div class="movie-card" onclick="window.location.href='movie-detail.html?id=${m.id}'">
+                        <div class="movie-poster">
+                            <span class="rating-badge ${ratingClass}">${m.rating}</span>
+                            ${ribbonHTML}
+                            <img src="${m.image}" alt="${m.title}">
+                            <div class="movie-overlay">
+                                <button class="btn-tickets" onclick="event.stopPropagation(); window.location.href='booking.html?movieId=${m.id}'">ĐẶT VÉ</button>
+                            </div>
+                        </div>
+                        <div class="movie-info">
+                            <h3 class="movie-title" title="${m.title}">${m.title}</h3>
+                            <div class="movie-rating">
+                                <span class="stars">★ ${m.stars}</span>
+                                <span class="movie-genre-text"><strong>Thể loại:</strong> ${m.genre}</span>
+                                <span class="movie-meta-text"><strong>Thời lượng:</strong> ${m.duration}</span>
+                                <span class="movie-meta-text"><strong>Khởi chiếu:</strong> ${releaseFormatted}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderPagination(totalPages) {
+            const paginationContainer = document.querySelector('.pagination');
+            if (!paginationContainer) return;
+
+            if (totalPages <= 1) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+            paginationContainer.style.display = 'flex';
+
+            let html = `
+                <button class="pagination-btn prev" ${currentPage === 1 ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''} onclick="changePage(${currentPage - 1})">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                </button>
+            `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                html += `
+                    <button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>
+                `;
+            }
+
+            html += `
+                <button class="pagination-btn next" ${currentPage === totalPages ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''} onclick="changePage(${currentPage + 1})">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
+                </button>
+            `;
+
+            paginationContainer.innerHTML = html;
+        }
+
+        function changePage(pageNum) {
+            currentPage = pageNum;
+            applyFiltersAndSort();
+            // Smooth scroll back up to the movies listing section
+            document.querySelector('.movies-title-tabs').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '...';
+            try {
+                const date = new Date(dateStr);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        // Initialize Page
         document.addEventListener('DOMContentLoaded', () => {
+            // Check login state
             const userStr = localStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
@@ -376,6 +902,29 @@
                     btnLogin.href = 'profile.html';
                 }
             }
+
+            // Load and render movies
+            loadMovies();
+
+            // Set up filter change listeners
+            document.querySelectorAll('.filter-item input').forEach(input => {
+                input.addEventListener('change', () => {
+                    currentPage = 1;
+                    applyFiltersAndSort();
+                });
+            });
+
+            // Set up sort change listener
+            document.getElementById('sortSelect').addEventListener('change', () => {
+                currentPage = 1;
+                applyFiltersAndSort();
+            });
+
+            // Set up search listener
+            document.getElementById('searchInput').addEventListener('input', () => {
+                currentPage = 1;
+                applyFiltersAndSort();
+            });
         });
     </script>
 </body>
