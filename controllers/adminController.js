@@ -10,16 +10,33 @@ const AdminModel = require('../models/adminModel');
 
 exports.createMovie = async (req, res) => {
   try {
-    const { title, genre, duration, releaseDate } = req.body;
-    if (!title || !genre || !duration || !releaseDate) {
-      return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc: title, genre, duration, releaseDate.' });
+    console.log('[adminController] Content-Type:', req.headers['content-type']);
+    console.log('[adminController] req.body:', req.body);
+    console.log('[adminController] req.file:', req.file);
+
+    const { title, description, director, duration, ageRating, status, mainCast } = req.body || {};
+    if (!title || !duration) {
+      return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc: title, duration.' });
     }
 
-    const movie = await AdminModel.createMovie(req.body);
+    const posterURL = req.file ? 'images/' + req.file.filename : 'images/default_poster.png';
+
+    const movieData = {
+        title,
+        description,
+        director,
+        duration: parseInt(duration),
+        ageRating,
+        posterURL,
+        status,
+        mainCast
+    };
+
+    const movie = await AdminModel.createMovie(movieData);
     res.status(201).json({ success: true, message: 'Thêm phim thành công!', data: movie });
   } catch (err) {
     console.error('[adminController] createMovie:', err.message);
-    res.status(500).json({ success: false, message: 'Lỗi server.' });
+    res.status(500).json({ success: false, message: 'Lỗi server.', error: err.message, stack: err.stack });
   }
 };
 
@@ -157,6 +174,35 @@ exports.createVoucher = async (req, res) => {
 };
 
 // ════════════════════════════════════════════════════════════
+//  F&B MANAGEMENT
+// ════════════════════════════════════════════════════════════
+
+exports.getAllFnB = async (req, res) => {
+  try {
+    const data = await AdminModel.getAllFnB();
+    res.json({ success: true, count: data.length, data });
+  } catch (err) {
+    console.error('[adminController] getAllFnB:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.createFnB = async (req, res) => {
+  try {
+    const { name, price } = req.body;
+    if (!name || price == null) {
+      return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc.' });
+    }
+
+    const fnb = await AdminModel.createFnB(req.body);
+    res.status(201).json({ success: true, message: 'Tạo mặt hàng thành công!', data: fnb });
+  } catch (err) {
+    console.error('[adminController] createFnB:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+// ════════════════════════════════════════════════════════════
 //  STATISTICS / REVENUE REPORTS
 // ════════════════════════════════════════════════════════════
 
@@ -176,6 +222,28 @@ exports.getDashboardStats = async (req, res) => {
     res.json({ success: true, data });
   } catch (err) {
     console.error('[adminController] getDashboardStats:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getRecentTransactions = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const data = await AdminModel.getRecentTransactions(limit);
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[adminController] getRecentTransactions:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getMonthlyRevenue = async (req, res) => {
+  try {
+    const year = parseInt(req.query.year) || new Date().getFullYear();
+    const data = await AdminModel.getMonthlyRevenue(year);
+    res.json({ success: true, year, data });
+  } catch (err) {
+    console.error('[adminController] getMonthlyRevenue:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };

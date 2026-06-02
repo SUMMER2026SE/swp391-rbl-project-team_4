@@ -12,6 +12,8 @@
   // ─── Role → Page Mapping ───
   const ROLE_REDIRECTS = {
     'Customer': 'profile.html',
+    'Admin': 'admin.html',
+    'Manager': 'admin.html',
     'Super Admin': 'admin.html',
   };
 
@@ -580,8 +582,15 @@
     createParticles();
     handleURLParams();
 
-    // Đợi 500ms để đảm bảo Google SDK được tải xong từ thẻ script trong HTML
-    setTimeout(initGoogleLogin, 500);
+    // Đợi Google SDK được tải xong từ thẻ script trong HTML
+    const checkGoogleInterval = setInterval(() => {
+      if (typeof google !== 'undefined' && google.accounts) {
+        clearInterval(checkGoogleInterval);
+        initGoogleLogin();
+      }
+    }, 100);
+    // Hủy kiểm tra sau 10 giây nếu mạng lỗi
+    setTimeout(() => clearInterval(checkGoogleInterval), 10000);
   }
 
   if (document.readyState === 'loading') {

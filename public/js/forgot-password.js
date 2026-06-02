@@ -226,9 +226,9 @@
     dom.otpBoxes.forEach((box, idx) => {
       box.addEventListener('input', (e) => {
         let val = e.target.value.replace(/[^0-9]/g, '');
-
-        if (e.inputType === 'insertFromPaste' || val.length >= 4) {
-          // Xử lý khi Paste hoặc Autofill mã OTP
+        
+        if (val.length > 1) {
+          // Xử lý khi Paste, Autofill hoặc gõ quá nhanh (Android)
           let chars = val.split('');
           for (let i = 0; i < chars.length; i++) {
             if (idx + i < dom.otpBoxes.length) {
@@ -237,12 +237,9 @@
             }
           }
           let nextFocus = Math.min(idx + chars.length, dom.otpBoxes.length - 1);
-          if (val.length > 0) {
-              dom.otpBoxes[nextFocus].focus();
-          }
+          dom.otpBoxes[nextFocus].focus();
         } else {
-          // Xử lý gõ bình thường hoặc lỗi bàn phím tự động điền thêm số cũ (Android bug)
-          val = val.slice(-1); // Chỉ lấy 1 số cuối cùng
+          // Xử lý gõ bình thường 1 ký tự
           e.target.value = val;
           box.classList.toggle('filled', !!val);
 
@@ -257,11 +254,15 @@
           dom.otpBoxes[idx - 1].focus();
           dom.otpBoxes[idx - 1].value = '';
           dom.otpBoxes[idx - 1].classList.remove('filled');
+        } else if (e.key === 'ArrowLeft' && idx > 0) {
+          dom.otpBoxes[idx - 1].focus();
+        } else if (e.key === 'ArrowRight' && idx < dom.otpBoxes.length - 1) {
+          dom.otpBoxes[idx + 1].focus();
         }
       });
 
       box.addEventListener('focus', () => {
-        box.select();
+        setTimeout(() => box.select(), 10);
         clearError(box);
       });
     });

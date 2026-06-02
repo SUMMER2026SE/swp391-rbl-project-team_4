@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | D-CINEMA</title>
-    <meta name="description" content="D-CINEMA Admin Terminal – Performance overview, analytics and operations management.">
+    <meta name="description" content="D-CINEMA Hệ thống Quản trị – Performance overview, analytics and operations management.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
         </div>
         <div class="logo-text-block">
             <span class="logo-name"><span class="logo-d-text">D</span>-CINEMA</span>
-            <span class="logo-sub">Admin Terminal</span>
+            <span class="logo-sub">Hệ thống Quản trị</span>
         </div>
     </div>
 
@@ -34,50 +34,50 @@
         <div class="nav-group">
             <button class="sn active" data-page="dashboard" onclick="navigate('dashboard',this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-                Dashboard
+                Tổng quan
             </button>
             <button class="sn" data-page="cinema" onclick="navigate('cinema',this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                Cinema
+                Rạp chiếu
             </button>
             <button class="sn" data-page="movies" onclick="navigate('movies',this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg>
-                Movies
+                Phim
             </button>
             <button class="sn" data-page="schedule" onclick="navigate('schedule',this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Schedule
+                Lịch chiếu
             </button>
             <button class="sn" data-page="fnb" onclick="navigate('fnb',this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-                F&amp;B
+                Đồ ăn & Nước
             </button>
             <button class="sn" data-page="staff" onclick="navigate('staff',this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Staff
+                Nhân viên
             </button>
             <button class="sn" data-page="pricing" onclick="navigate('pricing',this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                Pricing
+                Giá vé
             </button>
         </div>
     </nav>
 
-    <!-- Quick Ticket -->
-    <button class="btn-quick-ticket" onclick="alert('Quick Ticket module coming soon!')">
+    <!-- Quick Vé -->
+    <button class="btn-quick-ticket" onclick="alert('Tính năng bán vé nhanh đang phát triển!')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Quick Ticket
+        Bán vé nhanh
     </button>
 
     <!-- Bottom nav -->
     <div class="sidebar-bottom">
         <button class="sn-bottom" onclick="navigate('settings', this)">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Settings
+            Cài đặt
         </button>
         <button class="sn-bottom danger" onclick="adminLogout()">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Logout
+            Đăng xuất
         </button>
     </div>
 
@@ -91,20 +91,20 @@
     <!-- Top Bar -->
     <header class="topbar">
         <div class="topbar-left">
-            <div id="topbarTitle" style="font-weight:900; color:var(--accent); text-transform:uppercase; font-size:1.15rem; margin-right:30px; letter-spacing:0.02em; display:none;">BUILDER: SEAT MATRIX</div>
+            <div id="topbarTitle" style="font-weight:900; color:var(--accent); text-transform:uppercase; font-size:1.15rem; margin-right:30px; letter-spacing:0.02em; display:none;">SƠ ĐỒ GHẾ NGỒI</div>
             <nav class="topbar-tabs">
-                <button class="ttab active" onclick="switchTab('analytics',this)">Analytics</button>
-                <button class="ttab" onclick="switchTab('health',this)">System Health</button>
+                <button class="ttab active" onclick="switchTab('analytics',this)">Phân tích</button>
+                <button class="ttab" onclick="switchTab('health',this)">Tình trạng hệ thống</button>
             </nav>
         </div>
         <div class="topbar-right">
             <div class="tb-search">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <input type="text" placeholder="Search films, actors, directors..." id="adminSearch">
+                <input type="text" placeholder="Tìm kiếm phim, diễn viên, đạo diễn..." id="adminSearch">
             </div>
             <button class="btn-add-main" onclick="openAddMovieModal()">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Add Movie
+                Thêm Phim
             </button>
             <button class="tb-icon" aria-label="Notifications" id="bellBtn">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -124,18 +124,18 @@
         <!-- Page heading -->
         <div class="dash-heading">
             <div>
-                <h1>PERFORMANCE OVERVIEW</h1>
-                <p>Real-time cinema operations and revenue analytics.</p>
+                <h1>TỔNG QUAN HIỆU SUẤT</h1>
+                <p>Phân tích hoạt động và doanh thu rạp chiếu theo thời gian thực.</p>
             </div>
             <div class="heading-actions">
                 <button class="btn-range" id="btnRange">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Last 30 Days
+                    30 ngày qua
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 <button class="btn-export" onclick="alert('Exporting PDF…')">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Export PDF
+                    Xuất PDF
                 </button>
             </div>
         </div>
@@ -143,7 +143,7 @@
         <!-- KPI Cards -->
         <div class="kpi-grid">
             <div class="kpi-card">
-                <div class="kpi-label">TOTAL REVENUE</div>
+                <div class="kpi-label">TỔNG DOANH THU</div>
                 <div class="kpi-row">
                     <div class="kpi-value">$248,392</div>
                     <div class="kpi-badge up">▲12%</div>
@@ -154,7 +154,7 @@
                 </div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-label">TICKET SALES</div>
+                <div class="kpi-label">VÉ ĐÃ BÁN</div>
                 <div class="kpi-row">
                     <div class="kpi-value">14,205</div>
                     <div class="kpi-badge up">▲8.4%</div>
@@ -165,7 +165,7 @@
                 </div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-label">F&amp;B SALES</div>
+                <div class="kpi-label">DOANH THU ĐỒ ĂN</div>
                 <div class="kpi-row">
                     <div class="kpi-value">$52,110</div>
                     <div class="kpi-badge down">▼2.1%</div>
@@ -176,7 +176,7 @@
                 </div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-label">OCCUPANCY RATE</div>
+                <div class="kpi-label">TỶ LỆ LẤP ĐẦY</div>
                 <div class="kpi-row">
                     <div class="kpi-value">76.8%</div>
                     <div class="kpi-badge up">▲15%</div>
@@ -195,26 +195,26 @@
             <div class="chart-card big">
                 <div class="chart-card-header">
                     <div>
-                        <div class="chart-title">Revenue Comparison</div>
-                        <div class="chart-subtitle">Monthly earnings across primary branches</div>
+                        <div class="chart-title">So sánh Doanh thu</div>
+                        <div class="chart-subtitle">Thu nhập hàng tháng theo các chi nhánh chính</div>
                     </div>
                     <div class="chart-legend">
-                        <span class="legend-dot" style="background:#e8192c"></span> Ticket
-                        <span class="legend-dot" style="background:#f59e0b;margin-left:12px"></span> F&amp;B
+                        <span class="legend-dot" style="background:#e8192c"></span> Vé
+                        <span class="legend-dot" style="background:#f59e0b;margin-left:12px"></span> Đồ ăn
                     </div>
                 </div>
                 <div class="chart-wrap">
                     <canvas id="revenueChart"></canvas>
                 </div>
                 <div class="chart-branches">
-                    <span>Downtown</span><span>North Mall</span><span>West Side</span><span>The Harbor</span><span>Airport Plaza</span>
+                    <span>Quận 1</span><span>Quận 3</span><span>Quận 7</span><span>Quận 10</span><span>Sân bay</span>
                 </div>
             </div>
 
-            <!-- Live Rankings -->
+            <!-- Xếp hạng Trực tiếp -->
             <div class="chart-card small">
                 <div class="chart-card-header">
-                    <div class="chart-title">Live Rankings</div>
+                    <div class="chart-title">Xếp hạng Trực tiếp</div>
                 </div>
                 <div class="rankings-list">
                     <div class="rank-item">
@@ -228,7 +228,7 @@
                         </div>
                         <div class="rank-revenue">
                             <div class="rank-amount">$42K</div>
-                            <div class="rank-today">TODAY</div>
+                            <div class="rank-today">HÔM NAY</div>
                         </div>
                     </div>
                     <div class="rank-item">
@@ -242,7 +242,7 @@
                         </div>
                         <div class="rank-revenue">
                             <div class="rank-amount">$38K</div>
-                            <div class="rank-today">TODAY</div>
+                            <div class="rank-today">HÔM NAY</div>
                         </div>
                     </div>
                     <div class="rank-item">
@@ -256,7 +256,7 @@
                         </div>
                         <div class="rank-revenue">
                             <div class="rank-amount">$31K</div>
-                            <div class="rank-today">TODAY</div>
+                            <div class="rank-today">HÔM NAY</div>
                         </div>
                     </div>
                     <div class="rank-item">
@@ -270,12 +270,12 @@
                         </div>
                         <div class="rank-revenue">
                             <div class="rank-amount">$24K</div>
-                            <div class="rank-today">TODAY</div>
+                            <div class="rank-today">HÔM NAY</div>
                         </div>
                     </div>
                 </div>
                 <button class="btn-view-reports" onclick="navigate('movies', document.querySelector('[data-page=movies]'))">
-                    View All Reports
+                    Xem tất cả báo cáo
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </button>
             </div>
@@ -285,7 +285,7 @@
         <!-- Recent Transactions -->
         <div class="table-card">
             <div class="table-header">
-                <div class="table-title">Recent Transactions</div>
+                <div class="table-title">Giao dịch gần đây</div>
                 <div class="table-actions">
                     <button class="tb-icon-sm" title="Filter" onclick="toggleFilter()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
@@ -302,30 +302,30 @@
             <!-- Filter bar (hidden by default) -->
             <div class="filter-bar" id="filterBar" style="display:none;">
                 <select class="filter-select" id="filterStatus" onchange="applyFilter()">
-                    <option value="">All Status</option>
-                    <option value="COMPLETED">Completed</option>
-                    <option value="PROCESSING">Processing</option>
-                    <option value="FAILED">Failed</option>
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="COMPLETED">Hoàn thành</option>
+                    <option value="PROCESSING">Đang xử lý</option>
+                    <option value="FAILED">Thất bại</option>
                 </select>
                 <select class="filter-select" id="filterBranch" onchange="applyFilter()">
-                    <option value="">All Branches</option>
+                    <option value="">Tất cả Chi nhánh</option>
                     <option value="Downtown">Downtown</option>
                     <option value="West Side">West Side</option>
                     <option value="North Mall">North Mall</option>
                 </select>
-                <button class="btn-clear-filter" onclick="clearFilter()">Clear</button>
+                <button class="btn-clear-filter" onclick="clearFilter()">Xóa lọc</button>
             </div>
 
             <div class="table-wrap">
                 <table class="data-table" id="txnTable">
                     <thead>
                         <tr>
-                            <th>TRANSACTION ID</th>
-                            <th>BRANCH</th>
-                            <th>ITEM</th>
-                            <th>DATE</th>
-                            <th>AMOUNT</th>
-                            <th>STATUS</th>
+                            <th>MÃ GIAO DỊCH</th>
+                            <th>CHI NHÁNH</th>
+                            <th>MẶT HÀNG</th>
+                            <th>NGÀY</th>
+                            <th>SỐ TIỀN</th>
+                            <th>TRẠNG THÁI</th>
                         </tr>
                     </thead>
                     <tbody id="txnBody">
@@ -339,7 +339,7 @@
                 <button class="pg-btn" id="pgPrev" onclick="changePage(-1)" disabled>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
-                <span class="pg-info" id="pgInfo">Page 1 of 2</span>
+                <span class="pg-info" id="pgInfo">Trang 1 / 2</span>
                 <button class="pg-btn" id="pgNext" onclick="changePage(1)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </button>
@@ -356,43 +356,43 @@
             <!-- Left Sidebar -->
             <div class="cin-sidebar">
                 <div class="cs-header">
-                    <h2>Clusters</h2>
+                    <h2>Cụm rạp</h2>
                     <button class="btn-icon-sm" title="Add Cluster"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
                 </div>
                 <div class="cs-list">
                     <div class="cs-item active">
                         <div class="cs-item-top">
-                            <span class="cs-district">DISTRICT 1</span>
-                            <span class="cs-badge">ACTIVE</span>
+                            <span class="cs-district">QUẬN 1</span>
+                            <span class="cs-badge">HOẠT ĐỘNG</span>
                         </div>
                         <div class="cs-name">Quoc Thanh</div>
-                        <div class="cs-meta">12 Rooms | 1,420 Seats</div>
+                        <div class="cs-meta">12 Phòng | 1.420 Ghế</div>
                     </div>
                     <div class="cs-item">
                         <div class="cs-item-top">
-                            <span class="cs-district">DISTRICT 3</span>
+                            <span class="cs-district">QUẬN 3</span>
                         </div>
                         <div class="cs-name">Hai Ba Trung</div>
-                        <div class="cs-meta">8 Rooms | 960 Seats</div>
+                        <div class="cs-meta">8 Phòng | 960 Ghế</div>
                     </div>
                     <div class="cs-item">
                         <div class="cs-item-top">
-                            <span class="cs-district">DISTRICT 10</span>
+                            <span class="cs-district">QUẬN 10</span>
                         </div>
                         <div class="cs-name">Su Van Hanh</div>
-                        <div class="cs-meta">15 Rooms | 2,100 Seats</div>
+                        <div class="cs-meta">15 Phòng | 2.100 Ghế</div>
                     </div>
                     <div class="cs-item">
                         <div class="cs-item-top">
-                            <span class="cs-district">DISTRICT 7</span>
+                            <span class="cs-district">QUẬN 7</span>
                         </div>
                         <div class="cs-name">Cresent Mall</div>
-                        <div class="cs-meta">10 Rooms | 1,200 Seats</div>
+                        <div class="cs-meta">10 Phòng | 1.200 Ghế</div>
                     </div>
                 </div>
 
                 <div class="cs-rooms-section">
-                    <div class="cs-rooms-title">ROOM SELECTION</div>
+                    <div class="cs-rooms-title">CHỌN PHÒNG</div>
                     <div class="cs-rooms-grid">
                         <button class="room-btn active">R01</button>
                         <button class="room-btn">R02</button>
@@ -414,20 +414,20 @@
                         </div>
                     </div>
                     <div class="cw-legend-toggles">
-                        <label class="cl-toggle"><input type="radio" name="seat_tool" checked><span class="cbox standard"></span>Standard</label>
+                        <label class="cl-toggle"><input type="radio" name="seat_tool" checked><span class="cbox standard"></span>Thường</label>
                         <label class="cl-toggle"><input type="radio" name="seat_tool"><span class="cbox vip"></span>VIP</label>
-                        <label class="cl-toggle"><input type="radio" name="seat_tool"><span class="cbox blocked"></span>Blocked</label>
+                        <label class="cl-toggle"><input type="radio" name="seat_tool"><span class="cbox blocked"></span>Đã khóa</label>
                     </div>
                     <div class="cw-tools-right">
-                        <button class="btn-outline-red">Clear All</button>
-                        <button class="btn-solid-red">Save Layout</button>
+                        <button class="btn-outline-red">Xóa tất cả</button>
+                        <button class="btn-solid-red">Lưu bố cục</button>
                     </div>
                 </div>
 
                 <div class="cw-canvas-area">
                     <div class="cw-canvas-scroll">
                         <div class="cw-canvas">
-                            <div class="screen-indicator">CINEMA SCREEN THIS WAY</div>
+                            <div class="screen-indicator">MÀN HÌNH CHIẾU</div>
                             <div class="seat-matrix" id="seatMatrix">
                                 <!-- Filled by JS -->
                             </div>
@@ -441,12 +441,12 @@
 
                 <div class="cw-footer">
                     <div class="cwf-legends">
-                        <span class="cwf-litem"><span class="cbox standard"></span> Standard ($8.00)</span>
-                        <span class="cwf-litem"><span class="cbox vip"></span> VIP ($12.00)</span>
-                        <span class="cwf-litem"><span class="cbox blocked"></span> Unavailable</span>
+                        <span class="cwf-litem"><span class="cbox standard"></span> Thường (80.000đ)</span>
+                        <span class="cwf-litem"><span class="cbox vip"></span> VIP (120.000đ)</span>
+                        <span class="cwf-litem"><span class="cbox blocked"></span> Không khả dụng</span>
                     </div>
                     <div class="cwf-stats">
-                        Total Selected: <strong>0</strong> / 120 Total Capacity
+                        Đã chọn: <strong>0</strong> / 120 Tổng ghế
                     </div>
                 </div>
             </div>
@@ -458,14 +458,14 @@
         <!-- Page heading -->
         <div class="dash-heading">
             <div>
-                <h1>MOVIE INVENTORY</h1>
-                <p>Manage your active screenings and upcoming releases.</p>
+                <h1>QUẢN LÝ PHIM</h1>
+                <p>Quản lý phim đang chiếu và sắp ra mắt.</p>
             </div>
             <div class="heading-actions">
                 <div class="pill-filters">
-                    <button class="pill-btn active" onclick="filterMovies('All', this)">All</button>
-                    <button class="pill-btn" onclick="filterMovies('Now Showing', this)">Now Showing</button>
-                    <button class="pill-btn" onclick="filterMovies('Coming Soon', this)">Coming Soon</button>
+                    <button class="pill-btn active" onclick="filterMovies('Tất cả', this)">Tất cả</button>
+                    <button class="pill-btn" onclick="filterMovies('Now Showing', this)">Đang chiếu</button>
+                    <button class="pill-btn" onclick="filterMovies('Coming Soon', this)">Sắp chiếu</button>
                 </div>
             </div>
         </div>
@@ -475,12 +475,12 @@
                 <table class="data-table movie-table" id="movieTable">
                     <thead>
                         <tr>
-                            <th>POSTER</th>
-                            <th>TITLE</th>
-                            <th>STATUS</th>
-                            <th>GENRE</th>
-                            <th>DURATION</th>
-                            <th>ACTIONS</th>
+                            <th>ẢNH BÌA</th>
+                            <th>TÊN PHIM</th>
+                            <th>TRẠNG THÁI</th>
+                            <th>THỂ LOẠI</th>
+                            <th>THỜI LƯỢNG</th>
+                            <th>THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody id="movieBody">
@@ -489,10 +489,10 @@
                 </table>
             </div>
             <div class="pagination flex-between">
-                <span class="pg-info" id="moviePgInfo">Showing 1-3 of 24 movies</span>
+                <span class="pg-info" id="moviePgInfo">Hiển thị 1-3 / 24 phim</span>
                 <div class="pg-controls">
-                    <button class="pg-btn-text" id="moviePgPrev" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> Previous</button>
-                    <button class="pg-btn-text" id="moviePgNext">Next <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+                    <button class="pg-btn-text" id="moviePgPrev" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> Trước</button>
+                    <button class="pg-btn-text" id="moviePgNext">Sau <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
                 </div>
             </div>
         </div>
@@ -507,21 +507,21 @@
                 <div class="week-nav">
                     <button class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
                     <div class="week-label">
-                        <span class="wl-sub">WEEK OF</span>
+                        <span class="wl-sub">TUẦN</span>
                         <span class="wl-main">OCT 23 — OCT 29, 2023</span>
                     </div>
                     <button class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
                 </div>
                 <div class="view-toggle">
-                    <button class="vt-btn active">Room View</button>
-                    <button class="vt-btn">Movie View</button>
+                    <button class="vt-btn active">Theo phòng</button>
+                    <button class="vt-btn">Theo phim</button>
                 </div>
             </div>
 
             <!-- Timeline -->
             <div class="timeline-card">
                 <div class="tl-header">
-                    <div class="tl-col-room">ROOM</div>
+                    <div class="tl-col-room">PHÒNG</div>
                     <div class="tl-col-time">08:00</div>
                     <div class="tl-col-time">09:00</div>
                     <div class="tl-col-time">10:00</div>
@@ -534,7 +534,7 @@
                     <!-- Row 1 -->
                     <div class="tl-row">
                         <div class="tl-col-room">
-                            <div class="r-name">SCREEN 01</div>
+                            <div class="r-name">PHÒNG 01</div>
                             <div class="r-badge imax">IMAX 4K</div>
                         </div>
                         <div class="tl-tracks">
@@ -552,7 +552,7 @@
                                 <div class="mb-time">12:15 — 15:30</div>
                                 <div class="mb-warn">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                    Overlaps with cleaning session.
+                                    Trùng với thời gian vệ sinh.
                                 </div>
                             </div>
                         </div>
@@ -560,7 +560,7 @@
                     <!-- Row 2 -->
                     <div class="tl-row">
                         <div class="tl-col-room">
-                            <div class="r-name">SCREEN 02</div>
+                            <div class="r-name">PHÒNG 02</div>
                             <div class="r-badge dolby">DOLBY ATMOS</div>
                         </div>
                         <div class="tl-tracks">
@@ -570,7 +570,7 @@
                                 <div class="mb-time">10:00 — 11:55</div>
                                 <div class="mb-prog-wrap">
                                     <div class="mb-prog-bar" style="width:100%; background:#d97706;"></div>
-                                    <span class="mb-prog-val">SOLD</span>
+                                    <span class="mb-prog-val">HẾ́T VÉ</span>
                                 </div>
                             </div>
                         </div>
@@ -578,14 +578,14 @@
                     <!-- Row 3 -->
                     <div class="tl-row">
                         <div class="tl-col-room">
-                            <div class="r-name">SCREEN 03</div>
-                            <div class="r-badge standard">STANDARD</div>
+                            <div class="r-name">PHÒNG 03</div>
+                            <div class="r-badge standard">TIÊU CHUẨN</div>
                         </div>
                         <div class="tl-tracks bg-stripes">
                             <div class="tl-grid-lines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                             <div class="maintenance-block" style="left: 0; width: 68%;">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                                <span>PROJECTOR CALIBRATION</span>
+                                <span>HIỆU CHỈNH MÁY CHIẾU</span>
                             </div>
                             <div class="movie-block" style="left: 71%; width: 29%; border-left-color: #2563eb;">
                                 <div class="mb-title">SPIDER-VERSE</div>
@@ -606,9 +606,9 @@
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M12 9v6"/></svg>
                     </div>
                     <div class="ssc-info">
-                        <div class="ssc-label">TOTAL EXPECTED REVENUE</div>
+                        <div class="ssc-label">DOANH THU DỰ KIẾ́N</div>
                         <div class="ssc-val">$42,850.00</div>
-                        <div class="ssc-trend up">↑ 12.5% from last week</div>
+                        <div class="ssc-trend up">↑ 12.5% so với tuần trước</div>
                     </div>
                 </div>
                 <div class="ssc-card">
@@ -616,9 +616,9 @@
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     </div>
                     <div class="ssc-info">
-                        <div class="ssc-label">GLOBAL OCCUPANCY</div>
+                        <div class="ssc-label">TỶ LỆ LẤP ĐẦY</div>
                         <div class="ssc-val">68.2%</div>
-                        <div class="ssc-sub">842 Seats booked today</div>
+                        <div class="ssc-sub">842 Ghế đã đặt hôm nay</div>
                     </div>
                 </div>
                 <div class="ssc-card">
@@ -626,9 +626,9 @@
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     </div>
                     <div class="ssc-info">
-                        <div class="ssc-label">SYSTEM ALERTS</div>
-                        <div class="ssc-val">02 Conflicts</div>
-                        <div class="ssc-sub danger">Action required on Screen 01</div>
+                        <div class="ssc-label">CẢNH BÁO HỆ THỐNG</div>
+                        <div class="ssc-val">02 Xung đột</div>
+                        <div class="ssc-sub danger">Cần xử lý tại Phòng 01</div>
                     </div>
                 </div>
             </div>
@@ -638,55 +638,55 @@
         <!-- Right Library -->
         <div class="sch-lib">
             <div class="lib-header">
-                <h2>Movie Library</h2>
-                <span class="lib-badge">24 TITLES</span>
+                <h2>Thư viện Phim</h2>
+                <span class="lib-badge">24 PHIM</span>
             </div>
             <div class="lib-search">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-                <input type="text" placeholder="Filter movies...">
+                <input type="text" placeholder="Lọc phim...">
             </div>
             <div class="lib-list">
                 <div class="lib-card">
-                    <img src="images/movie_dune.png" onerror="this.src='https://via.placeholder.com/60x80/eef2ff/2563eb?text=DUNE'" class="lc-poster">
+                    <img src="images/dune_poster.png" onerror="this.onerror=null; this.src='images/default_poster.svg'" class="lc-poster">
                     <div class="lc-info">
                         <div class="lc-title">DUNE: PART TWO</div>
-                        <div class="lc-dur">Duration: 166 min</div>
+                        <div class="lc-dur">Thời lượng: 166 phút</div>
                         <div class="lc-tags">
-                            <span class="lc-rating">RATING: 9.2</span>
-                            <span class="lc-genre">Sci-Fi</span>
+                            <span class="lc-rating">ĐÁNH GIÁ: 9.2</span>
+                            <span class="lc-genre">Khoa học viễn tưởng</span>
                         </div>
                     </div>
                 </div>
                 <div class="lib-card">
-                    <img src="images/movie_oppenheimer.png" onerror="this.src='https://via.placeholder.com/60x80/fef3c7/d97706?text=OPP'" class="lc-poster">
+                    <img src="images/movie_oppenheimer.png" onerror="this.onerror=null; this.src='images/default_poster.svg'" class="lc-poster">
                     <div class="lc-info">
                         <div class="lc-title">OPPENHEIMER</div>
-                        <div class="lc-dur">Duration: 180 min</div>
+                        <div class="lc-dur">Thời lượng: 180 phút</div>
                         <div class="lc-tags">
-                            <span class="lc-rating">RATING: 8.9</span>
-                            <span class="lc-genre">Drama</span>
+                            <span class="lc-rating">ĐÁNH GIÁ: 8.9</span>
+                            <span class="lc-genre">Chính kịch</span>
                         </div>
                     </div>
                 </div>
                 <div class="lib-card">
-                    <img src="images/movie_barbie.png" onerror="this.src='https://via.placeholder.com/60x80/fce7f3/db2777?text=BARBIE'" class="lc-poster">
+                    <img src="images/movie_nebula.png" onerror="this.onerror=null; this.src='images/default_poster.svg'" class="lc-poster">
                     <div class="lc-info">
                         <div class="lc-title">BARBIE</div>
-                        <div class="lc-dur">Duration: 114 min</div>
+                        <div class="lc-dur">Thời lượng: 114 phút</div>
                         <div class="lc-tags">
-                            <span class="lc-rating">RATING: 7.5</span>
-                            <span class="lc-genre">Comedy</span>
+                            <span class="lc-rating">ĐÁNH GIÁ: 7.5</span>
+                            <span class="lc-genre">Hài</span>
                         </div>
                     </div>
                 </div>
                 <div class="lib-card">
-                    <img src="images/movie_spiderverse.png" onerror="this.src='https://via.placeholder.com/60x80/f3f4f6/374151?text=SPIDER'" class="lc-poster">
+                    <img src="images/movie_velocity.png" onerror="this.onerror=null; this.src='images/default_poster.svg'" class="lc-poster">
                     <div class="lc-info">
                         <div class="lc-title">ACROSS THE SPIDER-VE...</div>
-                        <div class="lc-dur">Duration: 140 min</div>
+                        <div class="lc-dur">Thời lượng: 140 phút</div>
                         <div class="lc-tags">
-                            <span class="lc-rating">RATING: 9.1</span>
-                            <span class="lc-genre">Action</span>
+                            <span class="lc-rating">ĐÁNH GIÁ: 9.1</span>
+                            <span class="lc-genre">Hành động</span>
                         </div>
                     </div>
                 </div>
@@ -694,7 +694,7 @@
             <div class="lib-footer">
                 <button class="btn-import-title">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                    IMPORT NEW TITLE
+                    THÊM PHIM MỚI
                 </button>
             </div>
         </div>
@@ -702,33 +702,33 @@
     <div class="page" id="page-fnb">
         <div class="content-scroll" style="padding: 30px 40px; display: flex; flex-direction: column; gap: 32px;">
             <div class="fnb-header">
-                <h1 style="font-size: 1.6rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 8px;">F&B AND VOUCHER MANAGEMENT</h1>
-                <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.5; max-width: 600px;">Maintain cinema concessions inventory and design promotional growth through smart discounting strategies.</p>
+                <h1 style="font-size: 1.6rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 8px;">QUẢN LÝ ĐỒ ĂN & VOUCHER</h1>
+                <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.5; max-width: 600px;">Quản lý kho hàng đồ ăn và chiến lược khuyến mãi.</p>
             </div>
             
             <div class="fnb-tabs">
-                <button class="fnb-tab active">F&B INVENTORY</button>
-                <button class="fnb-tab">VOUCHERS & PROMOTIONS</button>
+                <button class="fnb-tab active">KHO ĐỒ ĂN</button>
+                <button class="fnb-tab">VOUCHER & KHUYẾ́N MÃI</button>
             </div>
 
             <div class="fnb-grid-layout">
                 <!-- Left: Items -->
-                <div class="fnb-items">
+                <div class="fnb-items" id="fnbItemsContainer">
                     <!-- Master Combo -->
                     <div class="fnb-card-big">
                         <div class="fcb-img-wrap">
-                            <img src="images/combo_mega.png" alt="Cinema Master Combo" onerror="this.src='https://via.placeholder.com/300x300/111/fff?text=Popcorn'">
+                            <img src="images/combo_mega.png" alt="Cinema Master Combo" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                         </div>
                         <div class="fcb-info">
-                            <span class="fcb-badge">BEST SELLER</span>
+                            <span class="fcb-badge">BÁN CHẠY</span>
                             <h3>Cinema Master Combo</h3>
                             <div class="fcb-details">
                                 <div class="fcb-price-block">
-                                    <span class="fcb-label">PRICE</span>
+                                    <span class="fcb-label">GIÁ</span>
                                     <span class="fcb-price">$24.00</span>
                                 </div>
                                 <div class="fcb-stock-block">
-                                    <span class="fcb-label">STOCK LEVEL</span>
+                                    <span class="fcb-label">TỒN KHO</span>
                                     <div class="fcb-progress-wrap">
                                         <div class="fcb-progress"><div style="width: 82%; background: var(--accent);"></div></div>
                                         <span class="fcb-stock-val">820</span>
@@ -750,10 +750,10 @@
                             </div>
                             <div class="fc-sm-bottom">
                                 <div class="fc-sm-inv">
-                                    <span class="fc-sm-label">INVENTORY</span>
-                                    <span class="fc-sm-val">142 units</span>
+                                    <span class="fc-sm-label">TỒN KHO</span>
+                                    <span class="fc-sm-val">142 đơn vị</span>
                                 </div>
-                                <span class="inv-badge moderate">Moderate</span>
+                                <span class="inv-badge moderate">Trung bình</span>
                             </div>
                         </div>
                         <div class="fnb-card-sm" style="border-color: #fcd34d;">
@@ -763,10 +763,10 @@
                             </div>
                             <div class="fc-sm-bottom">
                                 <div class="fc-sm-inv">
-                                    <span class="fc-sm-label">INVENTORY</span>
-                                    <span class="fc-sm-val">2,400 units</span>
+                                    <span class="fc-sm-label">TỒN KHO</span>
+                                    <span class="fc-sm-val">2,400 đơn vị</span>
                                 </div>
-                                <span class="inv-badge high">High</span>
+                                <span class="inv-badge high">Dồi dào</span>
                             </div>
                         </div>
                         <div class="fnb-card-sm" style="border: 2px solid var(--accent); box-shadow: 0 4px 12px rgba(232,25,44,0.1);">
@@ -776,10 +776,10 @@
                             </div>
                             <div class="fc-sm-bottom">
                                 <div class="fc-sm-inv">
-                                    <span class="fc-sm-label">INVENTORY</span>
-                                    <span class="fc-sm-val">14 units</span>
+                                    <span class="fc-sm-label">TỒN KHO</span>
+                                    <span class="fc-sm-val">14 đơn vị</span>
                                 </div>
-                                <span class="inv-badge danger">RESTOCK SOON</span>
+                                <span class="inv-badge danger">SẮP HẾ́T HÀNG</span>
                             </div>
                         </div>
                         <div class="fnb-card-sm" style="border-color: #93c5fd;">
@@ -789,10 +789,10 @@
                             </div>
                             <div class="fc-sm-bottom">
                                 <div class="fc-sm-inv">
-                                    <span class="fc-sm-label">INVENTORY</span>
-                                    <span class="fc-sm-val">88 units</span>
+                                    <span class="fc-sm-label">TỒN KHO</span>
+                                    <span class="fc-sm-val">88 đơn vị</span>
                                 </div>
-                                <span class="inv-badge moderate">Moderate</span>
+                                <span class="inv-badge moderate">Trung bình</span>
                             </div>
                         </div>
                     </div>
@@ -801,36 +801,36 @@
                 <!-- Right: Form -->
                 <div class="fnb-form-side">
                     <div class="fnb-form-card">
-                        <h2>ADD CONCESSION</h2>
-                        <form onsubmit="event.preventDefault(); alert('Item added!');">
+                        <h2>THÊM ĐỒ ĂN</h2>
+                        <form id="addFnbForm">
                             <div class="ff-group">
-                                <label>ITEM NAME</label>
-                                <input type="text" placeholder="e.g. Deluxe Nachos">
+                                <label>TÊN MẶT HÀNG</label>
+                                <input type="text" id="fnbName" placeholder="VD: Nachos Đặc biệt" required>
                             </div>
                             <div class="ff-row">
                                 <div class="ff-group" style="flex:1;">
-                                    <label>PRICE ($)</label>
-                                    <input type="number" placeholder="0.00" step="0.01">
+                                    <label>GIÁ (VNĐ)</label>
+                                    <input type="number" id="fnbPrice" placeholder="0.00" step="0.01" required>
                                 </div>
                                 <div class="ff-group" style="flex:1;">
-                                    <label>INITIAL STOCK</label>
-                                    <input type="number" placeholder="100">
+                                    <label>SỐ LƯỢNG BAN ĐẦU</label>
+                                    <input type="number" id="fnbStock" placeholder="100" required>
                                 </div>
                             </div>
                             <div class="ff-group">
-                                <label>CATEGORY</label>
+                                <label>DANH MỤC</label>
                                 <div class="ff-select-wrap">
-                                    <select>
-                                        <option>Popcorn & Snacks</option>
-                                        <option>Beverages</option>
-                                        <option>Combos</option>
+                                    <select id="fnbCategory">
+                                        <option>Bắp rang & Snack</option>
+                                        <option>Nước uống</option>
+                                        <option>Combo</option>
                                     </select>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
                             </div>
-                            <button type="submit" class="btn-solid-red w-100 mt-2" style="display:flex;align-items:center;justify-content:center;gap:8px; padding: 12px; margin-top:10px;">
+                            <button type="button" onclick="saveFnB()" class="btn-solid-red w-100 mt-2" id="btnSaveFnb" style="display:flex;align-items:center;justify-content:center;gap:8px; padding: 12px; margin-top:10px;">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                Add to Catalog
+                                Thêm vào danh mục
                             </button>
                         </form>
                     </div>
@@ -844,7 +844,7 @@
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
                     </div>
                     <div class="fkpi-info">
-                        <div class="fkpi-label">TOTAL F&B SALES</div>
+                        <div class="fkpi-label">TOTAL DOANH THU ĐỒ ĂN</div>
                         <div class="fkpi-val">$12,450</div>
                     </div>
                 </div>
@@ -853,7 +853,7 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
                     </div>
                     <div class="fkpi-info">
-                        <div class="fkpi-label">VOUCHER REDEMPTIONS</div>
+                        <div class="fkpi-label">SỐ VOUCHER ĐÃ SỎ DỤNG</div>
                         <div class="fkpi-val">1,242</div>
                     </div>
                 </div>
@@ -862,8 +862,8 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                     </div>
                     <div class="fkpi-info">
-                        <div class="fkpi-label">LOW STOCK ALERTS</div>
-                        <div class="fkpi-val text-red">4 Items</div>
+                        <div class="fkpi-label">CẢNH BÁO TỒN KHO THẤP</div>
+                        <div class="fkpi-val text-red">4 Mặt hàng</div>
                     </div>
                 </div>
                 <div class="fkpi-card">
@@ -871,7 +871,7 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
                     </div>
                     <div class="fkpi-info">
-                        <div class="fkpi-label">AVERAGE MARGIN</div>
+                        <div class="fkpi-label">LỢI NHUẬN TRUNG BÌNH</div>
                         <div class="fkpi-val">68%</div>
                     </div>
                 </div>
@@ -884,17 +884,17 @@
             
             <div class="staff-header">
                 <div class="sh-left">
-                    <h1 style="font-size: 1.6rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 8px;">PERSONNEL MANAGEMENT</h1>
-                    <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.5; max-width: 600px;">Control access levels, monitor staff activity, and manage guest accounts across the CineStar ecosystem.</p>
+                    <h1 style="font-size: 1.6rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 8px;">QUẢN LÝ NHÂN SỰ</h1>
+                    <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.5; max-width: 600px;">Quản lý quyền truy cập, theo dõi hoạt động nhân viên.</p>
                 </div>
                 <div class="sh-right">
                     <div class="sh-stat">
-                        <span class="shs-label">TOTAL STAFF</span>
+                        <span class="shs-label">TỔNG NHÂN VIÊN</span>
                         <span class="shs-val text-red">124</span>
                     </div>
                     <div class="sh-divider"></div>
                     <div class="sh-stat">
-                        <span class="shs-label">ACTIVE NOW</span>
+                        <span class="shs-label">ĐANG HOẠT ĐỘNG</span>
                         <span class="shs-val text-yellow">42</span>
                     </div>
                 </div>
@@ -904,19 +904,19 @@
                 <!-- Left Sidebar -->
                 <div class="staff-sidebar">
                     <div class="staff-filter-card">
-                        <h3 class="sfc-title">QUICK FILTERS</h3>
+                        <h3 class="sfc-title">LỌC NHANH</h3>
                         <div class="sf-group">
-                            <label>BY ROLE</label>
+                            <label>THEO VAI TRÒ</label>
                             <div class="sf-pills">
-                                <button class="sf-pill active">All</button>
+                                <button class="sf-pill active">Tất cả</button>
                                 <button class="sf-pill">Admin</button>
-                                <button class="sf-pill">Manager</button>
-                                <button class="sf-pill">Staff</button>
-                                <button class="sf-pill">Customer</button>
+                                <button class="sf-pill">Quản lý</button>
+                                <button class="sf-pill">Nhân viên</button>
+                                <button class="sf-pill">Khách hàng</button>
                             </div>
                         </div>
                         <div class="sf-group" style="margin-top: 20px;">
-                            <label>STATUS</label>
+                            <label>TRẠNG THÁI</label>
                             <div class="sf-select-wrap">
                                 <select>
                                     <option>Active</option>
@@ -930,9 +930,9 @@
 
                     <div class="security-audit-card">
                         <svg class="sa-watermark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        <h3 class="sa-title">Security Audit</h3>
-                        <p class="sa-desc">System scan scheduled for 03:00 AM tonight. 4 accounts flagged for password rotation.</p>
-                        <a href="#" class="sa-link">VIEW LOGS <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+                        <h3 class="sa-title">Kiểm tra Bảo mật</h3>
+                        <p class="sa-desc">Hệ thống quét định kỳ lúc 03:00 sáng. 4 tài khoản cần đổi mật khẩu.</p>
+                        <a href="#" class="sa-link">XEM NHẬT KÝ <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
                     </div>
                 </div>
 
@@ -941,99 +941,20 @@
                     <table class="st-table">
                         <thead>
                             <tr>
-                                <th>USER PROFILE</th>
-                                <th>ROLE</th>
-                                <th>STATUS</th>
-                                <th>LAST LOGIN</th>
-                                <th>ACTIONS</th>
+                                <th>THÔNG TIN</th>
+                                <th>VAI TRÒ</th>
+                                <th>TRẠNG THÁI</th>
+                                <th>ĐĂNG NHẬP CUỐI</th>
+                                <th>THAO TÁC</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <!-- Row 1 -->
-                            <tr>
-                                <td>
-                                    <div class="st-user">
-                                        <img src="https://ui-avatars.com/api/?name=Sarah+Chen&background=e2e8f0&color=334155&rounded=true" alt="Sarah Chen" class="stu-avatar">
-                                        <div class="stu-info">
-                                            <span class="stu-name">Sarah Chen</span>
-                                            <span class="stu-email">s.chen@cinestar.com</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="st-role admin">ADMIN</span></td>
-                                <td><span class="st-status active"><span class="ss-dot"></span> Active</span></td>
-                                <td><span class="st-date">Today,<br>10:42 AM</span></td>
-                                <td>
-                                    <div class="table-actions" style="opacity:0.6">
-                                        <button class="tb-icon-sm" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <!-- Row 2 -->
-                            <tr>
-                                <td>
-                                    <div class="st-user">
-                                        <img src="https://ui-avatars.com/api/?name=Marcus+Vane&background=e2e8f0&color=334155&rounded=true" alt="Marcus Vane" class="stu-avatar">
-                                        <div class="stu-info">
-                                            <span class="stu-name">Marcus Vane</span>
-                                            <span class="stu-email">m.vane@cinestar.com</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="st-role manager">MANAGER</span></td>
-                                <td><span class="st-status active"><span class="ss-dot"></span> Active</span></td>
-                                <td><span class="st-date">Yesterday,<br>11:15 PM</span></td>
-                                <td>
-                                    <div class="table-actions" style="opacity:0.6">
-                                        <button class="tb-icon-sm" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <!-- Row 3 -->
-                            <tr>
-                                <td>
-                                    <div class="st-user grayscale-avatar">
-                                        <img src="https://ui-avatars.com/api/?name=Julian+Reed&background=e2e8f0&color=334155&rounded=true" alt="Julian Reed" class="stu-avatar">
-                                        <div class="stu-info">
-                                            <span class="stu-name strikethrough">Julian Reed</span>
-                                            <span class="stu-email">j.reed@guestmail.com</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="st-role customer">CUSTOMER</span></td>
-                                <td><span class="st-status banned"><span class="ss-dot"></span> Banned</span></td>
-                                <td><span class="st-date">March 12,<br>2024</span></td>
-                                <td>
-                                    <div class="table-actions" style="opacity:0.6">
-                                        <button class="tb-icon-sm" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <!-- Row 4 -->
-                            <tr>
-                                <td>
-                                    <div class="st-user">
-                                        <img src="https://ui-avatars.com/api/?name=Elara+Smith&background=e2e8f0&color=334155&rounded=true" alt="Elara Smith" class="stu-avatar">
-                                        <div class="stu-info">
-                                            <span class="stu-name">Elara Smith</span>
-                                            <span class="stu-email">e.smith@cinestar.com</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="st-role staff">STAFF</span></td>
-                                <td><span class="st-status active"><span class="ss-dot"></span> Active</span></td>
-                                <td><span class="st-date">2 hours<br>ago</span></td>
-                                <td>
-                                    <div class="table-actions" style="opacity:0.6">
-                                        <button class="tb-icon-sm" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                                    </div>
-                                </td>
-                            </tr>
+                        <tbody id="staffTableBody">
+                            <!-- Filled by JS -->
                         </tbody>
                     </table>
                     
                     <div class="st-footer">
-                        <span class="st-info">Showing <strong>4</strong> of <strong>124</strong> personnel</span>
+                        <span class="st-info" id="staffPgInfo">Hiển thị <strong>0</strong> nhân viên</span>
                         <div class="st-pagination">
                             <button class="st-pg-btn" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
                             <button class="st-pg-btn active">1</button>
@@ -1051,8 +972,8 @@
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="3"/></svg>
                     </div>
                     <div class="skpi-info">
-                        <div class="skpi-title">Admin Access</div>
-                        <div class="skpi-desc">3 users authorized</div>
+                        <div class="skpi-title">Quyền Admin</div>
+                        <div class="skpi-desc">3 người được ủy quyền</div>
                     </div>
                 </div>
                 <div class="skpi-card">
@@ -1060,8 +981,8 @@
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     </div>
                     <div class="skpi-info">
-                        <div class="skpi-title">F&B Ops</div>
-                        <div class="skpi-desc">18 users authorized</div>
+                        <div class="skpi-title">Vận hành Đồ ăn</div>
+                        <div class="skpi-desc">18 người được ủy quyền</div>
                     </div>
                 </div>
                 <div class="skpi-card">
@@ -1069,8 +990,8 @@
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
                     </div>
                     <div class="skpi-info">
-                        <div class="skpi-title">Projectionist</div>
-                        <div class="skpi-desc">6 users authorized</div>
+                        <div class="skpi-title">Kỹ thuật viên</div>
+                        <div class="skpi-desc">6 người được ủy quyền</div>
                     </div>
                 </div>
                 <div class="skpi-card">
@@ -1078,8 +999,8 @@
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
                     </div>
                     <div class="skpi-info">
-                        <div class="skpi-title">Box Office</div>
-                        <div class="skpi-desc">22 users authorized</div>
+                        <div class="skpi-title">Phòng vé</div>
+                        <div class="skpi-desc">22 người được ủy quyền</div>
                     </div>
                 </div>
             </div>
@@ -1090,16 +1011,16 @@
             </button>
         </div>
     </div>
-    <div class="page" id="page-pricing"><div class="placeholder-page"><div class="ph-icon">💵</div><h2>Pricing Management</h2><p>Set ticket prices, discounts and promotional rates.</p></div></div>
-    <div class="page" id="page-settings"><div class="placeholder-page"><div class="ph-icon">⚙️</div><h2>Settings</h2><p>Configure system preferences and admin account settings.</p></div></div>
+    <div class="page" id="page-pricing"><div class="placeholder-page"><div class="ph-icon">💵</div><h2>Quản lý Giá vé</h2><p>Thiết lập giá vé, giảm giá và chương trình khuyến mãi.</p></div></div>
+    <div class="page" id="page-settings"><div class="placeholder-page"><div class="ph-icon">⚙️</div><h2>Cài đặt</h2><p>Cấu hình tùy chọn hệ thống và tài khoản quản trị.</p></div></div>
 
 </div><!-- end main-wrap -->
 
-<!-- Side Panel for Add Movie -->
+<!-- Side Panel for Thêm Phim -->
 <div class="side-panel-overlay" id="addMovieModalOverlay" onclick="closeAddMovieModal()"></div>
 <div class="side-panel" id="addMovieModal">
     <div class="panel-header">
-        <h2>ADD NEW MOVIE</h2>
+        <h2>THÊM PHIM MỚI</h2>
         <button class="btn-close-panel" onclick="closeAddMovieModal()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -1107,389 +1028,60 @@
     <div class="panel-body">
         <form id="addMovieForm" onsubmit="event.preventDefault()">
             <div class="form-group">
-                <label class="form-label">POSTER UPLOAD</label>
-                <div class="upload-zone">
+                <label class="form-label">TẢI ẢNH BÌA</label>
+                <div class="upload-zone" onclick="document.getElementById('moviePoster').click()">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    <p>Drop your movie poster here or <span class="upload-browse">browse</span></p>
-                    <span class="upload-hint">JPG, PNG up to 10MB (2:3 aspect ratio recommended)</span>
+                    <p>Kéo thả ảnh bìa vào đây hoặc <span class="upload-browse">chọn tệp</span></p>
+                    <span class="upload-hint">JPG, PNG tối đa 10MB (tỷ lệ 2:3 khuyến nghị)</span>
+                    <input type="file" id="moviePoster" name="poster" accept="image/png, image/jpeg" style="display: none;" onchange="previewPoster(event)">
                 </div>
+                <img id="posterPreview" style="display:none; max-width:100%; margin-top:10px; border-radius:8px;" />
             </div>
             <div class="form-group">
-                <label class="form-label">MOVIE TITLE</label>
-                <input type="text" class="form-control" placeholder="Enter movie title">
+                <label class="form-label">TÊN PHIM</label>
+                <input type="text" id="movieTitle" class="form-control" placeholder="Nhập tên phim" required>
             </div>
             <div class="form-group">
-                <label class="form-label">SYNOPSIS</label>
-                <textarea class="form-control" rows="4" placeholder="Brief movie description..."></textarea>
+                <label class="form-label">TÓM TẮT NỘI DUNG</label>
+                <textarea id="movieDescription" class="form-control" rows="4" placeholder="Mô tả ngắn gọn nội dung phim..."></textarea>
             </div>
             <div class="form-row">
                 <div class="form-group" style="flex:1;">
-                    <label class="form-label">DIRECTOR</label>
-                    <input type="text" class="form-control" placeholder="Full name">
+                    <label class="form-label">ĐẠO DIỄN</label>
+                    <input type="text" id="movieDirector" class="form-control" placeholder="Tên đạo diễn">
                 </div>
                 <div class="form-group" style="flex:1;">
-                    <label class="form-label">STATUS</label>
-                    <select class="form-control">
-                        <option>Now Showing</option>
-                        <option>Coming Soon</option>
+                    <label class="form-label">TRẠNG THÁI</label>
+                    <select id="movieStatus" class="form-control">
+                        <option value="Now Showing">Đang chiếu</option>
+                        <option value="Coming Soon">Sắp chiếu</option>
+                        <option value="Stopped">Ngưng chiếu</option>
                     </select>
                 </div>
             </div>
+            <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">THỜI LƯỢNG (PHÚT)</label>
+                    <input type="number" id="movieDuration" class="form-control" placeholder="VD: 120" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">ĐỘ TUỔI</label>
+                    <input type="text" id="movieAgeRating" class="form-control" placeholder="VD: 13+, 18+, P">
+                </div>
+            </div>
             <div class="form-group">
-                <label class="form-label">CAST (SEPARATE BY COMMAS)</label>
-                <input type="text" class="form-control" placeholder="Lead actors, supporting cast...">
+                <label class="form-label">DIỄN VIÊN (PHÂN CÁCH BẰNG DẤU PHẨY)</label>
+                <input type="text" id="movieMainCast" class="form-control" placeholder="Diễn viên chính, diễn viên phụ...">
             </div>
         </form>
     </div>
     <div class="panel-footer">
-        <button class="btn-panel-cancel" onclick="closeAddMovieModal()">Cancel</button>
-        <button class="btn-panel-save" onclick="saveMovie()">Save Movie</button>
+        <button class="btn-panel-cancel" onclick="closeAddMovieModal()">Hủy</button>
+        <button class="btn-panel-save" onclick="saveMovie()">Lưu Phim</button>
     </div>
 </div>
 
-<script>
-/* ══════════════════════════
-   TRANSACTION DATA
-══════════════════════════ */
-const TXN_DATA = [
-    { id:'#TXN-9021', branch:'Downtown',  item:'VIP Screen – 12 Seats', date:'12 Oct, 14:30', amount:'$1,240.00', status:'COMPLETED' },
-    { id:'#TXN-9022', branch:'West Side', item:'Family Combo (x4)',     date:'12 Oct, 15:15', amount:'$115.50',   status:'COMPLETED' },
-    { id:'#TXN-9023', branch:'North Mall',item:'Ticket: Neon Horizon',  date:'12 Oct, 15:45', amount:'$22.00',    status:'PROCESSING' },
-    { id:'#TXN-9024', branch:'Downtown',  item:'Mega Combo (x2)',       date:'12 Oct, 16:00', amount:'$48.00',    status:'COMPLETED' },
-    { id:'#TXN-9025', branch:'West Side', item:'Ticket: The Last Echo', date:'12 Oct, 16:20', amount:'$18.50',    status:'COMPLETED' },
-    { id:'#TXN-9026', branch:'North Mall',item:'Kids Pack (x3)',        date:'12 Oct, 16:35', amount:'$28.50',    status:'FAILED'    },
-    { id:'#TXN-9027', branch:'Downtown',  item:'IMAX 3D – 6 Seats',    date:'12 Oct, 17:00', amount:'$144.00',   status:'COMPLETED' },
-    { id:'#TXN-9028', branch:'West Side', item:'Solo Feast (x2)',       date:'12 Oct, 17:15', amount:'$28.00',    status:'PROCESSING'},
-];
-
-let currentPage = 1;
-const ROWS_PER_PAGE = 5;
-let filteredData = [...TXN_DATA];
-
-function renderTable() {
-    const body = document.getElementById('txnBody');
-    const start = (currentPage - 1) * ROWS_PER_PAGE;
-    const rows = filteredData.slice(start, start + ROWS_PER_PAGE);
-    const totalPages = Math.max(1, Math.ceil(filteredData.length / ROWS_PER_PAGE));
-
-    body.innerHTML = rows.map(t => `
-        <tr class="txn-row">
-            <td class="txn-id">${t.id}</td>
-            <td>${t.branch}</td>
-            <td>${t.item}</td>
-            <td>${t.date}</td>
-            <td class="txn-amount">${t.amount}</td>
-            <td><span class="status-badge ${t.status.toLowerCase()}">${t.status}</span></td>
-        </tr>`).join('');
-
-    document.getElementById('pgInfo').textContent = `Page ${currentPage} of ${totalPages}`;
-    document.getElementById('pgPrev').disabled = currentPage === 1;
-    document.getElementById('pgNext').disabled = currentPage === totalPages;
-}
-
-function changePage(delta) {
-    const totalPages = Math.ceil(filteredData.length / ROWS_PER_PAGE);
-    currentPage = Math.min(totalPages, Math.max(1, currentPage + delta));
-    renderTable();
-}
-
-function toggleFilter() {
-    const bar = document.getElementById('filterBar');
-    bar.style.display = bar.style.display === 'none' ? 'flex' : 'none';
-}
-
-function applyFilter() {
-    const statusF = document.getElementById('filterStatus').value;
-    const branchF = document.getElementById('filterBranch').value;
-    filteredData = TXN_DATA.filter(t =>
-        (!statusF || t.status === statusF) &&
-        (!branchF || t.branch === branchF)
-    );
-    currentPage = 1;
-    renderTable();
-}
-
-function clearFilter() {
-    document.getElementById('filterStatus').value = '';
-    document.getElementById('filterBranch').value = '';
-    filteredData = [...TXN_DATA];
-    currentPage = 1;
-    renderTable();
-}
-
-/* ══════════════════════════
-   CHART
-══════════════════════════ */
-function buildChart() {
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [
-                {
-                    label: 'Ticket Revenue',
-                    data: [42000,48000,51000,45000,62000,58000,67000,72000,65000,80000,70000,85000],
-                    backgroundColor: 'rgba(232,25,44,0.85)',
-                    borderRadius: 5,
-                    borderSkipped: false,
-                    barPercentage: 0.55,
-                    categoryPercentage: 0.65,
-                },
-                {
-                    label: 'F&B Revenue',
-                    data: [9000,10500,11200,10000,13000,12500,14500,15000,14000,17500,15000,18000],
-                    backgroundColor: 'rgba(245,158,11,0.75)',
-                    borderRadius: 5,
-                    borderSkipped: false,
-                    barPercentage: 0.55,
-                    categoryPercentage: 0.65,
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: '#1a1f2e',
-                    titleColor: '#eef0f8',
-                    bodyColor: '#8a90a8',
-                    padding: 12,
-                    borderColor: 'rgba(255,255,255,0.08)',
-                    borderWidth: 1,
-                    callbacks: {
-                        label: ctx => ` $${(ctx.raw/1000).toFixed(1)}K`
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: { display: false },
-                    ticks: { color: '#9ca3af', font: { size: 11 } },
-                    border: { display: false }
-                },
-                y: {
-                    grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
-                    ticks: {
-                        color: '#9ca3af', font: { size: 11 },
-                        callback: v => '$' + (v/1000) + 'K'
-                    },
-                    border: { display: false }
-                }
-            }
-        }
-    });
-}
-
-/* ══════════════════════════
-   MOVIES DATA & FUNCTIONS
-══════════════════════════ */
-const MOVIE_DATA = [
-    { poster: 'images/movie_neon_dreams.png', title: 'NEON HORIZON', director: 'Marcus Thorne', status: 'NOW SHOWING', genres: ['Sci-Fi', 'Action'], duration: '124 min' },
-    { poster: 'images/movie_summer_echoes.png', title: 'SILENT ECHOES', director: 'Elena Rossi', status: 'COMING SOON', genres: ['Drama', 'Indie'], duration: '98 min' },
-    { poster: 'images/movie_velocity.png', title: 'VELOCITY ZERO', director: 'Kenji Sato', status: 'NOW SHOWING', genres: ['Action', 'Thriller'], duration: '112 min' }
-];
-
-let filteredMovies = [...MOVIE_DATA];
-
-function renderMovieTable() {
-    const body = document.getElementById('movieBody');
-    if (!body) return;
-    body.innerHTML = filteredMovies.map(m => `
-        <tr class="txn-row">
-            <td>
-                <div class="m-poster-wrap">
-                    <img src="${m.poster}" alt="${m.title}">
-                </div>
-            </td>
-            <td>
-                <div class="m-title-block">
-                    <div class="m-title">${m.title}</div>
-                    <div class="m-director">Dir. ${m.director}</div>
-                </div>
-            </td>
-            <td>
-                <span class="status-pill ${m.status.toLowerCase().replace(' ', '-')}">${m.status}</span>
-            </td>
-            <td>
-                <div class="m-genres">
-                    ${m.genres.map(g => `<span class="genre-tag">${g}</span>`).join('')}
-                </div>
-            </td>
-            <td><div class="m-duration">${m.duration}</div></td>
-            <td>
-                <div class="table-actions" style="opacity:0.6">
-                    <button class="tb-icon-sm" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
-    document.getElementById('moviePgInfo').textContent = `Showing 1-${filteredMovies.length} of ${MOVIE_DATA.length} movies`;
-}
-
-function filterMovies(filter, btn) {
-    document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    
-    if (filter === 'All') {
-        filteredMovies = [...MOVIE_DATA];
-    } else {
-        filteredMovies = MOVIE_DATA.filter(m => m.status === filter.toUpperCase());
-    }
-    renderMovieTable();
-}
-
-function openAddMovieModal() {
-    document.getElementById('addMovieModalOverlay').classList.add('show');
-    document.getElementById('addMovieModal').classList.add('show');
-}
-function closeAddMovieModal() {
-    document.getElementById('addMovieModalOverlay').classList.remove('show');
-    document.getElementById('addMovieModal').classList.remove('show');
-}
-function saveMovie() {
-    const btn = document.querySelector('.btn-panel-save');
-    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-9-9"/></svg> Saving...`;
-    setTimeout(() => {
-        btn.innerHTML = `Save Movie`;
-        closeAddMovieModal();
-        alert('Movie saved successfully!');
-    }, 800);
-}
-
-/* ══════════════════════════
-   NAVIGATION
-══════════════════════════ */
-function navigate(page, btn) {
-    document.querySelectorAll('.sn, .sn-bottom').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    else {
-        // Fallback for direct calls
-        document.querySelectorAll('.sn').forEach(b => {
-            if(b.getAttribute('onclick') && b.getAttribute('onclick').includes(page)) {
-                b.classList.add('active');
-            }
-        });
-    }
-
-    // Handle Topbar Title
-    const topbarTitle = document.getElementById('topbarTitle');
-    const ttabs = document.querySelector('.topbar-tabs');
-    if (page === 'cinema') {
-        topbarTitle.style.display = 'block';
-        ttabs.style.display = 'flex';
-    } else if (page === 'schedule') {
-        topbarTitle.textContent = 'SHOWTIME SCHEDULER';
-        topbarTitle.style.display = 'block';
-        ttabs.style.display = 'flex';
-    } else {
-        topbarTitle.style.display = 'none';
-        ttabs.style.display = 'flex';
-    }
-    
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const target = document.getElementById('page-' + page);
-    if (target) target.classList.add('active');
-}
-
-function switchTab(tab, btn) {
-    document.querySelectorAll('.ttab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-}
-
-/* ══════════════════════════
-   LOGOUT
-══════════════════════════ */
-function adminLogout() {
-    if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('adminToken');
-        window.location.href = 'auth.html';
-    }
-}
-
-/* ══════════════════════════
-   LIVE CLOCK in topbar
-══════════════════════════ */
-function updateClock() {
-    const now = new Date();
-    const h = String(now.getHours()).padStart(2,'0');
-    const m = String(now.getMinutes()).padStart(2,'0');
-    const s = String(now.getSeconds()).padStart(2,'0');
-    const el = document.getElementById('liveClock');
-    if (el) el.textContent = `${h}:${m}:${s}`;
-}
-
-/* ══════════════════════════
-   ANIMATED COUNTERS
-══════════════════════════ */
-function animateCounter(el, target, prefix='', suffix='', decimals=0) {
-    const duration = 1200;
-    const start = performance.now();
-    function update(now) {
-        const elapsed = now - start;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const val = eased * target;
-        el.textContent = prefix + (decimals > 0 ? val.toFixed(decimals) : Math.round(val).toLocaleString()) + suffix;
-        if (progress < 1) requestAnimationFrame(update);
-    }
-    requestAnimationFrame(update);
-}
-
-/* ══════════════════════════
-   INIT
-══════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
-    renderTable();
-    renderMovieTable();
-    renderSeatMatrix();
-    buildChart();
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // Animate KPI values
-    setTimeout(() => {
-        const kpiVals = document.querySelectorAll('.kpi-value');
-        if (kpiVals[0]) animateCounter(kpiVals[0], 248392, '$', '', 0);
-        if (kpiVals[1]) animateCounter(kpiVals[1], 14205, '', '', 0);
-        if (kpiVals[2]) animateCounter(kpiVals[2], 52110, '$', '', 0);
-        if (kpiVals[3]) animateCounter(kpiVals[3], 76.8, '', '%', 1);
-    }, 200);
-
-    // Admin user
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-        try {
-            const user = JSON.parse(userStr);
-            const initial = (user.fullName || 'A').charAt(0).toUpperCase();
-            document.getElementById('adminAvatar').textContent = initial;
-        } catch(e) {}
-    }
-});
-/* ══════════════════════════
-   SEAT MATRIX BUILDER
-══════════════════════════ */
-function renderSeatMatrix() {
-    const rows = ['A','B','C','D','E','F','G','H','I','J'];
-    let html = '';
-    rows.forEach(r => {
-        html += `<div class="seat-row">`;
-        for(let c = 1; c <= 12; c++) {
-            let sClass = 'standard';
-            if (r === 'A' && (c === 1 || c === 12)) sClass = 'blocked';
-            else if (['E','F','G','H'].includes(r) && c >= 4 && c <= 9) sClass = 'vip';
-            
-            html += `<button class="seat-btn ${sClass}">${r}${c}</button>`;
-        }
-        html += `</div>`;
-    });
-    const matrix = document.getElementById('seatMatrix');
-    if (matrix) matrix.innerHTML = html;
-}
-</script>
+<script src="js/admin.js"></script>
 
 <style>
 @keyframes spin { to { transform: rotate(360deg); } }

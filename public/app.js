@@ -305,10 +305,112 @@ const app = {
             }
             this.updateSummarySidebar();
         });
+    },
+
+    handleBookingClick(movieId) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Vui lòng đăng nhập để tiếp tục đặt vé!');
+            window.location.href = 'auth.html';
+        } else {
+            window.location.href = `booking.html?movieId=${movieId}`;
+        }
+    },
+
+    // --- Dynamic Movie Fetching for Guest Pages ---
+    async loadDynamicMovies() {
+        // 1. For index.html (Now Showing) -> .movie-grid
+        const nowShowingGrid = document.querySelector('.movie-grid');
+        if (nowShowingGrid) {
+            try {
+                const res = await fetch('http://localhost:9999/api/movies/now-showing');
+                const json = await res.json();
+                if (json.success && json.data) {
+                    nowShowingGrid.innerHTML = json.data.map(movie => `
+                        <div class="movie-card">
+                            <div class="movie-poster">
+                                <span class="age-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                                <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                                <div class="poster-overlay">
+                                    <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                    <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">ĐẶT VÉ</button>
+                                </div>
+                            </div>
+                            <div class="movie-info">
+                                <h3 class="movie-title">${movie.Title}</h3>
+                                <div class="movie-genre">${movie.MainCast ? movie.MainCast : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                <div class="movie-rating">★ 8.5</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load now showing movies:', err);
+            }
+        }
+
+        // 2. For index.html (Coming Soon) -> .movie-grid-large
+        const comingSoonGrid = document.querySelector('.movie-grid-large');
+        if (comingSoonGrid) {
+            try {
+                const res = await fetch('http://localhost:9999/api/movies/coming-soon');
+                const json = await res.json();
+                if (json.success && json.data) {
+                    comingSoonGrid.innerHTML = json.data.map(movie => `
+                        <div class="movie-card-large">
+                            <div class="movie-poster-large">
+                                <span class="coming-badge">SẮP CHIẾU</span>
+                                <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                            </div>
+                            <div class="movie-info-large">
+                                <h3 class="movie-title-large">${movie.Title}</h3>
+                                <div class="movie-meta-large">
+                                    <span>${movie.MainCast ? movie.MainCast : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</span>
+                                    <span class="movie-date">Sắp chiếu</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load coming soon movies:', err);
+            }
+        }
+
+        // 3. For movies.html -> .movies-grid
+        const allMoviesGrid = document.querySelector('.movies-grid');
+        if (allMoviesGrid) {
+            try {
+                const res = await fetch('http://localhost:9999/api/movies');
+                const json = await res.json();
+                if (json.success && json.data) {
+                    allMoviesGrid.innerHTML = json.data.map(movie => `
+                        <div class="movie-card">
+                            <div class="movie-poster">
+                                <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                                <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                                <div class="movie-overlay">
+                                    <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Get Tickets</button>
+                                </div>
+                            </div>
+                            <div class="movie-info">
+                                <h3 class="movie-title">${movie.Title}</h3>
+                                <div class="movie-rating">
+                                    <span class="stars">★ 4.9</span>
+                                    <span class="genres">${movie.Duration} phút</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load all movies:', err);
+            }
+        }
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    app.renderMovies();
     app.initSocket();
+    app.loadDynamicMovies();
 });

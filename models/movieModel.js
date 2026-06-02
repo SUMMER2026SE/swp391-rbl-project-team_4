@@ -4,11 +4,11 @@ class MovieModel {
   static async getNowShowing() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT MovieID, Title, Genre, Duration, Rating, Description,
-             PosterURL, TrailerURL, ReleaseDate, Status
+      SELECT MovieID, Title, Description, Director, Duration, AgeRating,
+             TrailerURL, PosterURL, Status, MainCast
       FROM   Movies
-      WHERE  Status = 'now-showing'
-      ORDER BY ReleaseDate DESC
+      WHERE  Status = 'Now Showing'
+      ORDER BY MovieID DESC
     `);
     return result.recordset;
   }
@@ -16,16 +16,16 @@ class MovieModel {
   static async getComingSoon() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT MovieID, Title, Genre, Duration, Rating, Description,
-             PosterURL, TrailerURL, ReleaseDate, Status
+      SELECT MovieID, Title, Description, Director, Duration, AgeRating,
+             TrailerURL, PosterURL, Status, MainCast
       FROM   Movies
-      WHERE  Status = 'coming-soon'
-      ORDER BY ReleaseDate ASC
+      WHERE  Status = 'Coming Soon'
+      ORDER BY MovieID ASC
     `);
     return result.recordset;
   }
 
-  static async getAllMovies({ status, genre, search }) {
+  static async getAllMovies({ status, search }) {
     const pool = await getPool();
     const request = pool.request();
 
@@ -34,21 +34,17 @@ class MovieModel {
       request.input('status', sql.NVarChar, status);
       whereClause += ' AND Status = @status';
     }
-    if (genre) {
-      request.input('genre', sql.NVarChar, genre);
-      whereClause += ' AND Genre = @genre';
-    }
     if (search) {
       request.input('search', sql.NVarChar, `%${search}%`);
       whereClause += ' AND Title LIKE @search';
     }
 
     const result = await request.query(`
-      SELECT MovieID, Title, Genre, Duration, Rating, Description,
-             PosterURL, TrailerURL, ReleaseDate, Status
+      SELECT MovieID, Title, Description, Director, Duration, AgeRating,
+             TrailerURL, PosterURL, Status, MainCast
       FROM   Movies
       ${whereClause}
-      ORDER BY ReleaseDate DESC
+      ORDER BY MovieID DESC
     `);
     return result.recordset;
   }
@@ -58,8 +54,8 @@ class MovieModel {
     const result = await pool.request()
       .input('movieId', sql.Int, parseInt(movieId))
       .query(`
-        SELECT MovieID, Title, Genre, Duration, Rating, Description,
-               PosterURL, TrailerURL, ReleaseDate, Status
+        SELECT MovieID, Title, Description, Director, Duration, AgeRating,
+               TrailerURL, PosterURL, Status, MainCast
         FROM   Movies
         WHERE  MovieID = @movieId
       `);

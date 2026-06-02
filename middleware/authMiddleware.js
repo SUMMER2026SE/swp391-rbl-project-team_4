@@ -9,6 +9,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'cinemaverse_super_secret_key_2024'
 // ─── Vai trò (Phải khớp chính xác với dữ liệu trong bảng Roles) ──
 const ROLES = {
   SUPER_ADMIN: 'Super Admin',
+  ADMIN: 'Admin',
+  MANAGER: 'Manager',
   CUSTOMER: 'Customer',
 };
 
@@ -68,8 +70,8 @@ const authorizeRoles = (...roles) => {
 // Shorthand guards cho dự án B2C
 // ============================================================
 
-// Chỉ Super Admin mới gọi được API này (Dùng cho Xóa phim, Thêm lịch chiếu, v.v.)
-const isSuperAdmin = authorizeRoles(ROLES.SUPER_ADMIN);
+// Chỉ Admin/Manager/Super Admin mới gọi được API này
+const isSuperAdmin = authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER);
 
 // Tùy chọn: Dùng nếu có API chỉ dành riêng cho Customer (Dùng cho Đặt vé, Viết review, v.v.)
 const isCustomer = authorizeRoles(ROLES.CUSTOMER);

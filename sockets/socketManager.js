@@ -67,7 +67,7 @@ module.exports = (io) => {
             if (lockInfo && lockInfo.socketId === socket.id) {
                 clearTimeout(lockInfo.timerId);
                 lockedSeats.delete(seatKey);
-                
+
                 const userSeats = socketToSeats.get(socket.id);
                 if (userSeats) userSeats.delete(seatKey);
 
@@ -84,7 +84,7 @@ module.exports = (io) => {
         socket.on('disconnect', () => {
             console.log(`[Socket] 🔴 Client disconnected: ${socket.id}`);
             const userSeats = socketToSeats.get(socket.id);
-            
+
             if (userSeats) {
                 for (const seatKey of userSeats) {
                     const lockInfo = lockedSeats.get(seatKey);
@@ -94,7 +94,7 @@ module.exports = (io) => {
 
                         const [showtimeId, seatId] = seatKey.split('_');
                         const room = `room_showtime_${showtimeId}`;
-                        
+
                         io.to(room).emit('seatStatusUpdated', {
                             showtimeId,
                             seatId,

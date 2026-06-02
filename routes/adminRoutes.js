@@ -4,15 +4,27 @@
 // ============================================================
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const adminCtrl = require('../controllers/adminController');
 const { verifyToken, isSuperAdmin } = require('../middleware/authMiddleware');
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/images/');
+    },
+    filename: function (req, file, cb) {
+        cb(null, 'movie_' + Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
 
 // Bảo vệ toàn bộ admin routes (chỉ Super Admin)
 router.use(verifyToken, isSuperAdmin);
 
 // ─── Movie Management ─────────────────────────────────────────
 // POST   /api/admin/movies         — Thêm phim mới
-router.post('/movies', adminCtrl.createMovie);
+router.post('/movies', upload.single('poster'), adminCtrl.createMovie);
 
 // PUT    /api/admin/movies/:id      — Sửa phim
 router.put('/movies/:id', adminCtrl.updateMovie);
@@ -47,14 +59,27 @@ router.get('/vouchers', adminCtrl.getAllVouchers);
 // POST   /api/admin/vouchers           — Tạo voucher
 router.post('/vouchers', adminCtrl.createVoucher);
 
+// ─── F&B Management ────────────────────────────────────────────
+// GET    /api/admin/fnb                — Danh sách F&B
+router.get('/fnb', adminCtrl.getAllFnB);
+
+// POST   /api/admin/fnb                — Tạo mặt hàng F&B mới
+router.post('/fnb', adminCtrl.createFnB);
+
 // ─── Statistics ──────────────────────────────────────────────
 // GET    /api/admin/stats/dashboard    — Tổng quan dashboard
 router.get('/stats/dashboard', adminCtrl.getDashboardStats);
+
+// GET    /api/admin/stats/recent-transactions — Giao dịch gần đây
+router.get('/stats/recent-transactions', adminCtrl.getRecentTransactions);
 
 // GET    /api/admin/stats/revenue      — Thống kê doanh thu
 router.get('/stats/revenue', adminCtrl.getRevenueStats);
 
 // GET    /api/admin/stats/top-movies   — Top phim doanh thu cao
 router.get('/stats/top-movies', adminCtrl.getTopMovies);
+
+// GET    /api/admin/stats/monthly-revenue — Doanh thu hàng tháng cho chart
+router.get('/stats/monthly-revenue', adminCtrl.getMonthlyRevenue);
 
 module.exports = router;

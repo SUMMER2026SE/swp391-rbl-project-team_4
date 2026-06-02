@@ -11,21 +11,20 @@
 
 <body>
     <!-- Navbar -->
-    <header class="navbar">
+        <header class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">
                 <span class="logo-d">D</span>
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <a href="movies.html" id="nav-phim" >Phim</a>
+                <a href="movies.html" id="nav-phim">Phim</a>
                 <a href="booking.html" id="nav-rap" class="active">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
-                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
@@ -110,104 +109,82 @@
 
     <!-- Available Showtimes -->
     <section class="showtimes-section">
-        <div class="container">
-            <h2 class="section-title">Available Showtimes</h2>
-
-            <!-- Showtime Card 1 -->
-            <div class="showtime-card">
-                <div class="showtime-poster">
-                    <img src="images/movie_nebula.png" alt="Nebula Ascendance">
-                </div>
-                <div class="showtime-info">
-                    <div class="movie-header">
-                        <span class="age-badge">T16</span>
-                        <span class="genre">Action, Sci-Fi</span>
-                        <span class="duration">• 142 mins</span>
-                    </div>
-                    <h3 class="showtime-title">NEBULA ASCENDANCE</h3>
-
-                    <div class="format-block">
-                        <div class="format-label">2D VIETNAMESE SUBTITLES</div>
-                        <div class="time-buttons">
-                            <button class="time-btn">09:30</button>
-                            <button class="time-btn active">12:15</button>
-                            <button class="time-btn">15:00</button>
-                            <button class="time-btn">17:45</button>
-                            <button class="time-btn">20:30</button>
-                            <button class="time-btn">23:15</button>
-                        </div>
-                    </div>
-
-                    <div class="format-block">
-                        <div class="format-label">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                            </svg>
-                            IMAX 3D
-                        </div>
-                        <div class="time-buttons">
-                            <button class="time-btn">14:00</button>
-                            <button class="time-btn">19:30</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Showtime Card 2 -->
-            <div class="showtime-card">
-                <div class="showtime-poster">
-                    <img src="images/movie_woods.png" alt="The Whispering Woods">
-                </div>
-                <div class="showtime-info">
-                    <div class="movie-header">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="color: #f5c518;">
-                            <polygon
-                                points="12 2 15.09 10.26 23.77 10.35 17.16 16.71 19.85 25 12 19.54 4.15 25 6.84 16.71 0.23 10.35 8.91 10.26 12 2" />
-                        </svg>
-                        <span class="genre">Animation, Adventure</span>
-                        <span class="duration">• 105 mins</span>
-                    </div>
-                    <h3 class="showtime-title">THE WHISPERING WOODS</h3>
-
-                    <div class="format-block">
-                        <div class="format-label">2D DUBBED (VIETNAMESE)</div>
-                        <div class="time-buttons">
-                            <button class="time-btn">10:00</button>
-                            <button class="time-btn">11:45</button>
-                            <button class="time-btn">13:30</button>
-                            <button class="time-btn">15:15</button>
-                            <button class="time-btn">17:00</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Showtime Card 3 -->
-            <div class="showtime-card">
-                <div class="showtime-poster">
-                    <img src="images/movie_shadow.png" alt="Shadow Protocol">
-                </div>
-                <div class="showtime-info">
-                    <div class="movie-header">
-                        <span class="age-badge">T18</span>
-                        <span class="genre">Thriller, Crime</span>
-                        <span class="duration">• 118 mins</span>
-                    </div>
-                    <h3 class="showtime-title">SHADOW PROTOCOL</h3>
-
-                    <div class="format-block">
-                        <div class="format-label">2D VIETNAMESE SUBTITLES</div>
-                        <div class="time-buttons">
-                            <button class="time-btn">18:45</button>
-                            <button class="time-btn">21:15</button>
-                            <button class="time-btn">23:45</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="container" id="dynamicShowtimesContainer">
+            <h2 class="section-title">Loading Showtimes...</h2>
         </div>
     </section>
+
+    <!-- Scripts for dynamic booking -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const movieId = params.get('movieId');
+            const container = document.getElementById('dynamicShowtimesContainer');
+
+            if (!movieId) {
+                container.innerHTML = '<h2 class="section-title">Vui lòng chọn phim trước.</h2>';
+                return;
+            }
+
+            try {
+                // Load movie details
+                const movieRes = await fetch(`http://localhost:9999/api/movies/${movieId}`);
+                const movieJson = await movieRes.json();
+                
+                // Load showtimes
+                const showtimesRes = await fetch(`http://localhost:9999/api/movies/${movieId}/showtimes`);
+                const showtimesJson = await showtimesRes.json();
+
+                if (movieJson.success && movieJson.data) {
+                    const m = movieJson.data;
+                    const showtimes = (showtimesJson.success && showtimesJson.data) ? showtimesJson.data : [];
+
+                    container.innerHTML = `
+                        <h2 class="section-title">Lịch chiếu phim: ${m.Title}</h2>
+                        <div class="showtime-card">
+                            <div class="showtime-poster">
+                                <img src="${m.PosterURL || 'images/default_poster.svg'}" alt="${m.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                            </div>
+                            <div class="showtime-info">
+                                <div class="movie-header">
+                                    <span class="age-badge age-${m.AgeRating || 'ALL'}">${m.AgeRating || 'ALL'}</span>
+                                    <span class="genre">${m.MainCast || 'Hành động'}</span>
+                                    <span class="duration">• ${m.Duration} phút</span>
+                                </div>
+                                <h3 class="showtime-title">${m.Title}</h3>
+
+                                <div class="format-block">
+                                    <div class="format-label">CÁC SUẤT CHIẾU TRONG NGÀY</div>
+                                    <div class="time-buttons">
+                                        ${showtimes.length > 0 
+                                            ? showtimes.map(st => {
+                                                const time = new Date(st.StartTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                                                return \`<button class="time-btn" onclick="goToCheckout(\${st.ShowtimeID}, '\${time}')">\${time}</button>\`;
+                                              }).join('')
+                                            : '<p>Chưa có suất chiếu nào cho phim này.</p>'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<h2 class="section-title">Lỗi khi tải suất chiếu.</h2>';
+            }
+        });
+        
+        function goToCheckout(showtimeId, timeStr) {
+            window.location.href = \`checkout.html?showtimeId=\${showtimeId}&time=\${timeStr}\`;
+        }
+    </script>
+    <style>
+        /* Small fix for dynamic age badges */
+        .age-ALL { background-color: #4CAF50; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .age-T13 { background-color: #ff9800; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .age-T16, .age-T18 { background-color: #f44336; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+    </style>
 
     <!-- Branch Information -->
     <section class="branch-section">
