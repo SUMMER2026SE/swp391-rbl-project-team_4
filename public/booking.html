@@ -128,11 +128,11 @@
 
             try {
                 // Load movie details
-                const movieRes = await fetch(`http://localhost:9999/api/movies/${movieId}`);
+                const movieRes = await fetch(`/api/movies/${movieId}`);
                 const movieJson = await movieRes.json();
                 
                 // Load showtimes
-                const showtimesRes = await fetch(`http://localhost:9999/api/movies/${movieId}/showtimes`);
+                const showtimesRes = await fetch(`/api/movies/${movieId}/showtimes`);
                 const showtimesJson = await showtimesRes.json();
 
                 if (movieJson.success && movieJson.data) {
@@ -159,7 +159,7 @@
                                         ${showtimes.length > 0 
                                             ? showtimes.map(st => {
                                                 const time = new Date(st.StartTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                                                return \`<button class="time-btn" onclick="goToCheckout(\${st.ShowtimeID}, '\${time}')">\${time}</button>\`;
+                                                return `<button class="time-btn" onclick="goToCheckout(${st.ShowtimeID}, '${time}')">${time}</button>`;
                                               }).join('')
                                             : '<p>Chưa có suất chiếu nào cho phim này.</p>'
                                         }
@@ -176,7 +176,7 @@
         });
         
         function goToCheckout(showtimeId, timeStr) {
-            window.location.href = \`checkout.html?showtimeId=\${showtimeId}&time=\${timeStr}\`;
+            window.location.href = `checkout.html?showtimeId=${showtimeId}&time=${timeStr}`;
         }
     </script>
     <style>
@@ -282,9 +282,7 @@
             btn.classList.add('active');
         }
 
-        function goToCheckout(time) {
-            window.location.href = 'checkout.html';
-        }
+        // goToCheckout defined above in showtime script
 
         document.addEventListener('DOMContentLoaded', () => {
             // Time buttons navigate to checkout

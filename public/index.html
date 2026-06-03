@@ -12,7 +12,7 @@
 
 <body>
     <!-- Navbar -->
-        <header class="navbar">
+    <header class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">
                 <span class="logo-d">D</span>
@@ -25,7 +25,8 @@
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
-                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
@@ -42,29 +43,102 @@
         </div>
     </header>
 
-    <!-- Hero Banner -->
-    <section class="hero">
-        <div class="hero-content">
-            <span class="hero-badge">PHIM ĐANG CHIẾU</span>
-            <h1 class="hero-title">DUNE: PART TWO</h1>
-            <div class="hero-meta">
-                <span class="hero-rating">★ 9.2</span>
-                <span>2024</span>
-                <span>166 phút</span>
-                <span>Hành động, Viễn tưởng</span>
+    <!-- Hero Banner Carousel -->
+    <section class="hero-carousel">
+        <div class="carousel-container">
+            <!-- Slide 1: DUNE PART TWO -->
+            <div class="hero-slide active" data-movie="0">
+                <div class="hero-background" style="background-image: url('images/dune_hero.png')"></div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-badge">PHIM ĐANG CHIẾU</span>
+                    <h1 class="hero-title">DUNE: PART TWO</h1>
+                    <div class="hero-meta">
+                        <span class="hero-rating">★ 9.2</span>
+                        <span>2024</span>
+                        <span>166 phút</span>
+                        <span>Hành động, Viễn tưởng</span>
+                    </div>
+                    <p class="hero-desc">Paul Atreides hợp nhất với Chani và người Fremen khi đang trên con đường trả
+                        thù những kẻ đã hủy hoại gia đình anh. Đối mặt với sự lựa chọn giữa tình yêu của đời mình và số
+                        phận của vũ trụ, anh cố gắng ngăn chặn một tương lai...</p>
+                    <div class="hero-actions">
+                        <button class="btn-primary" onclick="window.location.href='movie-detail.html'">🎬 CHI
+                            TIẾT</button>
+                        <button class="btn-secondary" onclick="window.location.href='booking.html'">ĐẶT VÉ</button>
+                    </div>
+                </div>
             </div>
-            <p class="hero-desc">Paul Atreides hợp nhất với Chani và người Fremen khi đang trên con đường trả thù những
-                kẻ đã hủy hoại gia đình anh. Đối mặt với sự lựa chọn giữa tình yêu của đời mình và số phận của vũ trụ,
-                anh cố gắng ngăn chặn một tương lai...</p>
-            <div class="hero-actions">
-                <button class="btn-primary" onclick="window.location.href='movie-detail.html'">🎬 CHI TIẾT</button>
-                <button class="btn-secondary" onclick="window.location.href='booking.html'">ĐẶT VÉ</button>
+
+            <!-- Slide 2: OPPENHEIMER -->
+            <div class="hero-slide" data-movie="1">
+                <div class="hero-background"
+                    style="background-image: url('https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1920&h=550&fit=crop')">
+                </div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-badge">PHIM ĐANG CHIẾU</span>
+                    <h1 class="hero-title">OPPENHEIMER</h1>
+                    <div class="hero-meta">
+                        <span class="hero-rating">★ 8.6</span>
+                        <span>2023</span>
+                        <span>180 phút</span>
+                        <span>Chính kịch, Lịch sử</span>
+                    </div>
+                    <p class="hero-desc">Câu chuyện về J. Robert Oppenheimer và sự phát triển của bom nguyên tử. Một
+                        hành trình đầy căng thẳng vào những bí mật quân sự nhất của Thế chiến II...</p>
+                    <div class="hero-actions">
+                        <button class="btn-primary" onclick="window.location.href='movie-detail.html'">🎬 CHI
+                            TIẾT</button>
+                        <button class="btn-secondary" onclick="window.location.href='booking.html'">ĐẶT VÉ</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: MONSTER HUNTER -->
+            <div class="hero-slide" data-movie="2">
+                <div class="hero-background"
+                    style="background-image: url('https://images.unsplash.com/photo-1608889335941-33ac24b72c96?w=1920&h=550&fit=crop')">
+                </div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-badge">PHIM ĐANG CHIẾU</span>
+                    <h1 class="hero-title">MONSTER HUNTER</h1>
+                    <div class="hero-meta">
+                        <span class="hero-rating">★ 8.1</span>
+                        <span>2024</span>
+                        <span>155 phút</span>
+                        <span>Hành động, Viễn tưởng</span>
+                    </div>
+                    <p class="hero-desc">Một chiến binh dũng cảm được gọi tên từ một thế giới khác để chống lại những
+                        quái vật huyền thoại. Tham gia cuộc phiêu lưu kỳ lạ đầy kịch tính và những pha hành động ngoạn
+                        mục...</p>
+                    <div class="hero-actions">
+                        <button class="btn-primary" onclick="window.location.href='movie-detail.html'">🎬 CHI
+                            TIẾT</button>
+                        <button class="btn-secondary" onclick="window.location.href='booking.html'">ĐẶT VÉ</button>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Navigation Buttons -->
+        <button class="carousel-btn carousel-prev" id="carouselPrev" onclick="carouselControls.prev()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        <button class="carousel-btn carousel-next" id="carouselNext" onclick="carouselControls.next()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+
+        <!-- Indicator Dots -->
         <div class="hero-dots">
-            <span class="dot active"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
+            <span class="dot active" onclick="carouselControls.goToSlide(0)"></span>
+            <span class="dot" onclick="carouselControls.goToSlide(1)"></span>
+            <span class="dot" onclick="carouselControls.goToSlide(2)"></span>
         </div>
     </section>
 
@@ -365,10 +439,90 @@
     <!-- Socket.io & App JS -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>
+
+    <!-- Carousel Control Script -->
     <script>
-        // Check login state for navbar
+        const carouselControls = {
+            currentSlide: 0,
+            totalSlides: 3,
+            autoplayInterval: null,
+            autoplayDelay: 5000, // 5 seconds
+
+            init() {
+                this.startAutoplay();
+                this.setupEventListeners();
+            },
+
+            updateSlide(index) {
+                const slides = document.querySelectorAll('.hero-slide');
+                const dots = document.querySelectorAll('.hero-dots .dot');
+
+                // Remove active class from all
+                slides.forEach(slide => slide.classList.remove('active'));
+                dots.forEach(dot => dot.classList.remove('active'));
+
+                // Add active class to current
+                if (slides[index]) {
+                    slides[index].classList.add('active');
+                }
+                if (dots[index]) {
+                    dots[index].classList.add('active');
+                }
+
+                this.currentSlide = index;
+            },
+
+            next() {
+                this.stopAutoplay();
+                const nextIndex = (this.currentSlide + 1) % this.totalSlides;
+                this.updateSlide(nextIndex);
+                this.startAutoplay();
+            },
+
+            prev() {
+                this.stopAutoplay();
+                const prevIndex = (this.currentSlide - 1 + this.totalSlides) % this.totalSlides;
+                this.updateSlide(prevIndex);
+                this.startAutoplay();
+            },
+
+            goToSlide(index) {
+                this.stopAutoplay();
+                if (index >= 0 && index < this.totalSlides) {
+                    this.updateSlide(index);
+                }
+                this.startAutoplay();
+            },
+
+            startAutoplay() {
+                this.autoplayInterval = setInterval(() => {
+                    const nextIndex = (this.currentSlide + 1) % this.totalSlides;
+                    this.updateSlide(nextIndex);
+                }, this.autoplayDelay);
+            },
+
+            stopAutoplay() {
+                if (this.autoplayInterval) {
+                    clearInterval(this.autoplayInterval);
+                }
+            },
+
+            setupEventListeners() {
+                // Pause on hover
+                const carousel = document.querySelector('.hero-carousel');
+                if (carousel) {
+                    carousel.addEventListener('mouseenter', () => this.stopAutoplay());
+                    carousel.addEventListener('mouseleave', () => this.startAutoplay());
+                }
+            }
+        };
+
+        // Initialize carousel when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
+            carouselControls.init();
+
+            // Check login state for navbar
             if (userStr) {
                 const user = JSON.parse(userStr);
                 const btnLogin = document.getElementById('btnLogin');

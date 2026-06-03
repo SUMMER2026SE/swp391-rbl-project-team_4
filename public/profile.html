@@ -534,7 +534,11 @@
                 if (userStr) {
                     const u = JSON.parse(userStr);
                     u.fullName = fullName;
-                    localStorage.setItem('user', JSON.stringify(u));
+                    if (localStorage.getItem('user')) {
+                        localStorage.setItem('user', JSON.stringify(u));
+                    } else {
+                        sessionStorage.setItem('user', JSON.stringify(u));
+                    }
                 }
 
                 btn.disabled = false;
@@ -626,7 +630,11 @@
                 // Update local storage
                 const user = JSON.parse((localStorage.getItem('user') || sessionStorage.getItem('user')));
                 user.AvatarURL = data.avatarUrl;
-                localStorage.setItem('user', JSON.stringify(user));
+                if (localStorage.getItem('user')) {
+                    localStorage.setItem('user', JSON.stringify(user));
+                } else {
+                    sessionStorage.setItem('user', JSON.stringify(user));
+                }
                 
                 // Update UI immediately
                 const avatarCircle = document.getElementById('avatarCircle');

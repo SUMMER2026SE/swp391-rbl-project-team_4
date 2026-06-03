@@ -4,7 +4,7 @@
 const jwt = require('jsonwebtoken');
 
 // Lấy secret key từ biến môi trường (Nên khai báo trong file .env)
-const JWT_SECRET = process.env.JWT_SECRET || 'cinemaverse_super_secret_key_2024';
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 
 // ─── Vai trò (Phải khớp chính xác với dữ liệu trong bảng Roles) ──
 const ROLES = {

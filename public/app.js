@@ -1,4 +1,4 @@
-const socket = io('http://localhost:9999');
+const socket = io();
 
 const mockMovies = [
     { id: 1, title: 'LẬT MẶT 7: MỘT ĐIỀU ƯỚC', rating: 'T16', image: 'images/poster.png', genre: 'Hành động', duration: 120, trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
@@ -323,7 +323,7 @@ const app = {
         const nowShowingGrid = document.querySelector('.movie-grid');
         if (nowShowingGrid) {
             try {
-                const res = await fetch('http://localhost:9999/api/movies/now-showing');
+                const res = await fetch('/api/movies/now-showing');
                 const json = await res.json();
                 if (json.success && json.data) {
                     nowShowingGrid.innerHTML = json.data.map(movie => `
@@ -353,7 +353,7 @@ const app = {
         const comingSoonGrid = document.querySelector('.movie-grid-large');
         if (comingSoonGrid) {
             try {
-                const res = await fetch('http://localhost:9999/api/movies/coming-soon');
+                const res = await fetch('/api/movies/coming-soon');
                 const json = await res.json();
                 if (json.success && json.data) {
                     comingSoonGrid.innerHTML = json.data.map(movie => `
@@ -381,7 +381,7 @@ const app = {
         const allMoviesGrid = document.querySelector('.movies-grid');
         if (allMoviesGrid) {
             try {
-                const res = await fetch('http://localhost:9999/api/movies');
+                const res = await fetch('/api/movies');
                 const json = await res.json();
                 if (json.success && json.data) {
                     allMoviesGrid.innerHTML = json.data.map(movie => `

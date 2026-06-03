@@ -36,7 +36,7 @@ exports.createMovie = async (req, res) => {
     res.status(201).json({ success: true, message: 'Thêm phim thành công!', data: movie });
   } catch (err) {
     console.error('[adminController] createMovie:', err.message);
-    res.status(500).json({ success: false, message: 'Lỗi server.', error: err.message, stack: err.stack });
+    res.status(500).json({ success: false, message: 'Lỗi server khi thêm phim.' });
   }
 };
 

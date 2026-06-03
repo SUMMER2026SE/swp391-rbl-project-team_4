@@ -193,6 +193,7 @@ exports.googleLogin = async (req, res) => {
           phone: user.Phone,
           roleId: user.RoleID,
           roleName: user.RoleName,
+          AvatarURL: user.AvatarURL,
         },
       });
 

@@ -499,8 +499,11 @@
 
                     document.getElementById('sidebarName').textContent = name;
                     document.getElementById('sidebarAvatar').textContent = initials;
-                    document.getElementById('navAvatar').textContent = initials.charAt(0);
-                    document.getElementById('navAvatar').title = name;
+                    const btnLogin = document.getElementById('btnLogin');
+                    if (btnLogin) {
+                        btnLogin.textContent = name;
+                        btnLogin.href = 'profile.html';
+                    }
                 } catch (e) { }
             }
         });

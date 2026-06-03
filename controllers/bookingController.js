@@ -113,8 +113,8 @@ exports.getBookingDetail = async (req, res) => {
     }
 
     // Kiểm tra quyền: chỉ được xem vé của chính mình (trừ Staff/Admin)
-    const allowedRoles = ['Admin', 'Manager', 'Staff'];
-    if (!allowedRoles.includes(req.user.role) && ticketData.UserID !== req.user.userId) {
+    const allowedRoles = ['Super Admin', 'Admin', 'Manager'];
+    if (!allowedRoles.includes(req.user.roleName) && ticketData.UserID !== req.user.userId) {
       return res.status(403).json({ success: false, message: 'Bạn không có quyền xem vé này.' });
     }
 

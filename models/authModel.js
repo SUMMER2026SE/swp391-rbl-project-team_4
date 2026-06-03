@@ -53,7 +53,7 @@ class AuthModel {
       .input('userId', sql.Int, userId)
       .query(`
         SELECT u.UserID, u.FullName, u.Email, u.Phone, u.CreatedAt, u.RoleID,
-               r.RoleName
+               u.AvatarURL, r.RoleName
         FROM   Users u
         JOIN   Roles r ON u.RoleID = r.RoleID
         WHERE  u.UserID = @userId
