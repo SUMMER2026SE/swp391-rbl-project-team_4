@@ -22,14 +22,14 @@ exports.createMovie = async (req, res) => {
     const posterURL = req.file ? 'images/' + req.file.filename : 'images/default_poster.png';
 
     const movieData = {
-        title,
-        description,
-        director,
-        duration: parseInt(duration),
-        ageRating,
-        posterURL,
-        status,
-        mainCast
+      title,
+      description,
+      director,
+      duration: parseInt(duration),
+      ageRating,
+      posterURL,
+      status,
+      mainCast
     };
 
     const movie = await AdminModel.createMovie(movieData);
@@ -44,7 +44,7 @@ exports.updateMovie = async (req, res) => {
   try {
     const movie = await AdminModel.updateMovie(parseInt(req.params.id), req.body);
     if (!movie) return res.status(404).json({ success: false, message: 'Không tìm thấy phim.' });
-    
+
     res.json({ success: true, message: 'Cập nhật phim thành công!', data: movie });
   } catch (err) {
     console.error('[adminController] updateMovie:', err.message);
