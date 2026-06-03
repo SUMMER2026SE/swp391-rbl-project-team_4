@@ -210,7 +210,7 @@
     ────────────────────────────────── */
     document.addEventListener('DOMContentLoaded', () => {
         // User avatar
-        const userStr = localStorage.getItem('user');
+        const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
         const btnLogin = document.getElementById('btnLogin');
         if (userStr && btnLogin) {
             try {

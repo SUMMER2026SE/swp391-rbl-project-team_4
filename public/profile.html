@@ -353,7 +353,7 @@
     <script>
     /* ─── Load user data ─── */
     document.addEventListener('DOMContentLoaded', async () => {
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         if (!token) { window.location.href = 'auth.html'; return; }
 
         try {
@@ -463,7 +463,7 @@
     /* ─── Save profile ─── */
     async function saveProfile() {
         const btn = document.getElementById('btnSave');
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         if (!token) return;
 
         btn.disabled = true;
@@ -530,7 +530,7 @@
                     ui.textContent = initials;
                 }
                 
-                const userStr = localStorage.getItem('user');
+                const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
                 if (userStr) {
                     const u = JSON.parse(userStr);
                     u.fullName = fullName;
@@ -606,7 +606,7 @@
         const file = event.target.files[0];
         if (!file) return;
         
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         if (!token) return;
 
         const formData = new FormData();
@@ -624,7 +624,7 @@
             const data = await res.json();
             if (data.success) {
                 // Update local storage
-                const user = JSON.parse(localStorage.getItem('user'));
+                const user = JSON.parse((localStorage.getItem('user') || sessionStorage.getItem('user')));
                 user.AvatarURL = data.avatarUrl;
                 localStorage.setItem('user', JSON.stringify(user));
                 
@@ -653,7 +653,7 @@
         if (newPassword.length < 8)           { alert('New password must be at least 8 characters.'); return; }
         if (newPassword !== confirm)           { alert('Passwords do not match.'); return; }
 
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         if (!token) return;
 
         try {
@@ -688,7 +688,7 @@
 
     /* ─── Fetch My Bookings ─── */
     async function fetchMyBookings() {
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         if (!token) return;
 
         try {
@@ -781,8 +781,8 @@
 
     /* ─── Logout ─── */
     function logout() {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        {localStorage.removeItem('user'); sessionStorage.removeItem('user');}
+        {localStorage.removeItem('token'); sessionStorage.removeItem('token');}
         window.location.href = 'auth.html';
     }
     </script>

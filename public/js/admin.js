@@ -2,7 +2,7 @@
    FETCH DATA FROM BACKEND
 ══════════════════════════ */
 async function apiFetch(url, options = {}) {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
@@ -369,7 +369,7 @@ async function saveMovie() {
         formData.append('ageRating', document.getElementById('movieAgeRating').value);
         formData.append('mainCast', document.getElementById('movieMainCast').value);
 
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         const res = await fetch('/api/admin/movies', {
             method: 'POST',
             headers: {
@@ -438,8 +438,8 @@ function switchTab(tab, btn) {
 ══════════════════════════ */
 function adminLogout() {
     if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.removeItem('token'); sessionStorage.removeItem('token');
+        localStorage.removeItem('user'); sessionStorage.removeItem('user');
         window.location.href = 'auth.html';
     }
 }
@@ -742,8 +742,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     // Check auth
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     
     if (!token || !userStr) {
         window.location.href = 'auth.html';

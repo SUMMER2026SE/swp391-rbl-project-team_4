@@ -291,7 +291,7 @@
             document.querySelectorAll('.time-btn').forEach(btn => {
                 btn.addEventListener('click', () => goToCheckout(btn.textContent));
             });
-            const userStr = localStorage.getItem('user');
+            const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
             if (userStr) {
                 const user = JSON.parse(userStr);
                 const btnLogin = document.getElementById('btnLogin');

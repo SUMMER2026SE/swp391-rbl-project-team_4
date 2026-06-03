@@ -308,7 +308,7 @@ const app = {
     },
 
     handleBookingClick(movieId) {
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         if (!token) {
             alert('Vui lòng đăng nhập để tiếp tục đặt vé!');
             window.location.href = 'auth.html';

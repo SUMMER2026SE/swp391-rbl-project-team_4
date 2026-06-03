@@ -490,7 +490,7 @@
     <script>
         /* ─── User Data ─── */
         document.addEventListener('DOMContentLoaded', () => {
-            const userStr = localStorage.getItem('user');
+            const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
             if (userStr) {
                 try {
                     const user = JSON.parse(userStr);
@@ -572,8 +572,8 @@
         /* ─── Logout ─── */
         function logout(e) {
             e.preventDefault();
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
+            {localStorage.removeItem('user'); sessionStorage.removeItem('user');}
+            {localStorage.removeItem('token'); sessionStorage.removeItem('token');}
             window.location.href = 'auth.html';
         }
     </script>

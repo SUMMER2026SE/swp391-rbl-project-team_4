@@ -316,9 +316,18 @@
         return;
       }
 
-      // ─── Đăng nhập thành công ───
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      const remember = document.getElementById('rememberMe') && document.getElementById('rememberMe').checked;
+      if (remember) {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+      }
 
       showToast(data.message || 'Đăng nhập thành công!', 'success');
 
@@ -359,8 +368,18 @@
         return;
       }
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      const remember = document.getElementById('rememberMe') && document.getElementById('rememberMe').checked;
+      if (remember) {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+      }
 
       showToast('Đăng nhập Google thành công!', 'success');
 
@@ -547,8 +566,8 @@
   //  CHECK AUTH ON LOAD (redirect if already logged in)
   // ═══════════════════════════════════════════════════════════
   function checkExistingAuth() {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const user = (localStorage.getItem('user') || sessionStorage.getItem('user'));
 
     if (token && user) {
       try {
@@ -557,8 +576,8 @@
         const redirect = ROLE_REDIRECTS[role] || 'index.html';
         window.location.href = redirect;
       } catch (e) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.removeItem('token'); sessionStorage.removeItem('token');
+        localStorage.removeItem('user'); sessionStorage.removeItem('user');
       }
     }
   }

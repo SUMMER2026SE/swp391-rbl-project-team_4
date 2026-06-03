@@ -237,14 +237,25 @@
             }
           }
           let nextFocus = Math.min(idx + chars.length, dom.otpBoxes.length - 1);
-          dom.otpBoxes[nextFocus].focus();
+          setTimeout(() => {
+            dom.otpBoxes[nextFocus].focus();
+            if (getOtpValue().length === dom.otpBoxes.length) {
+              setTimeout(() => dom.otpForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true })), 100);
+            }
+          }, 10);
         } else {
           // Xử lý gõ bình thường 1 ký tự
           e.target.value = val;
           box.classList.toggle('filled', !!val);
 
           if (val && idx < dom.otpBoxes.length - 1) {
-            dom.otpBoxes[idx + 1].focus();
+            setTimeout(() => {
+              dom.otpBoxes[idx + 1].focus();
+            }, 10);
+          } else if (val && idx === dom.otpBoxes.length - 1) {
+            if (getOtpValue().length === dom.otpBoxes.length) {
+              setTimeout(() => dom.otpForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true })), 100);
+            }
           }
         }
       });

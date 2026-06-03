@@ -268,7 +268,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Update login button
-            const userStr = localStorage.getItem('user');
+            const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
             if (userStr) {
                 const user = JSON.parse(userStr);
                 const btnLogin = document.getElementById('btnLogin');

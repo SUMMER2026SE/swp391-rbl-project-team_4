@@ -432,7 +432,7 @@
 
     /* ─── Navbar: user info ─── */
     document.addEventListener('DOMContentLoaded', () => {
-        const userStr = localStorage.getItem('user');
+        const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
         const btnLogin = document.getElementById('btnLogin');
         if (userStr && btnLogin) {
             try {
