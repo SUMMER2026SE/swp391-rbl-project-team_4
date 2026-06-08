@@ -108,3 +108,13 @@ module.exports = (io) => {
         });
     });
 };
+
+module.exports.getLockedSeats = (showtimeId) => {
+    const seats = [];
+    for (const key of lockedSeats.keys()) {
+        if (key.startsWith(`${showtimeId}_`)) {
+            seats.push(key.split('_')[1]);
+        }
+    }
+    return seats;
+};

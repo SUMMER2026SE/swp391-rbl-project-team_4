@@ -1,5 +1,23 @@
 const { sql, getPool } = require('../config/db');
 
+const moviePosters = {
+  1: 'images/movie_neon_dreams.png',
+  2: 'images/movie_lastnoir.png',
+  3: 'images/movie_summer_echoes.png',
+  4: 'images/movie_odyssey.png',
+  5: 'images/movie_oppenheimer.png',
+  6: 'images/movie_velocity.png',
+  7: 'images/movie_nebula.png',
+  8: 'images/movie_interstellar.png'
+};
+
+function assignDynamicPoster(movie) {
+  if (!movie) return;
+  if (moviePosters[movie.MovieID]) {
+    movie.PosterURL = moviePosters[movie.MovieID];
+  }
+}
+
 class MovieModel {
   static async getNowShowing() {
     const pool = await getPool();
@@ -10,6 +28,7 @@ class MovieModel {
       WHERE  Status = 'Now Showing'
       ORDER BY MovieID DESC
     `);
+    result.recordset.forEach(assignDynamicPoster);
     return result.recordset;
   }
 
@@ -22,6 +41,7 @@ class MovieModel {
       WHERE  Status = 'Coming Soon'
       ORDER BY MovieID ASC
     `);
+    result.recordset.forEach(assignDynamicPoster);
     return result.recordset;
   }
 
@@ -46,6 +66,7 @@ class MovieModel {
       ${whereClause}
       ORDER BY MovieID DESC
     `);
+    result.recordset.forEach(assignDynamicPoster);
     return result.recordset;
   }
 
@@ -59,6 +80,9 @@ class MovieModel {
         FROM   Movies
         WHERE  MovieID = @movieId
       `);
+    if (result.recordset.length > 0) {
+      assignDynamicPoster(result.recordset[0]);
+    }
     return result.recordset.length > 0 ? result.recordset[0] : null;
   }
 
@@ -101,6 +125,67 @@ class MovieModel {
         WHERE  st.ShowtimeID = @showtimeId
         ORDER BY s.SeatRow, s.SeatNumber
       `);
+    return result.recordset;
+  }
+
+  static async getCinemas() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT CinemaID, CinemaName, Name, Address, City
+      FROM   Cinemas
+      ORDER BY City, CinemaName
+    `);
+    return result.recordset;
+  }
+
+  static async getShowtimeDetails(showtimeId) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('showtimeId', sql.Int, parseInt(showtimeId))
+      .query(`
+        SELECT st.ShowtimeID, st.StartTime, st.EndTime, st.Price, st.Status,
+               r.RoomID, r.RoomName, r.TotalSeats,
+               c.CinemaID, c.CinemaName, c.Address,
+               m.MovieID, m.Title, m.Duration, m.AgeRating, m.PosterURL, m.MainCast
+        FROM   Showtimes st
+        JOIN   Rooms   r ON st.RoomID   = r.RoomID
+        JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
+        JOIN   Movies  m ON st.MovieID  = m.MovieID
+        WHERE  st.ShowtimeID = @showtimeId
+      `);
+    if (result.recordset.length > 0) {
+      assignDynamicPoster(result.recordset[0]);
+    }
+    return result.recordset.length > 0 ? result.recordset[0] : null;
+  }
+
+  static async getShowtimes({ cinemaId, date, movieId }) {
+    const pool = await getPool();
+    const request = pool.request();
+    request.input('cinemaId', sql.Int, parseInt(cinemaId));
+    request.input('date', sql.Date, date);
+
+    let movieFilter = '';
+    if (movieId) {
+      request.input('movieId', sql.Int, parseInt(movieId));
+      movieFilter = 'AND st.MovieID = @movieId';
+    }
+
+    const result = await request.query(`
+      SELECT st.ShowtimeID, st.StartTime, st.EndTime, st.Price, st.Status,
+             r.RoomID, r.RoomName, r.TotalSeats,
+             m.MovieID, m.Title, m.Duration, m.AgeRating, m.PosterURL, m.MainCast
+      FROM   Showtimes st
+      JOIN   Rooms   r ON st.RoomID   = r.RoomID
+      JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
+      JOIN   Movies  m ON st.MovieID  = m.MovieID
+      WHERE  r.CinemaID = @cinemaId
+        AND  CAST(st.StartTime AS DATE) = @date
+        AND  st.Status  = 'active'
+        ${movieFilter}
+      ORDER BY m.Title, st.StartTime ASC
+    `);
+    result.recordset.forEach(assignDynamicPoster);
     return result.recordset;
   }
 }

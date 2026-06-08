@@ -1,305 +1,1366 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cinemas | D-Cinema</title>
-    <link rel="stylesheet" href="css/booking-new.css">
-    <link rel="stylesheet" href="css/shared-layout.css">
+    <title>Chọn Rạp & Suất Chiếu | D-CINEMA</title>
+    <meta name="description" content="Chọn chi nhánh rạp và suất chiếu phù hợp. D-Cinema – hệ thống rạp chiếu phim hiện đại tại Việt Nam.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #e50914;
+            --primary-h: #f40612;
+            --primary-glow: rgba(229,9,20,0.25);
+            --bg: #0d0f14;
+            --card: #13161d;
+            --card2: #191d26;
+            --surface: #1e2330;
+            --elevated: #252c3a;
+            --border: rgba(255,255,255,0.07);
+            --border2: rgba(255,255,255,0.12);
+            --text: #f2f3f5;
+            --muted: #7a818f;
+            --sub: #b8bec9;
+            --gold: #f59e0b;
+            --green: #10b981;
+            --blue: #3b82f6;
+            --tr: 0.25s cubic-bezier(.4,0,.2,1);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+        html { font-size:16px; scroll-behavior:smooth; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased; }
+        a { text-decoration:none; color:inherit; }
+        img { display:block; max-width:100%; }
+        button { font-family:'Inter',sans-serif; cursor:pointer; border:none; outline:none; background:none; }
+        input, select { font-family:'Inter',sans-serif; outline:none; }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            position:sticky; top:0; z-index:300;
+            background:rgba(13,15,20,0.93);
+            backdrop-filter:blur(20px);
+            border-bottom:1px solid var(--border);
+        }
+        .nav-wrap {
+            max-width:1440px; margin:0 auto;
+            padding:0 32px; height:66px;
+            display:flex; align-items:center; gap:36px;
+        }
+        .logo { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+        .logo-d { font-size:1.9rem; font-weight:900; color:var(--primary); line-height:1; }
+        .logo-text { font-size:0.95rem; font-weight:800; letter-spacing:3px; }
+        .nav-links { display:flex; gap:28px; }
+        .nav-links a { color:var(--muted); font-weight:600; font-size:0.88rem; transition:color var(--tr); }
+        .nav-links a:hover, .nav-links a.active { color:var(--primary); }
+        .nav-actions { margin-left:auto; display:flex; align-items:center; gap:14px; }
+
+        /* Search */
+        .nav-search {
+            display:flex; align-items:center; gap:8px;
+            background:var(--card2);
+            border:1px solid var(--border);
+            border-radius:50px; padding:8px 16px;
+            transition:border-color var(--tr), width var(--tr);
+            width:200px;
+        }
+        .nav-search:focus-within { border-color:var(--primary); width:260px; }
+        .nav-search svg { color:var(--muted); flex-shrink:0; }
+        .nav-search input { background:none; border:none; color:var(--text); font-size:0.83rem; width:100%; }
+        .nav-search input::placeholder { color:var(--muted); }
+
+        .nav-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--primary),#7f0000); display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:800; color:#fff; cursor:pointer; }
+        .nav-avatar:hover { box-shadow:0 0 0 2px var(--primary); }
+        .btn-login { background:linear-gradient(135deg,var(--primary),#b00710); color:#fff; padding:9px 20px; border-radius:7px; font-weight:700; font-size:0.84rem; transition:all var(--tr); box-shadow:0 2px 12px rgba(229,9,20,0.3); }
+        .btn-login:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(229,9,20,0.5); }
+
+        /* ── HERO STRIP ── */
+        .booking-hero {
+            background:linear-gradient(180deg, rgba(229,9,20,0.1) 0%, transparent 100%);
+            padding:42px 0 36px;
+            border-bottom:1px solid var(--border);
+            text-align:center;
+        }
+        .hero-tag {
+            display:inline-flex; align-items:center; gap:6px;
+            background:rgba(229,9,20,0.12); border:1px solid rgba(229,9,20,0.3);
+            border-radius:30px; padding:5px 14px;
+            font-size:0.72rem; font-weight:800; letter-spacing:1px;
+            color:var(--primary); text-transform:uppercase;
+            margin-bottom:16px;
+        }
+        .booking-hero h1 {
+            font-size:2.6rem; font-weight:900;
+            background:linear-gradient(135deg,#fff 30%,rgba(255,255,255,0.5) 100%);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            background-clip:text;
+            letter-spacing:-0.5px; margin-bottom:10px;
+        }
+        .booking-hero p { color:var(--muted); font-size:0.95rem; }
+
+        /* Steps progress bar */
+        .steps-bar {
+            display:flex; justify-content:center; align-items:center;
+            gap:0; margin-top:28px;
+        }
+        .step-item {
+            display:flex; align-items:center; gap:8px;
+            padding:7px 18px;
+            font-size:0.8rem; font-weight:700;
+            color:var(--muted);
+        }
+        .step-item.active { color:var(--primary); }
+        .step-item.done { color:var(--green); }
+        .step-circle {
+            width:28px; height:28px; border-radius:50%;
+            border:2px solid currentColor;
+            display:flex; align-items:center; justify-content:center;
+            font-size:0.75rem; font-weight:900;
+            transition:all var(--tr);
+        }
+        .step-item.active .step-circle { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 0 14px var(--primary-glow); }
+        .step-item.done .step-circle { background:var(--green); border-color:var(--green); color:#fff; }
+        .step-line { width:48px; height:2px; background:var(--border); }
+        .step-line.done-line { background:var(--green); }
+
+        /* ── MAIN LAYOUT ── */
+        .main-wrap {
+            max-width:1440px; margin:0 auto;
+            padding:36px 32px 60px;
+            display:grid;
+            grid-template-columns:360px 1fr;
+            gap:28px;
+            align-items:start;
+        }
+
+        /* ── LEFT PANEL ── */
+        .filter-panel {
+            background:var(--card);
+            border:1px solid var(--border);
+            border-radius:18px;
+            overflow:hidden;
+            position:sticky; top:82px;
+        }
+        .panel-top {
+            background:linear-gradient(135deg, rgba(229,9,20,0.14), rgba(229,9,20,0.04));
+            border-bottom:1px solid var(--border);
+            padding:20px 22px;
+        }
+        .panel-top h2 { font-size:0.95rem; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; }
+        .panel-top p { color:var(--muted); font-size:0.78rem; margin-top:4px; }
+
+        .panel-section { padding:18px 22px; border-bottom:1px solid var(--border); }
+        .panel-section:last-child { border-bottom:none; }
+        .sec-label {
+            font-size:0.68rem; font-weight:800; letter-spacing:2px;
+            text-transform:uppercase; color:var(--muted);
+            margin-bottom:14px; display:flex; align-items:center; gap:7px;
+        }
+        .sec-label svg { color:var(--primary); flex-shrink:0; }
+        .sec-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+        /* City tabs */
+        .city-tabs { display:flex; gap:7px; flex-wrap:wrap; }
+        .city-btn {
+            background:transparent; border:1.5px solid var(--border);
+            color:var(--sub); padding:6px 14px; border-radius:7px;
+            cursor:pointer; font-size:0.81rem; font-weight:600;
+            transition:all var(--tr);
+        }
+        .city-btn:hover { border-color:var(--primary); color:var(--primary); }
+        .city-btn.active { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 2px 10px var(--primary-glow); }
+
+        /* Cinema select */
+        .select-wrap { position:relative; }
+        .select-wrap::after { content:'▾'; position:absolute; right:13px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
+        .cinema-sel {
+            width:100%; background:var(--elevated);
+            border:1.5px solid var(--border); color:var(--text);
+            padding:10px 36px 10px 13px; border-radius:9px;
+            font-size:0.87rem; font-weight:600; cursor:pointer;
+            transition:border-color var(--tr); appearance:none;
+        }
+        .cinema-sel:hover, .cinema-sel:focus { border-color:var(--primary); }
+        .cinema-sel option { background:#1e2330; }
+
+        /* Cinema info card */
+        .cinema-card {
+            background:var(--elevated); border-radius:10px;
+            padding:14px; margin-top:12px;
+            border:1px solid var(--border); display:none;
+            animation:fadeIn 0.3s ease;
+        }
+        .cinema-card.show { display:block; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        .cc-name { font-size:0.88rem; font-weight:700; margin-bottom:4px; }
+        .cc-addr { font-size:0.76rem; color:var(--muted); line-height:1.5; }
+        .cc-amenities { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+        .amenity { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:20px; padding:3px 9px; font-size:0.69rem; color:var(--muted); }
+
+        /* Date pills */
+        .date-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+        .date-pill {
+            background:var(--elevated); border:1.5px solid var(--border);
+            border-radius:10px; padding:9px 3px; text-align:center;
+            cursor:pointer; transition:all var(--tr);
+            display:flex; flex-direction:column; gap:2px;
+        }
+        .date-pill:hover { border-color:rgba(229,9,20,0.5); }
+        .date-pill.active { background:var(--primary); border-color:var(--primary); box-shadow:0 3px 12px var(--primary-glow); }
+        .pill-dow { font-size:0.58rem; font-weight:800; letter-spacing:0.5px; color:var(--muted); text-transform:uppercase; }
+        .pill-d { font-size:1.05rem; font-weight:900; }
+        .pill-m { font-size:0.58rem; color:var(--muted); }
+        .date-pill.active .pill-dow, .date-pill.active .pill-m { color:rgba(255,255,255,0.75); }
+
+        /* Stats strip */
+        .stats-row { display:flex; gap:0; text-align:center; }
+        .stats-row > div { flex:1; }
+        .stats-divider { width:1px; background:var(--border); }
+        .stat-num { font-size:1.5rem; font-weight:900; }
+        .stat-lbl { font-size:0.66rem; font-weight:700; letter-spacing:1px; color:var(--muted); text-transform:uppercase; margin-top:2px; }
+
+        /* Genre filter chips */
+        .genre-chips { display:flex; gap:6px; flex-wrap:wrap; }
+        .genre-chip {
+            background:var(--elevated); border:1.5px solid var(--border);
+            color:var(--sub); padding:5px 12px; border-radius:20px;
+            cursor:pointer; font-size:0.76rem; font-weight:600;
+            transition:all var(--tr);
+        }
+        .genre-chip:hover { border-color:rgba(255,255,255,0.2); color:var(--text); }
+        .genre-chip.active { background:rgba(59,130,246,0.15); border-color:#3b82f6; color:#60a5fa; }
+
+        /* ── RIGHT: SHOWTIMES ── */
+        .showtimes-col { min-height:400px; }
+        .shows-header {
+            display:flex; align-items:center; justify-content:space-between;
+            margin-bottom:24px; flex-wrap:wrap; gap:12px;
+        }
+        .shows-title {
+            font-size:1.4rem; font-weight:900;
+            display:flex; align-items:center; gap:12px;
+        }
+        .shows-title::before { content:''; width:4px; height:26px; background:var(--primary); border-radius:2px; }
+        .shows-badge {
+            background:var(--card2); border:1px solid var(--border);
+            border-radius:20px; padding:4px 13px;
+            font-size:0.78rem; font-weight:600; color:var(--muted);
+        }
+
+        /* View toggle */
+        .view-toggle { display:flex; gap:6px; }
+        .view-btn {
+            width:34px; height:34px; border-radius:8px;
+            border:1.5px solid var(--border);
+            display:flex; align-items:center; justify-content:center;
+            color:var(--muted); transition:all var(--tr); cursor:pointer;
+        }
+        .view-btn.active, .view-btn:hover { border-color:var(--primary); color:var(--primary); background:rgba(229,9,20,0.06); }
+
+        /* Sort select */
+        .sort-select {
+            background:var(--card2); border:1.5px solid var(--border);
+            color:var(--sub); padding:7px 30px 7px 12px; border-radius:8px;
+            font-size:0.8rem; font-weight:600; cursor:pointer; appearance:none;
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a818f' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat:no-repeat; background-position:right 10px center;
+            transition:border-color var(--tr);
+        }
+        .sort-select:focus { border-color:var(--primary); outline:none; }
+
+        /* ── Movie Card ── */
+        .movie-card {
+            background:var(--card);
+            border:1px solid var(--border);
+            border-radius:16px; overflow:hidden;
+            margin-bottom:20px;
+            transition:border-color var(--tr), box-shadow var(--tr), transform var(--tr);
+            animation:slideUp 0.35s ease both;
+        }
+        .movie-card:hover {
+            border-color:rgba(229,9,20,0.35);
+            box-shadow:0 10px 40px rgba(229,9,20,0.1);
+            transform:translateY(-2px);
+        }
+        @keyframes slideUp {
+            from { opacity:0; transform:translateY(18px); }
+            to { opacity:1; transform:translateY(0); }
+        }
+
+        .card-body { display:flex; gap:0; }
+
+        /* Poster */
+        .poster-col {
+            width:130px; flex-shrink:0;
+            position:relative; overflow:hidden;
+            cursor:pointer;
+        }
+        .poster-col img {
+            width:100%; height:100%; object-fit:cover; object-position:top;
+            transition:transform 0.5s ease;
+        }
+        .movie-card:hover .poster-col img { transform:scale(1.06); }
+        .poster-col::after {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(to right,transparent 70%,var(--card));
+            pointer-events:none;
+        }
+        .age-badge {
+            position:absolute; top:8px; left:8px;
+            padding:3px 7px; border-radius:5px;
+            font-size:0.68rem; font-weight:900; letter-spacing:0.5px;
+        }
+        .age-all { background:rgba(16,185,129,0.85); color:#fff; }
+        .age-13  { background:rgba(59,130,246,0.85); color:#fff; }
+        .age-16  { background:rgba(245,158,11,0.85); color:#000; }
+        .age-18  { background:rgba(229,9,20,0.85); color:#fff; }
+
+        /* Preview play button on poster */
+        .poster-play {
+            position:absolute; top:50%; left:50%;
+            transform:translate(-50%,-50%);
+            width:40px; height:40px; border-radius:50%;
+            background:rgba(0,0,0,0.55); backdrop-filter:blur(4px);
+            border:2px solid rgba(255,255,255,0.6);
+            display:flex; align-items:center; justify-content:center;
+            opacity:0; transition:opacity var(--tr);
+            cursor:pointer; z-index:2;
+        }
+        .poster-col:hover .poster-play { opacity:1; }
+
+        /* Content */
+        .card-content { flex:1; padding:22px 24px; display:flex; flex-direction:column; gap:0; }
+        .movie-tags { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+        .tag {
+            padding:3px 9px; border-radius:20px;
+            font-size:0.7rem; font-weight:700;
+        }
+        .tag-pg  { background:rgba(16,185,129,0.1); color:#34d399; border:1px solid rgba(16,185,129,0.25); }
+        .tag-genre { background:rgba(255,255,255,0.05); color:var(--sub); border:1px solid var(--border); }
+        .tag-dur { background:rgba(255,255,255,0.05); color:var(--muted); border:1px solid var(--border); }
+        .tag-now { background:rgba(229,9,20,0.12); color:#ff6b6b; border:1px solid rgba(229,9,20,0.25); }
+
+        .movie-title {
+            font-size:1.4rem; font-weight:900;
+            text-transform:uppercase; letter-spacing:0.3px;
+            margin-bottom:6px; line-height:1.2;
+            cursor:pointer;
+        }
+        .movie-title:hover { color:var(--primary); }
+        .movie-cast { font-size:0.78rem; color:var(--muted); margin-bottom:16px; line-height:1.5; }
+
+        /* Rating stars */
+        .movie-rating {
+            display:flex; align-items:center; gap:6px;
+            font-size:0.78rem; font-weight:600; color:var(--gold);
+            margin-bottom:16px;
+        }
+        .rating-stars { letter-spacing:2px; }
+
+        /* Showtimes section */
+        .shows-section-label {
+            font-size:0.69rem; font-weight:800; letter-spacing:1.5px;
+            text-transform:uppercase; color:var(--muted);
+            margin-bottom:10px; display:flex; align-items:center; gap:8px;
+        }
+        .shows-section-label span { background:var(--elevated); border-radius:20px; padding:2px 8px; }
+
+        .time-slots { display:flex; gap:8px; flex-wrap:wrap; }
+
+        /* Individual time slot */
+        .slot {
+            display:flex; flex-direction:column; align-items:center;
+            background:var(--elevated); border:1.5px solid var(--border);
+            border-radius:10px; overflow:hidden; cursor:pointer;
+            min-width:84px; transition:all var(--tr); position:relative;
+        }
+        .slot:hover {
+            border-color:var(--primary); color:var(--primary);
+            box-shadow:0 4px 18px var(--primary-glow);
+            transform:translateY(-2px);
+        }
+        .slot.vip-slot { border-color:rgba(245,158,11,0.35); }
+        .slot.vip-slot:hover { border-color:var(--gold); color:var(--gold); box-shadow:0 4px 18px rgba(245,158,11,0.2); }
+        .slot.few-seats::after {
+            content:'Sắp hết';
+            position:absolute; top:4px; right:4px;
+            font-size:0.55rem; font-weight:800; color:#f59e0b;
+            background:rgba(245,158,11,0.15); border-radius:3px; padding:1px 4px;
+        }
+        .slot-time { font-size:0.98rem; font-weight:800; padding:9px 12px 5px; width:100%; text-align:center; }
+        .slot-meta {
+            width:100%; background:rgba(0,0,0,0.2);
+            border-top:1px solid var(--border);
+            padding:4px 8px 7px; text-align:center;
+        }
+        .slot-price { display:block; font-size:0.7rem; font-weight:700; color:var(--gold); }
+        .slot-room { display:block; font-size:0.63rem; color:var(--muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80px; }
+
+        /* ── Skeleton ── */
+        .sk-wrap { display:flex; flex-direction:column; gap:18px; }
+        .sk-card {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:16px; padding:22px;
+            display:flex; gap:18px; animation:pulse 1.6s ease infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:.55} 50%{opacity:.9} }
+        .sk-poster { width:110px; height:160px; background:var(--elevated); border-radius:10px; flex-shrink:0; }
+        .sk-body { flex:1; display:flex; flex-direction:column; gap:10px; }
+        .sk-line { height:13px; background:var(--elevated); border-radius:4px; }
+
+        /* ── Empty / Error ── */
+        .empty-box {
+            text-align:center; padding:70px 40px;
+            background:var(--card); border:1px dashed var(--border2);
+            border-radius:16px;
+        }
+        .empty-icon { font-size:4rem; margin-bottom:14px; opacity:0.45; }
+        .empty-title { font-size:1.15rem; font-weight:700; margin-bottom:8px; }
+        .empty-desc { color:var(--muted); font-size:0.88rem; line-height:1.6; }
+        .empty-btn {
+            margin-top:18px; display:inline-flex; align-items:center; gap:7px;
+            padding:10px 22px; background:var(--primary); color:#fff;
+            border-radius:8px; font-size:0.85rem; font-weight:700;
+            cursor:pointer; transition:all var(--tr);
+        }
+        .empty-btn:hover { background:var(--primary-h); box-shadow:0 4px 16px var(--primary-glow); }
+
+        /* ── Movie Preview Modal ── */
+        .modal-overlay {
+            position:fixed; inset:0;
+            background:rgba(0,0,0,0.8); backdrop-filter:blur(8px);
+            z-index:500; display:flex; align-items:center; justify-content:center;
+            opacity:0; pointer-events:none; transition:opacity 0.3s ease;
+        }
+        .modal-overlay.open { opacity:1; pointer-events:all; }
+        .modal-box {
+            background:var(--card2); border:1px solid var(--border2);
+            border-radius:20px; width:90%; max-width:640px;
+            max-height:88vh; overflow-y:auto;
+            box-shadow:0 30px 80px rgba(0,0,0,0.6);
+            transform:scale(0.94); transition:transform 0.3s ease;
+        }
+        .modal-overlay.open .modal-box { transform:scale(1); }
+        .modal-header { position:relative; height:260px; overflow:hidden; }
+        .modal-poster { width:100%; height:100%; object-fit:cover; object-position:top center; }
+        .modal-poster-gradient { position:absolute; inset:0; background:linear-gradient(to bottom,transparent 40%,var(--card2) 100%); }
+        .modal-close {
+            position:absolute; top:14px; right:14px;
+            width:34px; height:34px; border-radius:50%;
+            background:rgba(0,0,0,0.5); backdrop-filter:blur(6px);
+            display:flex; align-items:center; justify-content:center;
+            color:#fff; cursor:pointer; transition:background var(--tr);
+        }
+        .modal-close:hover { background:var(--primary); }
+        .modal-body { padding:20px 28px 28px; }
+        .modal-title { font-size:1.5rem; font-weight:900; margin-bottom:8px; }
+        .modal-meta { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+        .modal-desc { font-size:0.85rem; color:var(--sub); line-height:1.7; margin-bottom:20px; }
+        .modal-showtimes-title { font-size:0.75rem; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+        .modal-slots { display:flex; gap:8px; flex-wrap:wrap; }
+
+        /* ── Branch Cards Strip ── */
+        .branch-section {
+            background:linear-gradient(135deg,#12161e 0%,#0d1018 100%);
+            border-top:1px solid var(--border); padding:52px 0;
+            margin-top:40px;
+        }
+        .branch-inner {
+            max-width:1440px; margin:0 auto; padding:0 32px;
+            display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px;
+        }
+        .bc {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:14px; padding:26px;
+            transition:border-color var(--tr), transform var(--tr);
+        }
+        .bc:hover { border-color:rgba(229,9,20,0.35); transform:translateY(-3px); }
+        .bc-label { font-size:0.68rem; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--primary); margin-bottom:10px; }
+        .bc-name { font-size:1.05rem; font-weight:800; margin-bottom:6px; }
+        .bc-addr { font-size:0.82rem; color:var(--muted); line-height:1.6; margin-bottom:14px; }
+        .bc-perks { display:flex; gap:6px; flex-wrap:wrap; }
+        .bc-perks span { background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:20px; padding:3px 9px; font-size:0.68rem; color:var(--muted); }
+        .perks-card {
+            background:linear-gradient(135deg,var(--primary),#700008);
+            border-radius:14px; padding:30px 26px;
+            display:flex; flex-direction:column; justify-content:center;
+        }
+        .perks-card h3 { font-size:1.1rem; font-weight:900; margin:12px 0 8px; }
+        .perks-card p { font-size:0.85rem; opacity:0.9; line-height:1.6; }
+        .perks-card .perk-icon { font-size:2.4rem; }
+
+        /* ── FOOTER ── */
+        .site-footer { background:#0a0c10; border-top:1px solid var(--border); padding:0; }
+        .footer-inner { max-width:1440px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr 1.3fr; gap:40px; padding:48px 32px 36px; }
+        .footer-logo { font-size:1.5rem; font-weight:900; margin-bottom:12px; }
+        .footer-logo .logo-d { color:var(--primary); }
+        .footer-brand p { font-size:0.83rem; color:var(--muted); line-height:1.7; max-width:280px; }
+        .footer-socials { display:flex; gap:10px; margin-top:16px; }
+        .footer-socials a { width:34px; height:34px; border-radius:8px; background:var(--card2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--muted); transition:all var(--tr); }
+        .footer-socials a:hover { background:var(--primary); border-color:var(--primary); color:#fff; }
+        .footer-col h4 { font-size:0.75rem; font-weight:800; letter-spacing:2px; color:var(--text); margin-bottom:18px; text-transform:uppercase; }
+        .footer-col a { display:block; color:var(--muted); font-size:0.84rem; margin-bottom:10px; transition:all var(--tr); }
+        .footer-col a:hover { color:var(--primary); padding-left:4px; }
+        .newsletter-form { display:flex; gap:0; margin-top:10px; }
+        .newsletter-input { flex:1; background:var(--card2); border:1px solid var(--border); border-right:none; color:var(--text); padding:10px 13px; border-radius:7px 0 0 7px; font-size:0.83rem; font-family:'Inter',sans-serif; }
+        .newsletter-btn { background:var(--primary); border:none; color:#fff; padding:10px 14px; border-radius:0 7px 7px 0; cursor:pointer; transition:background var(--tr); display:flex; align-items:center; }
+        .newsletter-btn:hover { background:var(--primary-h); }
+        .footer-bottom { text-align:center; padding:18px; border-top:1px solid var(--border); }
+        .footer-bottom p { font-size:0.75rem; color:var(--muted); letter-spacing:0.5px; }
+
+        /* ── Toast ── */
+        .toast {
+            position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+            padding:12px 22px; border-radius:10px;
+            font-size:0.84rem; font-weight:600;
+            z-index:9999; display:none;
+            box-shadow:0 8px 28px rgba(0,0,0,0.4);
+            color:#fff; min-width:220px; text-align:center;
+            animation:toastIn 0.3s ease;
+        }
+        @keyframes toastIn { from{transform:translateX(-50%) translateY(10px);opacity:0} to{transform:translateX(-50%) translateY(0);opacity:1} }
+        .toast.green { background:#10b981; }
+        .toast.red { background:#e50914; }
+        .toast.yellow { background:#f59e0b; color:#000; }
+
+        /* Responsive */
+        @media (max-width:1100px) {
+            .main-wrap { grid-template-columns:1fr; }
+            .filter-panel { position:static; }
+            .branch-inner { grid-template-columns:1fr 1fr; }
+            .footer-inner { grid-template-columns:1fr 1fr; }
+        }
+        @media (max-width:768px) {
+            .nav-links, .nav-search { display:none; }
+            .main-wrap { padding:20px 16px 40px; }
+            .booking-hero h1 { font-size:1.8rem; }
+            .card-body { flex-direction:column; }
+            .poster-col { width:100%; height:200px; }
+            .branch-inner { grid-template-columns:1fr; }
+            .footer-inner { grid-template-columns:1fr; }
+            .date-grid { grid-template-columns:repeat(5,1fr); }
+        }
+        @media (max-width:480px) {
+            .date-grid { grid-template-columns:repeat(4,1fr); }
+            .steps-bar { display:none; }
+        }
+    </style>
 </head>
 
 <body>
-    <!-- Navbar -->
-        <header class="navbar">
-        <div class="nav-container">
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <div class="nav-wrap">
             <a href="index.html" class="logo">
                 <span class="logo-d">D</span>
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <a href="movies.html" id="nav-phim">Phim</a>
-                <a href="booking.html" id="nav-rap" class="active">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
+                <a href="movies.html">Phim</a>
+                <a href="booking.html" class="active">Rạp</a>
+                <a href="promotions.html">Khuyến mãi</a>
             </nav>
             <div class="nav-actions">
-                <div class="search-box">
-                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="m21 21-4.35-4.35" />
-                    </svg>
-                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                <div class="nav-search" id="navSearch">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <input type="text" id="movieSearchInput" placeholder="Tìm phim..." autocomplete="off">
                 </div>
-                <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                    </svg>
-                </a>
+                <div class="nav-avatar" id="navAvatar" title="Tài khoản" onclick="window.location.href='profile.html'">U</div>
                 <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
             </div>
         </div>
     </header>
 
-    <!-- Location Selection -->
-    <div class="location-selector">
-        <div class="container">
-            <div class="selector-content">
-                <div class="selector-group">
-                    <span class="selector-label">SELECT LOCATION</span>
-                    <div class="location-buttons">
-                        <button class="location-btn active" onclick="selectLocation(this, 'hcm')">Hồ Chí Minh</button>
-                        <button class="location-btn" onclick="selectLocation(this, 'hn')">Hà Nội</button>
-                    </div>
+    <!-- HERO -->
+    <div class="booking-hero">
+        <div class="hero-tag">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Hệ thống D-Cinema toàn quốc
+        </div>
+        <h1>Chọn Rạp & Suất Chiếu</h1>
+        <p>Tìm rạp gần bạn nhất và đặt vé cho suất chiếu yêu thích</p>
+        <div class="steps-bar">
+            <div class="step-item active"><div class="step-circle">1</div> Chọn Rạp</div>
+            <div class="step-line"></div>
+            <div class="step-item"><div class="step-circle">2</div> Suất Chiếu</div>
+            <div class="step-line"></div>
+            <div class="step-item"><div class="step-circle">3</div> Chọn Ghế</div>
+            <div class="step-line"></div>
+            <div class="step-item"><div class="step-circle">4</div> Thanh Toán</div>
+        </div>
+    </div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="main-wrap">
+
+        <!-- LEFT: FILTER PANEL -->
+        <aside class="filter-panel">
+            <div class="panel-top">
+                <h2>🎬 Bộ lọc rạp chiếu</h2>
+                <p>Chọn thành phố, chi nhánh và ngày xem</p>
+            </div>
+
+            <!-- City -->
+            <div class="panel-section">
+                <div class="sec-label">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Thành phố
                 </div>
-                <div class="selector-group">
-                    <span class="selector-label">CHOOSE CINEMA BRANCH</span>
-                    <select class="cinema-select">
-                        <option value="diamond">CINEMA+ District 1 - Diamond Plaza</option>
-                        <option value="hai">CINEMA+ Hải Bà Trưng</option>
-                        <option value="vincom">CINEMA+ Vincom Bình Dương</option>
+                <div class="city-tabs" id="cityTabsContainer"></div>
+            </div>
+
+            <!-- Branch -->
+            <div class="panel-section">
+                <div class="sec-label">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                    Chi nhánh
+                </div>
+                <div class="select-wrap">
+                    <select class="cinema-sel" id="cinemaSelect">
+                        <option>Đang tải danh sách rạp...</option>
                     </select>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Date Selection -->
-    <div class="date-selector">
-        <div class="container">
-            <div class="date-pills">
-                <div class="date-pill active" onclick="selectDate(this)">
-                    <div class="day-label">TODAY</div>
-                    <div class="date-number">24</div>
-                    <div class="month-label">May</div>
-                </div>
-                <div class="date-pill" onclick="selectDate(this)">
-                    <div class="day-label">SAT</div>
-                    <div class="date-number">25</div>
-                    <div class="month-label">May</div>
-                </div>
-                <div class="date-pill" onclick="selectDate(this)">
-                    <div class="day-label">SUN</div>
-                    <div class="date-number">26</div>
-                    <div class="month-label">May</div>
-                </div>
-                <div class="date-pill" onclick="selectDate(this)">
-                    <div class="day-label">MON</div>
-                    <div class="date-number">27</div>
-                    <div class="month-label">May</div>
-                </div>
-                <div class="date-pill" onclick="selectDate(this)">
-                    <div class="day-label">TUE</div>
-                    <div class="date-number">28</div>
-                    <div class="month-label">May</div>
-                </div>
-                <div class="date-pill" onclick="selectDate(this)">
-                    <div class="day-label">WED</div>
-                    <div class="date-number">29</div>
-                    <div class="month-label">May</div>
-                </div>
-                <div class="date-pill" onclick="selectDate(this)">
-                    <div class="day-label">THU</div>
-                    <div class="date-number">30</div>
-                    <div class="month-label">May</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Available Showtimes -->
-    <section class="showtimes-section">
-        <div class="container" id="dynamicShowtimesContainer">
-            <h2 class="section-title">Loading Showtimes...</h2>
-        </div>
-    </section>
-
-    <!-- Scripts for dynamic booking -->
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const params = new URLSearchParams(window.location.search);
-            const movieId = params.get('movieId');
-            const container = document.getElementById('dynamicShowtimesContainer');
-
-            if (!movieId) {
-                container.innerHTML = '<h2 class="section-title">Vui lòng chọn phim trước.</h2>';
-                return;
-            }
-
-            try {
-                // Load movie details
-                const movieRes = await fetch(`/api/movies/${movieId}`);
-                const movieJson = await movieRes.json();
-                
-                // Load showtimes
-                const showtimesRes = await fetch(`/api/movies/${movieId}/showtimes`);
-                const showtimesJson = await showtimesRes.json();
-
-                if (movieJson.success && movieJson.data) {
-                    const m = movieJson.data;
-                    const showtimes = (showtimesJson.success && showtimesJson.data) ? showtimesJson.data : [];
-
-                    container.innerHTML = `
-                        <h2 class="section-title">Lịch chiếu phim: ${m.Title}</h2>
-                        <div class="showtime-card">
-                            <div class="showtime-poster">
-                                <img src="${m.PosterURL || 'images/default_poster.svg'}" alt="${m.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                            </div>
-                            <div class="showtime-info">
-                                <div class="movie-header">
-                                    <span class="age-badge age-${m.AgeRating || 'ALL'}">${m.AgeRating || 'ALL'}</span>
-                                    <span class="genre">${m.MainCast || 'Hành động'}</span>
-                                    <span class="duration">• ${m.Duration} phút</span>
-                                </div>
-                                <h3 class="showtime-title">${m.Title}</h3>
-
-                                <div class="format-block">
-                                    <div class="format-label">CÁC SUẤT CHIẾU TRONG NGÀY</div>
-                                    <div class="time-buttons">
-                                        ${showtimes.length > 0 
-                                            ? showtimes.map(st => {
-                                                const time = new Date(st.StartTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                                                return `<button class="time-btn" onclick="goToCheckout(${st.ShowtimeID}, '${time}')">${time}</button>`;
-                                              }).join('')
-                                            : '<p>Chưa có suất chiếu nào cho phim này.</p>'
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = '<h2 class="section-title">Lỗi khi tải suất chiếu.</h2>';
-            }
-        });
-        
-        function goToCheckout(showtimeId, timeStr) {
-            window.location.href = `checkout.html?showtimeId=${showtimeId}&time=${timeStr}`;
-        }
-    </script>
-    <style>
-        /* Small fix for dynamic age badges */
-        .age-ALL { background-color: #4CAF50; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-        .age-T13 { background-color: #ff9800; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-        .age-T16, .age-T18 { background-color: #f44336; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-    </style>
-
-    <!-- Branch Information -->
-    <section class="branch-section">
-        <div class="container">
-            <h2 class="section-title">Branch Information</h2>
-            <div class="branch-grid">
-                <!-- Branch Card -->
-                <div class="branch-card">
-                    <h3 class="branch-name">Diamond Plaza Location</h3>
-                    <p class="branch-address">34 Le Duan Street, Ben Nghe Ward, District 1, Ho Chi Minh City. Located on
-                        the 13th Floor with panoramic city views.</p>
-                    <div class="branch-amenities">
-                        <span class="amenity" title="Parking">P</span>
-                        <span class="amenity" title="Food & Beverage">🍿</span>
-                        <span class="amenity" title="Accessibility">♿</span>
-                        <span class="amenity" title="WiFi">📶</span>
+                <div class="cinema-card" id="cinemaCard">
+                    <div class="cc-name" id="ccName">—</div>
+                    <div class="cc-addr" id="ccAddr">—</div>
+                    <div class="cc-amenities">
+                        <span class="amenity">🅿️ Bãi đỗ xe</span>
+                        <span class="amenity">🍿 Đồ ăn</span>
+                        <span class="amenity">♿ Tiện ích</span>
+                        <span class="amenity">📶 WiFi</span>
+                        <span class="amenity">🎦 Dolby</span>
                     </div>
                 </div>
-                <!-- Member Perks Card -->
-                <div class="perks-card">
-                    <div class="perks-icon">👑</div>
-                    <h3 class="perks-title">Member Perks</h3>
-                    <p class="perks-desc">Earn double points on every ticket booked at this branch.</p>
+            </div>
+
+            <!-- Date -->
+            <div class="panel-section">
+                <div class="sec-label">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    Ngày xem
                 </div>
+                <div class="date-grid" id="datePillsContainer"></div>
+            </div>
+
+            <!-- Genre filter -->
+            <div class="panel-section">
+                <div class="sec-label">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    Thể loại
+                </div>
+                <div class="genre-chips" id="genreChips">
+                    <div class="genre-chip active" data-genre="all">Tất cả</div>
+                    <div class="genre-chip" data-genre="action">Hành động</div>
+                    <div class="genre-chip" data-genre="romance">Tình cảm</div>
+                    <div class="genre-chip" data-genre="horror">Kinh dị</div>
+                    <div class="genre-chip" data-genre="comedy">Hài</div>
+                    <div class="genre-chip" data-genre="scifi">Sci-Fi</div>
+                    <div class="genre-chip" data-genre="animation">Hoạt hình</div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="panel-section" style="background:rgba(229,9,20,0.04);">
+                <div class="stats-row">
+                    <div>
+                        <div class="stat-num" id="statsMovies" style="color:var(--primary)">—</div>
+                        <div class="stat-lbl">Phim chiếu</div>
+                    </div>
+                    <div class="stats-divider"></div>
+                    <div>
+                        <div class="stat-num" id="statsShowtimes" style="color:var(--green)">—</div>
+                        <div class="stat-lbl">Suất chiếu</div>
+                    </div>
+                    <div class="stats-divider"></div>
+                    <div>
+                        <div class="stat-num" id="statsMin" style="color:var(--gold)">—k</div>
+                        <div class="stat-lbl">Giá từ</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- RIGHT: SHOWTIMES -->
+        <section class="showtimes-col">
+            <div class="shows-header">
+                <h2 class="shows-title" id="showtimesTitle">Lịch chiếu hôm nay</h2>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <select class="sort-select" id="sortSelect" onchange="applySort()">
+                        <option value="time">Sắp xếp: Sớm nhất</option>
+                        <option value="price-asc">Giá: Thấp → Cao</option>
+                        <option value="price-desc">Giá: Cao → Thấp</option>
+                        <option value="name">Tên phim A→Z</option>
+                    </select>
+                    <div class="shows-badge" id="showtimesCount">— suất</div>
+                </div>
+            </div>
+            <div id="showtimesContainer">
+                <!-- Skeleton loader -->
+                <div class="sk-wrap">
+                    <div class="sk-card">
+                        <div class="sk-poster"></div>
+                        <div class="sk-body">
+                            <div class="sk-line" style="width:75%"></div>
+                            <div class="sk-line" style="width:55%"></div>
+                            <div class="sk-line" style="width:40%"></div>
+                            <div class="sk-line" style="width:90%"></div>
+                        </div>
+                    </div>
+                    <div class="sk-card">
+                        <div class="sk-poster"></div>
+                        <div class="sk-body">
+                            <div class="sk-line" style="width:80%"></div>
+                            <div class="sk-line" style="width:60%"></div>
+                            <div class="sk-line" style="width:35%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- BRANCH INFO STRIP -->
+    <section class="branch-section">
+        <div class="branch-inner">
+            <div class="bc" id="branchCard">
+                <div class="bc-label">Chi nhánh đang chọn</div>
+                <div class="bc-name" id="branchName">D-CINEMA</div>
+                <div class="bc-addr" id="branchAddr">Đang tải thông tin...</div>
+                <div class="bc-perks">
+                    <span>🅿️ Bãi đỗ xe</span><span>🍿 Đồ ăn</span>
+                    <span>♿ Tiện ích</span><span>📶 WiFi miễn phí</span><span>🎦 Dolby Atmos</span>
+                </div>
+            </div>
+            <div class="bc">
+                <div class="bc-label">Hệ thống D-Cinema</div>
+                <div class="bc-name">12 chi nhánh toàn quốc</div>
+                <div class="bc-addr">Có mặt tại Hồ Chí Minh, Hà Nội, Đà Nẵng, Cần Thơ, Vũng Tàu – mang đến trải nghiệm điện ảnh đỉnh cao với công nghệ Dolby Atmos và IMAX.</div>
+                <div class="bc-perks">
+                    <span>📍 Hồ Chí Minh</span><span>📍 Hà Nội</span><span>📍 Đà Nẵng</span><span>📍 Cần Thơ</span>
+                </div>
+            </div>
+            <div class="perks-card">
+                <div class="perk-icon">👑</div>
+                <h3>Ưu đãi thành viên</h3>
+                <p>Tích điểm gấp đôi mỗi giao dịch đặt vé tại bất kỳ chi nhánh D-Cinema. Đổi điểm lấy vé miễn phí!</p>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- FOOTER -->
     <footer class="site-footer">
-        <div class="container footer-grid">
-            <div class="footer-col footer-brand">
-                <a href="index.html" class="logo">
-                    <span class="logo-d">D</span>
-                    <span class="logo-text">D-CINEMA</span>
-                </a>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="footer-logo"><span class="logo-d">D</span>-CINEMA</div>
                 <p>Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
                 <div class="footer-socials">
-                    <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <circle cx="18" cy="5" r="3" />
-                            <circle cx="6" cy="12" r="3" />
-                            <circle cx="18" cy="19" r="3" />
-                            <path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98" />
-                        </svg></a>
-                    <a href="#" aria-label="Email"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="4" width="20" height="16" rx="2" />
-                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                        </svg></a>
+                    <a href="#" aria-label="Facebook"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+                    <a href="#" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+                    <a href="#" aria-label="YouTube"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.95C18.88 4 12 4 12 4s-6.88 0-8.59.47a2.78 2.78 0 0 0-1.95 1.95A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.5C5.12 20 12 20 12 20s6.88 0 8.59-.5a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg></a>
                 </div>
             </div>
             <div class="footer-col">
-                <h4>DỊCH VỤ</h4>
+                <h4>Dịch vụ</h4>
                 <a href="#">Về chúng tôi</a>
                 <a href="#">Tuyển dụng</a>
                 <a href="#">Liên hệ</a>
+                <a href="#">Blog</a>
             </div>
             <div class="footer-col">
-                <h4>PHÁP LÝ</h4>
+                <h4>Pháp lý</h4>
                 <a href="#">Điều khoản sử dụng</a>
                 <a href="#">Chính sách bảo mật</a>
-                <a href="#">Chính sách thanh toán</a>
+                <a href="#">Chính sách hoàn tiền</a>
             </div>
             <div class="footer-col">
-                <h4>ĐĂNG KÝ NHẬN TIN</h4>
-                <p style="margin-bottom: 5px; font-size: 0.8rem;">Nhận thông tin về phim mới và khuyến mãi.</p>
-                <form class="newsletter-form" onsubmit="event.preventDefault()">
+                <h4>Đăng ký nhận tin</h4>
+                <p style="font-size:0.8rem;color:var(--muted);margin-bottom:10px;">Nhận thông tin phim mới và ưu đãi hot nhất.</p>
+                <form class="newsletter-form" onsubmit="event.preventDefault(); showToast('Đăng ký thành công! 🎉','green')">
                     <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
-                    <button type="submit" class="newsletter-btn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </button>
+                    <button type="submit" class="newsletter-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
                 </form>
             </div>
         </div>
-        <div class="footer-bottom">
-            <p>© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p>
-        </div>
+        <div class="footer-bottom"><p>© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p></div>
     </footer>
 
-    <!-- Scripts -->
+    <!-- MOVIE PREVIEW MODAL -->
+    <div class="modal-overlay" id="movieModal" onclick="closeModal(event)">
+        <div class="modal-box" id="modalBox">
+            <div class="modal-header">
+                <img id="modalPoster" src="" alt="Poster" class="modal-poster">
+                <div class="modal-poster-gradient"></div>
+                <div class="modal-close" onclick="closeMovieModal()">✕</div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-meta" id="modalMeta"></div>
+                <div class="modal-title" id="modalTitle">—</div>
+                <div class="modal-desc" id="modalDesc">Đang tải thông tin phim...</div>
+                <div class="modal-showtimes-title">Các suất chiếu</div>
+                <div class="modal-slots" id="modalSlots"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toastEl"></div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>
     <script>
-        function selectLocation(btn, location) {
-            document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
+    (function() {
+        'use strict';
 
-        function selectDate(btn) {
-            document.querySelectorAll('.date-pill').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-        }
+        /* ── STATE ── */
+        let allCinemas = [];
+        let selectedCity = '';
+        let selectedCinemaId = null;
+        let selectedDate = '';
+        let movieIdFilter = null;
+        let selectedMovie = null;
+        let currentShowtimes = [];
+        let rawData = [];
+        let selectedGenre = 'all';
+        let searchQuery = '';
+        let sortMode = 'time';
+        let currentPreviewMovie = null;
 
-        // goToCheckout defined above in showtime script
+        /* ── TOAST ── */
+        window.showToast = function(msg, type = 'green') {
+            const el = document.getElementById('toastEl');
+            el.textContent = msg;
+            el.className = 'toast ' + type;
+            el.style.display = 'block';
+            clearTimeout(el._t);
+            el._t = setTimeout(() => { el.style.display = 'none'; }, 3000);
+        };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Time buttons navigate to checkout
-            document.querySelectorAll('.time-btn').forEach(btn => {
-                btn.addEventListener('click', () => goToCheckout(btn.textContent));
+        /* ── INIT ── */
+        document.addEventListener('DOMContentLoaded', async () => {
+            // URL params
+            const params = new URLSearchParams(window.location.search);
+            movieIdFilter = params.get('movieId') || null;
+            if (params.get('city')) selectedCity = params.get('city');
+
+            // Auth
+            initAuth();
+
+            // Build date pills
+            buildDatePills();
+
+            // Load cinemas
+            await loadCinemas();
+
+            // Movie info if filter
+            if (movieIdFilter) {
+                await loadMovieInfo(movieIdFilter);
+            }
+
+            // Genre chips
+            document.querySelectorAll('.genre-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.genre-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    selectedGenre = chip.dataset.genre;
+                    renderFiltered();
+                });
             });
-            const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                const btnLogin = document.getElementById('btnLogin');
-                if (btnLogin) {
-                    btnLogin.textContent = user.fullName || 'Tài khoản';
-                    btnLogin.href = 'profile.html';
+
+            // Navbar search
+            const searchEl = document.getElementById('movieSearchInput');
+            searchEl.addEventListener('input', () => {
+                searchQuery = searchEl.value.toLowerCase().trim();
+                renderFiltered();
+            });
+        });
+
+        /* ── AUTH ── */
+        function initAuth() {
+            try {
+                const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
+                const btn = document.getElementById('btnLogin');
+                const av = document.getElementById('navAvatar');
+                if (u.fullName) {
+                    if (btn) { btn.textContent = u.fullName; btn.href = 'profile.html'; }
+                    if (av) av.textContent = u.fullName.charAt(0).toUpperCase();
+                }
+            } catch(e) {}
+        }
+
+        /* ── DATE PILLS ── */
+        function buildDatePills() {
+            const container = document.getElementById('datePillsContainer');
+            const DAYS = ['CN','T2','T3','T4','T5','T6','T7'];
+            const MONTHS = ['Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10','Th11','Th12'];
+            const today = new Date();
+            container.innerHTML = '';
+
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+                const pill = document.createElement('div');
+                pill.className = 'date-pill' + (i === 0 ? ' active' : '');
+                pill.dataset.date = dateStr;
+                pill.innerHTML = `
+                    <div class="pill-dow">${i === 0 ? 'HN' : DAYS[d.getDay()]}</div>
+                    <div class="pill-d">${d.getDate()}</div>
+                    <div class="pill-m">${MONTHS[d.getMonth()]}</div>`;
+                pill.addEventListener('click', () => selectDate(pill, dateStr));
+                container.appendChild(pill);
+            }
+            selectedDate = today.toISOString().split('T')[0];
+        }
+
+        function selectDate(pill, dateStr) {
+            document.querySelectorAll('.date-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            selectedDate = dateStr;
+            loadShowtimes();
+        }
+
+        /* ── LOAD CINEMAS ── */
+        async function loadCinemas() {
+            try {
+                const res = await fetch('/api/movies/cinemas');
+                const json = await res.json();
+                if (json.success && json.data) {
+                    allCinemas = json.data;
+                    buildCityTabs(allCinemas);
+                }
+            } catch(e) {
+                console.error('[Booking] loadCinemas:', e);
+            }
+        }
+
+        function buildCityTabs(cinemas) {
+            const container = document.getElementById('cityTabsContainer');
+            const cities = [...new Set(cinemas.map(c => c.City))].sort();
+            container.innerHTML = '';
+
+            if (!cities.length) {
+                showEmpty('Không có rạp nào trong hệ thống.');
+                return;
+            }
+
+            cities.forEach((city, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'city-btn' + (i === 0 ? ' active' : '');
+                btn.textContent = city;
+                btn.onclick = () => selectCity(btn, city);
+                container.appendChild(btn);
+            });
+
+            if (selectedCity && cities.includes(selectedCity)) {
+                // activate the right button
+                container.querySelectorAll('.city-btn').forEach(b => {
+                    b.classList.toggle('active', b.textContent === selectedCity);
+                });
+            } else {
+                selectedCity = cities[0];
+            }
+            populateBranches(selectedCity);
+        }
+
+        function selectCity(btn, city) {
+            document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedCity = city;
+            populateBranches(city);
+        }
+
+        function populateBranches(city) {
+            const sel = document.getElementById('cinemaSelect');
+            const filtered = allCinemas.filter(c => c.City === city);
+            sel.innerHTML = '';
+
+            filtered.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.CinemaID;
+                opt.textContent = c.CinemaName;
+                sel.appendChild(opt);
+            });
+
+            if (filtered.length) {
+                selectedCinemaId = filtered[0].CinemaID;
+                updateCinemaCard(selectedCinemaId);
+                loadShowtimes();
+            }
+
+            sel.onchange = (e) => {
+                selectedCinemaId = parseInt(e.target.value);
+                updateCinemaCard(selectedCinemaId);
+                loadShowtimes();
+            };
+        }
+
+        function updateCinemaCard(id) {
+            const c = allCinemas.find(x => x.CinemaID === id);
+            if (!c) return;
+            document.getElementById('ccName').textContent = c.CinemaName;
+            document.getElementById('ccAddr').textContent = c.Address || 'Địa chỉ đang cập nhật...';
+            document.getElementById('cinemaCard').classList.add('show');
+
+            // update branch strip
+            document.getElementById('branchName').textContent = c.CinemaName;
+            document.getElementById('branchAddr').textContent = (c.Address || '') + (c.City ? ', ' + c.City : '');
+        }
+
+        /* ── LOAD MOVIE INFO ── */
+        async function loadMovieInfo(movieId) {
+            try {
+                const res = await fetch(`/api/movies/${movieId}`);
+                const json = await res.json();
+                if (json.success && json.data) {
+                    selectedMovie = json.data;
+                    updateTitle();
+                }
+            } catch(e) {}
+        }
+
+        function updateTitle() {
+            const el = document.getElementById('showtimesTitle');
+            if (selectedMovie && movieIdFilter) {
+                el.textContent = `Lịch chiếu: ${selectedMovie.Title}`;
+            } else {
+                el.textContent = `Lịch chiếu ngày ${fmtDate(selectedDate)}`;
+            }
+        }
+
+        /* ── LOAD SHOWTIMES ── */
+        async function loadShowtimes() {
+            if (!selectedCinemaId || !selectedDate) return;
+            showSkeleton();
+            updateTitle();
+
+            try {
+                let url = `/api/movies/showtimes?cinemaId=${selectedCinemaId}&date=${selectedDate}`;
+                if (movieIdFilter) url += `&movieId=${movieIdFilter}`;
+
+                const res = await fetch(url);
+                const json = await res.json();
+
+                if (!json.success || !json.data || !json.data.length) {
+                    rawData = [];
+                    updateStats(0, 0, 0);
+                    showEmpty(`Không có suất chiếu nào vào ngày ${fmtDate(selectedDate)} tại rạp đã chọn.`);
+                    return;
+                }
+
+                rawData = json.data;
+                renderFiltered();
+
+            } catch(e) {
+                console.error('[Booking] loadShowtimes:', e);
+                showError();
+            }
+        }
+
+        /* ── RENDER WITH FILTER + SORT ── */
+        function renderFiltered() {
+            let data = [...rawData];
+
+            // Search filter
+            if (searchQuery) {
+                data = data.filter(row => row.Title && row.Title.toLowerCase().includes(searchQuery));
+            }
+
+            // Genre filter (basic keyword match on Title / MainCast)
+            if (selectedGenre !== 'all') {
+                const genreKeywords = {
+                    action:    ['hành động','action'],
+                    romance:   ['tình cảm','lãng mạn','romance'],
+                    horror:    ['kinh dị','horror'],
+                    comedy:    ['hài','comedy'],
+                    scifi:     ['sci-fi','khoa học','viễn tưởng','science'],
+                    animation: ['hoạt hình','animation'],
+                };
+                const kws = genreKeywords[selectedGenre] || [];
+                if (kws.length) {
+                    data = data.filter(row => {
+                        const text = ((row.Title || '') + ' ' + (row.MainCast || '') + ' ' + (row.Genre || '')).toLowerCase();
+                        return kws.some(k => text.includes(k));
+                    });
                 }
             }
-        });
-    </script>
-</body>
 
+            if (!data.length) {
+                updateStats(0, 0, 0);
+                showEmpty(searchQuery
+                    ? `Không tìm thấy phim "${searchQuery}" trong lịch chiếu.`
+                    : 'Không có phim nào phù hợp với bộ lọc.');
+                return;
+            }
+
+            // Group by movie
+            const map = {};
+            data.forEach(row => {
+                if (!map[row.MovieID]) {
+                    map[row.MovieID] = {
+                        MovieID: row.MovieID,
+                        Title: row.Title,
+                        Duration: row.Duration,
+                        AgeRating: row.AgeRating,
+                        PosterURL: row.PosterURL,
+                        MainCast: row.MainCast,
+                        Genre: row.Genre,
+                        Description: row.Description,
+                        showtimes: []
+                    };
+                }
+                map[row.MovieID].showtimes.push(row);
+            });
+
+            let movies = Object.values(map);
+
+            // Sort movies
+            if (sortMode === 'name') {
+                movies.sort((a, b) => (a.Title || '').localeCompare(b.Title || ''));
+            } else if (sortMode === 'price-asc') {
+                movies.sort((a, b) => Math.min(...a.showtimes.map(s=>s.Price||0)) - Math.min(...b.showtimes.map(s=>s.Price||0)));
+            } else if (sortMode === 'price-desc') {
+                movies.sort((a, b) => Math.min(...b.showtimes.map(s=>s.Price||0)) - Math.min(...a.showtimes.map(s=>s.Price||0)));
+            } else {
+                // by earliest showtime
+                movies.sort((a, b) => {
+                    const aMin = Math.min(...a.showtimes.map(s => new Date(s.StartTime).getTime()));
+                    const bMin = Math.min(...b.showtimes.map(s => new Date(s.StartTime).getTime()));
+                    return aMin - bMin;
+                });
+            }
+
+            // Stats
+            const minP = Math.min(...data.map(d => d.Price || 0));
+            updateStats(movies.length, data.length, minP);
+
+            // Update count badge
+            document.getElementById('showtimesCount').textContent = `${data.length} suất`;
+            document.getElementById('showtimesTitle').textContent = searchQuery
+                ? `Kết quả cho "${searchQuery}"`
+                : selectedMovie && movieIdFilter
+                    ? `Lịch chiếu: ${selectedMovie.Title}`
+                    : `Lịch chiếu ngày ${fmtDate(selectedDate)}`;
+
+            // Render
+            const container = document.getElementById('showtimesContainer');
+            container.innerHTML = '';
+
+            movies.forEach((movie, idx) => {
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+                card.style.animationDelay = `${idx * 0.07}s`;
+
+                const poster = movie.PosterURL || 'images/default_poster.svg';
+                const ageClass = getAgeClass(movie.AgeRating);
+                const rating = (Math.random() * 2 + 7).toFixed(1); // demo rating
+                const stars = '★★★★☆';
+
+                // Sort showtimes by time
+                const sortedShowtimes = [...movie.showtimes].sort((a,b) =>
+                    new Date(a.StartTime) - new Date(b.StartTime));
+
+                const slotsHTML = sortedShowtimes.map(st => {
+                    const t = new Date(st.StartTime);
+                    const timeStr = t.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',hour12:false});
+                    const endT = new Date(st.EndTime);
+                    const endStr = endT.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',hour12:false});
+                    const price = (st.Price || 0).toLocaleString('vi-VN');
+                    const room = st.RoomName || 'Cinema';
+                    const isVip = room.toLowerCase().includes('vip') || (st.Price||0) > 100000;
+                    const isPast = new Date(st.StartTime) < new Date();
+                    const fewSeats = Math.random() < 0.15; // 15% chance demo
+
+                    if (isPast) return ''; // skip past showtimes
+
+                    return `<button class="slot${isVip ? ' vip-slot' : ''}${fewSeats ? ' few-seats' : ''}"
+                        onclick="goToSeats(${st.ShowtimeID})"
+                        title="Phòng ${room} • ${timeStr}-${endStr} • ${price}đ">
+                        <div class="slot-time">${timeStr}</div>
+                        <div class="slot-meta">
+                            <span class="slot-price">${price}đ</span>
+                            <span class="slot-room">${room}</span>
+                        </div>
+                    </button>`;
+                }).join('');
+
+                const validSlots = slotsHTML.trim();
+                const noSlotMsg = !validSlots
+                    ? `<div style="font-size:0.8rem;color:var(--muted);padding:10px 0;">Hết suất chiếu trong ngày</div>`
+                    : validSlots;
+
+                card.innerHTML = `
+                <div class="card-body">
+                    <div class="poster-col" onclick="openMovieModal(${movie.MovieID})">
+                        <img src="${poster}" alt="${movie.Title}" loading="lazy"
+                            onerror="this.src='images/default_poster.svg'">
+                        <div class="age-badge ${ageClass}">${movie.AgeRating || 'ALL'}</div>
+                        <div class="poster-play">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="movie-tags">
+                            <span class="tag tag-pg">${movie.AgeRating || 'ALL'}</span>
+                            <span class="tag tag-now">Đang chiếu</span>
+                            ${movie.Duration ? `<span class="tag tag-dur">⏱ ${movie.Duration} phút</span>` : ''}
+                            ${movie.MainCast ? `<span class="tag tag-genre">${movie.MainCast.split(',')[0].trim()}</span>` : ''}
+                        </div>
+                        <div class="movie-title" onclick="openMovieModal(${movie.MovieID})">${movie.Title}</div>
+                        <div class="movie-rating">
+                            <span class="rating-stars">${stars}</span>
+                            <span style="color:var(--gold);font-weight:800;">${rating}</span>
+                            <span style="color:var(--muted);">/10</span>
+                        </div>
+                        ${movie.MainCast ? `<div class="movie-cast">Diễn viên: ${movie.MainCast}</div>` : ''}
+                        <div class="shows-section-label">
+                            🕐 Các suất chiếu <span>${sortedShowtimes.length} suất</span>
+                        </div>
+                        <div class="time-slots">${noSlotMsg}</div>
+                    </div>
+                </div>`;
+
+                container.appendChild(card);
+            });
+        }
+
+        /* ── SORT ── */
+        window.applySort = function() {
+            sortMode = document.getElementById('sortSelect').value;
+            renderFiltered();
+        };
+
+        /* ── MOVIE MODAL ── */
+        window.openMovieModal = async function(movieId) {
+            const modal = document.getElementById('movieModal');
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+
+            // Find from current data
+            const m = Object.values(rawData.reduce((acc,r) => {
+                if (!acc[r.MovieID]) acc[r.MovieID] = r;
+                return acc;
+            }, {}))[0]; // fallback
+
+            const movie = rawData.find(r => r.MovieID === movieId) || {};
+            document.getElementById('modalTitle').textContent = movie.Title || '—';
+            document.getElementById('modalDesc').textContent = movie.Description || 'Chưa có mô tả cho phim này.';
+            document.getElementById('modalPoster').src = movie.PosterURL || 'images/default_poster.svg';
+
+            // Meta tags
+            document.getElementById('modalMeta').innerHTML = `
+                <span class="tag tag-pg">${movie.AgeRating || 'ALL'}</span>
+                ${movie.Duration ? `<span class="tag tag-dur">⏱ ${movie.Duration} phút</span>` : ''}
+                <span class="tag tag-now">Đang chiếu</span>`;
+
+            // Slots
+            const slots = rawData.filter(r => r.MovieID === movieId);
+            const slotsHTML = slots.sort((a,b) => new Date(a.StartTime)-new Date(b.StartTime)).map(st => {
+                const t = new Date(st.StartTime);
+                const timeStr = t.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',hour12:false});
+                const price = (st.Price||0).toLocaleString('vi-VN');
+                return `<button class="slot" onclick="closeMovieModal();goToSeats(${st.ShowtimeID})" style="min-width:76px;">
+                    <div class="slot-time">${timeStr}</div>
+                    <div class="slot-meta"><span class="slot-price">${price}đ</span><span class="slot-room">${st.RoomName||'Cinema'}</span></div>
+                </button>`;
+            }).join('');
+            document.getElementById('modalSlots').innerHTML = slotsHTML || '<span style="color:var(--muted);font-size:0.85rem;">Không có suất chiếu.</span>';
+        };
+
+        window.closeMovieModal = function() {
+            document.getElementById('movieModal').classList.remove('open');
+            document.body.style.overflow = '';
+        };
+
+        window.closeModal = function(e) {
+            if (e.target.id === 'movieModal') closeMovieModal();
+        };
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMovieModal(); });
+
+        /* ── GO TO SEATS ── */
+        window.goToSeats = function(showtimeId) {
+            const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!userStr || !token) {
+                sessionStorage.setItem('redirectAfterLogin', `seats.html?showtimeId=${showtimeId}`);
+                window.location.href = `auth.html?redirect=${encodeURIComponent('seats.html?showtimeId=' + showtimeId)}`;
+                return;
+            }
+            window.location.href = `seats.html?showtimeId=${showtimeId}`;
+        };
+
+        /* ── HELPERS ── */
+        function getAgeClass(r) {
+            if (!r) return 'age-all';
+            const s = r.toString().toUpperCase();
+            if (s.includes('18')) return 'age-18';
+            if (s.includes('16')) return 'age-16';
+            if (s.includes('13')) return 'age-13';
+            return 'age-all';
+        }
+
+        function fmtDate(str) {
+            if (!str) return '';
+            const [y, m, d] = str.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        function updateStats(movies, shows, minP) {
+            document.getElementById('statsMovies').textContent = movies || '—';
+            document.getElementById('statsShowtimes').textContent = shows || '—';
+            document.getElementById('statsMin').textContent = minP > 0 ? Math.floor(minP/1000) + 'k' : '—k';
+        }
+
+        function showSkeleton() {
+            const c = document.getElementById('showtimesContainer');
+            document.getElementById('showtimesCount').textContent = '— suất';
+            c.innerHTML = `
+            <div class="sk-wrap">
+                ${[1,2,3].map(() => `<div class="sk-card">
+                    <div class="sk-poster"></div>
+                    <div class="sk-body">
+                        <div class="sk-line" style="width:72%"></div>
+                        <div class="sk-line" style="width:52%"></div>
+                        <div class="sk-line" style="width:38%"></div>
+                        <div class="sk-line" style="width:85%"></div>
+                    </div>
+                </div>`).join('')}
+            </div>`;
+        }
+
+        function showEmpty(msg) {
+            const c = document.getElementById('showtimesContainer');
+            document.getElementById('showtimesTitle').textContent = 'Chưa có suất chiếu';
+            document.getElementById('showtimesCount').textContent = '0 suất';
+            c.innerHTML = `
+            <div class="empty-box">
+                <div class="empty-icon">🎬</div>
+                <div class="empty-title">Không có suất chiếu</div>
+                <div class="empty-desc">${msg}</div>
+                <button class="empty-btn" onclick="loadShowtimes()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+                    Thử lại
+                </button>
+            </div>`;
+        }
+
+        function showError() {
+            const c = document.getElementById('showtimesContainer');
+            c.innerHTML = `
+            <div class="empty-box">
+                <div class="empty-icon">⚠️</div>
+                <div class="empty-title">Lỗi kết nối</div>
+                <div class="empty-desc">Không thể tải lịch chiếu. Kiểm tra kết nối mạng và thử lại.</div>
+                <button class="empty-btn" onclick="loadShowtimes()">Thử lại</button>
+            </div>`;
+        }
+
+    })();
+    </script>
+
+</body>
 </html>

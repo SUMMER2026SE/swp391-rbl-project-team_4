@@ -1,0 +1,399 @@
+/* CSS for seats.html - Cinema Seat Layout Selection */
+
+:root {
+    --seat-normal: #4b5563;
+    --seat-normal-hover: #6b7280;
+    --seat-vip: #d97706;
+    --seat-vip-hover: #f59e0b;
+    --seat-couple: #db2777;
+    --seat-couple-hover: #f472b6;
+    --seat-selected: #e50914;
+    --seat-booked: #1f2937;
+}
+
+body {
+    background-color: #0f1113;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.seats-page-wrap {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    min-height: calc(100vh - 70px);
+    max-width: 1400px;
+    margin: 0 auto;
+    gap: 30px;
+    padding: 20px;
+}
+
+@media (max-width: 1024px) {
+    .seats-page-wrap {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ─── Left Column (Seat Grid) ─── */
+.left-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(26, 29, 31, 0.6);
+    border: 1px solid #242a2d;
+    border-radius: 12px;
+    padding: 40px 20px;
+    backdrop-filter: blur(10px);
+}
+
+.screen-container {
+    width: 80%;
+    margin: 0 auto 50px auto;
+    text-align: center;
+    perspective: 400px;
+}
+
+.screen-curve {
+    height: 12px;
+    background: linear-gradient(to bottom, #e50914, rgba(229, 9, 20, 0));
+    border-radius: 50% / 100% 100% 0 0;
+    box-shadow: 0 4px 20px rgba(229, 9, 20, 0.4);
+    transform: rotateX(-15deg);
+}
+
+.screen-label {
+    margin-top: 15px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #888888;
+    text-transform: uppercase;
+}
+
+/* Seat Map Container */
+.seat-map {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 40px;
+    user-select: none;
+    overflow-x: auto;
+    width: 100%;
+    align-items: center;
+}
+
+/* Row of seats */
+.seat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+.row-label {
+    width: 30px;
+    font-weight: 700;
+    color: #888888;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Individual Seat Styling */
+.seat {
+    width: 32px;
+    height: 30px;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Normal Seat */
+.seat.normal {
+    background-color: var(--seat-normal);
+    color: #d1d5db;
+}
+.seat.normal:hover:not(.booked):not(.locked) {
+    background-color: var(--seat-normal-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255,255,255,0.1);
+}
+
+/* VIP Seat */
+.seat.vip {
+    background-color: var(--seat-vip);
+    color: #ffffff;
+}
+.seat.vip:hover:not(.booked):not(.locked) {
+    background-color: var(--seat-vip-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.4);
+}
+
+/* Couple Seat */
+.seat.couple {
+    background-color: var(--seat-couple);
+    color: #ffffff;
+    width: 72px; /* Double width */
+    border-radius: 8px 8px 0 0;
+}
+.seat.couple:hover:not(.booked):not(.locked) {
+    background-color: var(--seat-couple-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(219, 39, 119, 0.4);
+}
+
+/* Seat statuses */
+.seat.selected {
+    background-color: var(--seat-selected) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px var(--primary-glow);
+    transform: scale(1.05) translateY(-2px);
+}
+
+.seat.booked {
+    background-color: var(--seat-booked) !important;
+    color: #4b5563 !important;
+    cursor: not-allowed;
+    border-color: transparent;
+    opacity: 0.35;
+}
+
+.seat.locked {
+    background-color: #374151 !important;
+    color: #9ca3af !important;
+    cursor: not-allowed;
+    border: 1px dashed #ef4444;
+    opacity: 0.6;
+}
+
+/* Legend */
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    background: rgba(255,255,255,0.03);
+    padding: 15px 30px;
+    border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+.legend-color {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+}
+
+.legend-color.normal { background-color: var(--seat-normal); }
+.legend-color.vip { background-color: var(--seat-vip); }
+.legend-color.couple { background-color: var(--seat-couple); width: 36px; }
+.legend-color.selected { background-color: var(--seat-selected); }
+.legend-color.booked { background-color: var(--seat-booked); opacity: 0.5; }
+
+/* ─── Right Column (Sidebar Summary) ─── */
+.sidebar-summary {
+    background: rgba(26, 29, 31, 0.85);
+    border: 1px solid #242a2d;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 90px;
+    height: fit-content;
+}
+
+.sidebar-movie-header {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.sidebar-poster {
+    width: 80px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.sidebar-movie-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.sidebar-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+}
+
+.sidebar-meta {
+    font-size: 0.8rem;
+    color: #888888;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: #242a2d;
+    margin: 20px 0;
+}
+
+.sidebar-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sidebar-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+.sidebar-label {
+    color: #888888;
+}
+
+.sidebar-value {
+    font-weight: 600;
+    text-align: right;
+}
+
+.selected-seats-list {
+    max-height: 80px;
+    overflow-y: auto;
+    color: #e50914;
+    font-weight: 700;
+}
+
+.total-amount-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.total-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.total-val {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #e50914;
+}
+
+.btn-submit-seats {
+    background: var(--primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 14px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-submit-seats:hover:not(:disabled) {
+    background: var(--primary-hover);
+    box-shadow: 0 4px 15px var(--primary-glow);
+    transform: translateY(-1px);
+}
+
+.btn-submit-seats:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Steps Progress Row */
+.steps-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.step-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #242a2d;
+    color: #888888;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.step.active .step-circle {
+    background-color: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.step.done .step-circle {
+    background-color: #4caf50;
+    color: #ffffff;
+}
+
+.step-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #888888;
+    letter-spacing: 1px;
+}
+
+.step.active .step-label {
+    color: #ffffff;
+}
+
+.step-line {
+    height: 2px;
+    background-color: #242a2d;
+    flex: 1;
+    margin-bottom: 15px;
+}
+
+.step-line.done-line {
+    background-color: #4caf50;
+}

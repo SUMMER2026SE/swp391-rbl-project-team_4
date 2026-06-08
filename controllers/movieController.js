@@ -83,12 +83,63 @@ exports.getShowtimesByMovie = async (req, res) => {
 //  GET /api/movies/showtimes/:showtimeId/seats
 //  Trạng thái ghế ngồi của một suất chiếu
 // ─────────────────────────────────────────────────────────────
+const socketManager = require('../sockets/socketManager');
+
 exports.getSeatsByShowtime = async (req, res) => {
   try {
     const data = await MovieModel.getSeatsByShowtime(req.params.showtimeId);
+    
+    if (socketManager.getLockedSeats) {
+      const lockedSeats = socketManager.getLockedSeats(req.params.showtimeId);
+      const lockedSet = new Set(lockedSeats.map(id => parseInt(id)));
+      
+      data.forEach(seat => {
+        if (seat.SeatStatus === 'available' && lockedSet.has(seat.SeatID)) {
+          seat.SeatStatus = 'locked';
+        }
+      });
+    }
+
     res.json({ success: true, data });
   } catch (err) {
     console.error('[movieController] getSeatsByShowtime:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getCinemas = async (req, res) => {
+  try {
+    const data = await MovieModel.getCinemas();
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[movieController] getCinemas:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getShowtimeDetails = async (req, res) => {
+  try {
+    const data = await MovieModel.getShowtimeDetails(req.params.showtimeId);
+    if (!data) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy suất chiếu.' });
+    }
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[movieController] getShowtimeDetails:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getShowtimes = async (req, res) => {
+  try {
+    const { cinemaId, date, movieId } = req.query;
+    if (!cinemaId || !date) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp cinemaId và date.' });
+    }
+    const data = await MovieModel.getShowtimes({ cinemaId, date, movieId });
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[movieController] getShowtimes:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };

@@ -19,6 +19,15 @@ router.get('/coming-soon',                   movieCtrl.getComingSoon);
 // GET /api/movies/showtimes/:showtimeId/seats — Ghế của suất chiếu
 router.get('/showtimes/:showtimeId/seats',   movieCtrl.getSeatsByShowtime);
 
+// GET /api/movies/cinemas                    — Danh sách rạp
+router.get('/cinemas',                       movieCtrl.getCinemas);
+
+// GET /api/movies/showtimes                  — Lịch chiếu theo rạp và ngày
+router.get('/showtimes',                     movieCtrl.getShowtimes);
+
+// GET /api/movies/showtimes/:showtimeId      — Chi tiết một suất chiếu
+router.get('/showtimes/:showtimeId',         movieCtrl.getShowtimeDetails);
+
 // GET /api/movies/:id                        — Chi tiết phim
 router.get('/:id',                           movieCtrl.getMovieById);
 

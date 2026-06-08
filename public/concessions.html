@@ -433,29 +433,11 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>
     <script>
-    /* ──────────────────────────────────────
-       PRODUCT CATALOGUE
-    ────────────────────────────────────── */
-    const PRODUCTS = {
-        mega:     { name: 'Mega Combo',       price: 24.00 },
-        couple:   { name: 'Couple Combo',     price: 18.50 },
-        solo:     { name: 'Solo Feast',       price: 14.00 },
-        kids:     { name: 'Kids Pack',        price: 9.50  },
-        lpopcorn: { name: 'Large Popcorn',    price: 6.50  },
-        hotdog:   { name: 'Hot Dog',          price: 5.00  },
-        water:    { name: 'Mineral Water',    price: 2.50  },
-        soda:     { name: 'Large Soft Drink', price: 4.50  }
-    };
-
-    // qty state
+    let dbProducts = [];
     const quantities = {};
-    Object.keys(PRODUCTS).forEach(k => quantities[k] = 0);
+    let BASE_TICKET = 0;
+    let booking = {};
 
-    const BASE_TICKET = 33.50; // tickets + booking fee
-
-    /* ──────────────────────────────────────
-       TAB SWITCHING
-    ────────────────────────────────────── */
     function switchTab(tabId, btn) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -463,9 +445,6 @@
         document.getElementById('tab-' + tabId).classList.remove('hidden');
     }
 
-    /* ──────────────────────────────────────
-       QUANTITY CONTROL
-    ────────────────────────────────────── */
     function changeQty(id, delta) {
         quantities[id] = Math.max(0, (quantities[id] || 0) + delta);
         const el = document.getElementById('qty-' + id);
@@ -473,17 +452,17 @@
         updateOrderSummary();
     }
 
-    /* ──────────────────────────────────────
-       ADD TO CART / UPDATE
-    ────────────────────────────────────── */
     function addToCart(id) {
         const qty = quantities[id];
         const btn = document.getElementById('btn-' + id);
         if (!btn) return;
 
         if (qty > 0) {
-            btn.textContent = 'Update';
+            btn.textContent = 'Cập nhật';
             btn.classList.add('btn-update');
+        } else {
+            btn.textContent = 'Thêm';
+            btn.classList.remove('btn-update');
         }
         updateOrderSummary();
 
@@ -492,9 +471,6 @@
         setTimeout(() => btn.classList.remove('btn-flash'), 400);
     }
 
-    /* ──────────────────────────────────────
-       ORDER SUMMARY
-    ────────────────────────────────────── */
     function updateOrderSummary() {
         const fbSection = document.getElementById('fbSection');
         const fbLines = document.getElementById('fbLines');
@@ -503,16 +479,15 @@
         let fbTotal = 0;
         let fbHtml = '';
 
-        Object.keys(PRODUCTS).forEach(id => {
-            const qty = quantities[id];
+        dbProducts.forEach(p => {
+            const qty = quantities[p.FnBID] || 0;
             if (qty > 0) {
-                const product = PRODUCTS[id];
-                const subtotal = (qty * product.price).toFixed(2);
-                fbTotal += qty * product.price;
+                const subtotal = qty * p.Price;
+                fbTotal += subtotal;
                 fbHtml += `
                     <div class="order-line">
-                        <span class="line-label">${qty} ${product.name}</span>
-                        <span class="line-val">$${subtotal}</span>
+                        <span class="line-label">${qty}x ${p.Name}</span>
+                        <span class="line-val">${subtotal.toLocaleString('vi-VN')} VND</span>
                     </div>`;
             }
         });
@@ -525,20 +500,43 @@
             fbLines.innerHTML = '';
         }
 
-        totalEl.textContent = '$' + (BASE_TICKET + fbTotal).toFixed(2);
+        totalEl.textContent = (BASE_TICKET + fbTotal).toLocaleString('vi-VN') + ' VND';
     }
 
-    /* ──────────────────────────────────────
-       NAVIGATION
-    ────────────────────────────────────── */
     function goToPayment() {
+        const foodItems = [];
+        const foodDisplayItems = [];
+        let fbTotal = 0;
+
+        dbProducts.forEach(p => {
+            const qty = quantities[p.FnBID] || 0;
+            if (qty > 0) {
+                fbTotal += qty * p.Price;
+                foodItems.push({
+                    fnbId: p.FnBID,
+                    quantity: qty
+                });
+                foodDisplayItems.push({
+                    name: p.Name,
+                    quantity: qty,
+                    price: p.Price,
+                    subtotal: qty * p.Price
+                });
+            }
+        });
+
+        booking.foodItems = foodItems;
+        booking.foodDisplayItems = foodDisplayItems;
+        booking.fnbTotal = fbTotal;
+        booking.totalAmount = BASE_TICKET + fbTotal;
+
+        sessionStorage.setItem('booking', JSON.stringify(booking));
+        localStorage.setItem('booking', JSON.stringify(booking));
+
         window.location.href = 'checkout.html';
     }
 
-    /* ──────────────────────────────────────
-       LOAD SESSION DATA
-    ────────────────────────────────────── */
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
         // User avatar
         const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
         const btnLogin = document.getElementById('btnLogin');
@@ -550,8 +548,11 @@
             } catch(e) {}
         }
 
-        // Booking info from sessionStorage / localStorage
-        const booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
+        // Booking details
+        try {
+            booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
+        } catch(e) { booking = {}; }
+
         if (booking.movieTitle) {
             document.getElementById('summaryTitle').textContent = booking.movieTitle;
         }
@@ -562,12 +563,97 @@
             document.getElementById('summaryTime').textContent = booking.time + ' • ' + booking.hall;
         }
         if (booking.seats) {
-            document.getElementById('summarySeats').textContent = 'Seats: ' + booking.seats;
+            document.getElementById('summarySeats').textContent = 'Ghế: ' + booking.seats;
         }
         if (booking.poster) {
             document.getElementById('summaryPoster').src = booking.poster;
+            document.getElementById('summaryPoster').onerror = function() { this.src = 'images/default_poster.svg'; };
         }
+
+        BASE_TICKET = booking.ticketTotal || 0;
+        document.getElementById('ticketLines').innerHTML = `
+            <div class="order-line">
+                <span class="line-label">Vé xem phim (${booking.seatCount || 0}x)</span>
+                <span class="line-val">${BASE_TICKET.toLocaleString('vi-VN')} VND</span>
+            </div>
+            <div class="order-line">
+                <span class="line-label">Phí dịch vụ</span>
+                <span class="line-val">0 VND</span>
+            </div>
+        `;
+
+        // Fetch Concessions from database
+        try {
+            const res = await fetch('/api/bookings/food-beverages');
+            const json = await res.json();
+            if (json.success && json.data) {
+                dbProducts = json.data;
+                renderProducts();
+            } else {
+                console.error('Failed to fetch concessions');
+            }
+        } catch (err) {
+            console.error('Error fetching concessions:', err);
+        }
+
+        updateOrderSummary();
     });
+
+    function renderProducts() {
+        const tabCombos = document.getElementById('tab-combos');
+        const tabSnacks = document.getElementById('tab-snacks');
+        const tabDrinks = document.getElementById('tab-drinks');
+
+        tabCombos.innerHTML = '';
+        tabSnacks.innerHTML = '';
+        tabDrinks.innerHTML = '';
+
+        dbProducts.forEach(p => {
+            quantities[p.FnBID] = 0;
+
+            const category = (p.Category || '').toLowerCase();
+            let container = tabSnacks; // default
+            if (category.includes('combo')) {
+                container = tabCombos;
+            } else if (category.includes('drink') || category.includes('nước') || category.includes('nuoc')) {
+                container = tabDrinks;
+            } else if (category.includes('snack') || category.includes('bắp') || category.includes('bap') || category.includes('kẹo') || category.includes('keo')) {
+                container = tabSnacks;
+            }
+
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.id = `card-${p.FnBID}`;
+
+            const displayImage = p.ImageURL || 'images/combo_mega.png';
+
+            card.innerHTML = `
+                <div class="card-img-wrap">
+                    <img src="${displayImage}" alt="${p.Name}" onerror="this.onerror=null; this.src='images/combo_mega.png';" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <div class="card-top-row">
+                        <span class="item-name">${p.Name}</span>
+                        <span class="item-price">${p.Price.toLocaleString('vi-VN')} VND</span>
+                    </div>
+                    <p class="item-desc" title="${p.Description || ''}">${p.Description || 'Đồ ăn bắp nước chuẩn rạp chiếu phim.'}</p>
+                    <div class="card-actions">
+                        <div class="qty-control">
+                            <button class="qty-btn minus" onclick="changeQty(${p.FnBID}, -1)" aria-label="Decrease">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
+                            <span class="qty-num" id="qty-${p.FnBID}">0</span>
+                            <button class="qty-btn plus" onclick="changeQty(${p.FnBID}, 1)" aria-label="Increase">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
+                        </div>
+                        <button class="btn-add" id="btn-${p.FnBID}" onclick="addToCart(${p.FnBID})">Thêm</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
     </script>
 
 </body>

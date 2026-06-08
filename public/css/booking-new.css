@@ -584,6 +584,47 @@ a {
     letter-spacing: 1px;
 }
 
+/* ─── Newsletter Form ─── */
+.newsletter-form {
+    display: flex;
+    gap: 8px;
+}
+
+.newsletter-input {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border-dark);
+    color: var(--text-light);
+    padding: 9px 14px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-family: var(--font);
+    transition: border-color var(--transition);
+}
+
+.newsletter-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.newsletter-btn {
+    background: var(--primary);
+    border: none;
+    color: #fff;
+    padding: 9px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+}
+
+.newsletter-btn:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 1024px) {
     .selector-content {

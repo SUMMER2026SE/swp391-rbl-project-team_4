@@ -4,7 +4,7 @@ class BookingModel {
   static async getFoodBeverages() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT FnBID, Name, Category, Price, ImageURL, IsAvailable
+      SELECT FnBID, Name, Description, Category, Price, ImageURL, IsAvailable
       FROM   FoodBeverages
       WHERE  IsAvailable = 1
       ORDER BY Category, Name
@@ -47,7 +47,10 @@ class BookingModel {
       }
       const ticketPrice = stResult.recordset[0].Price;
 
-      // --- Kiểm tra ghế chưa bị đặt ---
+      // --- Kiểm tra ghế chưa bị đặt & Tính giá trị từng ghế ---
+      let ticketTotal = 0;
+      const seatPriceDetails = [];
+
       for (const seatId of seatIds) {
         const seatReq = transaction.request();
         seatReq.input('sid', sql.Int, seatId);
@@ -59,10 +62,34 @@ class BookingModel {
         if (seatCheck.recordset.length > 0) {
           throw new Error(`Ghế ID ${seatId} đã được đặt.`);
         }
+
+        const infoReq = transaction.request();
+        infoReq.input('sid', sql.Int, seatId);
+        const seatInfo = await infoReq.query(`
+          SELECT SeatRow, SeatType, PriceMultiplier FROM Seats WHERE SeatID = @sid
+        `);
+        if (seatInfo.recordset.length === 0) {
+          throw new Error(`Ghế ID ${seatId} không tồn tại.`);
+        }
+
+        const seat = seatInfo.recordset[0];
+        let multiplier = parseFloat(seat.PriceMultiplier || 1.0);
+        
+        // Dynamically treat Row F as Couple seats and apply 1.5 multiplier (per seat)
+        if (seat.SeatRow === 'F') {
+          multiplier = 1.5;
+        } else if (seat.SeatType === 'VIP') {
+          multiplier = 1.2;
+        } else {
+          multiplier = 1.0;
+        }
+
+        const seatPrice = ticketPrice * multiplier;
+        ticketTotal += seatPrice;
+        seatPriceDetails.push({ seatId, price: seatPrice });
       }
 
-      // --- Tính tổng tiền vé ---
-      let totalAmount = ticketPrice * seatIds.length;
+      let totalAmount = ticketTotal;
 
       // --- Cộng thêm F&B ---
       let fnbTotal = 0;
@@ -104,13 +131,21 @@ class BookingModel {
       // --- Tạo Ticket cho mỗi ghế ---
       const createdTickets = [];
       for (const seatId of seatIds) {
+        const seatDetail = seatPriceDetails.find(d => d.seatId === seatId);
+        const currentSeatPrice = seatDetail.price;
+        
+        // Phân bổ giá sau giảm giá theo tỉ lệ giá gốc của ghế
+        const ticketFinalTotal = Math.max(0, finalAmount - fnbTotal);
+        const discountRatio = ticketTotal > 0 ? (currentSeatPrice / ticketTotal) : 0;
+        const currentSeatTotalAmount = ticketFinalTotal * discountRatio;
+
         const tReq = transaction.request();
         tReq.input('userId', sql.Int, userId);
         tReq.input('showtimeId', sql.Int, showtimeId);
         tReq.input('seatId', sql.Int, seatId);
         tReq.input('voucherId', sql.Int, voucherId);
-        tReq.input('ticketPrice', sql.Decimal, ticketPrice);
-        tReq.input('totalAmount', sql.Decimal, finalAmount / seatIds.length);
+        tReq.input('ticketPrice', sql.Decimal, currentSeatPrice);
+        tReq.input('totalAmount', sql.Decimal, currentSeatTotalAmount);
         tReq.input('paymentMethod', sql.NVarChar, paymentMethod);
 
         const tResult = await tReq.query(`
