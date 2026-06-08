@@ -235,32 +235,40 @@
 
         /* Screen */
         .screen-wrap {
-            width: 85%;
-            max-width: 600px;
-            margin: 0 auto 48px;
+            width: 90%;
+            max-width: 650px;
+            margin: 0 auto 55px;
             text-align: center;
             perspective: 600px;
+            position: relative;
         }
         .screen-bar {
-            height: 10px;
-            background: linear-gradient(90deg, transparent, rgba(229,9,20,0.6), #e50914, rgba(229,9,20,0.6), transparent);
+            height: 8px;
+            background: linear-gradient(90deg, transparent, rgba(229,9,20,0.6), #ff1a26, rgba(229,9,20,0.6), transparent);
             border-radius: 50% / 100% 100% 0 0;
-            box-shadow: 0 6px 30px rgba(229, 9, 20, 0.45), 0 2px 8px rgba(229,9,20,0.2);
-            transform: rotateX(-20deg);
+            box-shadow: 0 4px 30px rgba(229, 9, 20, 0.6), 0 2px 10px rgba(229,9,20,0.3);
+            transform: rotateX(-15deg);
             position: relative;
+            z-index: 2;
         }
         .screen-glow {
             width: 80%;
-            height: 1px;
-            background: rgba(229,9,20,0.2);
+            height: 140px;
+            background: linear-gradient(180deg, rgba(229,9,20,0.12) 0%, rgba(229,9,20,0.01) 85%, transparent 100%);
             margin: 0 auto;
-            box-shadow: 0 0 40px 20px rgba(229,9,20,0.12);
+            position: absolute;
+            left: 10%;
+            top: 8px;
+            z-index: 1;
+            clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+            pointer-events: none;
+            opacity: 0.75;
         }
         .screen-label {
             margin-top: 18px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 5px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 6px;
             color: var(--text-muted);
             text-transform: uppercase;
         }
@@ -269,126 +277,167 @@
         .seat-map {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 36px;
+            gap: 12px;
+            margin-bottom: 0;
             user-select: none;
             align-items: center;
         }
         .seat-row {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
         .row-label {
             width: 28px;
             font-weight: 800;
             color: var(--text-muted);
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             text-align: center;
             flex-shrink: 0;
         }
 
-        /* Base Seat */
+        /* Base Seat Design */
         .seat {
-            width: 34px;
-            height: 32px;
-            border-radius: 6px 6px 3px 3px;
+            width: 36px;
+            height: 34px;
+            border-radius: 8px 8px 4px 4px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 700;
-            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid transparent;
+            font-size: 0.72rem;
+            font-weight: 800;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.07);
             position: relative;
             flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-        /* The "seat back" detail */
+        /* Chair headrest */
         .seat::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 10%;
-            width: 80%;
-            height: 35%;
-            background: rgba(255,255,255,0.06);
-            border-radius: 3px 3px 0 0;
+            top: 2px;
+            left: 4px;
+            right: 4px;
+            height: 8px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+        /* Chair cushion */
+        .seat::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            left: 4px;
+            right: 4px;
+            top: 13px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 2px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.2s;
         }
 
         /* Normal Seat */
         .seat.normal {
-            background: linear-gradient(180deg, #4a5568, #3a4048);
-            color: #9ca3af;
+            background: linear-gradient(180deg, #5a6578, #3b424e);
+            color: #cbd5e1;
         }
         .seat.normal:hover:not(.booked):not(.locked) {
-            background: linear-gradient(180deg, #6b7280, #52596a);
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+            background: linear-gradient(180deg, #7c8ba1, #4f5869);
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.5);
             color: #fff;
+        }
+        .seat.normal:hover::before {
+            background: rgba(255, 255, 255, 0.25);
         }
 
         /* VIP Seat */
         .seat.vip {
-            background: linear-gradient(180deg, #b45309, #92400e);
-            color: #fcd34d;
-            border-color: rgba(252, 211, 77, 0.2);
+            background: linear-gradient(180deg, #c2610d, #8f4305);
+            color: #fef08a;
+            border-color: rgba(252, 211, 77, 0.25);
         }
         .seat.vip:hover:not(.booked):not(.locked) {
-            background: linear-gradient(180deg, #d97706, #b45309);
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 6px 14px rgba(180, 83, 9, 0.45);
+            background: linear-gradient(180deg, #e07416, #aa5209);
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 6px 14px rgba(180, 83, 9, 0.55);
             color: #fff;
+        }
+        .seat.vip::before {
+            background: rgba(255, 255, 255, 0.2);
         }
 
         /* Couple Seat */
         .seat.couple {
-            width: 76px;
+            width: 78px;
             height: 34px;
-            border-radius: 8px 8px 3px 3px;
-            background: linear-gradient(180deg, #9d174d, #831843);
-            color: #fbcfe8;
-            border-color: rgba(251, 207, 232, 0.15);
-            gap: 4px;
+            border-radius: 9px 9px 4px 4px;
+            background: linear-gradient(180deg, #b81f5d, #7d0e3d);
+            color: #fce7f3;
+            border-color: rgba(251, 207, 232, 0.25);
             font-size: 0.65rem;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
         }
         .seat.couple::before {
-            /* heart separator in center */
-            content: '';
+            content: '♥';
+            font-size: 0.6rem;
             position: absolute;
-            top: 0;
+            top: 2px;
             left: 50%;
             transform: translateX(-50%);
-            width: 1px;
-            height: 100%;
-            background: rgba(255,255,255,0.08);
+            width: 14px;
+            height: 14px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f472b6;
+        }
+        .seat.couple::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            left: 6px;
+            right: 6px;
+            top: 15px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.08);
         }
         .seat.couple:hover:not(.booked):not(.locked) {
-            background: linear-gradient(180deg, #be185d, #9d174d);
-            transform: translateY(-3px) scale(1.03);
-            box-shadow: 0 6px 16px rgba(157, 23, 77, 0.5);
+            background: linear-gradient(180deg, #d82c73, #9d174d);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 16px rgba(157, 23, 77, 0.65);
             color: #fff;
         }
 
         /* Selected */
         .seat.selected {
-            background: linear-gradient(180deg, #f40612, #c00009) !important;
+            background: linear-gradient(180deg, #ff1a26, #cc000a) !important;
             color: #fff !important;
-            border-color: rgba(255,255,255,0.2) !important;
+            border-color: rgba(255,255,255,0.35) !important;
             transform: translateY(-3px) scale(1.08) !important;
-            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.6) !important;
+            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.65) !important;
+        }
+        .seat.selected::before {
+            background: rgba(255,255,255,0.35) !important;
         }
 
         /* Booked */
         .seat.booked {
             background: var(--seat-booked) !important;
-            color: #2d333b !important;
+            color: #384252 !important;
             cursor: not-allowed;
-            border-color: rgba(255,255,255,0.03) !important;
-            opacity: 0.45;
+            border-color: rgba(255,255,255,0.02) !important;
+            opacity: 0.35;
             transform: none !important;
+            box-shadow: none !important;
         }
-        .seat.booked::before { display: none; }
+        .seat.booked::before, .seat.booked::after { display: none !important; }
 
         /* Locked by others */
         .seat.locked {
@@ -400,19 +449,19 @@
         }
 
         /* Aisle gap in row */
-        .aisle-gap { width: 20px; flex-shrink: 0; }
+        .aisle-gap { width: 22px; flex-shrink: 0; }
 
         /* ─── Legend ─── */
         .legend {
             display: flex;
             flex-wrap: wrap;
-            gap: 18px;
+            gap: 20px;
             justify-content: center;
             background: rgba(255,255,255,0.02);
             padding: 16px 28px;
             border-radius: 40px;
             border: 1px solid var(--border);
-            max-width: 700px;
+            max-width: 720px;
             margin: 0 auto;
         }
         .legend-item {
@@ -426,14 +475,15 @@
         .legend-box {
             width: 28px;
             height: 22px;
-            border-radius: 4px 4px 2px 2px;
+            border-radius: 4px;
             flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .legend-box.normal { background: linear-gradient(180deg, #4a5568, #3a4048); }
-        .legend-box.vip { background: linear-gradient(180deg, #b45309, #92400e); }
-        .legend-box.couple { background: linear-gradient(180deg, #9d174d, #831843); width: 56px; border-radius: 6px 6px 2px 2px; }
-        .legend-box.selected { background: linear-gradient(180deg, #f40612, #c00009); }
-        .legend-box.booked { background: var(--seat-booked); opacity: 0.45; border: 1px solid #252a30; }
+        .legend-box.normal { background: linear-gradient(180deg, #5a6578, #3b424e); }
+        .legend-box.vip { background: linear-gradient(180deg, #c2610d, #8f4305); }
+        .legend-box.couple { background: linear-gradient(180deg, #b81f5d, #7d0e3d); width: 56px; }
+        .legend-box.selected { background: linear-gradient(180deg, #ff1a26, #cc000a); }
+        .legend-box.booked { background: var(--seat-booked); opacity: 0.35; border: 1px solid #252a30; }
 
         /* ─── Sidebar Summary ─── */
         .sidebar-summary {
@@ -697,11 +747,29 @@
                 <div class="screen-label">Màn Hình</div>
             </div>
 
-            <!-- Seat Map -->
-            <div class="seat-map" id="seatMapContainer">
-                <div class="loading-state">
-                    <div class="spinner"></div>
-                    <p style="color: var(--text-muted);">Đang tải sơ đồ ghế ngồi...</p>
+            <!-- Seat availability -->
+            <div id="seatAvailability" style="text-align:center;margin-bottom:20px;font-size:0.85rem;color:var(--text-muted);"></div>
+
+            <!-- Zoom controls -->
+            <div class="zoom-controls-bar" style="display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 12px; max-width: 90%; margin-left: auto; margin-right: auto;">
+                <button class="nav-back-btn" onclick="zoomSeatMap(1.15)" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+                    🔍 Phóng to
+                </button>
+                <button class="nav-back-btn" onclick="zoomSeatMap(0.85)" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+                    🔍 Thu nhỏ
+                </button>
+                <button class="nav-back-btn" onclick="resetZoom()" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+                    🔄 Đặt lại
+                </button>
+            </div>
+
+            <!-- Seat Map Viewport -->
+            <div id="seatMapViewport" style="overflow-x: auto; overflow-y: hidden; border: 1px solid var(--border); border-radius: 12px; padding: 40px 16px; margin-bottom: 30px; background: rgba(0,0,0,0.15); display: flex; justify-content: center; min-height: 400px; align-items: flex-start; scrollbar-width: thin;">
+                <div class="seat-map" id="seatMapContainer" style="transform-origin: center top; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p style="color: var(--text-muted);">Đang tải sơ đồ ghế ngồi...</p>
+                    </div>
                 </div>
             </div>
 
@@ -732,6 +800,11 @@
 
         <!-- Right: Booking Summary Sidebar -->
         <aside class="sidebar-summary">
+            <!-- Countdown Timer -->
+            <div class="countdown-card" id="countdownCard" style="display: none; align-items: center; justify-content: center; gap: 10px; background: rgba(229,9,20,0.12); border: 1px solid rgba(229,9,20,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; animation: fadeIn 0.3s ease;">
+                <span style="font-size: 1.15rem; animation: pulse 1s infinite alternate;">⏱️</span>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #ff8080; letter-spacing: 0.5px;">GIỮ GHẾ TRONG: <span id="countdownTimer" style="font-size: 1.15rem; color: #fff; font-family: monospace; margin-left: 4px;">05:00</span></div>
+            </div>
             <!-- Movie info -->
             <div class="movie-card-mini">
                 <img id="moviePoster" src="images/default_poster.svg" alt="Poster phim" class="movie-poster-mini"
@@ -762,6 +835,10 @@
                 <div class="info-row">
                     <span class="info-key">⏰ Giờ chiếu</span>
                     <span class="info-val" id="infoTime">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-key">💰 Giá vé gốc</span>
+                    <span class="info-val" id="infoPrice">--</span>
                 </div>
                 <div class="info-row">
                     <span class="info-key">🎟️ Ghế đã chọn</span>
@@ -815,6 +892,89 @@
         let seatsList = [];
         let selectedSeats = new Set();   // Set<SeatID>
         let lockedByOthers = new Set();  // Set<SeatID>
+        let currentZoom = 1.0;
+        let countdownInterval = null;
+        let secondsLeft = 600; // 10 minutes (đồng bộ với Socket.IO)
+
+        // ──────────────────────────────────────────────
+        //  Zoom & Timer & Tooltip Helpers
+        // ──────────────────────────────────────────────
+        function zoomSeatMap(factor) {
+            currentZoom = Math.min(1.8, Math.max(0.6, currentZoom * factor));
+            updateSeatMapTransform();
+        }
+
+        function resetZoom() {
+            currentZoom = 1.0;
+            updateSeatMapTransform();
+        }
+
+        function updateSeatMapTransform() {
+            const container = document.getElementById('seatMapContainer');
+            if (container) {
+                container.style.transform = `scale(${currentZoom})`;
+            }
+        }
+
+        function startTimer() {
+            if (countdownInterval) return; // Already running
+            secondsLeft = 600;
+            const card = document.getElementById('countdownCard');
+            if (card) card.style.display = 'flex';
+            updateTimerDisplay();
+
+            countdownInterval = setInterval(() => {
+                secondsLeft--;
+                updateTimerDisplay();
+
+                if (secondsLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    releaseAllHeldSeats();
+                    alert('Thời gian giữ ghế đã hết. Vui lòng thực hiện chọn lại ghế!');
+                    window.location.href = 'booking.html';
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            const card = document.getElementById('countdownCard');
+            if (card) card.style.display = 'none';
+        }
+
+        function updateTimerDisplay() {
+            const min = Math.floor(secondsLeft / 60);
+            const sec = secondsLeft % 60;
+            const timerEl = document.getElementById('countdownTimer');
+            if (timerEl) {
+                timerEl.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+            }
+        }
+
+        function addTooltipListeners(el, label, price) {
+            el.addEventListener('mouseenter', (e) => {
+                const tooltip = document.getElementById('seatTooltip');
+                if (tooltip) {
+                    tooltip.innerHTML = `${label}<br><span style="color:#f59e0b; font-weight:800; font-size:0.85rem;">${price.toLocaleString('vi-VN')} đ</span>`;
+                    tooltip.style.display = 'block';
+                }
+            });
+            el.addEventListener('mousemove', (e) => {
+                const tooltip = document.getElementById('seatTooltip');
+                if (tooltip) {
+                    tooltip.style.left = (e.pageX + 15) + 'px';
+                    tooltip.style.top = (e.pageY + 15) + 'px';
+                }
+            });
+            el.addEventListener('mouseleave', () => {
+                const tooltip = document.getElementById('seatTooltip');
+                if (tooltip) tooltip.style.display = 'none';
+            });
+        }
 
         // ──────────────────────────────────────────────
         //  Auth check
@@ -831,9 +991,24 @@
         document.addEventListener('DOMContentLoaded', async () => {
             updateNavbar();
             await loadShowtimeDetails();
+            if (showtimeData && new Date(showtimeData.StartTime) < new Date()) {
+                alert('Suất chiếu này đã qua. Vui lòng chọn suất khác.');
+                window.location.href = 'booking.html';
+                return;
+            }
             initSocket();
             await loadSeats();
+            window.addEventListener('beforeunload', releaseAllHeldSeats);
         });
+
+        function releaseAllHeldSeats() {
+            if (!socket || selectedSeats.size === 0) return;
+            selectedSeats.forEach(seatId => {
+                socket.emit('releaseSeat', { showtimeId, seatId });
+            });
+            selectedSeats.clear();
+            stopTimer();
+        }
 
         function updateNavbar() {
             const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
@@ -882,6 +1057,14 @@
             const start = new Date(showtimeData.StartTime);
             document.getElementById('infoTime').textContent = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
             document.getElementById('infoDate').textContent = start.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+            const basePrice = showtimeData.Price || 0;
+            document.getElementById('infoPrice').textContent = basePrice > 0
+                ? basePrice.toLocaleString('vi-VN') + ' đ'
+                : 'Chưa thiết lập';
+
+            document.getElementById('breadcrumbCinema').textContent = showtimeData.CinemaName || '--';
+            document.getElementById('breadcrumbTime').textContent =
+                start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' — Chọn ghế';
         }
 
         // ──────────────────────────────────────────────
@@ -937,6 +1120,7 @@
                 if (json.success && json.data) {
                     seatsList = json.data;
                     renderSeatGrid();
+                    updateAvailability();
                 } else {
                     document.getElementById('seatMapContainer').innerHTML = `
                         <div class="error-state">
@@ -996,8 +1180,6 @@
             const sortedRows = Object.keys(rowsMap).sort();
 
             // Determine which rows are couple rows
-            // A couple row is identified: SeatType includes 'Couple' or row is the last row (F)
-            // We'll check the actual SeatType first, then fallback to last row
             const coupleRows = new Set();
             sortedRows.forEach(row => {
                 const seats = rowsMap[row];
@@ -1052,7 +1234,6 @@
                         coupleEl.setAttribute('data-id-1', s1.SeatID);
                         coupleEl.setAttribute('data-id-2', s2.SeatID);
                         coupleEl.setAttribute('data-row', row);
-                        coupleEl.title = `Cặp đôi ${row}${s1.SeatNumber}-${s2.SeatNumber} (+50%)`;
                         coupleEl.innerHTML = `
                             <span style="font-size:0.62rem;letter-spacing:0.5px;">
                                 ♥ ${row}${s1.SeatNumber}-${s2.SeatNumber}
@@ -1061,6 +1242,10 @@
 
                         if (!isBooked && !isLocked) {
                             coupleEl.onclick = () => handleCoupleSeat(coupleEl, s1.SeatID, s2.SeatID);
+                            
+                            const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
+                            const seatPrice = basePrice * 1.5;
+                            addTooltipListeners(coupleEl, `Ghế Cặp Đôi ${row}${s1.SeatNumber}-${s2.SeatNumber}`, seatPrice);
                         }
 
                         rowDiv.appendChild(coupleEl);
@@ -1104,11 +1289,15 @@
             el.setAttribute('data-id', seat.SeatID);
             el.setAttribute('data-row', seat.SeatRow);
             el.setAttribute('data-type', typeClass);
-            el.title = `${seat.SeatRow}${seat.SeatNumber} - ${isVip ? 'VIP (+20%)' : 'Thường'}`;
             el.textContent = seat.SeatNumber;
 
             if (!isBooked && !isLocked) {
                 el.onclick = () => handleSingleSeat(el, seat.SeatID);
+                
+                const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
+                const multiplier = isVip ? 1.2 : 1.0;
+                const seatPrice = basePrice * multiplier;
+                addTooltipListeners(el, `Ghế ${seat.SeatRow}${seat.SeatNumber} (${isVip ? 'VIP' : 'Thường'})`, seatPrice);
             }
             return el;
         }
@@ -1131,7 +1320,9 @@
                 selectedSeats.add(seatId);
                 el.classList.add('selected');
                 if (socket) socket.emit('holdSeat', { showtimeId, seatId });
+                startTimer();
             }
+            if (selectedSeats.size === 0) stopTimer();
             updateSummary();
         }
 
@@ -1160,7 +1351,9 @@
                     socket.emit('holdSeat', { showtimeId, seatId: seatId1 });
                     socket.emit('holdSeat', { showtimeId, seatId: seatId2 });
                 }
+                startTimer();
             }
+            if (selectedSeats.size === 0) stopTimer();
             updateSummary();
         }
 
@@ -1176,6 +1369,7 @@
                 selectedSeats.delete(id1);
                 selectedSeats.delete(id2);
             }
+            if (selectedSeats.size === 0) stopTimer();
             updateSummary();
         }
 
@@ -1275,6 +1469,22 @@
             }
             breakdownRows.innerHTML = bdHtml;
             breakdownSection.style.display = bdHtml ? 'block' : 'none';
+            updateAvailability();
+        }
+
+        function updateAvailability() {
+            const el = document.getElementById('seatAvailability');
+            if (!el || !seatsList.length) return;
+            const booked = seatsList.filter(s => s.SeatStatus === 'booked').length;
+            const locked = seatsList.filter(s => s.SeatStatus === 'locked').length + lockedByOthers.size;
+            const available = seatsList.length - seatsList.filter(s => s.SeatStatus === 'booked').length - locked;
+            el.innerHTML = `
+                <span style="color:#4ade80;font-weight:700;">${Math.max(0, available)} ghế trống</span>
+                <span style="margin:0 8px;color:#444;">|</span>
+                <span style="color:#ef4444;">${booked} đã đặt</span>
+                <span style="margin:0 8px;color:#444;">|</span>
+                <span style="color:#f59e0b;">${locked} đang giữ</span>
+            `;
         }
 
         function getCoupleRows() {
@@ -1390,5 +1600,7 @@
         `;
         document.head.appendChild(toastStyle);
     </script>
+    <!-- Tooltip overlay -->
+    <div id="seatTooltip" style="position: absolute; display: none; background: #13171a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px 12px; font-size: 0.78rem; font-weight: 700; color: #fff; z-index: 9999; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.55); font-family: 'Inter', sans-serif; line-height: 1.4;"></div>
 </body>
 </html>

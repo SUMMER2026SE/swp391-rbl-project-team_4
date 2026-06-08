@@ -30,6 +30,13 @@ async function check() {
     `);
     console.log(stNoSeats.recordset);
 
+    console.log('\n--- Sync Price from BasePrice (where Price is NULL) ---');
+    const syncResult = await pool.request().query(`
+      UPDATE Showtimes SET Price = BasePrice WHERE Price IS NULL AND BasePrice IS NOT NULL;
+      SELECT @@ROWCOUNT AS UpdatedRows;
+    `);
+    console.log('Synced rows:', syncResult.recordset[0]?.UpdatedRows ?? 0);
+
   } catch (err) {
     console.error(err);
   } finally {
