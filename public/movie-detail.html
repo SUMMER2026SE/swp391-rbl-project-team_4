@@ -52,29 +52,29 @@
                 <div class="hero-layout">
                     <!-- Left: Poster -->
                     <div class="hero-poster">
-                        <img src="images/movie_oppenheimer.png" alt="DUNE: PART TWO">
-                        <div class="poster-rating-badge">T16</div>
+                        <img id="heroPoster" src="images/movie_oppenheimer.png" alt="Chi tiết phim">
+                        <div class="poster-rating-badge" id="heroRating">T16</div>
                     </div>
 
                     <!-- Right: Movie Info -->
                     <div class="hero-info">
-                        <div class="movie-badge">T16</div>
-                        <h1 class="movie-title">DUNE: PART TWO</h1>
+                        <div class="movie-badge" id="heroBadge">T16</div>
+                        <h1 class="movie-title" id="heroTitle">DUNE: PART TWO</h1>
 
                         <div class="movie-meta">
-                            <span class="rating">★ 0.1/10</span>
-                            <span class="duration">166 mins</span>
-                            <span class="release-date">Mar 1, 2024</span>
+                            <span class="rating" id="heroScore">★ 0.1/10</span>
+                            <span class="duration" id="heroDuration">166 mins</span>
+                            <span class="release-date" id="heroReleaseDate">Mar 1, 2024</span>
                         </div>
 
-                        <p class="movie-description">
+                        <p class="movie-description" id="movieDescription">
                             Paul Atreides unites with Chani and the Fremen while on a warpath of revenge against the
                             conspirators who destroyed his family. Facing a choice between the love of his life and the
                             fate of the universe, he must prevent a terrible future only he can foresee.
                         </p>
 
                         <div class="hero-buttons">
-                            <button class="btn-buy-tickets" onclick="window.location.href='booking.html'">
+                            <button id="btnBuyTickets" class="btn-buy-tickets">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <path d="M6 4h12v14H6z" />
@@ -82,7 +82,7 @@
                                 </svg>
                                 Mua vé
                             </button>
-                            <button class="btn-watch-trailer">
+                            <button class="btn-watch-trailer" id="btnWatchTrailer">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white"
                                     stroke-width="2">
                                     <polygon points="5 3 19 12 5 21 5 3" />
@@ -269,7 +269,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
             if (userStr) {
                 const user = JSON.parse(userStr);
@@ -278,6 +278,61 @@
                     btnLogin.textContent = user.fullName || 'Tài khoản';
                     btnLogin.href = 'profile.html';
                 }
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            const movieId = params.get('movieId') || params.get('id');
+            const buyBtn = document.getElementById('btnBuyTickets');
+            const trailerBtn = document.getElementById('btnWatchTrailer');
+
+            if (buyBtn) {
+                buyBtn.addEventListener('click', () => {
+                    if (movieId) {
+                        window.location.href = `booking.html?movieId=${movieId}`;
+                    } else {
+                        window.location.href = 'booking.html';
+                    }
+                });
+            }
+
+            if (!movieId) return;
+
+            try {
+                const response = await fetch(`/api/movies/${movieId}`);
+                const json = await response.json();
+                if (!json.success || !json.data) return;
+
+                const movie = json.data;
+                const poster = document.getElementById('heroPoster');
+                const title = document.getElementById('heroTitle');
+                const badge = document.getElementById('heroBadge');
+                const rating = document.getElementById('heroRating');
+                const duration = document.getElementById('heroDuration');
+                const releaseDate = document.getElementById('heroReleaseDate');
+                const description = document.getElementById('movieDescription');
+                const score = document.getElementById('heroScore');
+
+                if (poster && movie.PosterURL) {
+                    poster.src = movie.PosterURL;
+                    poster.alt = movie.Title || poster.alt;
+                }
+                if (title) title.textContent = movie.Title || title.textContent;
+                if (badge) badge.textContent = movie.AgeRating || badge.textContent;
+                if (rating) rating.textContent = `★ ${movie.Rating || '8.5'}/10`;
+                if (duration) duration.textContent = movie.Duration ? `${movie.Duration} mins` : duration.textContent;
+                if (description) description.textContent = movie.Description || description.textContent;
+
+                if (trailerBtn) {
+                    trailerBtn.addEventListener('click', () => {
+                        if (movie.TrailerURL) {
+                            window.open(movie.TrailerURL, '_blank');
+                        } else {
+                            alert('Trailer chưa có sẵn cho phim này.');
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Lỗi tải thông tin phim:', error);
             }
         });
     </script>
