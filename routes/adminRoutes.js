@@ -27,7 +27,16 @@ router.use(verifyToken, isSuperAdmin);
 router.post('/movies', upload.single('poster'), adminCtrl.createMovie);
 
 // PUT    /api/admin/movies/:id      — Sửa phim
-router.put('/movies/:id', adminCtrl.updateMovie);
+router.put('/movies/:id', upload.single('poster'), adminCtrl.updateMovie);
+
+// GET    /api/admin/rooms           — Danh sách phòng chiếu
+router.get('/rooms', adminCtrl.getRooms);
+
+// GET    /api/admin/rooms/:id/seats — Lấy sơ đồ ghế của phòng
+router.get('/rooms/:id/seats', adminCtrl.getSeatsByRoom);
+
+// PUT    /api/admin/rooms/:id/seats — Lưu sơ đồ ghế
+router.put('/rooms/:id/seats', adminCtrl.saveSeats);
 
 // DELETE /api/admin/movies/:id      — Xóa (soft) phim
 router.delete('/movies/:id', adminCtrl.deleteMovie);
@@ -41,6 +50,9 @@ router.post('/showtimes', adminCtrl.createShowtime);
 
 // PUT    /api/admin/showtimes/:id   — Cập nhật suất chiếu
 router.put('/showtimes/:id', adminCtrl.updateShowtime);
+
+// DELETE /api/admin/showtimes/:id   — Hủy suất chiếu
+router.delete('/showtimes/:id', adminCtrl.deleteShowtime);
 
 // ─── User Management (chỉ Admin) ─────────────────────────────
 // GET    /api/admin/users              — Danh sách người dùng
@@ -65,6 +77,18 @@ router.get('/fnb', adminCtrl.getAllFnB);
 
 // POST   /api/admin/fnb                — Tạo mặt hàng F&B mới
 router.post('/fnb', adminCtrl.createFnB);
+
+// PUT    /api/admin/fnb/:id            — Sửa mặt hàng F&B
+router.put('/fnb/:id', adminCtrl.updateFnB);
+
+// DELETE /api/admin/fnb/:id            — Xóa mặt hàng F&B
+router.delete('/fnb/:id', adminCtrl.deleteFnB);
+
+// PATCH  /api/admin/fnb/:id/toggle     — Đổi trạng thái hiển thị
+router.patch('/fnb/:id/toggle', adminCtrl.toggleFnBAvailability);
+
+// GET    /api/admin/fnb/stats          — Số liệu thống kê FnB
+router.get('/fnb/stats', adminCtrl.getFnBStats);
 
 // ─── Statistics ──────────────────────────────────────────────
 // GET    /api/admin/stats/dashboard    — Tổng quan dashboard

@@ -11,11 +11,28 @@
 
   // ─── Role → Page Mapping ───
   const ROLE_REDIRECTS = {
-    'Customer': 'profile.html',
+    'Customer': 'index.html',
     'Admin': 'admin.html',
     'Manager': 'admin.html',
     'Super Admin': 'admin.html',
   };
+
+  function getPostAuthRedirect(role) {
+    const params = new URLSearchParams(window.location.search);
+    const redirectParam = params.get('redirect');
+    const storedRedirect = sessionStorage.getItem('redirectAfterLogin');
+    const target = redirectParam || storedRedirect;
+
+    if (target) {
+      sessionStorage.removeItem('redirectAfterLogin');
+      // Chỉ cho phép redirect nội bộ
+      if (!target.startsWith('http') && !target.startsWith('//')) {
+        return target;
+      }
+    }
+
+    return ROLE_REDIRECTS[role] || 'index.html';
+  }
 
   // ─── DOM References ───
   const $ = (sel) => document.querySelector(sel);
@@ -332,7 +349,7 @@
       showToast(data.message || 'Đăng nhập thành công!', 'success');
 
       const role = data.user.roleName || 'Customer';
-      const redirectPage = ROLE_REDIRECTS[role] || 'index.html';
+      const redirectPage = getPostAuthRedirect(role);
 
       setTimeout(() => {
         window.location.href = redirectPage;
@@ -384,7 +401,7 @@
       showToast('Đăng nhập Google thành công!', 'success');
 
       const role = data.user.roleName || 'Customer';
-      const redirectPage = ROLE_REDIRECTS[role] || 'index.html';
+      const redirectPage = getPostAuthRedirect(role);
 
       setTimeout(() => {
         window.location.href = redirectPage;
@@ -573,7 +590,7 @@
       try {
         const parsed = JSON.parse(user);
         const role = parsed.roleName || 'Customer';
-        const redirect = ROLE_REDIRECTS[role] || 'index.html';
+        const redirect = getPostAuthRedirect(role);
         window.location.href = redirect;
       } catch (e) {
         localStorage.removeItem('token'); sessionStorage.removeItem('token');

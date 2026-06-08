@@ -13,7 +13,7 @@ const moviePosters = {
 
 function assignDynamicPoster(movie) {
   if (!movie) return;
-  if (moviePosters[movie.MovieID]) {
+  if (!movie.PosterURL && moviePosters[movie.MovieID]) {
     movie.PosterURL = moviePosters[movie.MovieID];
   }
 }
@@ -49,7 +49,7 @@ class MovieModel {
     const pool = await getPool();
     const request = pool.request();
 
-    let whereClause = 'WHERE 1=1';
+    let whereClause = "WHERE Status != 'deleted'";
     if (status) {
       request.input('status', sql.NVarChar, status);
       whereClause += ' AND Status = @status';
@@ -97,7 +97,8 @@ class MovieModel {
     }
 
     const result = await request.query(`
-      SELECT st.ShowtimeID, st.StartTime, st.EndTime, st.Price, st.Status,
+      SELECT st.ShowtimeID, st.StartTime, st.EndTime,
+             COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
              r.RoomID, r.RoomName, r.TotalSeats,
              c.CinemaID, c.CinemaName, c.Address
       FROM   Showtimes st
@@ -116,13 +117,14 @@ class MovieModel {
     const result = await pool.request()
       .input('showtimeId', sql.Int, parseInt(showtimeId))
       .query(`
-        SELECT s.SeatID, s.SeatRow, s.SeatNumber, s.SeatType,
+        SELECT s.SeatID, s.SeatRow, s.SeatNumber, s.SeatType, s.PriceMultiplier,
                CASE WHEN t.SeatID IS NOT NULL THEN 'booked' ELSE 'available' END AS SeatStatus
         FROM   Seats s
         JOIN   Showtimes st ON s.RoomID = st.RoomID
         LEFT   JOIN Tickets t ON t.SeatID = s.SeatID AND t.ShowtimeID = @showtimeId
                               AND t.Status IN ('confirmed', 'pending')
         WHERE  st.ShowtimeID = @showtimeId
+          AND  s.SeatType != 'None'
         ORDER BY s.SeatRow, s.SeatNumber
       `);
     return result.recordset;
@@ -143,7 +145,8 @@ class MovieModel {
     const result = await pool.request()
       .input('showtimeId', sql.Int, parseInt(showtimeId))
       .query(`
-        SELECT st.ShowtimeID, st.StartTime, st.EndTime, st.Price, st.Status,
+        SELECT st.ShowtimeID, st.StartTime, st.EndTime,
+               COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
                r.RoomID, r.RoomName, r.TotalSeats,
                c.CinemaID, c.CinemaName, c.Address,
                m.MovieID, m.Title, m.Duration, m.AgeRating, m.PosterURL, m.MainCast
@@ -172,9 +175,23 @@ class MovieModel {
     }
 
     const result = await request.query(`
-      SELECT st.ShowtimeID, st.StartTime, st.EndTime, st.Price, st.Status,
+      SELECT st.ShowtimeID, st.StartTime, st.EndTime,
+             COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
              r.RoomID, r.RoomName, r.TotalSeats,
-             m.MovieID, m.Title, m.Duration, m.AgeRating, m.PosterURL, m.MainCast
+             m.MovieID, m.Title, m.Duration, m.AgeRating, m.PosterURL, m.MainCast,
+             (SELECT COUNT(*)
+              FROM Seats s
+              WHERE s.RoomID = r.RoomID AND s.SeatType != 'None'
+                AND NOT EXISTS (
+                  SELECT 1 FROM Tickets tk
+                  WHERE tk.SeatID = s.SeatID AND tk.ShowtimeID = st.ShowtimeID
+                    AND tk.Status IN ('confirmed', 'pending')
+                )
+             ) AS AvailableSeats,
+             (SELECT COUNT(*)
+              FROM Tickets tk
+              WHERE tk.ShowtimeID = st.ShowtimeID AND tk.Status IN ('confirmed', 'pending')
+             ) AS TicketsSold
       FROM   Showtimes st
       JOIN   Rooms   r ON st.RoomID   = r.RoomID
       JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
@@ -182,6 +199,7 @@ class MovieModel {
       WHERE  r.CinemaID = @cinemaId
         AND  CAST(st.StartTime AS DATE) = @date
         AND  st.Status  = 'active'
+        AND  st.StartTime > GETDATE()
         ${movieFilter}
       ORDER BY m.Title, st.StartTime ASC
     `);

@@ -359,47 +359,15 @@
                     <h2>Cụm rạp</h2>
                     <button class="btn-icon-sm" title="Add Cluster"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
                 </div>
-                <div class="cs-list">
-                    <div class="cs-item active">
-                        <div class="cs-item-top">
-                            <span class="cs-district">QUẬN 1</span>
-                            <span class="cs-badge">HOẠT ĐỘNG</span>
-                        </div>
-                        <div class="cs-name">Quoc Thanh</div>
-                        <div class="cs-meta">12 Phòng | 1.420 Ghế</div>
-                    </div>
-                    <div class="cs-item">
-                        <div class="cs-item-top">
-                            <span class="cs-district">QUẬN 3</span>
-                        </div>
-                        <div class="cs-name">Hai Ba Trung</div>
-                        <div class="cs-meta">8 Phòng | 960 Ghế</div>
-                    </div>
-                    <div class="cs-item">
-                        <div class="cs-item-top">
-                            <span class="cs-district">QUẬN 10</span>
-                        </div>
-                        <div class="cs-name">Su Van Hanh</div>
-                        <div class="cs-meta">15 Phòng | 2.100 Ghế</div>
-                    </div>
-                    <div class="cs-item">
-                        <div class="cs-item-top">
-                            <span class="cs-district">QUẬN 7</span>
-                        </div>
-                        <div class="cs-name">Cresent Mall</div>
-                        <div class="cs-meta">10 Phòng | 1.200 Ghế</div>
-                    </div>
+                <div class="cs-list" id="csList">
+                    <!-- Populated by JS -->
+                    <p style="padding: 16px; color: #9ca3af; text-align: center;">Đang tải danh sách rạp...</p>
                 </div>
 
                 <div class="cs-rooms-section">
                     <div class="cs-rooms-title">CHỌN PHÒNG</div>
-                    <div class="cs-rooms-grid">
-                        <button class="room-btn active">R01</button>
-                        <button class="room-btn">R02</button>
-                        <button class="room-btn">R03</button>
-                        <button class="room-btn">R04</button>
-                        <button class="room-btn">R05</button>
-                        <button class="room-btn add-btn">+</button>
+                    <div class="cs-rooms-grid" id="csRoomsGrid">
+                        <!-- Populated by JS -->
                     </div>
                 </div>
             </div>
@@ -410,17 +378,19 @@
                     <div class="cw-tools-left">
                         <div class="btn-group-toggle">
                             <button class="bgt-btn active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
-                            <button class="bgt-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg></button>
+                            <button class="bgt-btn" onclick="addSeatRow()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Hàng</button>
+                            <button class="bgt-btn" onclick="addSeatCol()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Cột</button>
                         </div>
                     </div>
                     <div class="cw-legend-toggles">
-                        <label class="cl-toggle"><input type="radio" name="seat_tool" checked><span class="cbox standard"></span>Thường</label>
-                        <label class="cl-toggle"><input type="radio" name="seat_tool"><span class="cbox vip"></span>VIP</label>
-                        <label class="cl-toggle"><input type="radio" name="seat_tool"><span class="cbox blocked"></span>Đã khóa</label>
+                        <label class="cl-toggle"><input type="radio" name="seat_tool" value="Normal" checked><span class="cbox standard"></span>Thường</label>
+                        <label class="cl-toggle"><input type="radio" name="seat_tool" value="VIP"><span class="cbox vip"></span>VIP</label>
+                        <label class="cl-toggle"><input type="radio" name="seat_tool" value="Couple"><span class="cbox" style="background:#ec4899;box-shadow:0 0 8px rgba(236,72,153,0.4)"></span>Couple</label>
+                        <label class="cl-toggle"><input type="radio" name="seat_tool" value="None"><span class="cbox blocked"></span>Xóa</label>
                     </div>
                     <div class="cw-tools-right">
-                        <button class="btn-outline-red">Xóa tất cả</button>
-                        <button class="btn-solid-red">Lưu bố cục</button>
+                        <button class="btn-outline-red" onclick="clearSeatMap()">Làm mới</button>
+                        <button class="btn-solid-red" onclick="saveSeatLayout()">Lưu bố cục</button>
                     </div>
                 </div>
 
@@ -441,9 +411,10 @@
 
                 <div class="cw-footer">
                     <div class="cwf-legends">
-                        <span class="cwf-litem"><span class="cbox standard"></span> Thường (80.000đ)</span>
-                        <span class="cwf-litem"><span class="cbox vip"></span> VIP (120.000đ)</span>
-                        <span class="cwf-litem"><span class="cbox blocked"></span> Không khả dụng</span>
+                        <span class="cwf-litem"><span class="cbox standard"></span> Thường</span>
+                        <span class="cwf-litem"><span class="cbox vip"></span> VIP</span>
+                        <span class="cwf-litem"><span class="cbox" style="background:#ec4899;"></span> Couple</span>
+                        <span class="cwf-litem"><span class="cbox blocked"></span> Trống</span>
                     </div>
                     <div class="cwf-stats">
                         Đã chọn: <strong>0</strong> / 120 Tổng ghế
@@ -503,100 +474,29 @@
         <!-- Main Area -->
         <div class="sch-main content-scroll">
             
-            <div class="sch-header">
+            <div class="sch-header" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                 <div class="week-nav">
-                    <button class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+                    <button class="btn-icon" onclick="changeScheduleDate(-1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
                     <div class="week-label">
-                        <span class="wl-sub">TUẦN</span>
-                        <span class="wl-main">OCT 23 — OCT 29, 2023</span>
+                        <span class="wl-sub">NGÀY CHIẾU</span>
+                        <span class="wl-main" id="scheduleDateLabel">Đang tải...</span>
                     </div>
-                    <button class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+                    <button class="btn-icon" onclick="changeScheduleDate(1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
                 </div>
-                <div class="view-toggle">
-                    <button class="vt-btn active">Theo phòng</button>
-                    <button class="vt-btn">Theo phim</button>
-                </div>
+                <input type="date" id="scheduleDateInput" class="form-control" style="max-width:150px;" onchange="scheduleDate=this.value; loadShowtimes();">
+                
+                <!-- City and Cinema filters -->
+                <select id="scheduleCitySelect" class="form-control" style="max-width:150px;" onchange="filterScheduleCity(this.value)">
+                    <option value="">-- Thành phố --</option>
+                </select>
+                <select id="scheduleCinemaSelect" class="form-control" style="max-width:200px;" onchange="filterScheduleCinema(this.value)">
+                    <option value="">-- Rạp/Chi nhánh --</option>
+                </select>
             </div>
 
-            <!-- Timeline -->
-            <div class="timeline-card">
-                <div class="tl-header">
-                    <div class="tl-col-room">PHÒNG</div>
-                    <div class="tl-col-time">08:00</div>
-                    <div class="tl-col-time">09:00</div>
-                    <div class="tl-col-time">10:00</div>
-                    <div class="tl-col-time">11:00</div>
-                    <div class="tl-col-time">12:00</div>
-                    <div class="tl-col-time">13:00</div>
-                    <div class="tl-col-time">14:00</div>
-                </div>
-                <div class="tl-body">
-                    <!-- Row 1 -->
-                    <div class="tl-row">
-                        <div class="tl-col-room">
-                            <div class="r-name">PHÒNG 01</div>
-                            <div class="r-badge imax">IMAX 4K</div>
-                        </div>
-                        <div class="tl-tracks">
-                            <div class="tl-grid-lines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-                            <div class="movie-block" style="left: 14%; width: 38%; border-left-color: var(--accent);">
-                                <div class="mb-title">DUNE: PART TWO</div>
-                                <div class="mb-time">09:00 — 11:45</div>
-                                <div class="mb-prog-wrap">
-                                    <div class="mb-prog-bar" style="width:75%; background:var(--accent);"></div>
-                                    <span class="mb-prog-val">75%</span>
-                                </div>
-                            </div>
-                            <div class="movie-block conflict" style="left: 60%; width: 35%; border-left-color: #dc2626;">
-                                <div class="mb-title">OPPENHEIMER</div>
-                                <div class="mb-time">12:15 — 15:30</div>
-                                <div class="mb-warn">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                    Trùng với thời gian vệ sinh.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Row 2 -->
-                    <div class="tl-row">
-                        <div class="tl-col-room">
-                            <div class="r-name">PHÒNG 02</div>
-                            <div class="r-badge dolby">DOLBY ATMOS</div>
-                        </div>
-                        <div class="tl-tracks">
-                            <div class="tl-grid-lines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-                            <div class="movie-block" style="left: 28%; width: 27%; border-left-color: #d97706;">
-                                <div class="mb-title">BARBIE</div>
-                                <div class="mb-time">10:00 — 11:55</div>
-                                <div class="mb-prog-wrap">
-                                    <div class="mb-prog-bar" style="width:100%; background:#d97706;"></div>
-                                    <span class="mb-prog-val">HẾ́T VÉ</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Row 3 -->
-                    <div class="tl-row">
-                        <div class="tl-col-room">
-                            <div class="r-name">PHÒNG 03</div>
-                            <div class="r-badge standard">TIÊU CHUẨN</div>
-                        </div>
-                        <div class="tl-tracks bg-stripes">
-                            <div class="tl-grid-lines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-                            <div class="maintenance-block" style="left: 0; width: 68%;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                                <span>HIỆU CHỈNH MÁY CHIẾU</span>
-                            </div>
-                            <div class="movie-block" style="left: 71%; width: 29%; border-left-color: #2563eb;">
-                                <div class="mb-title">SPIDER-VERSE</div>
-                                <div class="mb-time">13:00 — 15:20</div>
-                                <div class="mb-prog-wrap">
-                                    <div class="mb-prog-bar" style="width:40%; background:#2563eb;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Showtime List -->
+            <div class="timeline-card" id="showtimeListContainer" style="min-height:200px;">
+                <p style="padding:24px;color:#9ca3af;text-align:center;">Đang tải lịch chiếu...</p>
             </div>
 
             <!-- Bottom Cards -->
@@ -606,29 +506,32 @@
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M12 9v6"/></svg>
                     </div>
                     <div class="ssc-info">
-                        <div class="ssc-label">DOANH THU DỰ KIẾ́N</div>
-                        <div class="ssc-val">$42,850.00</div>
-                        <div class="ssc-trend up">↑ 12.5% so với tuần trước</div>
+                        <div class="ssc-label">DOANH THU DỰ KIẾN</div>
+                        <div class="ssc-val" id="schRevenue">0 đ</div>
                     </div>
                 </div>
                 <div class="ssc-card">
                     <div class="ssc-icon" style="background: rgba(245,158,11,0.1); color: #d97706;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                     </div>
                     <div class="ssc-info">
                         <div class="ssc-label">TỶ LỆ LẤP ĐẦY</div>
-                        <div class="ssc-val">68.2%</div>
-                        <div class="ssc-sub">842 Ghế đã đặt hôm nay</div>
+                        <div class="ssc-val" id="schOccupancy">0%</div>
+                        <div class="ssc-sub" id="schSeatsSold">0 ghế</div>
                     </div>
                 </div>
                 <div class="ssc-card">
-                    <div class="ssc-icon" style="background: rgba(220,38,38,0.1); color: #dc2626;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <div class="ssc-icon" style="background: rgba(34,197,94,0.1); color: #22c55e;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     </div>
                     <div class="ssc-info">
-                        <div class="ssc-label">CẢNH BÁO HỆ THỐNG</div>
-                        <div class="ssc-val">02 Xung đột</div>
-                        <div class="ssc-sub danger">Cần xử lý tại Phòng 01</div>
+                        <div class="ssc-label">QUẢN LÝ SUẤT CHIẾU</div>
+                        <div style="margin-top:12px;">
+                            <button class="btn-solid-green" onclick="openShowtimeModal()" style="width:100%; padding: 12px; font-weight: bold;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 5px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                Tạo suất chiếu mới
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -639,60 +542,17 @@
         <div class="sch-lib">
             <div class="lib-header">
                 <h2>Thư viện Phim</h2>
-                <span class="lib-badge">24 PHIM</span>
+                <span class="lib-badge" id="scheduleMovieCount">0 PHIM</span>
             </div>
             <div class="lib-search">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-                <input type="text" placeholder="Lọc phim...">
+                <input type="text" placeholder="Lọc phim..." id="scheduleMovieSearch" oninput="filterScheduleMovies(this.value)">
             </div>
-            <div class="lib-list">
-                <div class="lib-card">
-                    <img src="images/dune_poster.png" onerror="this.onerror=null; this.src='images/default_poster.svg'" class="lc-poster">
-                    <div class="lc-info">
-                        <div class="lc-title">DUNE: PART TWO</div>
-                        <div class="lc-dur">Thời lượng: 166 phút</div>
-                        <div class="lc-tags">
-                            <span class="lc-rating">ĐÁNH GIÁ: 9.2</span>
-                            <span class="lc-genre">Khoa học viễn tưởng</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="lib-card">
-                    <img src="images/movie_oppenheimer.png" onerror="this.onerror=null; this.src='images/default_poster.svg'" class="lc-poster">
-                    <div class="lc-info">
-                        <div class="lc-title">OPPENHEIMER</div>
-                        <div class="lc-dur">Thời lượng: 180 phút</div>
-                        <div class="lc-tags">
-                            <span class="lc-rating">ĐÁNH GIÁ: 8.9</span>
-                            <span class="lc-genre">Chính kịch</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="lib-card">
-                    <img src="images/movie_nebula.png" onerror="this.onerror=null; this.src='images/default_poster.svg'" class="lc-poster">
-                    <div class="lc-info">
-                        <div class="lc-title">BARBIE</div>
-                        <div class="lc-dur">Thời lượng: 114 phút</div>
-                        <div class="lc-tags">
-                            <span class="lc-rating">ĐÁNH GIÁ: 7.5</span>
-                            <span class="lc-genre">Hài</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="lib-card">
-                    <img src="images/movie_velocity.png" onerror="this.onerror=null; this.src='images/default_poster.svg'" class="lc-poster">
-                    <div class="lc-info">
-                        <div class="lc-title">ACROSS THE SPIDER-VE...</div>
-                        <div class="lc-dur">Thời lượng: 140 phút</div>
-                        <div class="lc-tags">
-                            <span class="lc-rating">ĐÁNH GIÁ: 9.1</span>
-                            <span class="lc-genre">Hành động</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="lib-list" id="scheduleMovieList">
+                <p style="padding:16px;color:#9ca3af;">Đang tải phim...</p>
             </div>
             <div class="lib-footer">
-                <button class="btn-import-title">
+                <button class="btn-import-title" onclick="openAddMovieModal()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                     THÊM PHIM MỚI
                 </button>
@@ -801,19 +661,28 @@
                 <!-- Right: Form -->
                 <div class="fnb-form-side">
                     <div class="fnb-form-card">
-                        <h2>THÊM ĐỒ ĂN</h2>
+                        <h2 id="fnbFormTitle">THÊM ĐỒ ĂN</h2>
                         <form id="addFnbForm">
+                            <input type="hidden" id="fnbId">
                             <div class="ff-group">
                                 <label>TÊN MẶT HÀNG</label>
                                 <input type="text" id="fnbName" placeholder="VD: Nachos Đặc biệt" required>
                             </div>
+                            <div class="ff-group">
+                                <label>MÔ TẢ (Tùy chọn)</label>
+                                <input type="text" id="fnbDesc" placeholder="Mô tả ngắn gọn...">
+                            </div>
+                            <div class="ff-group">
+                                <label>ĐƯỜNG DẪN ẢNH (URL)</label>
+                                <input type="text" id="fnbImageURL" placeholder="VD: images/combo1.png">
+                            </div>
                             <div class="ff-row">
                                 <div class="ff-group" style="flex:1;">
                                     <label>GIÁ (VNĐ)</label>
-                                    <input type="number" id="fnbPrice" placeholder="0.00" step="0.01" required>
+                                    <input type="number" id="fnbPrice" placeholder="0" required>
                                 </div>
                                 <div class="ff-group" style="flex:1;">
-                                    <label>SỐ LƯỢNG BAN ĐẦU</label>
+                                    <label>SỐ LƯỢNG KHO</label>
                                     <input type="number" id="fnbStock" placeholder="100" required>
                                 </div>
                             </div>
@@ -823,15 +692,18 @@
                                     <select id="fnbCategory">
                                         <option>Bắp rang & Snack</option>
                                         <option>Nước uống</option>
-                                        <option>Combo</option>
+                                        <option>Combos</option>
                                     </select>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
                             </div>
-                            <button type="button" onclick="saveFnB()" class="btn-solid-red w-100 mt-2" id="btnSaveFnb" style="display:flex;align-items:center;justify-content:center;gap:8px; padding: 12px; margin-top:10px;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                Thêm vào danh mục
-                            </button>
+                            <div style="display:flex;gap:10px;margin-top:10px;">
+                                <button type="button" onclick="cancelEditFnB()" class="btn-outline-red" id="btnCancelFnb" style="display:none;flex:1;padding:12px;">Hủy sửa</button>
+                                <button type="button" onclick="saveFnB()" class="btn-solid-red" id="btnSaveFnb" style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px; padding: 12px;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                                    <span id="fnbBtnText">Thêm vào danh mục</span>
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -845,7 +717,7 @@
                     </div>
                     <div class="fkpi-info">
                         <div class="fkpi-label">TOTAL DOANH THU ĐỒ ĂN</div>
-                        <div class="fkpi-val">$12,450</div>
+                        <div class="fkpi-val" id="fnbKpiRevenue">0 đ</div>
                     </div>
                 </div>
                 <div class="fkpi-card">
@@ -853,8 +725,8 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
                     </div>
                     <div class="fkpi-info">
-                        <div class="fkpi-label">SỐ VOUCHER ĐÃ SỎ DỤNG</div>
-                        <div class="fkpi-val">1,242</div>
+                        <div class="fkpi-label">SỐ LƯỢNG ĐÃ BÁN</div>
+                        <div class="fkpi-val" id="fnbKpiVouchers">0</div>
                     </div>
                 </div>
                 <div class="fkpi-card">
@@ -863,7 +735,7 @@
                     </div>
                     <div class="fkpi-info">
                         <div class="fkpi-label">CẢNH BÁO TỒN KHO THẤP</div>
-                        <div class="fkpi-val text-red">4 Mặt hàng</div>
+                        <div class="fkpi-val text-red" id="fnbKpiLowStock">0 Mặt hàng</div>
                     </div>
                 </div>
                 <div class="fkpi-card">
@@ -871,8 +743,8 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
                     </div>
                     <div class="fkpi-info">
-                        <div class="fkpi-label">LỢI NHUẬN TRUNG BÌNH</div>
-                        <div class="fkpi-val">68%</div>
+                        <div class="fkpi-label">TỔNG SỐ MÓN ĂN</div>
+                        <div class="fkpi-val" id="fnbKpiTotal">0</div>
                     </div>
                 </div>
             </div>
@@ -1081,9 +953,102 @@
     </div>
 </div>
 
+<!-- Side Panel for Thêm / Sửa Suất Chiếu -->
+<div class="side-panel-overlay" id="addShowtimeModalOverlay" onclick="closeShowtimeModal()"></div>
+<div class="side-panel" id="addShowtimeModal">
+    <div class="panel-header">
+        <h2 id="showtimeModalTitle">THÊM SUẤT CHIẾU MỚI</h2>
+        <button class="btn-close-panel" onclick="closeShowtimeModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="panel-body">
+        <form id="addShowtimeForm" onsubmit="event.preventDefault()">
+            <input type="hidden" id="stId">
+            <div class="form-group">
+                <label class="form-label">THÀNH PHỐ</label>
+                <select id="stCitySelect" class="form-control" onchange="filterStCity(this.value)">
+                    <option value="">-- Chọn thành phố --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">RẠP / CHI NHÁNH</label>
+                <select id="stCinemaSelect" class="form-control" disabled onchange="filterStCinema(this.value)">
+                    <option value="">-- Chọn rạp --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">PHÒNG CHIẾU</label>
+                <select id="stRoomSelect" class="form-control" disabled>
+                    <option value="">-- Chọn phòng --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">PHIM CHIẾU</label>
+                <select id="stMovieSelect" class="form-control">
+                    <option value="">-- Chọn phim --</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">NGÀY CHIẾU</label>
+                    <input type="date" id="stDate" class="form-control" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">GIỜ BẮT ĐẦU</label>
+                    <input type="time" id="stStartTime" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">THỜI LƯỢNG (Phút)</label>
+                    <input type="number" id="stDuration" class="form-control" placeholder="120" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">GIỜ KẾT THÚC</label>
+                    <input type="time" id="stEndTime" class="form-control" disabled style="background-color: #f3f4f6; color: #6b7280; border-color: #e5e7eb;">
+                    <small style="color:#9ca3af;font-size:0.75rem;margin-top:4px;display:block;">(Tự động tính)</small>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">GIÁ VÉ CƠ BẢN (VNĐ)</label>
+                    <input type="number" id="stPrice" class="form-control" placeholder="Ví dụ: 85000" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">TRẠNG THÁI</label>
+                    <select id="stStatus" class="form-control">
+                        <option value="active">Hoạt động (Active)</option>
+                        <option value="cancelled">Đã hủy (Cancelled)</option>
+                        <option value="finished">Đã kết thúc (Finished)</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="panel-footer">
+        <button class="btn-panel-cancel" onclick="closeShowtimeModal()">Hủy</button>
+        <button class="btn-panel-save" id="btnSaveShowtime" onclick="saveShowtime()">Lưu Suất Chiếu</button>
+    </div>
+</div>
+
 <script src="js/admin.js"></script>
 
 <style>
+.btn-solid-green { padding: 9px 18px; background: #10b981; color: #fff; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 700; transition: all var(--tr); border: none; cursor: pointer; }
+.btn-solid-green:hover { background: #059669; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+
+/* Showtime status badges */
+.status-badge.active { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #059669; }
+.status-badge.cancelled { background: rgba(232,25,44,0.1); border: 1px solid rgba(232,25,44,0.2); color: #e8192c; }
+.status-badge.finished { background: rgba(107,114,128,0.1); border: 1px solid rgba(107,114,128,0.2); color: #6b7280; }
+
+/* Override side-panel on admin schedule to prevent z-index problems */
+#addShowtimeModal { z-index: 310; }
+#addShowtimeModalOverlay { z-index: 309; }
+#addMovieModal { z-index: 310; }
+#addMovieModalOverlay { z-index: 309; }
+
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
 </style>

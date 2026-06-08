@@ -63,7 +63,7 @@
                 <h2>Trending Promotions</h2>
             </div>
 
-            <div class="trending-grid">
+            <div class="trending-grid" id="voucherGrid">
                 <!-- Featured Card (left, spans 2 rows) -->
                 <div class="promo-card-featured" id="promo-imax">
                     <div class="card-img">
@@ -278,6 +278,9 @@
                 }
             }
 
+            // Load vouchers from database
+            loadVouchers();
+
             // Search filter
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
@@ -292,6 +295,54 @@
                 });
             }
         });
+
+        async function loadVouchers() {
+            try {
+                const res = await fetch('/api/bookings/vouchers');
+                const data = await res.json();
+                if (!data.success || !data.data.length) return;
+
+                const grid = document.getElementById('voucherGrid');
+                if (!grid) return;
+
+                data.data.forEach((v, i) => {
+                    const discount = v.DiscountType === 'percent'
+                        ? `Giảm ${v.DiscountValue}%`
+                        : `Giảm ${Number(v.DiscountValue).toLocaleString('vi-VN')}đ`;
+                    const endDate = new Date(v.EndDate).toLocaleDateString('vi-VN');
+                    const card = document.createElement('div');
+                    card.className = i === 0 ? 'promo-card-featured' : 'promo-card';
+                    card.id = 'promo-voucher-' + v.VoucherID;
+                    card.innerHTML = i === 0 ? `
+                        <div class="card-body" style="padding:28px;">
+                            <span class="card-badge badge-featured">VOUCHER</span>
+                            <h3>Mã: ${v.Code}</h3>
+                            <p>${discount} — Đơn tối thiểu ${Number(v.MinOrderValue || 0).toLocaleString('vi-VN')}đ. HSD: ${endDate}</p>
+                            <div class="card-footer-row">
+                                <button class="card-cta" onclick="copyVoucher('${v.Code}')">Sao chép mã</button>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="card-body">
+                            <span class="card-badge">VOUCHER</span>
+                            <h3>${v.Code}</h3>
+                            <p>${discount}</p>
+                            <div class="card-validity">HSD: ${endDate}</div>
+                            <button class="card-cta" onclick="copyVoucher('${v.Code}')">Sao chép</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (e) {
+                console.error('Failed to load vouchers', e);
+            }
+        }
+
+        function copyVoucher(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Đã sao chép mã: ' + code + '. Dùng khi thanh toán!');
+            }).catch(() => alert('Mã voucher: ' + code));
+        }
 
         function handleNewsletter(e) {
             e.preventDefault();

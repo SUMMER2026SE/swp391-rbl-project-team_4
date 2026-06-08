@@ -1156,8 +1156,6 @@
 
                 const poster = movie.PosterURL || 'images/default_poster.svg';
                 const ageClass = getAgeClass(movie.AgeRating);
-                const rating = (Math.random() * 2 + 7).toFixed(1); // demo rating
-                const stars = '★★★★☆';
 
                 // Sort showtimes by time
                 const sortedShowtimes = [...movie.showtimes].sort((a,b) =>
@@ -1170,15 +1168,13 @@
                     const endStr = endT.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',hour12:false});
                     const price = (st.Price || 0).toLocaleString('vi-VN');
                     const room = st.RoomName || 'Cinema';
-                    const isVip = room.toLowerCase().includes('vip') || (st.Price||0) > 100000;
-                    const isPast = new Date(st.StartTime) < new Date();
-                    const fewSeats = Math.random() < 0.15; // 15% chance demo
-
-                    if (isPast) return ''; // skip past showtimes
+                    const isVip = room.toLowerCase().includes('vip') || room.toLowerCase().includes('imax');
+                    const available = st.AvailableSeats != null ? st.AvailableSeats : (st.TotalSeats || 0) - (st.TicketsSold || 0);
+                    const fewSeats = available > 0 && available <= 15;
 
                     return `<button class="slot${isVip ? ' vip-slot' : ''}${fewSeats ? ' few-seats' : ''}"
                         onclick="goToSeats(${st.ShowtimeID})"
-                        title="Phòng ${room} • ${timeStr}-${endStr} • ${price}đ">
+                        title="Phòng ${room} • ${timeStr}-${endStr} • ${price}đ • Còn ${available} ghế">
                         <div class="slot-time">${timeStr}</div>
                         <div class="slot-meta">
                             <span class="slot-price">${price}đ</span>
@@ -1210,11 +1206,6 @@
                             ${movie.MainCast ? `<span class="tag tag-genre">${movie.MainCast.split(',')[0].trim()}</span>` : ''}
                         </div>
                         <div class="movie-title" onclick="openMovieModal(${movie.MovieID})">${movie.Title}</div>
-                        <div class="movie-rating">
-                            <span class="rating-stars">${stars}</span>
-                            <span style="color:var(--gold);font-weight:800;">${rating}</span>
-                            <span style="color:var(--muted);">/10</span>
-                        </div>
                         ${movie.MainCast ? `<div class="movie-cast">Diễn viên: ${movie.MainCast}</div>` : ''}
                         <div class="shows-section-label">
                             🕐 Các suất chiếu <span>${sortedShowtimes.length} suất</span>

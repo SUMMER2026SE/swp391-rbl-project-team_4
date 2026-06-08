@@ -1,5 +1,20 @@
 const { sql, getPool } = require('../config/db');
 
+function isCoupleSeat(seat) {
+  return (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) || seat.SeatRow === 'F';
+}
+
+function getSeatMultiplier(seat) {
+  if (isCoupleSeat(seat)) return 0.75;
+  if (seat.SeatType === 'VIP') return 1.2;
+  return parseFloat(seat.PriceMultiplier || 1.0);
+}
+
+function couplePairKey(seat) {
+  const pairNum = seat.SeatNumber % 2 === 0 ? seat.SeatNumber - 1 : seat.SeatNumber + 1;
+  return `${seat.SeatRow}_${Math.min(seat.SeatNumber, pairNum)}`;
+}
+
 class BookingModel {
   static async getFoodBeverages() {
     const pool = await getPool();
@@ -8,6 +23,21 @@ class BookingModel {
       FROM   FoodBeverages
       WHERE  IsAvailable = 1
       ORDER BY Category, Name
+    `);
+    return result.recordset;
+  }
+
+  static async getActiveVouchers() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT VoucherID, Code, DiscountType, DiscountValue, MinOrderValue,
+             MaxDiscount, StartDate, EndDate
+      FROM   Vouchers
+      WHERE  IsActive = 1
+        AND  StartDate <= GETDATE()
+        AND  EndDate   >= GETDATE()
+        AND  (UsageLimit IS NULL OR UsedCount < UsageLimit)
+      ORDER BY EndDate ASC
     `);
     return result.recordset;
   }
@@ -41,15 +71,23 @@ class BookingModel {
 
       // --- Lấy giá vé từ showtime ---
       req2.input('showtimeId', sql.Int, showtimeId);
-      const stResult = await req2.query('SELECT Price FROM Showtimes WHERE ShowtimeID = @showtimeId AND Status = \'active\'');
+      const stResult = await req2.query(`
+        SELECT COALESCE(Price, BasePrice, 0) AS Price
+        FROM Showtimes
+        WHERE ShowtimeID = @showtimeId AND Status = 'active'
+      `);
       if (stResult.recordset.length === 0) {
         throw new Error('Suất chiếu không tồn tại hoặc đã đóng.');
       }
       const ticketPrice = stResult.recordset[0].Price;
+      if (!ticketPrice || ticketPrice <= 0) {
+        throw new Error('Suất chiếu chưa được thiết lập giá vé.');
+      }
 
       // --- Kiểm tra ghế chưa bị đặt & Tính giá trị từng ghế ---
       let ticketTotal = 0;
       const seatPriceDetails = [];
+      const couplePairsCharged = new Set();
 
       for (const seatId of seatIds) {
         const seatReq = transaction.request();
@@ -66,25 +104,27 @@ class BookingModel {
         const infoReq = transaction.request();
         infoReq.input('sid', sql.Int, seatId);
         const seatInfo = await infoReq.query(`
-          SELECT SeatRow, SeatType, PriceMultiplier FROM Seats WHERE SeatID = @sid
+          SELECT SeatRow, SeatNumber, SeatType, PriceMultiplier FROM Seats WHERE SeatID = @sid
         `);
         if (seatInfo.recordset.length === 0) {
           throw new Error(`Ghế ID ${seatId} không tồn tại.`);
         }
 
         const seat = seatInfo.recordset[0];
-        let multiplier = parseFloat(seat.PriceMultiplier || 1.0);
-        
-        // Dynamically treat Row F as Couple seats and apply 1.5 multiplier (per seat)
-        if (seat.SeatRow === 'F') {
-          multiplier = 1.5;
-        } else if (seat.SeatType === 'VIP') {
-          multiplier = 1.2;
+        let seatPrice;
+
+        if (isCoupleSeat(seat)) {
+          const pairKey = couplePairKey(seat);
+          if (!couplePairsCharged.has(pairKey)) {
+            couplePairsCharged.add(pairKey);
+            seatPrice = ticketPrice * 0.75;
+          } else {
+            seatPrice = ticketPrice * 0.75;
+          }
         } else {
-          multiplier = 1.0;
+          seatPrice = ticketPrice * getSeatMultiplier(seat);
         }
 
-        const seatPrice = ticketPrice * multiplier;
         ticketTotal += seatPrice;
         seatPriceDetails.push({ seatId, price: seatPrice });
       }
@@ -130,14 +170,15 @@ class BookingModel {
 
       // --- Tạo Ticket cho mỗi ghế ---
       const createdTickets = [];
-      for (const seatId of seatIds) {
+      for (let i = 0; i < seatIds.length; i++) {
+        const seatId = seatIds[i];
         const seatDetail = seatPriceDetails.find(d => d.seatId === seatId);
         const currentSeatPrice = seatDetail.price;
         
-        // Phân bổ giá sau giảm giá theo tỉ lệ giá gốc của ghế
         const ticketFinalTotal = Math.max(0, finalAmount - fnbTotal);
         const discountRatio = ticketTotal > 0 ? (currentSeatPrice / ticketTotal) : 0;
         const currentSeatTotalAmount = ticketFinalTotal * discountRatio;
+        const qrCode = `DC-${showtimeId}-${seatId}-${Date.now()}`;
 
         const tReq = transaction.request();
         tReq.input('userId', sql.Int, userId);
@@ -147,27 +188,30 @@ class BookingModel {
         tReq.input('ticketPrice', sql.Decimal, currentSeatPrice);
         tReq.input('totalAmount', sql.Decimal, currentSeatTotalAmount);
         tReq.input('paymentMethod', sql.NVarChar, paymentMethod);
+        tReq.input('qrCode', sql.NVarChar, qrCode);
 
         const tResult = await tReq.query(`
           INSERT INTO Tickets (UserID, ShowtimeID, SeatID, VoucherID, TicketPrice,
-                               TotalAmount, PaymentMethod, Status, BookedAt)
+                               TotalAmount, PaymentMethod, Status, BookedAt, QRCode)
           OUTPUT INSERTED.TicketID
           VALUES (@userId, @showtimeId, @seatId, @voucherId, @ticketPrice,
-                  @totalAmount, @paymentMethod, 'pending', GETDATE())
+                  @totalAmount, @paymentMethod, 'confirmed', GETDATE(), @qrCode)
         `);
         const ticketId = tResult.recordset[0].TicketID;
-        createdTickets.push(ticketId);
+        createdTickets.push({ ticketId, qrCode });
 
-        // --- Thêm F&B vào Ticket_FnB ---
-        for (const item of foodItems) {
-          const fnbReq2 = transaction.request();
-          fnbReq2.input('ticketId', sql.Int, ticketId);
-          fnbReq2.input('fnbId', sql.Int, item.fnbId);
-          fnbReq2.input('quantity', sql.Int, item.quantity);
-          await fnbReq2.query(`
-            INSERT INTO Ticket_FnB (TicketID, FnBID, Quantity)
-            VALUES (@ticketId, @fnbId, @quantity)
-          `);
+        // --- Thêm F&B chỉ vào vé đầu tiên ---
+        if (i === 0) {
+          for (const item of foodItems) {
+            const fnbReq2 = transaction.request();
+            fnbReq2.input('ticketId', sql.Int, ticketId);
+            fnbReq2.input('fnbId', sql.Int, item.fnbId);
+            fnbReq2.input('quantity', sql.Int, item.quantity);
+            await fnbReq2.query(`
+              INSERT INTO Ticket_FnB (TicketID, FnBID, Quantity)
+              VALUES (@ticketId, @fnbId, @quantity)
+            `);
+          }
         }
       }
 
@@ -181,14 +225,15 @@ class BookingModel {
       await transaction.commit();
 
       return {
-        ticketIds: createdTickets,
+        ticketIds: createdTickets.map(t => t.ticketId),
+        qrCodes: createdTickets.map(t => t.qrCode),
         totalSeats: seatIds.length,
         ticketPrice,
         fnbTotal,
         discountAmount,
         finalAmount,
         paymentMethod,
-        status: 'pending',
+        status: 'confirmed',
       };
     } catch (err) {
       await transaction.rollback();
