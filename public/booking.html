@@ -329,6 +329,19 @@
                     btnLogin.href = 'profile.html';
                 }
             }
+
+            // Global search redirection
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        const val = searchInput.value.trim();
+                        if (val) {
+                            window.location.href = `movies.html?search=${encodeURIComponent(val)}`;
+                        }
+                    }
+                });
+            }
         });
     </script>
 </body>

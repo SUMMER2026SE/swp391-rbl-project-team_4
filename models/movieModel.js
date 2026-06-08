@@ -89,14 +89,13 @@ class MovieModel {
     }
 
     const result = await request.query(`
-      SELECT st.ShowtimeID, st.StartTime, st.EndTime, st.Price, st.Status,
+      SELECT st.ShowtimeID, st.StartTime, st.EndTime, st.BasePrice AS Price,
              r.RoomID, r.RoomName, r.TotalSeats,
              c.CinemaID, c.CinemaName, c.Address
       FROM   Showtimes st
       JOIN   Rooms   r ON st.RoomID   = r.RoomID
       JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
       WHERE  st.MovieID = @movieId
-        AND  st.Status  = 'active'
         ${dateFilter}
       ORDER BY st.StartTime ASC
     `);

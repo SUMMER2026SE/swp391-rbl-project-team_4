@@ -80,7 +80,7 @@
                 <h2>PHIM ĐANG CHIẾU</h2>
                 <a href="movies.html" class="view-all">Xem tất cả ></a>
             </div>
-            <div class="movie-grid">
+            <div class="movie-grid" id="now-showing-grid">
                 <!-- Movie 1 -->
                 <div class="movie-card">
                     <div class="movie-poster">
@@ -220,7 +220,7 @@
                 <h2>PHIM SẮP CHIẾU</h2>
                 <p class="section-subtitle">Đăng ký để nhận thông tin sớm nhất</p>
             </div>
-            <div class="movie-grid-large">
+            <div class="movie-grid-large" id="coming-soon-grid">
                 <!-- Coming 1 -->
                 <div class="movie-card-large">
                     <div class="movie-poster-large">
@@ -539,6 +539,110 @@
             if (slideInterval) clearInterval(slideInterval);
         }
 
+        let currentTrailerUrl = '';
+
+        function openTrailer(url) {
+            if (!url) return;
+            currentTrailerUrl = getEmbedUrl(url);
+            const modal = document.getElementById('trailerModal');
+            const iframe = document.getElementById('trailerIframe');
+            if (modal && iframe) {
+                iframe.src = currentTrailerUrl;
+                modal.classList.add('show');
+            }
+        }
+
+        function closeTrailer() {
+            const modal = document.getElementById('trailerModal');
+            const iframe = document.getElementById('trailerIframe');
+            if (modal && iframe) {
+                iframe.src = '';
+                modal.classList.remove('show');
+            }
+        }
+
+        function getEmbedUrl(url) {
+            if (!url) return '';
+            if (url.includes('youtube.com/embed/')) return url;
+            
+            let videoId = '';
+            try {
+                if (url.includes('youtube.com/watch')) {
+                    const urlParams = new URLSearchParams(new URL(url).search);
+                    videoId = urlParams.get('v');
+                } else if (url.includes('youtu.be/')) {
+                    videoId = url.split('youtu.be/')[1].split('?')[0];
+                } else if (url.includes('youtube.com/v/')) {
+                    videoId = url.split('youtube.com/v/')[1].split('?')[0];
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            
+            return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
+        }
+
+        async function loadMoviesForHomepage() {
+            // 1. Fetch Now Showing
+            try {
+                const res = await fetch('/api/movies/now-showing');
+                const result = await res.json();
+                if (result.success && result.data && result.data.length > 0) {
+                    const grid = document.getElementById('now-showing-grid');
+                    if (grid) {
+                        grid.innerHTML = result.data.map(m => `
+                            <div class="movie-card">
+                                <div class="movie-poster">
+                                    <span class="age-badge age-${m.AgeRating.toLowerCase()}">${m.AgeRating}</span>
+                                    <img src="${m.PosterURL || 'images/poster.png'}" alt="${m.Title}">
+                                    <div class="poster-overlay">
+                                        <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${m.MovieID}'">Chi Tiết</button>
+                                        <button class="btn-trailer" onclick="event.stopPropagation(); openTrailer('${m.TrailerURL || ''}')">Xem Trailer</button>
+                                        <button class="btn-primary" onclick="window.location.href='booking.html?movieId=${m.MovieID}'">ĐẶT VÉ</button>
+                                    </div>
+                                </div>
+                                <div class="movie-info">
+                                    <h3 class="movie-title">${m.Title}</h3>
+                                    <div class="movie-genre">${m.Genre || 'Chưa phân loại'} | ${m.Duration || 120} phút</div>
+                                    <div class="movie-rating">★ 9.0</div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not load now-showing movies, falling back to static HTML.", err);
+            }
+
+            // 2. Fetch Coming Soon
+            try {
+                const res = await fetch('/api/movies/coming-soon');
+                const result = await res.json();
+                if (result.success && result.data && result.data.length > 0) {
+                    const grid = document.getElementById('coming-soon-grid');
+                    if (grid) {
+                        grid.innerHTML = result.data.map(m => `
+                            <div class="movie-card-large">
+                                <div class="movie-poster-large" onclick="window.location.href='movie-detail.html?id=${m.MovieID}'" style="cursor: pointer;">
+                                    <span class="coming-badge">SẮP CHIẾU</span>
+                                    <img src="${m.PosterURL || 'images/poster.png'}" alt="${m.Title}">
+                                </div>
+                                <div class="movie-info-large">
+                                    <h3 class="movie-title-large" onclick="window.location.href='movie-detail.html?id=${m.MovieID}'" style="cursor: pointer;">${m.Title}</h3>
+                                    <div class="movie-meta-large">
+                                        <span>${m.Genre || 'Chưa phân loại'} • ${m.Duration || 120} phút</span>
+                                        <span class="movie-date">Sắp chiếu</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not load coming-soon movies, falling back to static HTML.", err);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             // Check login state for navbar
             const userStr = localStorage.getItem('user');
@@ -549,6 +653,27 @@
                     btnLogin.textContent = user.fullName || 'Tài khoản';
                     btnLogin.href = 'profile.html';
                 }
+            }
+
+            // Global search redirection
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        const val = searchInput.value.trim();
+                        if (val) {
+                            window.location.href = `movies.html?search=${encodeURIComponent(val)}`;
+                        }
+                    }
+                });
+            }
+
+            // Close trailer on clicking overlay
+            const modal = document.getElementById('trailerModal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeTrailer();
+                });
             }
 
             // Dynamically generate dot indicators
@@ -571,8 +696,103 @@
 
             // Start autoplay transitions
             startAutoplay();
+
+            // Load dynamic movies
+            loadMoviesForHomepage();
         });
     </script>
+
+    <!-- Trailer Modal (Hidden by default) -->
+    <div id="trailerModal" class="modal-overlay">
+        <div class="modal-video-container">
+            <button class="btn-close-trailer" onclick="closeTrailer()">&times;</button>
+            <iframe id="trailerIframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal-video-container {
+            position: relative;
+            width: 80%;
+            max-width: 900px;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.show .modal-video-container {
+            transform: scale(1);
+        }
+        .modal-video-container iframe {
+            width: 100%;
+            height: 100%;
+        }
+        .btn-close-trailer {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.6);
+            border: none;
+            color: #fff;
+            font-size: 2rem;
+            line-height: 1;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, transform 0.2s;
+            z-index: 10010;
+        }
+        .btn-close-trailer:hover {
+            background: #e50914;
+            transform: scale(1.1);
+        }
+        
+        /* Style for Xem Trailer button on card hover overlay */
+        .poster-overlay .btn-trailer {
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            width: 80%;
+            text-align: center;
+        }
+        .poster-overlay .btn-trailer:hover {
+            background: #fff;
+            color: #000;
+        }
+    </style>
 </body>
 
 </html>

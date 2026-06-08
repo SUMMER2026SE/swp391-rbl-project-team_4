@@ -574,6 +574,19 @@
         if (booking.poster) {
             document.getElementById('summaryPoster').src = booking.poster;
         }
+
+        // Global search redirection
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const val = searchInput.value.trim();
+                    if (val) {
+                        window.location.href = `movies.html?search=${encodeURIComponent(val)}`;
+                    }
+                }
+            });
+        }
     });
     </script>
 
