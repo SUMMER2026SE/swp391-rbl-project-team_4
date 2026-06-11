@@ -78,16 +78,42 @@ const app = {
         `).join('');
     },
     openTrailer(url) {
-        const modal = document.getElementById('trailerModal');
+        let modal = document.getElementById('trailerModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'trailerModal';
+            modal.className = 'modal-overlay hidden';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="btn-close-modal" onclick="app.closeTrailer()">×</button>
+                    <div class="video-container">
+                        <iframe id="trailerIframe" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        let embedUrl = url;
+        if (url.includes('youtube.com/watch?v=')) {
+            embedUrl = url.replace('watch?v=', 'embed/');
+            const ampersandPos = embedUrl.indexOf('&');
+            if (ampersandPos !== -1) {
+                embedUrl = embedUrl.substring(0, ampersandPos);
+            }
+        }
+        
         const iframe = document.getElementById('trailerIframe');
-        iframe.src = url;
+        iframe.src = embedUrl;
         modal.classList.remove('hidden');
     },
     closeTrailer() {
         const modal = document.getElementById('trailerModal');
-        const iframe = document.getElementById('trailerIframe');
-        iframe.src = '';
-        modal.classList.add('hidden');
+        if (modal) {
+            const iframe = document.getElementById('trailerIframe');
+            iframe.src = '';
+            modal.classList.add('hidden');
+        }
     },
     switchMovieTab(tab) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -305,6 +331,112 @@ const app = {
             }
             this.updateSummarySidebar();
         });
+<<<<<<< Updated upstream
+=======
+    },
+
+    handleBookingClick(movieId) {
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+        if (!token) {
+            alert('Vui lòng đăng nhập để tiếp tục đặt vé!');
+            window.location.href = 'auth.html';
+        } else {
+            window.location.href = `booking.html?movieId=${movieId}`;
+        }
+    },
+
+    // --- Dynamic Movie Fetching for Guest Pages ---
+    async loadDynamicMovies() {
+        // 1. For index.html (Now Showing) -> .movie-grid
+        const nowShowingGrid = document.querySelector('.movie-grid');
+        if (nowShowingGrid) {
+            try {
+                const res = await fetch('/api/movies/now-showing');
+                const json = await res.json();
+                if (json.success && json.data) {
+                    nowShowingGrid.innerHTML = json.data.map(movie => `
+                        <div class="movie-card">
+                            <div class="movie-poster">
+                                <span class="age-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                                <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                                <div class="poster-overlay">
+                                    <button class="btn-secondary" onclick="app.openTrailer('${movie.TrailerURL}')">Xem Trailer</button>
+                                    <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">Mua Vé</button>
+                                </div>
+                            </div>
+                            <div class="movie-info">
+                                <h3 class="movie-title">${movie.Title}</h3>
+                                <div class="movie-genre">${movie.MainCast ? movie.MainCast : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                <div class="movie-rating">★ 8.5</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load now showing movies:', err);
+            }
+        }
+
+        // 2. For index.html (Coming Soon) -> .movie-grid-large
+        const comingSoonGrid = document.querySelector('.movie-grid-large');
+        if (comingSoonGrid) {
+            try {
+                const res = await fetch('/api/movies/coming-soon');
+                const json = await res.json();
+                if (json.success && json.data) {
+                    comingSoonGrid.innerHTML = json.data.map(movie => `
+                        <div class="movie-card-large">
+                            <div class="movie-poster-large">
+                                <span class="coming-badge">SẮP CHIẾU</span>
+                                <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                            </div>
+                            <div class="movie-info-large">
+                                <h3 class="movie-title-large">${movie.Title}</h3>
+                                <div class="movie-meta-large">
+                                    <span>${movie.MainCast ? movie.MainCast : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</span>
+                                    <span class="movie-date">Sắp chiếu</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load coming soon movies:', err);
+            }
+        }
+
+        // 3. For movies.html -> .movies-grid
+        const allMoviesGrid = document.querySelector('.movies-grid');
+        if (allMoviesGrid) {
+            try {
+                const res = await fetch('/api/movies');
+                const json = await res.json();
+                if (json.success && json.data) {
+                    allMoviesGrid.innerHTML = json.data.map(movie => `
+                        <div class="movie-card">
+                            <div class="movie-poster">
+                                <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                                <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                                <div class="movie-overlay">
+                                    <button class="btn-trailer" onclick="app.openTrailer('${movie.TrailerURL}')">Xem Trailer</button>
+                                    <button class="btn-tickets" onclick="app.handleBookingClick(${movie.MovieID})">Mua Vé</button>
+                                </div>
+                            </div>
+                            <div class="movie-info">
+                                <h3 class="movie-title">${movie.Title}</h3>
+                                <div class="movie-rating">
+                                    <span class="stars">★ 4.9</span>
+                                    <span class="genres">${movie.Duration} phút</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load all movies:', err);
+            }
+        }
+>>>>>>> Stashed changes
     }
 };
 
