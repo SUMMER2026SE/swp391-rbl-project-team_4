@@ -95,13 +95,42 @@ const app = {
         }
         
         let embedUrl = url;
-        if (url.includes('youtube.com/watch?v=')) {
-            embedUrl = url.replace('watch?v=', 'embed/');
-            const ampersandPos = embedUrl.indexOf('&');
-            if (ampersandPos !== -1) {
-                embedUrl = embedUrl.substring(0, ampersandPos);
+        if (!url) {
+            embedUrl = '';
+        } else if (url.includes('youtube.com/embed/')) {
+            embedUrl = url;
+        } else {
+            try {
+                let videoId = '';
+                if (url.includes('youtube.com/watch')) {
+                    const urlParams = new URLSearchParams(new URL(url.search ? url : url.replace('#', '?')).search);
+                    videoId = urlParams.get('v') || new URL(url).searchParams.get('v');
+                    if (!videoId) {
+                        // Fallback regex
+                        const match = url.match(/[?&]v=([^&]+)/);
+                        if (match) videoId = match[1];
+                    }
+                } else if (url.includes('youtu.be/')) {
+                    videoId = url.split('youtu.be/')[1].split('?')[0];
+                } else if (url.includes('youtube.com/v/')) {
+                    videoId = url.split('youtube.com/v/')[1].split('?')[0];
+                }
+                if (videoId) {
+                    embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                }
+            } catch (e) {
+                console.error("Error parsing YouTube URL:", e);
+                // Fallback to simple replace
+                if (url.includes('youtube.com/watch?v=')) {
+                    embedUrl = url.replace('watch?v=', 'embed/');
+                    const ampersandPos = embedUrl.indexOf('&');
+                    if (ampersandPos !== -1) {
+                        embedUrl = embedUrl.substring(0, ampersandPos);
+                    }
+                }
             }
         }
+        console.log("Original URL:", url, "-> Embed URL:", embedUrl);
         
         const iframe = document.getElementById('trailerIframe');
         iframe.src = embedUrl;
@@ -331,112 +360,6 @@ const app = {
             }
             this.updateSummarySidebar();
         });
-<<<<<<< Updated upstream
-=======
-    },
-
-    handleBookingClick(movieId) {
-        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-        if (!token) {
-            alert('Vui lòng đăng nhập để tiếp tục đặt vé!');
-            window.location.href = 'auth.html';
-        } else {
-            window.location.href = `booking.html?movieId=${movieId}`;
-        }
-    },
-
-    // --- Dynamic Movie Fetching for Guest Pages ---
-    async loadDynamicMovies() {
-        // 1. For index.html (Now Showing) -> .movie-grid
-        const nowShowingGrid = document.querySelector('.movie-grid');
-        if (nowShowingGrid) {
-            try {
-                const res = await fetch('/api/movies/now-showing');
-                const json = await res.json();
-                if (json.success && json.data) {
-                    nowShowingGrid.innerHTML = json.data.map(movie => `
-                        <div class="movie-card">
-                            <div class="movie-poster">
-                                <span class="age-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
-                                <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                                <div class="poster-overlay">
-                                    <button class="btn-secondary" onclick="app.openTrailer('${movie.TrailerURL}')">Xem Trailer</button>
-                                    <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">Mua Vé</button>
-                                </div>
-                            </div>
-                            <div class="movie-info">
-                                <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.MainCast ? movie.MainCast : 'Chính kịch'} | ${movie.Duration} phút</div>
-                                <div class="movie-rating">★ 8.5</div>
-                            </div>
-                        </div>
-                    `).join('');
-                }
-            } catch (err) {
-                console.error('Failed to load now showing movies:', err);
-            }
-        }
-
-        // 2. For index.html (Coming Soon) -> .movie-grid-large
-        const comingSoonGrid = document.querySelector('.movie-grid-large');
-        if (comingSoonGrid) {
-            try {
-                const res = await fetch('/api/movies/coming-soon');
-                const json = await res.json();
-                if (json.success && json.data) {
-                    comingSoonGrid.innerHTML = json.data.map(movie => `
-                        <div class="movie-card-large">
-                            <div class="movie-poster-large">
-                                <span class="coming-badge">SẮP CHIẾU</span>
-                                <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                            </div>
-                            <div class="movie-info-large">
-                                <h3 class="movie-title-large">${movie.Title}</h3>
-                                <div class="movie-meta-large">
-                                    <span>${movie.MainCast ? movie.MainCast : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</span>
-                                    <span class="movie-date">Sắp chiếu</span>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
-                }
-            } catch (err) {
-                console.error('Failed to load coming soon movies:', err);
-            }
-        }
-
-        // 3. For movies.html -> .movies-grid
-        const allMoviesGrid = document.querySelector('.movies-grid');
-        if (allMoviesGrid) {
-            try {
-                const res = await fetch('/api/movies');
-                const json = await res.json();
-                if (json.success && json.data) {
-                    allMoviesGrid.innerHTML = json.data.map(movie => `
-                        <div class="movie-card">
-                            <div class="movie-poster">
-                                <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
-                                <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                                <div class="movie-overlay">
-                                    <button class="btn-trailer" onclick="app.openTrailer('${movie.TrailerURL}')">Xem Trailer</button>
-                                    <button class="btn-tickets" onclick="app.handleBookingClick(${movie.MovieID})">Mua Vé</button>
-                                </div>
-                            </div>
-                            <div class="movie-info">
-                                <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-rating">
-                                    <span class="stars">★ 4.9</span>
-                                    <span class="genres">${movie.Duration} phút</span>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
-                }
-            } catch (err) {
-                console.error('Failed to load all movies:', err);
-            }
-        }
->>>>>>> Stashed changes
     }
 };
 

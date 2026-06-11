@@ -10,7 +10,7 @@ class MovieModel {
               JOIN Genres g ON mg.GenreID = g.GenreID 
               WHERE mg.MovieID = m.MovieID) AS Genre
       FROM   Movies m
-      WHERE  m.Status = 'now-showing'
+      WHERE  m.Status = 'Now Showing'
       ORDER BY m.MovieID DESC
     `);
     return result.recordset;
@@ -25,7 +25,7 @@ class MovieModel {
               JOIN Genres g ON mg.GenreID = g.GenreID 
               WHERE mg.MovieID = m.MovieID) AS Genre
       FROM   Movies m
-      WHERE  m.Status = 'coming-soon'
+      WHERE  m.Status = 'Coming Soon'
       ORDER BY m.MovieID ASC
     `);
     return result.recordset;

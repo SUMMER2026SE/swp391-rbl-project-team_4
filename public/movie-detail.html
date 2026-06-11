@@ -18,27 +18,12 @@
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-<<<<<<< Updated upstream
                 <div class="dropdown">
                     <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
                         <a href="movies.html?status=showing" class="dropdown-item">Phim Đang Chiếu</a>
                         <a href="movies.html?status=coming" class="dropdown-item">Phim Sắp Chiếu</a>
                     </div>
-=======
-                <div class="nav-item-dropdown">
-
-                    <a href="movies.html" id="nav-phim" class="active">Phim</a>
-
-                    <div class="dropdown-menu">
-
-                        <a href="movies.html#now-showing">Phim Đang Chiếu</a>
-
-                        <a href="movies.html#coming-soon">Phim Sắp Chiếu</a>
-
-                    </div>
-
->>>>>>> Stashed changes
                 </div>
                 <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
@@ -355,7 +340,7 @@
 
     <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
     <script>
         const mockMovies = {
             "1": { title: "Neon Horizon", rating: "13+", duration: "124 phút", genre: "Viễn tưởng, Phiêu lưu", releaseDate: "20/05/2026", description: "Thế giới tương lai nơi con người sống dưới bầu trời neon rực rỡ.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/gCcx85zLyz4" },
@@ -413,27 +398,30 @@
 
         function renderMovieDetail(movie) {
             document.title = `${movie.title} | D-Cinema`;
-            document.getElementById('detail-movie-title').textContent = movie.title;
-            document.getElementById('detail-movie-desc').textContent = movie.description;
-            document.getElementById('detail-synopsis').textContent = movie.description;
+            const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
+            
+            setEl('detail-movie-title', movie.title);
+            setEl('detail-movie-desc', movie.description);
+            setEl('detail-synopsis', movie.description);
             
             // Poster and Rating
-            document.getElementById('detail-poster-img').src = movie.poster;
-            document.getElementById('detail-poster-img').alt = movie.title;
-            document.getElementById('detail-poster-rating').textContent = movie.rating;
-            document.getElementById('detail-movie-badge').textContent = movie.rating;
+            const posterImg = document.getElementById('detail-poster-img');
+            if (posterImg) { posterImg.src = movie.poster || 'images/poster.png'; posterImg.alt = movie.title; }
+            setEl('detail-poster-rating', movie.rating);
+            setEl('detail-movie-badge', movie.rating);
             
             // Meta
-            document.getElementById('detail-duration').textContent = movie.duration;
-            document.getElementById('detail-release-date').textContent = movie.releaseDate;
+            setEl('detail-duration', movie.duration);
+            setEl('detail-release-date', movie.releaseDate);
             
             // Sidebar
-            document.getElementById('sidebar-duration').textContent = movie.duration;
-            document.getElementById('sidebar-release-date').textContent = movie.releaseDate;
-            document.getElementById('sidebar-genre').textContent = movie.genre;
+            setEl('sidebar-duration', movie.duration);
+            setEl('sidebar-release-date', movie.releaseDate);
+            setEl('sidebar-genre', movie.genre);
             
             // Background
-            document.getElementById('detail-hero-bg').style.backgroundImage = `url('${movie.bg}')`;
+            const heroBg = document.getElementById('detail-hero-bg');
+            if (heroBg) heroBg.style.backgroundImage = `url('${movie.bg || 'images/dune_hero.png'}')`;
 
             // Set trailer
             currentTrailerUrl = getEmbedUrl(movie.trailer);
@@ -458,17 +446,19 @@
                 const result = await res.json();
                 if (result.success && result.data) {
                     const m = result.data;
+                    let relDate = '2026-05-29';
+                    try { if (m.ReleaseDate) relDate = m.ReleaseDate.substring(0, 10); } catch(e) {}
                     renderMovieDetail({
-                        title: m.Title,
+                        title: m.Title || 'Không rõ tên phim',
                         description: m.Description || '',
-                        director: m.Director || 'Denis Villeneuve',
+                        director: m.Director || '',
                         duration: m.Duration ? `${m.Duration} phút` : '120 phút',
                         rating: m.AgeRating || 'P',
                         poster: m.PosterURL || 'images/poster.png',
                         bg: m.PosterURL || 'images/dune_hero.png',
-                        genre: m.Genre || 'Chưa phân loại',
-                        releaseDate: m.ReleaseDate ? m.ReleaseDate.substring(0, 10) : '2026-05-29',
-                        trailer: m.TrailerURL || 'https://www.youtube.com/embed/Way9Dexny3w'
+                        genre: m.Genre || m.MainCast || 'Chưa phân loại',
+                        releaseDate: relDate,
+                        trailer: m.TrailerURL || ''
                     });
                 } else if (mockMovies[id]) {
                     renderMovieDetail(mockMovies[id]);
@@ -509,51 +499,10 @@
                 });
             }
 
-<<<<<<< Updated upstream
             // Trailer button listener
             const trailerBtn = document.getElementById('detail-trailer-btn');
             if (trailerBtn) {
                 trailerBtn.addEventListener('click', openTrailer);
-=======
-            if (!movieId) return;
-
-            try {
-                const response = await fetch(`/api/movies/${movieId}`);
-                const json = await response.json();
-                if (!json.success || !json.data) return;
-
-                const movie = json.data;
-                const poster = document.getElementById('heroPoster');
-                const title = document.getElementById('heroTitle');
-                const badge = document.getElementById('heroBadge');
-                const rating = document.getElementById('heroRating');
-                const duration = document.getElementById('heroDuration');
-                const releaseDate = document.getElementById('heroReleaseDate');
-                const description = document.getElementById('movieDescription');
-                const score = document.getElementById('heroScore');
-
-                if (poster && movie.PosterURL) {
-                    poster.src = movie.PosterURL;
-                    poster.alt = movie.Title || poster.alt;
-                }
-                if (title) title.textContent = movie.Title || title.textContent;
-                if (badge) badge.textContent = movie.AgeRating || badge.textContent;
-                if (rating) rating.textContent = `★ ${movie.Rating || '8.5'}/10`;
-                if (duration) duration.textContent = movie.Duration ? `${movie.Duration} mins` : duration.textContent;
-                if (description) description.textContent = movie.Description || description.textContent;
-
-                if (trailerBtn) {
-                    trailerBtn.addEventListener('click', () => {
-                        if (movie.TrailerURL) {
-                            app.openTrailer(movie.TrailerURL);
-                        } else {
-                            alert('Trailer chưa có sẵn cho phim này.');
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error('Lỗi tải thông tin phim:', error);
->>>>>>> Stashed changes
             }
 
             // Close trailer on clicking overlay

@@ -17,27 +17,12 @@
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-<<<<<<< Updated upstream
                 <div class="dropdown">
                     <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
                         <a href="movies.html?status=showing" class="dropdown-item">Phim Đang Chiếu</a>
                         <a href="movies.html?status=coming" class="dropdown-item">Phim Sắp Chiếu</a>
                     </div>
-=======
-                <div class="nav-item-dropdown">
-
-                    <a href="movies.html" id="nav-phim" class="active">Phim</a>
-
-                    <div class="dropdown-menu">
-
-                        <a href="movies.html#now-showing">Phim Đang Chiếu</a>
-
-                        <a href="movies.html#coming-soon">Phim Sắp Chiếu</a>
-
-                    </div>
-
->>>>>>> Stashed changes
                 </div>
                 <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
@@ -231,7 +216,7 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
     <script>
         // Mock data fallback matching CGV layout (20 movies each)
         const mockMoviesNowShowing = [
@@ -480,12 +465,33 @@
         }
 
         // --- XỬ LÝ TRAILER MODAL ---
+        function getEmbedUrl(url) {
+            if (!url) return '';
+            if (url.includes('youtube.com/embed/')) return url;
+            
+            let videoId = '';
+            try {
+                if (url.includes('youtube.com/watch')) {
+                    const urlParams = new URLSearchParams(new URL(url).search);
+                    videoId = urlParams.get('v');
+                } else if (url.includes('youtu.be/')) {
+                    videoId = url.split('youtu.be/')[1].split('?')[0];
+                } else if (url.includes('youtube.com/v/')) {
+                    videoId = url.split('youtube.com/v/')[1].split('?')[0];
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            
+            return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
+        }
+
         function openTrailerModal(videoSrc) {
             const modal = document.getElementById('trailerModal');
             const iframe = document.getElementById('trailerVideo');
 
             if (videoSrc) {
-                iframe.setAttribute('src', videoSrc + "?autoplay=1");
+                iframe.setAttribute('src', getEmbedUrl(videoSrc));
             }
 
             modal.style.display = 'block';

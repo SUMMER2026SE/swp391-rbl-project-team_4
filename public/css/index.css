@@ -1187,23 +1187,15 @@ img {
         grid-template-columns: 1fr;
     }
 }
-<<<<<<< Updated upstream
 
 /* ─── Dropdown Menu (Light Navbar Theme) ─── */
 .dropdown {
     position: relative;
     display: inline-flex;
-=======
-/* ─── Dropdown Menu ─── */
-.nav-item-dropdown {
-    position: relative;
-    display: flex;
->>>>>>> Stashed changes
     align-items: center;
 }
 
 .dropdown-menu {
-<<<<<<< Updated upstream
     position: absolute;
     top: 100%;
     left: 50%;
@@ -1264,38 +1256,3 @@ img {
 .dropdown:hover .nav-arrow {
     transform: rotate(180deg);
 }
-=======
-    display: none;
-    position: absolute;
-    top: calc(100% + 5px);
-    left: -15px;
-    background-color: #333333;
-    min-width: 180px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
-    z-index: 1000;
-    border: 2px solid #555;
-    padding: 10px 0;
-}
-
-.nav-item-dropdown:hover .dropdown-menu {
-    display: block;
-}
-
-.dropdown-menu a {
-    color: #ffffff !important;
-    padding: 10px 20px;
-    text-decoration: none;
-    display: block;
-    font-weight: 700 !important;
-    font-size: 0.95rem !important;
-}
-
-.dropdown-menu a:hover {
-    background-color: #444444;
-    color: var(--primary) !important;
-}
-
-.dropdown-menu a::after {
-    display: none !important;
-}
->>>>>>> Stashed changes
