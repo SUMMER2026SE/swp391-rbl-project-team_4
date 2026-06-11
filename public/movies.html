@@ -50,41 +50,76 @@
     <div class="movies-container">
         <aside class="filters-sidebar">
             <div class="filters-section">
-                <h3 class="filters-title">Filters</h3>
+                <h3 class="filters-title">Bộ lọc</h3>
 
                 <div class="filter-group">
-                    <h4 class="filter-header">GENRES</h4>
+                    <h4 class="filter-header">Thể loại</h4>
                     <div class="filter-list">
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="action">
+                            <input type="checkbox" name="genre" value="hành động">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Action</span>
+                            <span class="filter-label">Hành động</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="comedy">
+                            <input type="checkbox" name="genre" value="hài hước">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Comedy</span>
+                            <span class="filter-label">Hài hước</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="drama">
+                            <input type="checkbox" name="genre" value="hoạt hình">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Drama</span>
+                            <span class="filter-label">Hoạt hình</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="scifi">
+                            <input type="checkbox" name="genre" value="phiêu lưu">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Sci-Fi</span>
+                            <span class="filter-label">Phiêu lưu</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="horror">
+                            <input type="checkbox" name="genre" value="kinh dị">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Horror</span>
+                            <span class="filter-label">Kinh dị</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="viễn tưởng">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Khoa học Viễn tưởng</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="chính kịch">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Chính kịch</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="gia đình">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Gia đình</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="tâm lý">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Tâm lý</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="hình sự">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Hình sự</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="lãng mạn">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Lãng mạn</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="giật gân">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Giật gân</span>
                         </label>
                     </div>
                 </div>
 
                 <div class="filter-group">
-                    <h4 class="filter-header">FORMATS</h4>
+                    <h4 class="filter-header">Định dạng</h4>
                     <div class="filter-list">
                         <label class="filter-item">
                             <input type="checkbox" name="format" value="2d">
@@ -325,11 +360,23 @@
                     let matchesGenre = false;
                     const mgLower = m.genre.toLowerCase();
                     checkedGenres.forEach(cg => {
-                        if (cg === 'action' && (mgLower.includes('hành động') || mgLower.includes('action') || mgLower.includes('phiêu lưu'))) matchesGenre = true;
-                        if (cg === 'comedy' && (mgLower.includes('hài') || mgLower.includes('comedy') || mgLower.includes('hoạt hình'))) matchesGenre = true;
-                        if (cg === 'drama' && (mgLower.includes('drama') || mgLower.includes('tâm lý') || mgLower.includes('gia đình'))) matchesGenre = true;
-                        if (cg === 'horror' && (mgLower.includes('kinh dị') || mgLower.includes('horror') || mgLower.includes('ma'))) matchesGenre = true;
-                        if (cg === 'scifi' && (mgLower.includes('khoa học viễn tưởng') || mgLower.includes('viễn tưởng') || mgLower.includes('sci-fi') || mgLower.includes('scifi'))) matchesGenre = true;
+                        // Check if it matches Vietnamese or English equivalent
+                        if (mgLower.includes(cg)) {
+                            matchesGenre = true;
+                        }
+                        // Support equivalents to ensure mock data (which has 'Drama' or 'Hài') also filters correctly
+                        if (cg === 'hành động' && (mgLower.includes('action') || mgLower.includes('hành động') || mgLower.includes('phiêu lưu') || mgLower.includes('adventure'))) matchesGenre = true;
+                        if (cg === 'hài hước' && (mgLower.includes('comedy') || mgLower.includes('hài') || mgLower.includes('hài hước'))) matchesGenre = true;
+                        if (cg === 'chính kịch' && (mgLower.includes('drama') || mgLower.includes('chính kịch') || mgLower.includes('tâm lý') || mgLower.includes('gia đình'))) matchesGenre = true;
+                        if (cg === 'viễn tưởng' && (mgLower.includes('sci-fi') || mgLower.includes('scifi') || mgLower.includes('viễn tưởng') || mgLower.includes('khoa học viễn tưởng'))) matchesGenre = true;
+                        if (cg === 'kinh dị' && (mgLower.includes('horror') || mgLower.includes('kinh dị') || mgLower.includes('ma'))) matchesGenre = true;
+                        if (cg === 'hoạt hình' && (mgLower.includes('hoạt hình') || mgLower.includes('animation') || mgLower.includes('hoạt hình'))) matchesGenre = true;
+                        if (cg === 'phiêu lưu' && (mgLower.includes('phiêu lưu') || mgLower.includes('adventure'))) matchesGenre = true;
+                        if (cg === 'gia đình' && (mgLower.includes('gia đình') || mgLower.includes('family'))) matchesGenre = true;
+                        if (cg === 'tâm lý' && (mgLower.includes('tâm lý') || mgLower.includes('drama') || mgLower.includes('chính kịch'))) matchesGenre = true;
+                        if (cg === 'hình sự' && (mgLower.includes('hình sự') || mgLower.includes('crime') || mgLower.includes('trinh thám'))) matchesGenre = true;
+                        if (cg === 'lãng mạn' && (mgLower.includes('lãng mạn') || mgLower.includes('romance') || mgLower.includes('tình cảm'))) matchesGenre = true;
+                        if (cg === 'giật gân' && (mgLower.includes('giật gân') || mgLower.includes('thriller'))) matchesGenre = true;
                     });
                     if (!matchesGenre) return false;
                 }

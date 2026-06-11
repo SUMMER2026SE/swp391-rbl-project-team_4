@@ -5,10 +5,13 @@ class MovieModel {
     const pool = await getPool();
     const result = await pool.request().query(`
       SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating, m.TrailerURL, m.PosterURL, m.Status,
-             (SELECT STRING_AGG(g.GenreName, ', ') 
-              FROM Movie_Genres mg 
-              JOIN Genres g ON mg.GenreID = g.GenreID 
-              WHERE mg.MovieID = m.MovieID) AS Genre
+             COALESCE(
+               (SELECT STRING_AGG(g.GenreName, ', ') 
+                FROM Movie_Genres mg 
+                JOIN Genres g ON mg.GenreID = g.GenreID 
+                WHERE mg.MovieID = m.MovieID),
+               m.Genre
+             ) AS Genre
       FROM   Movies m
       WHERE  m.Status = 'Now Showing'
       ORDER BY m.MovieID DESC
@@ -20,10 +23,13 @@ class MovieModel {
     const pool = await getPool();
     const result = await pool.request().query(`
       SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating, m.TrailerURL, m.PosterURL, m.Status,
-             (SELECT STRING_AGG(g.GenreName, ', ') 
-              FROM Movie_Genres mg 
-              JOIN Genres g ON mg.GenreID = g.GenreID 
-              WHERE mg.MovieID = m.MovieID) AS Genre
+             COALESCE(
+               (SELECT STRING_AGG(g.GenreName, ', ') 
+                FROM Movie_Genres mg 
+                JOIN Genres g ON mg.GenreID = g.GenreID 
+                WHERE mg.MovieID = m.MovieID),
+               m.Genre
+             ) AS Genre
       FROM   Movies m
       WHERE  m.Status = 'Coming Soon'
       ORDER BY m.MovieID ASC
@@ -51,10 +57,13 @@ class MovieModel {
 
     const result = await request.query(`
       SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating, m.TrailerURL, m.PosterURL, m.Status,
-             (SELECT STRING_AGG(g.GenreName, ', ') 
-              FROM Movie_Genres mg 
-              JOIN Genres g ON mg.GenreID = g.GenreID 
-              WHERE mg.MovieID = m.MovieID) AS Genre
+             COALESCE(
+               (SELECT STRING_AGG(g.GenreName, ', ') 
+                FROM Movie_Genres mg 
+                JOIN Genres g ON mg.GenreID = g.GenreID 
+                WHERE mg.MovieID = m.MovieID),
+               m.Genre
+             ) AS Genre
       FROM   Movies m
       ${whereClause}
       ORDER BY m.MovieID DESC
