@@ -118,18 +118,10 @@
                     <!-- Director & Cast -->
                     <section class="detail-section">
                         <h2 class="section-title">Đạo diễn & Diễn viên</h2>
-                        <div class="cast-grid">
+                        <div class="cast-grid" id="detail-cast-grid">
                             <div class="cast-card">
                                 <div class="cast-role">Đạo diễn</div>
-                                <div class="cast-name">Denis Villeneuve</div>
-                            </div>
-                            <div class="cast-card">
-                                <div class="cast-role">Paul Atreides</div>
-                                <div class="cast-name">Timothée Chalamet</div>
-                            </div>
-                            <div class="cast-card">
-                                <div class="cast-role">Chani</div>
-                                <div class="cast-name">Zendaya</div>
+                                <div class="cast-name" id="detail-director">Denis Villeneuve</div>
                             </div>
                         </div>
                     </section>
@@ -342,7 +334,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js?v=2"></script>
     <script>
-        const mockMovies = {
+        const mockDetailMovies = {
             "1": { title: "Neon Horizon", rating: "13+", duration: "124 phút", genre: "Viễn tưởng, Phiêu lưu", releaseDate: "20/05/2026", description: "Thế giới tương lai nơi con người sống dưới bầu trời neon rực rỡ.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/gCcx85zLyz4" },
             "2": { title: "The Last Echo", rating: "18+", duration: "110 phút", genre: "Hành động, Tâm lý", releaseDate: "20/05/2026", description: "Hành trình sinh tồn cuối cùng trong thế giới hậu tận thế.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/hEJnMQG96mg" },
             "3": { title: "Golden Age", rating: "P", duration: "95 phút", genre: "Hài, Tình cảm", releaseDate: "20/05/2026", description: "Câu chuyện về kỷ nguyên vàng của điện ảnh Việt Nam.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/xL-5J07pE9Q" },
@@ -403,6 +395,20 @@
             setEl('detail-movie-title', movie.title);
             setEl('detail-movie-desc', movie.description);
             setEl('detail-synopsis', movie.description);
+            setEl('detail-director', movie.director);
+            
+            // Cast grid - show director + individual cast members
+            const castGrid = document.getElementById('detail-cast-grid');
+            if (castGrid) {
+                let castHTML = `<div class="cast-card"><div class="cast-role">Đạo diễn</div><div class="cast-name">${movie.director || 'Không rõ'}</div></div>`;
+                if (movie.cast) {
+                    const castArr = movie.cast.split(',').map(s => s.trim()).filter(Boolean);
+                    castArr.forEach(name => {
+                        castHTML += `<div class="cast-card"><div class="cast-role">Diễn viên</div><div class="cast-name">${name}</div></div>`;
+                    });
+                }
+                castGrid.innerHTML = castHTML;
+            }
             
             // Poster and Rating
             const posterImg = document.getElementById('detail-poster-img');
@@ -421,7 +427,8 @@
             
             // Background
             const heroBg = document.getElementById('detail-hero-bg');
-            if (heroBg) heroBg.style.backgroundImage = `url('${movie.bg || 'images/dune_hero.png'}')`;
+            const bgUrl = movie.bg || "images/dune_hero.png";
+            if (heroBg) heroBg.style.backgroundImage = "url('" + bgUrl + "')";
 
             // Set trailer
             currentTrailerUrl = getEmbedUrl(movie.trailer);
@@ -429,9 +436,10 @@
 
         async function loadMovieDetail() {
             const id = getQueryMovieId();
+            console.log('[DEBUG] Movie ID from URL:', id);
             if (!id) {
-                // Default to Dune (ID 7) if no ID
-                renderMovieDetail(mockMovies["7"]);
+                console.log('[DEBUG] No ID - showing Dune default');
+                renderMovieDetail(mockDetailMovies["7"]);
                 return;
             }
 
@@ -442,35 +450,42 @@
             }
 
             try {
+                console.log('[DEBUG] Fetching /api/movies/' + id);
                 const res = await fetch(`/api/movies/${id}`);
+                console.log('[DEBUG] Response status:', res.status);
                 const result = await res.json();
+                console.log('[DEBUG] Result:', JSON.stringify(result).substring(0, 200));
                 if (result.success && result.data) {
                     const m = result.data;
                     let relDate = '2026-05-29';
                     try { if (m.ReleaseDate) relDate = m.ReleaseDate.substring(0, 10); } catch(e) {}
+                    console.log('[DEBUG] Rendering movie:', m.Title);
                     renderMovieDetail({
                         title: m.Title || 'Không rõ tên phim',
                         description: m.Description || '',
                         director: m.Director || '',
+                        cast: m.MainCast || '',
                         duration: m.Duration ? `${m.Duration} phút` : '120 phút',
                         rating: m.AgeRating || 'P',
                         poster: m.PosterURL || 'images/poster.png',
                         bg: m.PosterURL || 'images/dune_hero.png',
-                        genre: m.Genre || m.MainCast || 'Chưa phân loại',
+                        genre: m.Genre || 'Chưa phân loại',
                         releaseDate: relDate,
                         trailer: m.TrailerURL || ''
                     });
-                } else if (mockMovies[id]) {
-                    renderMovieDetail(mockMovies[id]);
+                } else if (mockDetailMovies[id]) {
+                    console.log('[DEBUG] API failed - using mockDetailMovies[' + id + ']');
+                    renderMovieDetail(mockDetailMovies[id]);
                 } else {
-                    renderMovieDetail(mockMovies["7"]);
+                    console.log('[DEBUG] API failed - using default Dune');
+                    renderMovieDetail(mockDetailMovies["7"]);
                 }
             } catch (err) {
-                console.warn("Could not fetch movie detail from API, using fallback mock.", err);
-                if (mockMovies[id]) {
-                    renderMovieDetail(mockMovies[id]);
+                console.warn('[DEBUG] CATCH ERROR:', err.message, err);
+                if (mockDetailMovies[id]) {
+                    renderMovieDetail(mockDetailMovies[id]);
                 } else {
-                    renderMovieDetail(mockMovies["7"]);
+                    renderMovieDetail(mockDetailMovies["7"]);
                 }
             }
         }

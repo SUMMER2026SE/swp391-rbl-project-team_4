@@ -67,11 +67,14 @@ class MovieModel {
     const result = await pool.request()
       .input('movieId', sql.Int, parseInt(movieId))
       .query(`
-        SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating, m.TrailerURL, m.PosterURL, m.Status,
-               (SELECT STRING_AGG(g.GenreName, ', ') 
-                FROM Movie_Genres mg 
-                JOIN Genres g ON mg.GenreID = g.GenreID 
-                WHERE mg.MovieID = m.MovieID) AS Genre
+        SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating, m.TrailerURL, m.PosterURL, m.Status, m.MainCast,
+               COALESCE(
+                 (SELECT STRING_AGG(g.GenreName, ', ') 
+                  FROM Movie_Genres mg 
+                  JOIN Genres g ON mg.GenreID = g.GenreID 
+                  WHERE mg.MovieID = m.MovieID),
+                 m.Genre
+               ) AS Genre
         FROM   Movies m
         WHERE  m.MovieID = @movieId
       `);
