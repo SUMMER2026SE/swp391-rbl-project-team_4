@@ -91,7 +91,14 @@ exports.createBooking = async (req, res) => {
   } catch (err) {
     console.error('[bookingController] createBooking:', err.message);
     // Phân loại lỗi trả về từ Model để set status code phù hợp
-    if (err.message.includes('đã được đặt') || err.message.includes('không tồn tại') || err.message.includes('chưa được thiết lập giá')) {
+    if (
+      err.message.includes('đã được đặt') ||
+      err.message.includes('không tồn tại') ||
+      err.message.includes('chưa được thiết lập giá') ||
+      err.message.includes('không hợp lệ') ||
+      err.message.includes('không đủ số lượng') ||
+      err.message.includes('đã ngừng bán')
+    ) {
       return res.status(409).json({ success: false, message: err.message });
     }
     res.status(500).json({ success: false, message: 'Lỗi server khi tạo vé.' });

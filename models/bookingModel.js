@@ -19,7 +19,7 @@ class BookingModel {
   static async getFoodBeverages() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT FnBID, Name, Description, Category, Price, ImageURL, IsAvailable
+      SELECT FnBID, Name, Description, Category, Price, Stock, ImageURL, IsAvailable
       FROM   FoodBeverages
       WHERE  IsAvailable = 1
       ORDER BY Category, Name
@@ -134,12 +134,30 @@ class BookingModel {
       // --- Cộng thêm F&B ---
       let fnbTotal = 0;
       for (const item of foodItems) {
+        if (!item.quantity || parseInt(item.quantity) <= 0) {
+          throw new Error('Số lượng sản phẩm không hợp lệ.');
+        }
         const fnbReq = transaction.request();
         fnbReq.input('fnbId', sql.Int, item.fnbId);
-        const fnbResult = await fnbReq.query('SELECT Price FROM FoodBeverages WHERE FnBID = @fnbId AND IsAvailable = 1');
-        if (fnbResult.recordset.length > 0) {
-          fnbTotal += fnbResult.recordset[0].Price * item.quantity;
+        const fnbResult = await fnbReq.query('SELECT Name, Price, Stock FROM FoodBeverages WHERE FnBID = @fnbId AND IsAvailable = 1');
+        if (fnbResult.recordset.length === 0) {
+          throw new Error(`Sản phẩm đồ ăn ID ${item.fnbId} không tồn tại hoặc đã ngừng bán.`);
         }
+        const fnbItem = fnbResult.recordset[0];
+        const qty = parseInt(item.quantity);
+        if (qty > 10) {
+          throw new Error(`Bạn chỉ được đặt tối đa 10 phần cho mỗi món "${fnbItem.Name}".`);
+        }
+        if (fnbItem.Stock < qty) {
+          throw new Error(`Món "${fnbItem.Name}" chỉ còn lại ${fnbItem.Stock} phần, không đủ số lượng bạn yêu cầu.`);
+        }
+        fnbTotal += fnbItem.Price * qty;
+
+        // Giảm tồn kho thực tế
+        const updateFnbReq = transaction.request();
+        updateFnbReq.input('fnbId', sql.Int, item.fnbId);
+        updateFnbReq.input('qty', sql.Int, item.quantity);
+        await updateFnbReq.query('UPDATE FoodBeverages SET Stock = Stock - @qty WHERE FnBID = @fnbId');
       }
       totalAmount += fnbTotal;
 
