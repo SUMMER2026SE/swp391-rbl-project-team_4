@@ -1268,6 +1268,7 @@
                 clearInterval(countdownTimer);
                 booking.bookingId = 'DC-' + json.data.ticketIds.join('-');
                 booking.finalAmount = json.data.finalAmount;
+                booking.completed = true;
                 sessionStorage.setItem('booking', JSON.stringify(booking));
                 localStorage.setItem('booking', JSON.stringify(booking));
 
@@ -1338,6 +1339,12 @@
         try {
             booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
         } catch(e) { booking = {}; }
+
+        if (booking.completed) {
+            showToast('Giao dịch này đã hoàn thành!', 'success');
+            setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+            return;
+        }
 
         if (!booking.showtimeId) {
             showToast('Không tìm thấy thông tin đặt vé!', 'error');

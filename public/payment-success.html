@@ -906,19 +906,7 @@
     function generateQR(containerId, data, size = 140) {
         const el = document.getElementById(containerId);
         if (!el) return;
-        el.innerHTML = '';
-        try {
-            new QRCode(el, {
-                text: data,
-                width: size,
-                height: size,
-                colorDark: '#000000',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.M
-            });
-        } catch(e) {
-            el.innerHTML = `<div style="width:${size}px;height:${size}px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#333;text-align:center;padding:10px;">QR<br>Code<br>${data.slice(0,12)}</div>`;
-        }
+        el.innerHTML = `<img src="images/qr_code_payment.png" alt="QR Payment" style="width:${size}px;height:${size}px;object-fit:contain;display:block;margin:0 auto;">`;
     }
 
     /* ── QR Timer countdown (5 min) ── */
