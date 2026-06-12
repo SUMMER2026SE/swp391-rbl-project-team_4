@@ -161,7 +161,7 @@ a {
 /* ─── Hero Section ─── */
 .hero-section {
     position: relative;
-    height: 500px;
+    min-height: 500px;
     display: flex;
     align-items: center;
     color: var(--text-light);
