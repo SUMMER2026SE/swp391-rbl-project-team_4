@@ -1,0 +1,36 @@
+2026-06-08T09:57:38.316Z - ERROR: Phòng chiếu đã có lịch trong khung giờ này.
+Stack: Error: Phòng chiếu đã có lịch trong khung giờ này.
+    at AdminModel.createShowtime (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\models\adminModel.js:198:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async exports.createShowtime (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\controllers\adminController.js:127:22)
+    at async test (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\test-req-controller.js:29:3)
+Body: {"movieId":10,"roomId":26,"startTime":"2026-06-08T19:00:00.000Z","endTime":"2026-06-08T21:00:00.000Z","price":85000}
+
+2026-06-08T15:22:16.033Z - ERROR: The column "Price" cannot be modified because it is either a computed column or is the result of a UNION operator.
+Stack: RequestError: The column "Price" cannot be modified because it is either a computed column or is the result of a UNION operator.
+    at handleError (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\node_modules\mssql\lib\tedious\request.js:407:15)
+    at Connection.emit (node:events:509:28)
+    at Connection.emit (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\node_modules\tedious\lib\connection.js:1013:18)
+    at RequestTokenHandler.onErrorMessage (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\node_modules\tedious\lib\token\handler.js:285:21)
+    at Readable.<anonymous> (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\node_modules\tedious\lib\token\token-stream-parser.js:19:33)
+    at Readable.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushObjectMode (node:internal/streams/readable:540:3)
+    at Readable.push (node:internal/streams/readable:395:5)
+    at nextAsync (node:internal/streams/from:194:22)
+Body: {"movieId":10,"roomId":26,"startTime":"2026-06-09T06:25:00.000Z","endTime":"2026-06-09T08:41:00.000Z","price":54000}
+
+2026-06-08T15:23:10.773Z - ERROR: The column "Price" cannot be modified because it is either a computed column or is the result of a UNION operator.
+Stack: RequestError: The column "Price" cannot be modified because it is either a computed column or is the result of a UNION operator.
+    at handleError (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\node_modules\mssql\lib\tedious\request.js:407:15)
+    at Connection.emit (node:events:509:28)
+    at Connection.emit (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\node_modules\tedious\lib\connection.js:1013:18)
+    at RequestTokenHandler.onErrorMessage (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\node_modules\tedious\lib\token\handler.js:285:21)
+    at Readable.<anonymous> (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\node_modules\tedious\lib\token\token-stream-parser.js:19:33)
+    at Readable.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushObjectMode (node:internal/streams/readable:540:3)
+    at Readable.push (node:internal/streams/readable:395:5)
+    at nextAsync (node:internal/streams/from:194:22)
+Body: {"movieId":10,"roomId":29,"startTime":"2026-06-08T15:24:00.000Z","endTime":"2026-06-08T17:40:00.000Z","price":90000}
+

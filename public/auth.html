@@ -73,7 +73,7 @@
                         <label for="loginEmail">EMAIL HOẶC SỐ ĐIỆN THOẠI</label>
                         <div class="input-wrapper">
                             <input type="email" id="loginEmail" name="email" placeholder="name@example.com" required
-                                autocomplete="email">
+                                autocomplete="email" tabindex="1">
                             <span class="input-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -88,11 +88,11 @@
                     <div class="input-group">
                         <div class="label-row">
                             <label for="loginPassword">MẬT KHẨU</label>
-                            <a href="forgot-password.html" class="forgot-link">Quên mật khẩu?</a>
+                            <a href="forgot-password.html" class="forgot-link" tabindex="4">Quên mật khẩu?</a>
                         </div>
                         <div class="input-wrapper">
                             <input type="password" id="loginPassword" name="password" placeholder="••••••••" required
-                                autocomplete="current-password">
+                                autocomplete="current-password" tabindex="2">
                             <button type="button" class="toggle-password" data-target="loginPassword"
                                 aria-label="Hiển thị mật khẩu">
                                 <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -120,7 +120,7 @@
                     </div>
 
                     <!-- Submit -->
-                    <button type="submit" class="btn-submit" id="btnLogin">
+                    <button type="submit" class="btn-submit" id="btnLogin" tabindex="3">
                         <span class="btn-text">ĐĂNG NHẬP NGAY</span>
                         <span class="btn-loader" style="display:none">
                             <svg class="spinner" viewBox="0 0 24 24">

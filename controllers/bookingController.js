@@ -17,6 +17,16 @@ exports.getFoodBeverages = async (req, res) => {
   }
 };
 
+exports.getActiveVouchers = async (req, res) => {
+  try {
+    const data = await BookingModel.getActiveVouchers();
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[bookingController] getActiveVouchers:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
 // ─────────────────────────────────────────────────────────────
 //  POST /api/bookings/validate-voucher
 // ─────────────────────────────────────────────────────────────
@@ -81,7 +91,7 @@ exports.createBooking = async (req, res) => {
   } catch (err) {
     console.error('[bookingController] createBooking:', err.message);
     // Phân loại lỗi trả về từ Model để set status code phù hợp
-    if (err.message.includes('đã được đặt') || err.message.includes('không tồn tại')) {
+    if (err.message.includes('đã được đặt') || err.message.includes('không tồn tại') || err.message.includes('chưa được thiết lập giá')) {
       return res.status(409).json({ success: false, message: err.message });
     }
     res.status(500).json({ success: false, message: 'Lỗi server khi tạo vé.' });
@@ -113,8 +123,8 @@ exports.getBookingDetail = async (req, res) => {
     }
 
     // Kiểm tra quyền: chỉ được xem vé của chính mình (trừ Staff/Admin)
-    const allowedRoles = ['Admin', 'Manager', 'Staff'];
-    if (!allowedRoles.includes(req.user.role) && ticketData.UserID !== req.user.userId) {
+    const allowedRoles = ['Super Admin', 'Admin', 'Manager'];
+    if (!allowedRoles.includes(req.user.roleName) && ticketData.UserID !== req.user.userId) {
       return res.status(403).json({ success: false, message: 'Bạn không có quyền xem vé này.' });
     }
 

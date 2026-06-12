@@ -4,18 +4,39 @@
 // ============================================================
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const adminCtrl = require('../controllers/adminController');
 const { verifyToken, isSuperAdmin } = require('../middleware/authMiddleware');
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/images/');
+    },
+    filename: function (req, file, cb) {
+        cb(null, 'movie_' + Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
 
 // Bảo vệ toàn bộ admin routes (chỉ Super Admin)
 router.use(verifyToken, isSuperAdmin);
 
 // ─── Movie Management ─────────────────────────────────────────
 // POST   /api/admin/movies         — Thêm phim mới
-router.post('/movies', adminCtrl.createMovie);
+router.post('/movies', upload.single('poster'), adminCtrl.createMovie);
 
 // PUT    /api/admin/movies/:id      — Sửa phim
-router.put('/movies/:id', adminCtrl.updateMovie);
+router.put('/movies/:id', upload.single('poster'), adminCtrl.updateMovie);
+
+// GET    /api/admin/rooms           — Danh sách phòng chiếu
+router.get('/rooms', adminCtrl.getRooms);
+
+// GET    /api/admin/rooms/:id/seats — Lấy sơ đồ ghế của phòng
+router.get('/rooms/:id/seats', adminCtrl.getSeatsByRoom);
+
+// PUT    /api/admin/rooms/:id/seats — Lưu sơ đồ ghế
+router.put('/rooms/:id/seats', adminCtrl.saveSeats);
 
 // DELETE /api/admin/movies/:id      — Xóa (soft) phim
 router.delete('/movies/:id', adminCtrl.deleteMovie);
@@ -29,6 +50,9 @@ router.post('/showtimes', adminCtrl.createShowtime);
 
 // PUT    /api/admin/showtimes/:id   — Cập nhật suất chiếu
 router.put('/showtimes/:id', adminCtrl.updateShowtime);
+
+// DELETE /api/admin/showtimes/:id   — Hủy suất chiếu
+router.delete('/showtimes/:id', adminCtrl.deleteShowtime);
 
 // ─── User Management (chỉ Admin) ─────────────────────────────
 // GET    /api/admin/users              — Danh sách người dùng
@@ -47,14 +71,39 @@ router.get('/vouchers', adminCtrl.getAllVouchers);
 // POST   /api/admin/vouchers           — Tạo voucher
 router.post('/vouchers', adminCtrl.createVoucher);
 
+// ─── F&B Management ────────────────────────────────────────────
+// GET    /api/admin/fnb                — Danh sách F&B
+router.get('/fnb', adminCtrl.getAllFnB);
+
+// POST   /api/admin/fnb                — Tạo mặt hàng F&B mới
+router.post('/fnb', adminCtrl.createFnB);
+
+// PUT    /api/admin/fnb/:id            — Sửa mặt hàng F&B
+router.put('/fnb/:id', adminCtrl.updateFnB);
+
+// DELETE /api/admin/fnb/:id            — Xóa mặt hàng F&B
+router.delete('/fnb/:id', adminCtrl.deleteFnB);
+
+// PATCH  /api/admin/fnb/:id/toggle     — Đổi trạng thái hiển thị
+router.patch('/fnb/:id/toggle', adminCtrl.toggleFnBAvailability);
+
+// GET    /api/admin/fnb/stats          — Số liệu thống kê FnB
+router.get('/fnb/stats', adminCtrl.getFnBStats);
+
 // ─── Statistics ──────────────────────────────────────────────
 // GET    /api/admin/stats/dashboard    — Tổng quan dashboard
 router.get('/stats/dashboard', adminCtrl.getDashboardStats);
+
+// GET    /api/admin/stats/recent-transactions — Giao dịch gần đây
+router.get('/stats/recent-transactions', adminCtrl.getRecentTransactions);
 
 // GET    /api/admin/stats/revenue      — Thống kê doanh thu
 router.get('/stats/revenue', adminCtrl.getRevenueStats);
 
 // GET    /api/admin/stats/top-movies   — Top phim doanh thu cao
 router.get('/stats/top-movies', adminCtrl.getTopMovies);
+
+// GET    /api/admin/stats/monthly-revenue — Doanh thu hàng tháng cho chart
+router.get('/stats/monthly-revenue', adminCtrl.getMonthlyRevenue);
 
 module.exports = router;

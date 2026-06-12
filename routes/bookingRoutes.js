@@ -7,11 +7,14 @@ const router       = express.Router();
 const bookingCtrl  = require('../controllers/bookingController');
 const { verifyToken, isCustomer } = require('../middleware/authMiddleware');
 
-// Áp dụng verifyToken cho toàn bộ booking routes
-router.use(verifyToken);
-
-// GET  /api/bookings/food-beverages         — Danh sách F&B
+// GET  /api/bookings/food-beverages         — Danh sách F&B (Public)
 router.get('/food-beverages',               bookingCtrl.getFoodBeverages);
+
+// GET  /api/bookings/vouchers               — Voucher đang hoạt động (Public)
+router.get('/vouchers',                     bookingCtrl.getActiveVouchers);
+
+// Áp dụng verifyToken cho toàn bộ booking routes (trừ food-beverages)
+router.use(verifyToken);
 
 // POST /api/bookings/validate-voucher       — Kiểm tra voucher
 router.post('/validate-voucher',            bookingCtrl.validateVoucher);

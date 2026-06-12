@@ -19,13 +19,7 @@
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <div class="dropdown">
-                    <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
-                    <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Phim Đang Chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Phim Sắp Chiếu</a>
-                    </div>
-                </div>
+                <a href="movies.html" id="nav-phim">Phim</a>
                 <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
@@ -49,38 +43,113 @@
         </div>
     </header>
 
-    <!-- Hero Banner -->
-    <section class="hero">
-        <div class="hero-bg zoom-animate"></div>
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <span class="hero-badge">PHIM ĐANG CHIẾU</span>
-            <h1 class="hero-title">DUNE: PART TWO</h1>
-            <div class="hero-meta">
-                <span class="hero-rating">★ 9.2</span>
-                <span>2024</span>
-                <span>166 phút</span>
-                <span>Hành động, Viễn tưởng</span>
+    <!-- Hero Banner Carousel -->
+    <section class="hero-carousel">
+        <div class="carousel-container">
+            <!-- Slide 1: DUNE PART TWO -->
+            <div class="hero-slide active" data-movie="0">
+                <div class="hero-background" style="background-image: url('images/dune_hero.png')"></div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-badge">PHIM ĐANG CHIẾU</span>
+                    <h1 class="hero-title">DUNE: PART TWO</h1>
+                    <div class="hero-meta">
+                        <span class="hero-rating">★ 9.2</span>
+                        <span>2024</span>
+                        <span>166 phút</span>
+                        <span>Hành động, Viễn tưởng</span>
+                    </div>
+                    <p class="hero-desc">Paul Atreides hợp nhất với Chani và người Fremen khi đang trên con đường trả
+                        thù những kẻ đã hủy hoại gia đình anh. Đối mặt với sự lựa chọn giữa tình yêu của đời mình và số
+                        phận của vũ trụ, anh cố gắng ngăn chặn một tương lai...</p>
+                    <div class="hero-actions">
+                        <button class="btn-primary" onclick="window.location.href='movie-detail.html'">🎬 CHI
+                            TIẾT</button>
+                        <button class="btn-secondary" onclick="window.location.href='booking.html'">ĐẶT VÉ</button>
+                    </div>
+                </div>
             </div>
-            <p class="hero-desc">Paul Atreides hợp nhất với Chani và người Fremen khi đang trên con đường trả thù những
-                kẻ đã hủy hoại gia đình anh. Đối mặt với sự lựa chọn giữa tình yêu của đời mình và số phận của vũ trụ,
-                anh cố gắng ngăn chặn một tương lai...</p>
-            <div class="hero-actions">
-                <button class="btn-primary" onclick="window.location.href='movie-detail.html'">🎬 CHI TIẾT</button>
-                <button class="btn-secondary" onclick="window.location.href='booking.html'">ĐẶT VÉ</button>
+
+            <!-- Slide 2: OPPENHEIMER -->
+            <div class="hero-slide" data-movie="1">
+                <div class="hero-background"
+                    style="background-image: url('https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1920&h=550&fit=crop')">
+                </div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-badge">PHIM ĐANG CHIẾU</span>
+                    <h1 class="hero-title">OPPENHEIMER</h1>
+                    <div class="hero-meta">
+                        <span class="hero-rating">★ 8.6</span>
+                        <span>2023</span>
+                        <span>180 phút</span>
+                        <span>Chính kịch, Lịch sử</span>
+                    </div>
+                    <p class="hero-desc">Câu chuyện về J. Robert Oppenheimer và sự phát triển của bom nguyên tử. Một
+                        hành trình đầy căng thẳng vào những bí mật quân sự nhất của Thế chiến II...</p>
+                    <div class="hero-actions">
+                        <button class="btn-primary" onclick="window.location.href='movie-detail.html'">🎬 CHI
+                            TIẾT</button>
+                        <button class="btn-secondary" onclick="window.location.href='booking.html'">ĐẶT VÉ</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: MONSTER HUNTER -->
+            <div class="hero-slide" data-movie="2">
+                <div class="hero-background"
+                    style="background-image: url('https://images.unsplash.com/photo-1608889335941-33ac24b72c96?w=1920&h=550&fit=crop')">
+                </div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-badge">PHIM ĐANG CHIẾU</span>
+                    <h1 class="hero-title">MONSTER HUNTER</h1>
+                    <div class="hero-meta">
+                        <span class="hero-rating">★ 8.1</span>
+                        <span>2024</span>
+                        <span>155 phút</span>
+                        <span>Hành động, Viễn tưởng</span>
+                    </div>
+                    <p class="hero-desc">Một chiến binh dũng cảm được gọi tên từ một thế giới khác để chống lại những
+                        quái vật huyền thoại. Tham gia cuộc phiêu lưu kỳ lạ đầy kịch tính và những pha hành động ngoạn
+                        mục...</p>
+                    <div class="hero-actions">
+                        <button class="btn-primary" onclick="window.location.href='movie-detail.html'">🎬 CHI
+                            TIẾT</button>
+                        <button class="btn-secondary" onclick="window.location.href='booking.html'">ĐẶT VÉ</button>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="hero-dots"></div>
+
+        <!-- Navigation Buttons -->
+        <button class="carousel-btn carousel-prev" id="carouselPrev" onclick="carouselControls.prev()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        <button class="carousel-btn carousel-next" id="carouselNext" onclick="carouselControls.next()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+
+        <!-- Indicator Dots -->
+        <div class="hero-dots">
+            <span class="dot active" onclick="carouselControls.goToSlide(0)"></span>
+            <span class="dot" onclick="carouselControls.goToSlide(1)"></span>
+            <span class="dot" onclick="carouselControls.goToSlide(2)"></span>
+        </div>
     </section>
 
     <!-- Phim Đang Chiếu (Dark Section) -->
-    <section class="section-dark" id="now-showing">
+    <section class="section-dark">
         <div class="container">
             <div class="section-header">
                 <h2>PHIM ĐANG CHIẾU</h2>
                 <a href="movies.html" class="view-all">Xem tất cả ></a>
             </div>
-            <div class="movie-grid" id="now-showing-grid">
+            <div class="movie-grid">
                 <!-- Movie 1 -->
                 <div class="movie-card">
                     <div class="movie-poster">
@@ -214,13 +283,13 @@
     </section>
 
     <!-- Phim Sắp Chiếu (Light Section) -->
-    <section class="section-light" id="coming-soon">
+    <section class="section-light">
         <div class="container">
             <div class="section-header" style="flex-direction: column; align-items: flex-start;">
                 <h2>PHIM SẮP CHIẾU</h2>
                 <p class="section-subtitle">Đăng ký để nhận thông tin sớm nhất</p>
             </div>
-            <div class="movie-grid-large" id="coming-soon-grid">
+            <div class="movie-grid-large">
                 <!-- Coming 1 -->
                 <div class="movie-card-large">
                     <div class="movie-poster-large">
@@ -369,284 +438,91 @@
 
     <!-- Socket.io & App JS -->
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js?v=2"></script>
+    <script src="app.js"></script>
+
+    <!-- Carousel Control Script -->
     <script>
-        // Hero Slider Slideshow logic
-        const heroSlides = [
-            {
-                title: "DUNE: PART TWO",
-                image: "images/dune_hero.png",
-                rating: "★ 9.2",
-                year: "2024",
-                duration: "166 phút",
-                genres: "Hành động, Viễn tưởng",
-                desc: "Paul Atreides hợp nhất với Chani và người Fremen khi đang trên con đường trả thù những kẻ đã hủy hoại gia đình anh. Đối mặt với sự lựa chọn giữa tình yêu của đời mình và số phận của vũ trụ, anh cố gắng ngăn chặn một tương lai...",
-                detailUrl: "movie-detail.html?id=7",
-                bookingUrl: "booking.html?movieId=7"
-            },
-            {
-                title: "DORAEMON MOVIE 45: NOBITA VÀ LÂU ĐÀI DƯỚI ĐÁY BIỂN",
-                image: "images/doraemon_sea.png",
-                rating: "★ 8.5",
-                year: "2026",
-                duration: "101 phút",
-                genres: "Hoạt hình, Phiêu lưu, Viễn tưởng",
-                desc: "Bước vào kì nghỉ hè, Nobita và các bạn tranh cãi chí chóe về địa điểm cắm trại. Cả nhóm quyết định cắm trại dưới đáy biển và dấn thân vào cuộc phiêu lưu giải cứu thế giới đại dương đầy bí ẩn khỏi sự trỗi dậy của lâu đài quỷ.",
-                detailUrl: "movie-detail.html?id=17",
-                bookingUrl: "booking.html?movieId=17"
+        const carouselControls = {
+            currentSlide: 0,
+            totalSlides: 3,
+            autoplayInterval: null,
+            autoplayDelay: 5000, // 5 seconds
+
+            init() {
+                this.startAutoplay();
+                this.setupEventListeners();
             },
 
-            {
-                title: "HÀNH TINH KHỈ: VƯƠNG QUỐC",
-                image: "images/ai_forest.png",
-                rating: "★ 8.0",
-                year: "2026",
-                duration: "145 phút",
-                genres: "Hành động, Viễn tưởng",
-                desc: "Nhiều năm sau thời đại của Caesar, một vị vua khỉ độc tài xây dựng đế chế mới, trong khi một chú khỉ trẻ dấn thân vào hành trình định đoạt tương lai của cả khỉ và con người.",
-                detailUrl: "movie-detail.html?id=3",
-                bookingUrl: "booking.html?movieId=3"
+            updateSlide(index) {
+                const slides = document.querySelectorAll('.hero-slide');
+                const dots = document.querySelectorAll('.hero-dots .dot');
+
+                // Remove active class from all
+                slides.forEach(slide => slide.classList.remove('active'));
+                dots.forEach(dot => dot.classList.remove('active'));
+
+                // Add active class to current
+                if (slides[index]) {
+                    slides[index].classList.add('active');
+                }
+                if (dots[index]) {
+                    dots[index].classList.add('active');
+                }
+
+                this.currentSlide = index;
             },
-            {
-                title: "SIÊU COMBO BẮP NƯỚC",
-                image: "images/popcorn_drink_banner.png",
-                rating: "★ 9.9",
-                year: "2026",
-                duration: "Ưu đãi giới hạn",
-                genres: "Concessions, Food & Drinks",
-                desc: "Thưởng thức trọn vẹn từng khoảnh khắc điện ảnh với siêu combo bỏng ngô bơ thơm ngon giòn rụm cùng nước ngọt mát lạnh sảng khoái. Đặt combo Couple hoặc Mega ngay hôm nay để nhận ưu đãi cực hời!",
-                detailUrl: "concessions.html",
-                bookingUrl: "concessions.html"
+
+            next() {
+                this.stopAutoplay();
+                const nextIndex = (this.currentSlide + 1) % this.totalSlides;
+                this.updateSlide(nextIndex);
+                this.startAutoplay();
             },
-            {
-                title: "LẬT MẶT 7: MỘT ĐIỀU ƯỚC",
-                image: "images/lat_mat_7.png",
-                rating: "★ 8.8",
-                year: "2026",
-                duration: "138 phút",
-                genres: "Tâm lý, Gia đình",
-                desc: "Bộ phim đầy xúc cảm về gia đình của đạo diễn Lý Hải, xoay quanh câu chuyện của người mẹ tảo tần cả đời vì con cái và hành trình của những người con tìm về mái ấm gia đình ấm áp.",
-                detailUrl: "movie-detail.html?id=11",
-                bookingUrl: "booking.html?movieId=11"
+
+            prev() {
+                this.stopAutoplay();
+                const prevIndex = (this.currentSlide - 1 + this.totalSlides) % this.totalSlides;
+                this.updateSlide(prevIndex);
+                this.startAutoplay();
             },
-            {
-                title: "DEADPOOL & WOLVERINE",
-                image: "images/deadpool_wolverine.png",
-                rating: "★ 8.9",
-                year: "2026",
-                duration: "127 phút",
-                genres: "Hành động, Hài hước",
-                desc: "Cặp đôi phản anh hùng lầy lội và phá phách bậc nhất của vũ trụ điện ảnh Marvel cùng đồng hành trong một chuyến hành trình điên rồ xuyên thời gian để cứu lấy quê nhà của họ.",
-                detailUrl: "movie-detail.html?id=2",
-                bookingUrl: "booking.html?movieId=2"
+
+            goToSlide(index) {
+                this.stopAutoplay();
+                if (index >= 0 && index < this.totalSlides) {
+                    this.updateSlide(index);
+                }
+                this.startAutoplay();
+            },
+
+            startAutoplay() {
+                this.autoplayInterval = setInterval(() => {
+                    const nextIndex = (this.currentSlide + 1) % this.totalSlides;
+                    this.updateSlide(nextIndex);
+                }, this.autoplayDelay);
+            },
+
+            stopAutoplay() {
+                if (this.autoplayInterval) {
+                    clearInterval(this.autoplayInterval);
+                }
+            },
+
+            setupEventListeners() {
+                // Pause on hover
+                const carousel = document.querySelector('.hero-carousel');
+                if (carousel) {
+                    carousel.addEventListener('mouseenter', () => this.stopAutoplay());
+                    carousel.addEventListener('mouseleave', () => this.startAutoplay());
+                }
             }
-        ];
+        };
 
-        let currentSlideIdx = 0;
-        let slideInterval = null;
-
-        function showSlide(idx) {
-            const heroBg = document.querySelector('.hero-bg');
-            const content = document.querySelector('.hero-content');
-            const titleEl = document.querySelector('.hero-title');
-            const descEl  = document.querySelector('.hero-desc');
-            const metaSpans = document.querySelectorAll('.hero-meta span');
-            const badgeEl = document.querySelector('.hero-badge');
-            const actionBtnDetail = document.querySelector('.hero-actions .btn-primary');
-            const actionBtnBook = document.querySelector('.hero-actions .btn-secondary');
-            const dots = document.querySelectorAll('.hero-dots .dot');
-
-            currentSlideIdx = idx;
-
-            // Trigger staggered fade out
-            if (content) content.classList.remove('active');
-
-            setTimeout(() => {
-                const slide = heroSlides[idx];
-                
-                // Update background and reset Ken Burns animation
-                if (heroBg) {
-                    heroBg.classList.remove('zoom-animate');
-                    void heroBg.offsetWidth; // force reflow
-                    heroBg.style.backgroundImage = `url('${slide.image}')`;
-                    heroBg.classList.add('zoom-animate');
-                }
-
-                // Update text
-                if (titleEl) titleEl.textContent = slide.title;
-                if (descEl) descEl.textContent = slide.desc;
-                
-                if (badgeEl) {
-                    if (slide.genres.includes("Concessions")) {
-                        badgeEl.textContent = "ƯU ĐÃI ĐẶC BIỆT";
-                        badgeEl.style.background = "#e50914";
-                    } else {
-                        badgeEl.textContent = "PHIM ĐANG CHIẾU";
-                        badgeEl.style.background = "var(--primary)";
-                    }
-                }
-                
-                // Meta updates
-                if (metaSpans && metaSpans.length >= 4) {
-                    metaSpans[0].innerHTML = `<span class="hero-rating">${slide.rating}</span>`;
-                    metaSpans[1].textContent = slide.year;
-                    metaSpans[2].textContent = slide.duration;
-                    metaSpans[3].textContent = slide.genres;
-                }
-                
-                // Actions (Details / Book Buttons)
-                if (actionBtnDetail) {
-                    if (slide.genres.includes("Concessions")) {
-                        actionBtnDetail.innerHTML = "🍿 BẮP & NƯỚC";
-                    } else {
-                        actionBtnDetail.innerHTML = "🎬 CHI TIẾT";
-                    }
-                    actionBtnDetail.setAttribute('onclick', `window.location.href='${slide.detailUrl}'`);
-                }
-
-                if (actionBtnBook) {
-                    if (slide.genres.includes("Concessions")) {
-                        actionBtnBook.textContent = "XEM ƯU ĐÃI";
-                    } else {
-                        actionBtnBook.textContent = "ĐẶT VÉ";
-                    }
-                    actionBtnBook.setAttribute('onclick', `window.location.href='${slide.bookingUrl}'`);
-                }
-
-                // Update dots active class
-                if (dots) {
-                    dots.forEach((dot, dIdx) => {
-                        if (dIdx === idx) dot.classList.add('active');
-                        else dot.classList.remove('active');
-                    });
-                }
-
-                // Staggered slide in
-                if (content) content.classList.add('active');
-            }, 350);
-        }
-
-        function nextSlide() {
-            let next = (currentSlideIdx + 1) % heroSlides.length;
-            showSlide(next);
-        }
-
-        function startAutoplay() {
-            stopAutoplay();
-            slideInterval = setInterval(nextSlide, 6000); // Transition every 6 seconds
-        }
-
-        function stopAutoplay() {
-            if (slideInterval) clearInterval(slideInterval);
-        }
-
-        let currentTrailerUrl = '';
-
-        function openTrailer(url) {
-            if (!url) return;
-            currentTrailerUrl = getEmbedUrl(url);
-            const modal = document.getElementById('trailerModal');
-            const iframe = document.getElementById('trailerIframe');
-            if (modal && iframe) {
-                iframe.src = currentTrailerUrl;
-                modal.classList.add('show');
-            }
-        }
-
-        function closeTrailer() {
-            const modal = document.getElementById('trailerModal');
-            const iframe = document.getElementById('trailerIframe');
-            if (modal && iframe) {
-                iframe.src = '';
-                modal.classList.remove('show');
-            }
-        }
-
-        function getEmbedUrl(url) {
-            if (!url) return '';
-            if (url.includes('youtube.com/embed/')) return url;
-            
-            let videoId = '';
-            try {
-                if (url.includes('youtube.com/watch')) {
-                    const urlParams = new URLSearchParams(new URL(url).search);
-                    videoId = urlParams.get('v');
-                } else if (url.includes('youtu.be/')) {
-                    videoId = url.split('youtu.be/')[1].split('?')[0];
-                } else if (url.includes('youtube.com/v/')) {
-                    videoId = url.split('youtube.com/v/')[1].split('?')[0];
-                }
-            } catch (e) {
-                console.error(e);
-            }
-            
-            return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
-        }
-
-        async function loadMoviesForHomepage() {
-            // 1. Fetch Now Showing
-            try {
-                const res = await fetch('/api/movies/now-showing');
-                const result = await res.json();
-                if (result.success && result.data && result.data.length > 0) {
-                    const grid = document.getElementById('now-showing-grid');
-                    if (grid) {
-                        grid.innerHTML = result.data.map(m => `
-                            <div class="movie-card">
-                                <div class="movie-poster">
-                                    <span class="age-badge age-${m.AgeRating.toLowerCase()}">${m.AgeRating}</span>
-                                    <img src="${m.PosterURL || 'images/poster.png'}" alt="${m.Title}">
-                                    <div class="poster-overlay">
-                                        <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${m.MovieID}'">Chi Tiết</button>
-                                        <button class="btn-trailer" onclick="event.stopPropagation(); openTrailer('${m.TrailerURL || ''}')">Xem Trailer</button>
-                                        <button class="btn-primary" onclick="window.location.href='booking.html?movieId=${m.MovieID}'">ĐẶT VÉ</button>
-                                    </div>
-                                </div>
-                                <div class="movie-info">
-                                    <h3 class="movie-title">${m.Title}</h3>
-                                    <div class="movie-genre">${m.Genre || 'Chưa phân loại'} | ${m.Duration || 120} phút</div>
-                                    <div class="movie-rating">★ 9.0</div>
-                                </div>
-                            </div>
-                        `).join('');
-                    }
-                }
-            } catch (err) {
-                console.warn("Could not load now-showing movies, falling back to static HTML.", err);
-            }
-
-            // 2. Fetch Coming Soon
-            try {
-                const res = await fetch('/api/movies/coming-soon');
-                const result = await res.json();
-                if (result.success && result.data && result.data.length > 0) {
-                    const grid = document.getElementById('coming-soon-grid');
-                    if (grid) {
-                        grid.innerHTML = result.data.map(m => `
-                            <div class="movie-card-large">
-                                <div class="movie-poster-large" onclick="window.location.href='movie-detail.html?id=${m.MovieID}'" style="cursor: pointer;">
-                                    <span class="coming-badge">SẮP CHIẾU</span>
-                                    <img src="${m.PosterURL || 'images/poster.png'}" alt="${m.Title}">
-                                </div>
-                                <div class="movie-info-large">
-                                    <h3 class="movie-title-large" onclick="window.location.href='movie-detail.html?id=${m.MovieID}'" style="cursor: pointer;">${m.Title}</h3>
-                                    <div class="movie-meta-large">
-                                        <span>${m.Genre || 'Chưa phân loại'} • ${m.Duration || 120} phút</span>
-                                        <span class="movie-date">Sắp chiếu</span>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('');
-                    }
-                }
-            } catch (err) {
-                console.warn("Could not load coming-soon movies, falling back to static HTML.", err);
-            }
-        }
-
+        // Initialize carousel when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
+            const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
+            carouselControls.init();
+
             // Check login state for navbar
-            const userStr = localStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
                 const btnLogin = document.getElementById('btnLogin');
@@ -655,145 +531,8 @@
                     btnLogin.href = 'profile.html';
                 }
             }
-
-            // Global search redirection
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        const val = searchInput.value.trim();
-                        if (val) {
-                            window.location.href = `movies.html?search=${encodeURIComponent(val)}`;
-                        }
-                    }
-                });
-            }
-
-            // Close trailer on clicking overlay
-            const modal = document.getElementById('trailerModal');
-            if (modal) {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) closeTrailer();
-                });
-            }
-
-            // Dynamically generate dot indicators
-            const dotsContainer = document.querySelector('.hero-dots');
-            if (dotsContainer) {
-                dotsContainer.innerHTML = '';
-                heroSlides.forEach((_, idx) => {
-                    const dot = document.createElement('span');
-                    dot.className = `dot${idx === 0 ? ' active' : ''}`;
-                    dot.addEventListener('click', () => {
-                        showSlide(idx);
-                        startAutoplay(); // Reset timer on click
-                    });
-                    dotsContainer.appendChild(dot);
-                });
-            }
-
-            // Immediately load first slide (Dune) with correct animations on startup
-            showSlide(0);
-
-            // Start autoplay transitions
-            startAutoplay();
-
-            // Load dynamic movies
-            loadMoviesForHomepage();
         });
     </script>
-
-    <!-- Trailer Modal (Hidden by default) -->
-    <div id="trailerModal" class="modal-overlay">
-        <div class="modal-video-container">
-            <button class="btn-close-trailer" onclick="closeTrailer()">&times;</button>
-            <iframe id="trailerIframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
-    </div>
-
-    <style>
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        .modal-overlay.show {
-            opacity: 1;
-            pointer-events: all;
-        }
-        .modal-video-container {
-            position: relative;
-            width: 80%;
-            max-width: 900px;
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-        .modal-overlay.show .modal-video-container {
-            transform: scale(1);
-        }
-        .modal-video-container iframe {
-            width: 100%;
-            height: 100%;
-        }
-        .btn-close-trailer {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0,0,0,0.6);
-            border: none;
-            color: #fff;
-            font-size: 2rem;
-            line-height: 1;
-            cursor: pointer;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s, transform 0.2s;
-            z-index: 10010;
-        }
-        .btn-close-trailer:hover {
-            background: #e50914;
-            transform: scale(1.1);
-        }
-        
-        /* Style for Xem Trailer button on card hover overlay */
-        .poster-overlay .btn-trailer {
-            background: transparent;
-            border: 2px solid #fff;
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: background 0.2s, color 0.2s;
-            width: 80%;
-            text-align: center;
-        }
-        .poster-overlay .btn-trailer:hover {
-            background: #fff;
-            color: #000;
-        }
-    </style>
 </body>
 
 </html>

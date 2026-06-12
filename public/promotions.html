@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khuyến Mãi | D-CINEMA+ – Ưu Đãi & Tin Tức Điện Ảnh</title>
+    <title>Promotions | D-CINEMA+ – Ưu Đãi & Khuyến Mãi Điện Ảnh</title>
     <meta name="description"
         content="Khám phá các ưu đãi, khuyến mãi và tin tức mới nhất từ D-CINEMA+. Voucher giảm giá, combo tiết kiệm và ưu đãi thành viên độc quyền.">
     <link rel="stylesheet" href="css/promotions.css">
@@ -13,27 +13,20 @@
 
 <body>
     <!-- Navbar -->
-    <header class="navbar">
+        <header class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">
                 <span class="logo-d">D</span>
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <div class="dropdown">
-                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
-                    <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Phim Đang Chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Phim Sắp Chiếu</a>
-                    </div>
-                </div>
+                <a href="movies.html" id="nav-phim">Phim</a>
                 <a href="booking.html" id="nav-rap">Rạp</a>
-                <a href="promotions.html" id="nav-promo" class="active">Khuyến Mãi</a>
+                <a href="promotions.html" id="nav-promo" class="active">Promotions</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
-                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
@@ -52,12 +45,13 @@
 
     <!-- Hero Banner -->
     <section class="promo-hero">
-        <img src="images/promo_hero_banner.png" alt="Tin tức & Ưu đãi Hero" class="promo-hero-bg">
+        <img src="images/promo_hero_banner.png" alt="News & Offers Hero" class="promo-hero-bg">
         <div class="container">
             <div class="promo-hero-content">
                 <div class="promo-hero-tag"></div>
-                <h1>Tin Tức &amp; Ưu Đãi</h1>
-                <p>Nhận các ưu đãi độc quyền, suất chiếu đặc biệt và phần thưởng dành riêng cho thành viên của D-CINEMA. Luôn cập nhật những sự kiện mới nhất tại phòng rạp giải trí cao cấp.</p>
+                <h1>News &amp; Offers</h1>
+                <p>Exclusive deals, special screenings, and member-only rewards. Stay updated
+                    with the latest happenings at CINEMA+ Premium Entertainment.</p>
             </div>
         </div>
     </section>
@@ -66,19 +60,20 @@
     <section class="section-trending">
         <div class="container">
             <div class="section-header">
-                <h2>Khuyến Mãi Nổi Bật</h2>
+                <h2>Trending Promotions</h2>
             </div>
 
-            <div class="trending-grid">
+            <div class="trending-grid" id="voucherGrid">
                 <!-- Featured Card (left, spans 2 rows) -->
                 <div class="promo-card-featured" id="promo-imax">
                     <div class="card-img">
-                        <span class="card-badge badge-featured">NỔI BẬT</span>
-                        <img src="images/promo_imax_weekend.png" alt="Nâng Cấp IMAX Cuối Tuần Siêu Đã">
+                        <span class="card-badge badge-featured">FEATURED</span>
+                        <img src="images/promo_imax_weekend.png" alt="IMAX Weekend Extravaganza">
                     </div>
                     <div class="card-body">
-                        <h3>Nâng Cấp IMAX Cuối Tuần Siêu Đã</h3>
-                        <p>Nâng tầm trải nghiệm điện ảnh hoàn toàn miễn phí cuối tuần này. Mua vé thường và nhận ngay nâng cấp tự động lên phòng chiếu IMAX cho tất cả các phim bom tấn.</p>
+                        <h3>IMAX Weekend Extravaganza</h3>
+                        <p>Upgrade your experience for free this weekend. Purchase a standard ticket and get an
+                            automatic upgrade to IMAX for all blockbuster releases.</p>
                         <div class="card-footer-row">
                             <div class="card-validity">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -88,9 +83,9 @@
                                     <line x1="8" y1="2" x2="8" y2="6" />
                                     <line x1="3" y1="10" x2="21" y2="10" />
                                 </svg>
-                                Có hiệu lực đến 24/10
+                                Valid until Oct 24
                             </div>
-                            <a href="promotion-detail.html" class="btn-detail">Xem Chi Tiết</a>
+                            <a href="promotion-detail.html" class="btn-detail">See Detail</a>
                         </div>
                     </div>
                 </div>
@@ -98,25 +93,25 @@
                 <!-- Side Card 1: Voucher 50k -->
                 <div class="promo-card-side" id="promo-voucher">
                     <div class="card-img">
-                        <span class="card-badge badge-hot">ƯU ĐÃI KHỦNG</span>
-                        <img src="images/promo_voucher.png" alt="Voucher Ưu Đãi 50K">
+                        <span class="card-badge badge-hot">HOT DEAL</span>
+                        <img src="images/promo_voucher.png" alt="Voucher 50k">
                     </div>
                     <div class="card-body">
-                        <h3>Voucher Ưu Đãi 50K</h3>
-                        <p>Nhận ngay voucher giảm giá 50.000đ khi mua bắp nước kèm theo mỗi giao dịch đặt từ 2 vé trực tuyến trở lên.</p>
-                        <a href="#" class="btn-detail" style="align-self: stretch; text-align: center;">Xem Chi Tiết</a>
+                        <h3>Voucher 50k</h3>
+                        <p>Get a 50,000 IDR discount on your food and beverage purchase with every two tickets booked online.</p>
+                        <a href="#" class="btn-detail" style="align-self: stretch; text-align: center;">See Detail</a>
                     </div>
                 </div>
 
                 <!-- Side Card 2: Student Monday -->
                 <div class="promo-card-side" id="promo-student">
                     <div class="card-img">
-                        <img src="images/promo_student.png" alt="Thứ Hai Học Sinh - Sinh Viên">
+                        <img src="images/promo_student.png" alt="Student Monday">
                     </div>
                     <div class="card-body">
-                        <h3>Thứ Hai Học Sinh - Sinh Viên</h3>
-                        <p>Xuất trình thẻ học sinh - sinh viên của bạn để nhận ngay ưu đãi giảm 30% giá vé vào mỗi thứ Hai cho các suất chiếu trước 17h00.</p>
-                        <a href="#" class="btn-detail-outline">Xem Chi Tiết</a>
+                        <h3>Student Monday</h3>
+                        <p>Flash your student ID and get 30% off tickets every Monday for screenings before 5PM.</p>
+                        <a href="#" class="btn-detail-outline">See Detail</a>
                     </div>
                 </div>
             </div>
@@ -130,13 +125,13 @@
                 <!-- Sweet & Salty Combo -->
                 <div class="promo-card-mini" id="promo-combo">
                     <div class="card-img">
-                        <img src="images/promo_sweet_combo.png" alt="Combo Bắp Ngọt & Mặn">
+                        <img src="images/promo_sweet_combo.png" alt="Sweet & Salty Combo">
                     </div>
                     <div class="card-body">
-                        <h3>Combo Bắp Ngọt &amp; Mặn</h3>
-                        <p>Khám phá hương vị bắp rang bơ mới theo mùa. Hãy thử ngay vị Muối Truffle hoặc Caramel Ngọt Ngào với các combo phiên bản giới hạn của chúng tôi.</p>
+                        <h3>Sweet &amp; Salty Combo</h3>
+                        <p>New seasonal popcorn flavors are here. Try the Truffle Salt or Caramel Bliss with our limited edition combos.</p>
                         <a href="#" class="btn-link">
-                            Xem Chi Tiết
+                            See Detail
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.5">
                                 <path d="M5 12h14M12 5l7 7-7 7" />
@@ -148,13 +143,13 @@
                 <!-- Double Points Week -->
                 <div class="promo-card-mini" id="promo-points">
                     <div class="card-img">
-                        <img src="images/promo_credit_card.png" alt="Tuần Lễ Nhân Đôi Điểm Thưởng">
+                        <img src="images/promo_credit_card.png" alt="Double Points Week">
                     </div>
                     <div class="card-body">
-                        <h3>Tuần Lễ Nhân Đôi Điểm Thưởng</h3>
-                        <p>Nhận gấp đôi điểm thưởng thành viên cho tất cả các giao dịch trong tuần. Quy đổi điểm tích lũy lấy vé xem phim, bắp nước và nhiều quà tặng khác.</p>
+                        <h3>Double Points Week</h3>
+                        <p>Earn double rewards points for all transactions throughout the week. Redeem for tickets, snacks, and more.</p>
                         <a href="#" class="btn-link">
-                            Xem Chi Tiết
+                            See Detail
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.5">
                                 <path d="M5 12h14M12 5l7 7-7 7" />
@@ -166,13 +161,13 @@
                 <!-- Group Booking Discount -->
                 <div class="promo-card-mini" id="promo-group">
                     <div class="card-img">
-                        <img src="images/promo_student.png" alt="Ưu Đãi Đặt Vé Nhóm">
+                        <img src="images/promo_student.png" alt="Group Booking Discount">
                     </div>
                     <div class="card-body">
-                        <h3>Ưu Đãi Đặt Vé Nhóm</h3>
-                        <p>Đặt từ 10 vé trở lên trong cùng một giao dịch để nhận ngay ưu đãi giảm giá 20% cho toàn bộ hóa đơn.</p>
+                        <h3>Group Booking Discount</h3>
+                        <p>Book 10 or more tickets in a single transaction and receive a 20% discount across the entire order.</p>
                         <a href="#" class="btn-link">
-                            Xem Chi Tiết
+                            See Detail
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.5">
                                 <path d="M5 12h14M12 5l7 7-7 7" />
@@ -187,7 +182,7 @@
     <!-- Load More -->
     <div class="load-more-wrap">
         <button class="btn-load-more" id="btnLoadMore">
-            Tải Thêm Khuyến Mãi
+            Load More Promotions
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="m6 9 6 6 6-6" />
             </svg>
@@ -199,13 +194,14 @@
         <div class="container">
             <div class="newsletter-inner">
                 <div class="newsletter-text">
-                    <h2>Đừng Bỏ Lỡ Ưu Đãi</h2>
-                    <p>Đăng ký nhận bản tin khuyến mãi để nhận các ưu đãi cá nhân hóa và là người đầu tiên biết về các sự kiện điện ảnh sắp diễn ra.</p>
+                    <h2>Don't Miss Out</h2>
+                    <p>Subscribe to our newsletter to receive personalized offers and be the first
+                        to know about upcoming cinematic events.</p>
                 </div>
                 <form class="newsletter-form" onsubmit="handleNewsletter(event)">
-                    <input type="email" placeholder="Nhập email của bạn" class="newsletter-input"
+                    <input type="email" placeholder="Enter your email" class="newsletter-input"
                         id="newsletterEmail" required>
-                    <button type="submit" class="newsletter-btn">Đăng Ký Ngay</button>
+                    <button type="submit" class="newsletter-btn">Subscribe Now</button>
                 </form>
             </div>
         </div>
@@ -268,11 +264,11 @@
 
     <!-- Socket.io & App JS -->
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js?v=2"></script>
+    <script src="app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Update login button
-            const userStr = localStorage.getItem('user');
+            const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
             if (userStr) {
                 const user = JSON.parse(userStr);
                 const btnLogin = document.getElementById('btnLogin');
@@ -281,6 +277,9 @@
                     btnLogin.href = 'profile.html';
                 }
             }
+
+            // Load vouchers from database
+            loadVouchers();
 
             // Search filter
             const searchInput = document.getElementById('searchInput');
@@ -296,6 +295,54 @@
                 });
             }
         });
+
+        async function loadVouchers() {
+            try {
+                const res = await fetch('/api/bookings/vouchers');
+                const data = await res.json();
+                if (!data.success || !data.data.length) return;
+
+                const grid = document.getElementById('voucherGrid');
+                if (!grid) return;
+
+                data.data.forEach((v, i) => {
+                    const discount = v.DiscountType === 'percent'
+                        ? `Giảm ${v.DiscountValue}%`
+                        : `Giảm ${Number(v.DiscountValue).toLocaleString('vi-VN')}đ`;
+                    const endDate = new Date(v.EndDate).toLocaleDateString('vi-VN');
+                    const card = document.createElement('div');
+                    card.className = i === 0 ? 'promo-card-featured' : 'promo-card';
+                    card.id = 'promo-voucher-' + v.VoucherID;
+                    card.innerHTML = i === 0 ? `
+                        <div class="card-body" style="padding:28px;">
+                            <span class="card-badge badge-featured">VOUCHER</span>
+                            <h3>Mã: ${v.Code}</h3>
+                            <p>${discount} — Đơn tối thiểu ${Number(v.MinOrderValue || 0).toLocaleString('vi-VN')}đ. HSD: ${endDate}</p>
+                            <div class="card-footer-row">
+                                <button class="card-cta" onclick="copyVoucher('${v.Code}')">Sao chép mã</button>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="card-body">
+                            <span class="card-badge">VOUCHER</span>
+                            <h3>${v.Code}</h3>
+                            <p>${discount}</p>
+                            <div class="card-validity">HSD: ${endDate}</div>
+                            <button class="card-cta" onclick="copyVoucher('${v.Code}')">Sao chép</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (e) {
+                console.error('Failed to load vouchers', e);
+            }
+        }
+
+        function copyVoucher(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Đã sao chép mã: ' + code + '. Dùng khi thanh toán!');
+            }).catch(() => alert('Mã voucher: ' + code));
+        }
 
         function handleNewsletter(e) {
             e.preventDefault();

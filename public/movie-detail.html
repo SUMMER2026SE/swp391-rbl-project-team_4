@@ -11,27 +11,20 @@
 
 <body>
     <!-- Navbar -->
-    <header class="navbar">
+        <header class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">
                 <span class="logo-d">D</span>
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <div class="dropdown">
-                    <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
-                    <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Phim Đang Chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Phim Sắp Chiếu</a>
-                    </div>
-                </div>
+                <a href="movies.html" id="nav-phim" class="active">Phim</a>
                 <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
-                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
@@ -50,7 +43,7 @@
 
     <!-- Hero Section with Movie Details -->
     <section class="hero-section">
-        <div class="hero-bg" id="detail-hero-bg" style="background-image: url('images/dune_hero.png');">
+        <div class="hero-bg" style="background-image: url('images/dune_hero.png');">
             <div class="hero-overlay"></div>
         </div>
 
@@ -59,27 +52,29 @@
                 <div class="hero-layout">
                     <!-- Left: Poster -->
                     <div class="hero-poster">
-                        <img id="detail-poster-img" src="images/movie_oppenheimer.png" alt="Movie Poster">
-                        <div class="poster-rating-badge" id="detail-poster-rating">T16</div>
+                        <img id="heroPoster" src="images/movie_oppenheimer.png" alt="Chi tiết phim">
+                        <div class="poster-rating-badge" id="heroRating">T16</div>
                     </div>
 
                     <!-- Right: Movie Info -->
                     <div class="hero-info">
-                        <div class="movie-badge" id="detail-movie-badge">T13</div>
-                        <h1 class="movie-title" id="detail-movie-title">Dune: Hành Tinh Cát - Phần 2</h1>
+                        <div class="movie-badge" id="heroBadge">T16</div>
+                        <h1 class="movie-title" id="heroTitle">DUNE: PART TWO</h1>
 
                         <div class="movie-meta">
-                            <span class="rating" id="detail-rating">★ 9.0/10</span>
-                            <span class="duration" id="detail-duration">166 phút</span>
-                            <span class="release-date" id="detail-release-date">20/05/2026</span>
+                            <span class="rating" id="heroScore">★ 0.1/10</span>
+                            <span class="duration" id="heroDuration">166 mins</span>
+                            <span class="release-date" id="heroReleaseDate">Mar 1, 2024</span>
                         </div>
 
-                        <p class="movie-description" id="detail-movie-desc">
-                            Paul Atreides hợp nhất với Chani và người Fremen khi đang trên con đường trả thù những kẻ đã hủy hoại gia đình anh. Đối mặt với sự lựa chọn giữa tình yêu của đời mình và số phận của vũ trụ, anh cố gắng ngăn chặn một tương lai.
+                        <p class="movie-description" id="movieDescription">
+                            Paul Atreides unites with Chani and the Fremen while on a warpath of revenge against the
+                            conspirators who destroyed his family. Facing a choice between the love of his life and the
+                            fate of the universe, he must prevent a terrible future only he can foresee.
                         </p>
 
                         <div class="hero-buttons">
-                            <button class="btn-buy-tickets" id="detail-buy-btn" onclick="window.location.href='booking.html'">
+                            <button id="btnBuyTickets" class="btn-buy-tickets">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <path d="M6 4h12v14H6z" />
@@ -87,7 +82,7 @@
                                 </svg>
                                 Mua vé
                             </button>
-                            <button class="btn-watch-trailer" id="detail-trailer-btn">
+                            <button class="btn-watch-trailer" id="btnWatchTrailer">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white"
                                     stroke-width="2">
                                     <polygon points="5 3 19 12 5 21 5 3" />
@@ -109,26 +104,38 @@
                 <main class="detail-main">
                     <!-- Synopsis -->
                     <section class="detail-section">
-                        <h2 class="section-title">Nội dung phim</h2>
-                        <p class="section-content" id="detail-synopsis">
-                            Paul Atreides hợp nhất với Chani và người Fremen khi đang trên con đường trả thù những kẻ đã hủy hoại gia đình anh. Đối mặt với sự lựa chọn giữa tình yêu của đời mình và số phận của vũ trụ, anh cố gắng ngăn chặn một tương lai.
+                        <h2 class="section-title">Synopsis</h2>
+                        <p class="section-content">
+                            Duke Paul Atreides joins the Fremen and begins a spiritual and martial journey to become
+                            Muad'Dib, while trying to prevent the horrible but inevitable future he's witnessed: a Holy
+                            War in his name, spreading throughout the known universe. Facing a choice between the love
+                            of his life and the fate of his people between which the love of his life and the fate of
+                            the known universe, he endeavors to prevent a terrible future only he can foresee.
                         </p>
                     </section>
 
                     <!-- Director & Cast -->
                     <section class="detail-section">
-                        <h2 class="section-title">Đạo diễn & Diễn viên</h2>
-                        <div class="cast-grid" id="detail-cast-grid">
+                        <h2 class="section-title">Director & Cast</h2>
+                        <div class="cast-grid">
                             <div class="cast-card">
-                                <div class="cast-role">Đạo diễn</div>
-                                <div class="cast-name" id="detail-director">Denis Villeneuve</div>
+                                <div class="cast-role">Director</div>
+                                <div class="cast-name">Denis Villeneuve</div>
+                            </div>
+                            <div class="cast-card">
+                                <div class="cast-role">Paul Atreides</div>
+                                <div class="cast-name">Timothée Chalamet</div>
+                            </div>
+                            <div class="cast-card">
+                                <div class="cast-role">Chani</div>
+                                <div class="cast-name">Zendaya</div>
                             </div>
                         </div>
                     </section>
 
                     <!-- Stills -->
                     <section class="detail-section">
-                        <h2 class="section-title">Hình ảnh phim</h2>
+                        <h2 class="section-title">Stills</h2>
                         <div class="stills-grid">
                             <div class="still-card">
                                 <img src="images/still_1.png" alt="Still 1">
@@ -144,26 +151,26 @@
                 <aside class="detail-sidebar">
                     <!-- Movie Info Card -->
                     <div class="info-card">
-                        <h3 class="info-title">Thông tin phim</h3>
+                        <h3 class="info-title">Movie Info</h3>
                         <div class="info-item">
-                            <span class="info-label">Thời lượng</span>
-                            <span class="info-value" id="sidebar-duration">166 phút</span>
+                            <span class="info-label">Duration</span>
+                            <span class="info-value">166 mins</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Ngày phát hành</span>
-                            <span class="info-value" id="sidebar-release-date">20/05/2026</span>
+                            <span class="info-label">Release Date</span>
+                            <span class="info-value">Mar 1, 2024</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Ngôn ngữ</span>
-                            <span class="info-value">Tiếng Anh (Phụ đề Tiếng Việt)</span>
+                            <span class="info-label">Language</span>
+                            <span class="info-value">English</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Thể loại</span>
-                            <span class="info-value" id="sidebar-genre">Hành động, Khoa học Viễn tưởng</span>
+                            <span class="info-label">Genre</span>
+                            <span class="info-value">Sci-Fi, Adventure</span>
                         </div>
                         <div class="info-divider"></div>
                         <div class="share-section">
-                            <span class="share-label">Chia sẻ</span>
+                            <span class="share-label">Share</span>
                             <div class="share-buttons">
                                 <button class="share-btn share-icon" title="Share">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -258,241 +265,12 @@
         </div>
     </footer>
 
-    <!-- Trailer Modal (Hidden by default) -->
-    <div id="trailerModal" class="modal-overlay">
-        <div class="modal-video-container">
-            <button class="btn-close-trailer" onclick="closeTrailer()">&times;</button>
-            <iframe id="trailerIframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
-    </div>
-
-    <style>
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        .modal-overlay.show {
-            opacity: 1;
-            pointer-events: all;
-        }
-        .modal-video-container {
-            position: relative;
-            width: 80%;
-            max-width: 900px;
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-        .modal-overlay.show .modal-video-container {
-            transform: scale(1);
-        }
-        .modal-video-container iframe {
-            width: 100%;
-            height: 100%;
-        }
-        .btn-close-trailer {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0,0,0,0.6);
-            border: none;
-            color: #fff;
-            font-size: 2rem;
-            line-height: 1;
-            cursor: pointer;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s, transform 0.2s;
-            z-index: 10010;
-        }
-        .btn-close-trailer:hover {
-            background: #e50914;
-            transform: scale(1.1);
-        }
-    </style>
-
     <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js?v=2"></script>
+    <script src="app.js"></script>
     <script>
-        const mockDetailMovies = {
-            "1": { title: "Neon Horizon", rating: "13+", duration: "124 phút", genre: "Viễn tưởng, Phiêu lưu", releaseDate: "20/05/2026", description: "Thế giới tương lai nơi con người sống dưới bầu trời neon rực rỡ.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/gCcx85zLyz4" },
-            "2": { title: "The Last Echo", rating: "18+", duration: "110 phút", genre: "Hành động, Tâm lý", releaseDate: "20/05/2026", description: "Hành trình sinh tồn cuối cùng trong thế giới hậu tận thế.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/hEJnMQG96mg" },
-            "3": { title: "Golden Age", rating: "P", duration: "95 phút", genre: "Hài, Tình cảm", releaseDate: "20/05/2026", description: "Câu chuyện về kỷ nguyên vàng của điện ảnh Việt Nam.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/xL-5J07pE9Q" },
-            "4": { title: "The Odyssey", rating: "13+", duration: "150 phút", genre: "Viễn tưởng, Phiêu lưu", releaseDate: "20/05/2026", description: "Thám hiểm vũ trụ tìm kiếm sự sống ngoài Trái Đất.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/zSWdZAIBEs4" },
-            "5": { title: "Midnight Run", rating: "16+", duration: "118 phút", genre: "Hành động, Tâm lý", releaseDate: "20/05/2026", description: "Cuộc rượt đuổi đầy hồi hộp giữa thám tử và tên tội phạm.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/5iaYLCip5Qk" },
-            "6": { title: "Lật Mặt 8", rating: "13+", duration: "130 phút", genre: "Hành động, Hài", releaseDate: "15/06/2026", description: "Phần tiếp theo của loạt phim Lật Mặt nổi tiếng.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/2Tz8aA0c0V0" },
-            "7": { title: "Avengers: Doomsday", rating: "13+", duration: "180 phút", genre: "Hành động, Viễn tưởng", releaseDate: "26/07/2026", description: "Biệt đội siêu anh hùng đối đầu với mối đe dọa cuối cùng.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/73_1biulkIE" },
-            "8": { title: "Inside Out 3", rating: "P", duration: "100 phút", genre: "Hoạt hình, Hài", releaseDate: "15/06/2026", description: "Tiếp tục hành trình cảm xúc đầy màu sắc.", poster: "images/movie_neon_dreams.png", bg: "images/movie_neon_dreams.png", trailer: "https://www.youtube.com/embed/LEjhYKPUtEs" },
-            "17": { title: "Doraemon Movie 45 (2026): Nobita Và Lâu Đài Dưới Đáy Biển", rating: "P", duration: "101 phút", genre: "Hoạt Hình, Gia Đình, Phiêu Lưu, Viễn Tưởng", releaseDate: "22/05/2026", description: "Bước vào kì nghỉ hè, Nobita và các bạn tranh cãi chí chóe về địa điểm cắm trại. Theo đề xuất của Doraemon, cả nhóm quyết định cắm trại giữa lòng đại dương! Sử dụng bảo bối thần kì “xe Buggy chạy dưới nước” và “đèn pin thích nghi”, 5 bạn nhỏ tận hưởng chuyến cắm trại dưới biển, gặp gỡ vô vàn sinh vật lí thú trên đường đi. Sau khi phát hiện một chiếc tàu đắm, nhóm bạn đã gặp chàng thanh niên bí ẩn El. Thật bất ngờ, anh ta lại là cư dân đáy biển, sống tại “liên bang Mu”, một vùng biển rộng lớn! Vốn căm ghét người mặt đất, cư dân đáy biển không thể nào tin tưởng Nobita và các bạn. Đúng lúc đó, lời thông báo “lâu đài quỷ… đã bắt đầu phục sinh!!” được truyền tới. “Lâu đài quỷ” khiến cư dân đáy biển khiếp sợ, rốt cuộc là gì? Đặt trọn niềm tin vào bè bạn trong lồng ngực, chuyến phiêu lưu vĩ đại quyết định số phận của trái đất, bắt đầu!", poster: "images/doraemon_sea.png", bg: "images/doraemon_sea.png", trailer: "https://www.youtube.com/embed/u3JgYkmuK78" }
-        };
-
-        let currentTrailerUrl = '';
-
-        function getQueryMovieId() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('id');
-        }
-
-        function openTrailer() {
-            if (!currentTrailerUrl) return;
-            const modal = document.getElementById('trailerModal');
-            const iframe = document.getElementById('trailerIframe');
-            iframe.src = currentTrailerUrl;
-            modal.classList.add('show');
-        }
-
-        function closeTrailer() {
-            const modal = document.getElementById('trailerModal');
-            const iframe = document.getElementById('trailerIframe');
-            iframe.src = '';
-            modal.classList.remove('show');
-        }
-
-        function getEmbedUrl(url) {
-            if (!url) return '';
-            if (url.includes('youtube.com/embed/')) return url;
-            
-            let videoId = '';
-            try {
-                if (url.includes('youtube.com/watch')) {
-                    const urlParams = new URLSearchParams(new URL(url).search);
-                    videoId = urlParams.get('v');
-                } else if (url.includes('youtu.be/')) {
-                    videoId = url.split('youtu.be/')[1].split('?')[0];
-                } else if (url.includes('youtube.com/v/')) {
-                    videoId = url.split('youtube.com/v/')[1].split('?')[0];
-                }
-            } catch (e) {
-                console.error(e);
-            }
-            
-            return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
-        }
-
-        function renderMovieDetail(movie) {
-            document.title = `${movie.title} | D-Cinema`;
-            const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
-            
-            setEl('detail-movie-title', movie.title);
-            setEl('detail-movie-desc', movie.description);
-            setEl('detail-synopsis', movie.description);
-            setEl('detail-director', movie.director);
-            
-            // Cast grid - show director + individual cast members
-            const castGrid = document.getElementById('detail-cast-grid');
-            if (castGrid) {
-                let castHTML = `<div class="cast-card"><div class="cast-role">Đạo diễn</div><div class="cast-name">${movie.director || 'Không rõ'}</div></div>`;
-                if (movie.cast) {
-                    const castArr = movie.cast.split(',').map(s => s.trim()).filter(Boolean);
-                    castArr.forEach(name => {
-                        castHTML += `<div class="cast-card"><div class="cast-role">Diễn viên</div><div class="cast-name">${name}</div></div>`;
-                    });
-                }
-                castGrid.innerHTML = castHTML;
-            }
-            
-            // Poster and Rating
-            const posterImg = document.getElementById('detail-poster-img');
-            if (posterImg) { posterImg.src = movie.poster || 'images/poster.png'; posterImg.alt = movie.title; }
-            setEl('detail-poster-rating', movie.rating);
-            setEl('detail-movie-badge', movie.rating);
-            
-            // Meta
-            setEl('detail-duration', movie.duration);
-            setEl('detail-release-date', movie.releaseDate);
-            
-            // Sidebar
-            setEl('sidebar-duration', movie.duration);
-            setEl('sidebar-release-date', movie.releaseDate);
-            setEl('sidebar-genre', movie.genre);
-            
-            // Background
-            const heroBg = document.getElementById('detail-hero-bg');
-            const bgUrl = movie.bg || "images/dune_hero.png";
-            if (heroBg) heroBg.style.backgroundImage = "url('" + bgUrl + "')";
-
-            // Set trailer
-            currentTrailerUrl = getEmbedUrl(movie.trailer);
-        }
-
-        async function loadMovieDetail() {
-            const id = getQueryMovieId();
-            console.log('[DEBUG] Movie ID from URL:', id);
-            if (!id) {
-                console.log('[DEBUG] No ID - showing Dune default');
-                renderMovieDetail(mockDetailMovies["7"]);
-                return;
-            }
-
-            // Set up buy ticket redirect
-            const buyBtn = document.getElementById('detail-buy-btn');
-            if (buyBtn) {
-                buyBtn.setAttribute('onclick', `window.location.href='booking.html?movieId=${id}'`);
-            }
-
-            try {
-                console.log('[DEBUG] Fetching /api/movies/' + id);
-                const res = await fetch(`/api/movies/${id}`);
-                console.log('[DEBUG] Response status:', res.status);
-                const result = await res.json();
-                console.log('[DEBUG] Result:', JSON.stringify(result).substring(0, 200));
-                if (result.success && result.data) {
-                    const m = result.data;
-                    let relDate = '2026-05-29';
-                    try { if (m.ReleaseDate) relDate = m.ReleaseDate.substring(0, 10); } catch(e) {}
-                    console.log('[DEBUG] Rendering movie:', m.Title);
-                    renderMovieDetail({
-                        title: m.Title || 'Không rõ tên phim',
-                        description: m.Description || '',
-                        director: m.Director || '',
-                        cast: m.MainCast || '',
-                        duration: m.Duration ? `${m.Duration} phút` : '120 phút',
-                        rating: m.AgeRating || 'P',
-                        poster: m.PosterURL || 'images/poster.png',
-                        bg: m.PosterURL || 'images/dune_hero.png',
-                        genre: m.Genre || 'Chưa phân loại',
-                        releaseDate: relDate,
-                        trailer: m.TrailerURL || ''
-                    });
-                } else if (mockDetailMovies[id]) {
-                    console.log('[DEBUG] API failed - using mockDetailMovies[' + id + ']');
-                    renderMovieDetail(mockDetailMovies[id]);
-                } else {
-                    console.log('[DEBUG] API failed - using default Dune');
-                    renderMovieDetail(mockDetailMovies["7"]);
-                }
-            } catch (err) {
-                console.warn('[DEBUG] CATCH ERROR:', err.message, err);
-                if (mockDetailMovies[id]) {
-                    renderMovieDetail(mockDetailMovies[id]);
-                } else {
-                    renderMovieDetail(mockDetailMovies["7"]);
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const userStr = localStorage.getItem('user');
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
             if (userStr) {
                 const user = JSON.parse(userStr);
                 const btnLogin = document.getElementById('btnLogin');
@@ -502,34 +280,60 @@
                 }
             }
 
-            // Global search redirection
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        const val = searchInput.value.trim();
-                        if (val) {
-                            window.location.href = `movies.html?search=${encodeURIComponent(val)}`;
-                        }
+            const params = new URLSearchParams(window.location.search);
+            const movieId = params.get('movieId') || params.get('id');
+            const buyBtn = document.getElementById('btnBuyTickets');
+            const trailerBtn = document.getElementById('btnWatchTrailer');
+
+            if (buyBtn) {
+                buyBtn.addEventListener('click', () => {
+                    if (movieId) {
+                        window.location.href = `booking.html?movieId=${movieId}`;
+                    } else {
+                        window.location.href = 'booking.html';
                     }
                 });
             }
 
-            // Trailer button listener
-            const trailerBtn = document.getElementById('detail-trailer-btn');
-            if (trailerBtn) {
-                trailerBtn.addEventListener('click', openTrailer);
-            }
+            if (!movieId) return;
 
-            // Close trailer on clicking overlay
-            const modal = document.getElementById('trailerModal');
-            if (modal) {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) closeTrailer();
-                });
-            }
+            try {
+                const response = await fetch(`/api/movies/${movieId}`);
+                const json = await response.json();
+                if (!json.success || !json.data) return;
 
-            loadMovieDetail();
+                const movie = json.data;
+                const poster = document.getElementById('heroPoster');
+                const title = document.getElementById('heroTitle');
+                const badge = document.getElementById('heroBadge');
+                const rating = document.getElementById('heroRating');
+                const duration = document.getElementById('heroDuration');
+                const releaseDate = document.getElementById('heroReleaseDate');
+                const description = document.getElementById('movieDescription');
+                const score = document.getElementById('heroScore');
+
+                if (poster && movie.PosterURL) {
+                    poster.src = movie.PosterURL;
+                    poster.alt = movie.Title || poster.alt;
+                }
+                if (title) title.textContent = movie.Title || title.textContent;
+                if (badge) badge.textContent = movie.AgeRating || badge.textContent;
+                if (rating) rating.textContent = `★ ${movie.Rating || '8.5'}/10`;
+                if (duration) duration.textContent = movie.Duration ? `${movie.Duration} mins` : duration.textContent;
+                if (description) description.textContent = movie.Description || description.textContent;
+
+                if (trailerBtn) {
+                    trailerBtn.addEventListener('click', () => {
+                        if (movie.TrailerURL) {
+                            window.open(movie.TrailerURL, '_blank');
+                        } else {
+                            alert('Trailer chưa có sẵn cho phim này.');
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Lỗi tải thông tin phim:', error);
+            }
         });
     </script>
 </body>

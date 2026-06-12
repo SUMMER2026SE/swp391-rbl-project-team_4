@@ -1,38 +1,635 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review & Pay | D-CINEMA+</title>
-    <meta name="description" content="Complete your cinema ticket booking – Review your order and pay securely with MoMo, ZaloPay, or card.">
+    <title>Thanh Toán | D-CINEMA+</title>
+    <meta name="description" content="Hoàn tất đặt vé xem phim – Chọn ưu đãi và thanh toán an toàn qua MoMo, ZaloPay, VNPAY, thẻ ATM hoặc thẻ quốc tế.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/checkout.css">
     <link rel="stylesheet" href="css/shared-layout.css">
+    <style>
+        /* ─── CHECKOUT STEP STYLES ─── */
+        .step-block {
+            background: #1a1c1f;
+            border: 1px solid #2a2d33;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .step-header {
+            background: linear-gradient(90deg, #252830 0%, #1f2229 100%);
+            padding: 14px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a2d33;
+        }
+
+        .step-header-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #f0f0f0;
+        }
+
+        .step-header-title em {
+            font-style: italic;
+            font-weight: 500;
+            color: #8a8f9a;
+            margin-right: 6px;
+        }
+
+        .step-reset-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #8a8f9a;
+            cursor: pointer;
+            transition: color 0.2s;
+            background: none;
+            border: none;
+        }
+        .step-reset-btn:hover { color: #e50914; }
+
+        /* Discount row items */
+        .discount-list { padding: 0; }
+        .discount-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 22px;
+            border-bottom: 1px solid #25282e;
+            cursor: pointer;
+            transition: background 0.2s;
+            gap: 12px;
+        }
+        .discount-row:last-child { border-bottom: none; }
+        .discount-row:hover { background: rgba(255,255,255,0.03); }
+
+        .discount-row-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .discount-row-icon {
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+        }
+        .disc-icon-voucher { background: rgba(229,9,20,0.12); }
+        .disc-icon-code    { background: rgba(240,165,0,0.12); }
+        .disc-icon-points  { background: rgba(34,197,94,0.12); }
+        .disc-icon-partner { background: rgba(0,144,255,0.12); }
+        .disc-icon-promo   { background: rgba(168,85,247,0.12); }
+
+        .discount-row-label {
+            font-size: 0.875rem;
+            color: #c5c8cf;
+            font-weight: 500;
+        }
+
+        .discount-row-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .discount-input-wrap {
+            display: none;
+            gap: 0;
+            max-width: 280px;
+            width: 100%;
+        }
+        .discount-input-wrap.open { display: flex; }
+
+        .discount-input {
+            flex: 1;
+            padding: 9px 14px;
+            background: #252830;
+            border: 1.5px solid #2a2d33;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            color: #f0f0f0;
+            font-size: 0.84rem;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: border-color 0.2s;
+        }
+        .discount-input::placeholder { color: #4a4f5a; text-transform: none; letter-spacing: 0; }
+        .discount-input:focus { border-color: #e50914; outline: none; }
+
+        .discount-apply-btn {
+            padding: 9px 16px;
+            background: #e50914;
+            color: #fff;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .discount-apply-btn:hover { background: #f40612; }
+
+        .discount-row-chevron {
+            color: #4a4f5a;
+            transition: transform 0.2s, color 0.2s;
+        }
+        .discount-row:hover .discount-row-chevron { color: #8a8f9a; transform: translateX(2px); }
+
+        .discount-badge {
+            background: rgba(34,197,94,0.15);
+            border: 1px solid rgba(34,197,94,0.3);
+            color: #22c55e;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        /* Payment Methods */
+        .payment-list { padding: 6px 12px 12px; }
+
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+        }
+        .payment-option:hover { background: rgba(255,255,255,0.04); }
+        .payment-option.selected { background: rgba(229,9,20,0.06); }
+
+        .radio-circle {
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            border: 2px solid #3a3e47;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.2s;
+        }
+        .payment-option.selected .radio-circle { border-color: #e50914; }
+        .radio-inner {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #e50914;
+            display: none;
+        }
+        .payment-option.selected .radio-inner { display: block; }
+
+        .payment-logo {
+            width: 46px; height: 30px;
+            border-radius: 6px;
+            object-fit: contain;
+            flex-shrink: 0;
+            background: #fff;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        .payment-logo-text {
+            width: 46px; height: 30px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+        }
+        .logo-momo   { background: #ae2070; color: #fff; }
+        .logo-zalopay{ background: #0068ff; color: #fff; }
+        .logo-vnpay  { background: #005baa; color: #fff; }
+        .logo-shopee { background: #ee4d2d; color: #fff; }
+        .logo-atm    { background: #1a6b3c; color: #fff; }
+        .logo-intl   { background: linear-gradient(135deg, #1a1aff, #0000aa); color: #fff; }
+
+        .payment-info { flex: 1; }
+        .payment-info strong {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #f0f0f0;
+        }
+        .payment-info span {
+            font-size: 0.77rem;
+            color: #8a8f9a;
+        }
+        .payment-offer {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #e50914;
+            margin-top: 1px;
+        }
+
+        /* Card sub-panel */
+        .card-sub-panel {
+            display: none;
+            background: #14161a;
+            border: 1px solid #2a2d33;
+            border-radius: 10px;
+            padding: 18px;
+            margin: 0 10px 10px;
+            gap: 12px;
+            flex-direction: column;
+        }
+        .card-sub-panel.open { display: flex; }
+
+        /* RIGHT SIDEBAR */
+        .sidebar { position: sticky; top: 82px; display: flex; flex-direction: column; gap: 14px; }
+
+        /* Booking mini card */
+        .booking-mini-card {
+            background: #1a1c1f;
+            border: 1px solid #2a2d33;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .booking-mini-inner {
+            display: flex;
+            gap: 0;
+        }
+
+        .booking-mini-poster {
+            width: 80px;
+            flex-shrink: 0;
+            object-fit: cover;
+            object-position: top;
+        }
+
+        .booking-mini-info {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+        }
+
+        .booking-mini-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #f0f0f0;
+            line-height: 1.2;
+        }
+
+        .booking-mini-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            color: #8a8f9a;
+        }
+        .booking-mini-row svg { color: #e50914; flex-shrink: 0; }
+
+        .booking-mini-seats {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            color: #e50914;
+            font-weight: 600;
+        }
+
+        /* Summary Box */
+        .summary-box {
+            background: #1a1c1f;
+            border: 1px solid #2a2d33;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .summary-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid #25282e;
+        }
+        .summary-section:last-child { border-bottom: none; }
+
+        .summary-section-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #8a8f9a;
+            margin-bottom: 12px;
+        }
+
+        .sum-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            font-size: 0.83rem;
+            gap: 8px;
+        }
+        .sum-line:last-child { margin-bottom: 0; }
+        .sum-label { color: #8a8f9a; }
+        .sum-value { font-weight: 600; color: #f0f0f0; text-align: right; }
+
+        .sum-discount-label { color: #22c55e; }
+        .sum-discount-value { color: #22c55e; font-weight: 700; }
+
+        .sum-total-section {
+            background: #e50914;
+            padding: 16px 20px;
+        }
+        .sum-total-label {
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .sum-total-value {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #fff;
+            text-align: center;
+            letter-spacing: -0.5px;
+        }
+
+        /* Countdown */
+        .countdown-box {
+            background: #1a1c1f;
+            border: 1px solid #2a2d33;
+            border-radius: 12px;
+            padding: 18px 20px;
+            text-align: center;
+        }
+
+        .countdown-title {
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #8a8f9a;
+            margin-bottom: 14px;
+        }
+
+        .countdown-row {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .countdown-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .countdown-num {
+            width: 64px; height: 64px;
+            background: #e50914;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.9rem;
+            font-weight: 900;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+            box-shadow: 0 4px 20px rgba(229,9,20,0.35);
+        }
+
+        .countdown-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #8a8f9a;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .countdown-sep {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #e50914;
+            margin-bottom: 18px;
+        }
+
+        .countdown-warning {
+            font-size: 0.72rem;
+            color: #f0a500;
+            margin-top: 10px;
+        }
+
+        /* Pay Now Button */
+        .btn-pay-now {
+            width: 100%;
+            padding: 15px;
+            background: #e50914;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-pay-now::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+        }
+        .btn-pay-now:hover {
+            background: #f40612;
+            box-shadow: 0 6px 28px rgba(229,9,20,0.4);
+            transform: translateY(-1px);
+        }
+        .btn-pay-now:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-pay-now-wrap {
+            padding: 0 20px 16px;
+        }
+
+        .pay-note {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #4a4f5a;
+            padding: 0 20px 14px;
+            line-height: 1.5;
+        }
+        .pay-note a { color: #8a8f9a; text-decoration: underline; }
+
+        /* Booking summary (left col top) */
+        .booking-summary-card {
+            background: #1a1c1f;
+            border: 1px solid #2a2d33;
+            border-radius: 12px;
+            display: flex;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .movie-block {
+            display: flex;
+            gap: 0;
+        }
+        .movie-poster-thumb {
+            width: 90px;
+            flex-shrink: 0;
+            object-fit: cover;
+            object-position: top;
+        }
+        .movie-info-col {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+        .now-playing-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #e50914;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .movie-main-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #f0f0f0;
+            line-height: 1.2;
+        }
+        .movie-detail-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.77rem;
+            color: #8a8f9a;
+        }
+        .movie-detail-row svg { color: #e50914; flex-shrink: 0; }
+
+        .res-detail-col {
+            border-left: 1px solid #2a2d33;
+            padding: 18px;
+            min-width: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 9px;
+        }
+        .res-col-title {
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            color: #4a4f5a;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        .res-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 0.82rem;
+        }
+        .res-item-key { color: #8a8f9a; }
+        .res-item-val { font-weight: 700; color: #f0f0f0; text-align: right; }
+
+        .digital-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #e50914;
+            margin-top: 6px;
+        }
+
+        /* LEFT COLUMN */
+        .left-col { display: flex; flex-direction: column; }
+
+        /* PAGE HEADING */
+        .page-heading {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+        .back-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: 1.5px solid #3a3e47;
+            display: flex; align-items: center; justify-content: center;
+            color: #8a8f9a;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .back-btn:hover { border-color: #f0f0f0; color: #f0f0f0; background: rgba(255,255,255,0.05); }
+        .page-heading h1 {
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+
+        /* CHECKOUT WRAP LAYOUT */
+        .checkout-wrap {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 36px 24px 80px;
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 900px) {
+            .checkout-wrap { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+            .booking-summary-card { flex-direction: column; }
+            .res-detail-col { border-left: none; border-top: 1px solid #2a2d33; }
+        }
+    </style>
 </head>
 
 <body>
 
     <!-- ── TOP NAV ── -->
     <header class="top-nav">
-        <a href="index.html" class="nav-logo">CINEMA<span>+</span></a>
-
+        <a href="index.html" class="nav-logo">D<span>-</span>CINEMA<span>+</span></a>
         <div class="nav-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            SECURE CHECKOUT
+            THANH TOÁN AN TOÀN
         </div>
-
         <div class="nav-right">
-            <a href="#" class="nav-bell" aria-label="Notifications">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-                <span class="bell-dot"></span>
-            </a>
-            <div class="nav-avatar" id="navAvatar" title="My Account">U</div>
+            <div class="nav-avatar" id="navAvatar" title="Tài khoản">U</div>
         </div>
     </header>
 
@@ -42,130 +639,263 @@
         <!-- ══ LEFT COLUMN ══ -->
         <div class="left-col">
 
-            <!-- Page heading -->
             <div class="page-heading">
-                <a href="booking.html" class="back-btn" aria-label="Go back">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <a href="concessions.html" class="back-btn" aria-label="Quay lại">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M19 12H5M12 5l-7 7 7 7"/>
                     </svg>
                 </a>
-                <h1>Review &amp; Pay</h1>
+                <h1>Xác nhận & Thanh toán</h1>
             </div>
 
-            <!-- ── Booking Summary Card ── -->
-            <div class="booking-summary">
-                <!-- Left: Movie info -->
-                <div class="movie-info-block">
-                    <img src="images/movie_neon_dreams.png" alt="NEON DREAMS: 2049" class="movie-thumb">
-                    <div class="movie-meta">
-                        <div class="now-showing-tag">NOW SHOWING</div>
-                        <div class="movie-title">NEON DREAMS:<br>2049</div>
-                        <div class="movie-venue">
-                            <div class="venue-row">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                    <circle cx="12" cy="10" r="3"/>
-                                </svg>
-                                Cinema 04 &bull; Hall 2
-                            </div>
-                            <div class="venue-row">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                                    <line x1="16" y1="2" x2="16" y2="6"/>
-                                    <line x1="8" y1="2" x2="8" y2="6"/>
-                                    <line x1="3" y1="10" x2="21" y2="10"/>
-                                </svg>
-                                Today, 19:30 PM
-                            </div>
+            <!-- Booking Summary -->
+            <div class="booking-summary-card">
+                <div class="movie-block">
+                    <img src="images/movie_neon_dreams.png" alt="Poster" class="movie-poster-thumb" id="summaryPoster">
+                    <div class="movie-info-col">
+                        <div class="now-playing-tag">ĐANG CHIẾU</div>
+                        <div class="movie-main-title" id="summaryTitle">NEON DREAMS: 2049</div>
+                        <div class="movie-detail-row">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span id="summaryTime">19:30 • Standard 1</span>
+                        </div>
+                        <div class="movie-detail-row">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span id="summaryHall">D-CINEMA Aeon Mall Long Biên</span>
+                        </div>
+                        <div class="movie-detail-row">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+                            <span id="summaryDate">07/06/2026</span>
                         </div>
                     </div>
                 </div>
-
-                <!-- Right: Reservation details -->
-                <div class="reservation-block">
-                    <div class="res-label">Reservation Details</div>
-                    <div class="res-row">
-                        <span class="res-key">Seats</span>
-                        <span class="res-val" id="seatsDisplay">F12, F13, F14</span>
+                <div class="res-detail-col">
+                    <div class="res-col-title">Chi tiết đặt vé</div>
+                    <div class="res-item">
+                        <span class="res-item-key">Ghế</span>
+                        <span class="res-item-val" id="seatsDisplay">A7</span>
                     </div>
-                    <div class="res-row">
-                        <span class="res-key">Combos</span>
-                        <span class="res-val" id="combosDisplay">2x Large Popcorn, 3x Coke</span>
+                    <div class="res-item" id="foodRow" style="display:none">
+                        <span class="res-item-key">Đồ ăn</span>
+                        <span class="res-item-val" id="combosDisplay">—</span>
                     </div>
                     <div class="digital-badge">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                            <line x1="8" y1="21" x2="16" y2="21"/>
-                            <line x1="12" y1="17" x2="12" y2="21"/>
-                        </svg>
-                        Digital Tickets only
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        Vé điện tử
                     </div>
                 </div>
             </div>
 
-            <!-- ── Payment Method ── -->
-            <div class="section-card">
-                <div class="section-title">Payment Method</div>
-
-                <div class="payment-grid">
-
-                    <!-- MoMo -->
-                    <div class="pay-method selected" id="method-momo" onclick="selectMethod('momo')">
-                        <div class="pay-icon icon-momo">M</div>
-                        <div class="pay-name">
-                            <strong>MoMo E-Wallet</strong>
-                            <span>Instant &amp; Secure</span>
+            <!-- ═══ BƯỚC 1: GIẢM GIÁ ═══ -->
+            <div class="step-block">
+                <div class="step-header">
+                    <div class="step-header-title">
+                        <em>Bước 1:</em> GIẢM GIÁ
+                    </div>
+                    <button class="step-reset-btn" onclick="resetDiscounts()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+                        Đặt lại
+                    </button>
+                </div>
+                <div class="discount-list">
+                    <!-- Voucher -->
+                    <div class="discount-row" onclick="toggleDiscount('voucher', this)">
+                        <div class="discount-row-left">
+                            <div class="discount-row-icon disc-icon-voucher">🎟️</div>
+                            <span class="discount-row-label">D-Cinema Voucher</span>
                         </div>
-                        <div class="pay-radio"></div>
+                        <div class="discount-row-right">
+                            <div class="discount-input-wrap" id="input-voucher" onclick="event.stopPropagation()">
+                                <input type="text" class="discount-input" id="val-voucher" placeholder="Nhập mã voucher" autocomplete="off">
+                                <button class="discount-apply-btn" onclick="applyDiscount('voucher')">Áp dụng</button>
+                            </div>
+                            <span class="discount-badge" id="badge-voucher" style="display:none">Đã áp dụng</span>
+                            <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                    </div>
+                    <!-- Mã giảm giá -->
+                    <div class="discount-row" onclick="toggleDiscount('code', this)">
+                        <div class="discount-row-left">
+                            <div class="discount-row-icon disc-icon-code">🏷️</div>
+                            <span class="discount-row-label">Mã giảm giá</span>
+                        </div>
+                        <div class="discount-row-right">
+                            <div class="discount-input-wrap" id="input-code" onclick="event.stopPropagation()">
+                                <input type="text" class="discount-input" id="val-code" placeholder="Nhập mã khuyến mãi" autocomplete="off">
+                                <button class="discount-apply-btn" onclick="applyDiscount('code')">Áp dụng</button>
+                            </div>
+                            <span class="discount-badge" id="badge-code" style="display:none">Đã áp dụng</span>
+                            <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                    </div>
+                    <!-- Điểm thành viên -->
+                    <div class="discount-row" onclick="toggleDiscount('points', this)">
+                        <div class="discount-row-left">
+                            <div class="discount-row-icon disc-icon-points">⭐</div>
+                            <span class="discount-row-label">Điểm thành viên</span>
+                        </div>
+                        <div class="discount-row-right">
+                            <div class="discount-input-wrap" id="input-points" onclick="event.stopPropagation()">
+                                <input type="number" class="discount-input" id="val-points" placeholder="Nhập số điểm muốn dùng" min="0">
+                                <button class="discount-apply-btn" onclick="applyDiscount('points')">Áp dụng</button>
+                            </div>
+                            <span class="discount-badge" id="badge-points" style="display:none">Đã áp dụng</span>
+                            <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                    </div>
+                    <!-- Đối tác -->
+                    <div class="discount-row" onclick="toggleDiscount('partner', this)">
+                        <div class="discount-row-left">
+                            <div class="discount-row-icon disc-icon-partner">🤝</div>
+                            <span class="discount-row-label">Đối tác</span>
+                        </div>
+                        <div class="discount-row-right">
+                            <div class="discount-input-wrap" id="input-partner" onclick="event.stopPropagation()">
+                                <input type="text" class="discount-input" id="val-partner" placeholder="Nhập mã đối tác" autocomplete="off">
+                                <button class="discount-apply-btn" onclick="applyDiscount('partner')">Áp dụng</button>
+                            </div>
+                            <span class="discount-badge" id="badge-partner" style="display:none">Đã áp dụng</span>
+                            <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                    </div>
+                    <!-- Mã Khuyến Mãi -->
+                    <div class="discount-row" onclick="toggleDiscount('promo', this)">
+                        <div class="discount-row-left">
+                            <div class="discount-row-icon disc-icon-promo">🎉</div>
+                            <span class="discount-row-label">Mã Khuyến Mãi</span>
+                        </div>
+                        <div class="discount-row-right">
+                            <div class="discount-input-wrap" id="input-promo" onclick="event.stopPropagation()">
+                                <input type="text" class="discount-input" id="val-promo" placeholder="Nhập mã khuyến mãi" autocomplete="off">
+                                <button class="discount-apply-btn" onclick="applyDiscount('promo')">Áp dụng</button>
+                            </div>
+                            <span class="discount-badge" id="badge-promo" style="display:none">Đã áp dụng</span>
+                            <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ BƯỚC 2: THẺ QUÀ TẶNG ═══ -->
+            <div class="step-block">
+                <div class="step-header">
+                    <div class="step-header-title">
+                        <em>Bước 2:</em> THẺ QUÀ TẶNG
+                    </div>
+                </div>
+                <div class="discount-list">
+                    <div class="discount-row" onclick="toggleDiscount('giftcard', this)">
+                        <div class="discount-row-left">
+                            <div class="discount-row-icon disc-icon-promo">🎁</div>
+                            <span class="discount-row-label">Thẻ quà tặng</span>
+                        </div>
+                        <div class="discount-row-right">
+                            <div class="discount-input-wrap" id="input-giftcard" onclick="event.stopPropagation()">
+                                <input type="text" class="discount-input" id="val-giftcard" placeholder="Nhập mã thẻ quà tặng" autocomplete="off">
+                                <button class="discount-apply-btn" onclick="applyDiscount('giftcard')">Áp dụng</button>
+                            </div>
+                            <span class="discount-badge" id="badge-giftcard" style="display:none">Đã áp dụng</span>
+                            <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ BƯỚC 3: HÌNH THỨC THANH TOÁN ═══ -->
+            <div class="step-block">
+                <div class="step-header">
+                    <div class="step-header-title">
+                        <em>Bước 3:</em> HÌNH THỨC THANH TOÁN
+                    </div>
+                </div>
+                <div class="payment-list">
+
+                    <!-- ATM Nội địa -->
+                    <div class="payment-option" id="pm-atm" onclick="selectPayment('atm')">
+                        <div class="radio-circle"><div class="radio-inner"></div></div>
+                        <div class="payment-logo-text logo-atm">ATM</div>
+                        <div class="payment-info">
+                            <strong>ATM card (Thẻ nội địa)</strong>
+                            <span>Napas, BIDV, Vietcombank, Agribank...</span>
+                        </div>
                     </div>
 
-                    <!-- ZaloPay -->
-                    <div class="pay-method" id="method-zalo" onclick="selectMethod('zalo')">
-                        <div class="pay-icon icon-zalo">Z</div>
-                        <div class="pay-name">
-                            <strong>ZaloPay</strong>
-                            <span>Fast Checkout</span>
+                    <!-- Thẻ quốc tế -->
+                    <div class="payment-option" id="pm-intl" onclick="selectPayment('intl')">
+                        <div class="radio-circle"><div class="radio-inner"></div></div>
+                        <div class="payment-logo-text logo-intl" style="font-size:0.6rem; font-weight:900; letter-spacing:0; gap:2px; display:flex; flex-direction:column; align-items:center;">
+                            <span>VISA</span>
+                            <span style="font-size:0.5rem; color:#aad4ff;">MASTER</span>
                         </div>
-                        <div class="pay-radio"></div>
+                        <div class="payment-info">
+                            <strong>Thẻ quốc tế (Visa, Master, Amex, JCB)</strong>
+                            <span>Hỗ trợ thanh toán toàn cầu</span>
+                        </div>
                     </div>
 
-                    <!-- Visa / Card -->
-                    <div class="pay-method" id="method-card" onclick="selectMethod('card')">
-                        <div class="pay-icon icon-card">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                                <line x1="1" y1="10" x2="23" y2="10"/>
-                            </svg>
-                        </div>
-                        <div class="pay-name">
-                            <strong>Visa / Mastercard / ATM</strong>
-                            <span>International &amp; Local Cards</span>
-                        </div>
-                        <div class="pay-radio"></div>
-                    </div>
-
-                    <!-- Card form (expands for 'card') -->
-                    <div class="card-form-panel" id="cardFormPanel">
-                        <div class="form-grid">
+                    <!-- Card sub-panel (appears for ATM & intl) -->
+                    <div class="card-sub-panel" id="cardSubPanel">
+                        <div class="form-row-2" style="display:grid;grid-template-columns:1fr;gap:10px;">
                             <div class="form-group">
-                                <label class="form-label">Card Number</label>
-                                <input type="text" class="form-input" id="cardNumber"
-                                    placeholder="0000  0000  0000  0000" maxlength="19">
+                                <label class="form-label">Số thẻ</label>
+                                <input type="text" class="form-input" id="cardNumber" placeholder="0000  0000  0000  0000" maxlength="19">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Cardholder Name</label>
-                                <input type="text" class="form-input" id="cardName" placeholder="FULL NAME ON CARD">
+                                <label class="form-label">Tên chủ thẻ</label>
+                                <input type="text" class="form-input" id="cardName" placeholder="TÊN TRÊN THẺ">
                             </div>
-                            <div class="form-row-2">
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                                 <div class="form-group">
-                                    <label class="form-label">Expiry Date</label>
+                                    <label class="form-label">Ngày hết hạn</label>
                                     <input type="text" class="form-input" id="cardExpiry" placeholder="MM / YY" maxlength="7">
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">CVV</label>
+                                    <label class="form-label">CVV / CVC</label>
                                     <input type="password" class="form-input" id="cardCvv" placeholder="•••" maxlength="4">
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- MoMo -->
+                    <div class="payment-option" id="pm-momo" onclick="selectPayment('momo')">
+                        <div class="radio-circle"><div class="radio-inner"></div></div>
+                        <div class="payment-logo-text logo-momo">mo<br>mo</div>
+                        <div class="payment-info">
+                            <strong>Nhập MOMODAY – Hoàn tiền 2%</strong>
+                            <span>Thanh toán qua ứng dụng MoMo</span>
+                            <div class="payment-offer">🎁 Hoàn tiền 2% cho thành viên mới</div>
+                        </div>
+                    </div>
+
+                    <!-- ZaloPay -->
+                    <div class="payment-option" id="pm-zalopay" onclick="selectPayment('zalopay')">
+                        <div class="radio-circle"><div class="radio-inner"></div></div>
+                        <div class="payment-logo-text logo-zalopay">Zalo<br><span style="font-size:0.6rem">Pay</span></div>
+                        <div class="payment-info">
+                            <strong>Nhập mã GIAM10K ưu đãi bạn mới</strong>
+                            <span>Thanh toán qua ZaloPay</span>
+                            <div class="payment-offer">🎁 Giảm 10,000đ đơn hàng đầu tiên</div>
+                        </div>
+                    </div>
+
+                    <!-- VNPAY -->
+                    <div class="payment-option" id="pm-vnpay" onclick="selectPayment('vnpay')">
+                        <div class="radio-circle"><div class="radio-inner"></div></div>
+                        <div class="payment-logo-text logo-vnpay">VN<br><span style="font-size:0.6rem">PAY</span></div>
+                        <div class="payment-info">
+                            <strong>VNPAY</strong>
+                            <span>Quét QR hoặc qua ngân hàng liên kết</span>
+                        </div>
+                    </div>
+
+                    <!-- ShopeePay -->
+                    <div class="payment-option selected" id="pm-shopeepay" onclick="selectPayment('shopeepay')">
+                        <div class="radio-circle"><div class="radio-inner"></div></div>
+                        <div class="payment-logo-text logo-shopee">S<br><span style="font-size:0.6rem">Pay</span></div>
+                        <div class="payment-info">
+                            <strong>ShopeePay</strong>
+                            <span>Thanh toán qua ví ShopeePay</span>
                         </div>
                     </div>
 
@@ -177,68 +907,88 @@
         <!-- ══ RIGHT SIDEBAR ══ -->
         <aside class="sidebar">
 
-            <!-- Voucher -->
-            <div class="voucher-box">
-                <div class="voucher-label">Voucher Code</div>
-                <div class="voucher-row">
-                    <input type="text" class="voucher-input" id="voucherInput" placeholder="Enter code">
-                    <button class="voucher-btn" id="voucherBtn" onclick="applyVoucher()">APPLY</button>
+            <!-- Order Summary -->
+            <div class="summary-box">
+
+                <!-- Tổng cộng section -->
+                <div class="summary-section">
+                    <div class="summary-section-title">Tổng cộng</div>
+                    <div class="sum-line">
+                        <span class="sum-label" id="ticketLbl">Vé xem phim (1x)</span>
+                        <span class="sum-value" id="ticketVal">100.000 VND</span>
+                    </div>
+                    <div class="sum-line" id="fnbSumLine" style="display:none">
+                        <span class="sum-label">Đồ ăn & Thức uống</span>
+                        <span class="sum-value" id="fnbVal">0 VND</span>
+                    </div>
+                    <div class="sum-line" style="border-top:1px solid #25282e; padding-top:10px; margin-top:4px;">
+                        <span class="sum-label" style="font-weight:600; color:#c5c8cf;">Tạm tính</span>
+                        <span class="sum-value" style="font-weight:800;" id="subtotalVal">100.000 VND</span>
+                    </div>
                 </div>
-                <div class="voucher-success" id="voucherSuccess">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                    Voucher applied! –50,000 VND
+
+                <!-- Khuyến mãi section -->
+                <div class="summary-section" id="promoSection">
+                    <div class="summary-section-title">Khuyến mãi</div>
+                    <div class="sum-line">
+                        <span class="sum-label sum-discount-label" id="discountLbl">Chưa có mã giảm giá</span>
+                        <span class="sum-value sum-discount-value" id="discountVal">0,00 đ</span>
+                    </div>
                 </div>
+
+                <!-- Total -->
+                <div class="sum-total-section">
+                    <div class="sum-total-label">Tổng số tiền thanh toán</div>
+                    <div class="sum-total-value" id="totalFinalVal">100.000 VND</div>
+                </div>
+
+                <!-- Pay button -->
+                <div class="btn-pay-now-wrap" style="padding-top:14px;">
+                    <button class="btn-pay-now" id="btnPayNow" onclick="processPayment()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                            <line x1="1" y1="10" x2="23" y2="10"/>
+                        </svg>
+                        THANH TOÁN NGAY
+                    </button>
+                </div>
+                <p class="pay-note">Bằng cách nhấn thanh toán, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách bảo mật</a> của chúng tôi.</p>
+
             </div>
 
-            <!-- Order Total -->
-            <div class="order-box">
-                <div class="order-heading">Order Total</div>
-
-                <div class="order-line">
-                    <span class="lbl">Ticket Price (3x)</span>
-                    <span class="val" id="ticketPrice">360,000 VND</span>
+            <!-- Countdown Clock -->
+            <div class="countdown-box">
+                <div class="countdown-title">⏱ Thời gian giữ vé</div>
+                <div class="countdown-row">
+                    <div class="countdown-unit">
+                        <div class="countdown-num" id="cdMin">10</div>
+                        <div class="countdown-label">Phút</div>
+                    </div>
+                    <div class="countdown-sep">:</div>
+                    <div class="countdown-unit">
+                        <div class="countdown-num" id="cdSec">00</div>
+                        <div class="countdown-label">Giây</div>
+                    </div>
                 </div>
-                <div class="order-line">
-                    <span class="lbl">Food &amp; Beverage</span>
-                    <span class="val" id="fbPrice">185,000 VND</span>
-                </div>
-                <div class="order-line">
-                    <span class="lbl">Tax (VAT 10%)</span>
-                    <span class="val" id="taxPrice">54,500 VND</span>
-                </div>
-
-                <!-- Discount line (hidden until voucher applied) -->
-                <div class="order-line discount-line" id="discountLine" style="display:none;">
-                    <span class="lbl">Voucher Discount</span>
-                    <span class="val" id="discountVal">–50,000 VND</span>
-                </div>
-
-                <div class="order-divider"></div>
-
-                <div class="order-total-row">
-                    <span class="total-lbl">Total Amount</span>
-                    <span class="total-val" id="totalAmount">599,500 VND</span>
-                </div>
-
-                <button class="btn-pay" id="btnPayNow" onclick="processPayment()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                        <line x1="1" y1="10" x2="23" y2="10"/>
-                    </svg>
-                    PAY NOW
-                </button>
-
-                <p class="pay-note">
-                    By clicking Pay Now, you agree to our
-                    <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>.
-                </p>
+                <div class="countdown-warning" id="cdWarning"></div>
             </div>
 
-            <!-- Session timer -->
-            <div class="session-bar">
-                Session expires in <strong id="sessionTimer">14:57</strong>
+            <!-- Progress steps -->
+            <div class="steps-row">
+                <div class="step done">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">SEATS</div>
+                </div>
+                <div class="step-line done-line"></div>
+                <div class="step done">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">F&B</div>
+                </div>
+                <div class="step-line done-line"></div>
+                <div class="step active">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">PAY</div>
+                </div>
             </div>
 
         </aside>
@@ -254,20 +1004,6 @@
                     <span class="logo-text">D-CINEMA</span>
                 </a>
                 <p>Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
-                <div class="footer-socials">
-                    <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <circle cx="18" cy="5" r="3" />
-                            <circle cx="6" cy="12" r="3" />
-                            <circle cx="18" cy="19" r="3" />
-                            <path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98" />
-                        </svg></a>
-                    <a href="#" aria-label="Email"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="4" width="20" height="16" rx="2" />
-                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                        </svg></a>
-                </div>
             </div>
             <div class="footer-col">
                 <h4>DỊCH VỤ</h4>
@@ -287,10 +1023,7 @@
                 <form class="newsletter-form" onsubmit="event.preventDefault()">
                     <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
                     <button type="submit" class="newsletter-btn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
                     </button>
                 </form>
             </div>
@@ -304,150 +1037,353 @@
     <div class="modal-overlay" id="successModal">
         <div class="modal-box">
             <div class="modal-icon">🎬</div>
-            <h2>Booking Confirmed!</h2>
-            <p>Your tickets for <strong>NEON DREAMS: 2049</strong> have been booked successfully.<br>
-               Digital tickets have been sent to your registered email.</p>
-            <button class="btn-modal-close" onclick="closeModal()">Back to Home</button>
+            <h2>Đặt vé thành công!</h2>
+            <p>Vé của bạn đã được xác nhận và đang được gửi về email đã đăng ký.</p>
+            <button class="btn-modal-close" onclick="window.location.href='payment-success.html'">Xem vé của tôi</button>
         </div>
     </div>
 
-    <!-- ── SCRIPTS ── -->
+    <!-- SCRIPTS -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js?v=2"></script>
     <script>
-    /* ─── Payment Method Selection ─── */
-    const methods = ['momo', 'zalo', 'card'];
-    let currentMethod = 'momo';
+    /* ─── STATE ─── */
+    let booking = {};
+    let currentPayment = 'shopeepay';
+    let discountAmount = 0;
+    let appliedVoucherCode = null;
+    const allPaymentMethods = ['atm','intl','momo','zalopay','vnpay','shopeepay'];
 
-    function selectMethod(id) {
-        currentMethod = id;
-        methods.forEach(m => {
-            const el = document.getElementById('method-' + m);
+    /* ─── PAYMENT SELECTION ─── */
+    function selectPayment(id) {
+        currentPayment = id;
+        allPaymentMethods.forEach(m => {
+            const el = document.getElementById('pm-' + m);
             if (el) el.classList.toggle('selected', m === id);
         });
-
-        // Toggle card form
-        const panel = document.getElementById('cardFormPanel');
-        if (panel) panel.classList.toggle('open', id === 'card');
-    }
-
-    /* ─── Voucher ─── */
-    const VALID_CODES = { 'CINEMA50': 50000, 'VIP30': 30000, 'STUDENT20': 20000 };
-    let discountAmt = 0;
-    const BASE_TOTAL = 599500;
-
-    function applyVoucher() {
-        const code = document.getElementById('voucherInput').value.trim().toUpperCase();
-        const successEl = document.getElementById('voucherSuccess');
-        const discountLine = document.getElementById('discountLine');
-        const discountVal  = document.getElementById('discountVal');
-        const totalEl      = document.getElementById('totalAmount');
-
-        if (VALID_CODES[code]) {
-            discountAmt = VALID_CODES[code];
-            successEl.style.display = 'flex';
-            successEl.textContent = `✓  Voucher applied! –${discountAmt.toLocaleString()} VND`;
-            discountLine.style.display = 'flex';
-            discountVal.textContent = `–${discountAmt.toLocaleString()} VND`;
-            totalEl.textContent = (BASE_TOTAL - discountAmt).toLocaleString() + ' VND';
-            document.getElementById('voucherInput').disabled = true;
-            document.getElementById('voucherBtn').disabled = true;
-            document.getElementById('voucherBtn').style.opacity = '0.5';
-        } else if (code === '') {
-            alert('Please enter a voucher code.');
-        } else {
-            alert('❌ Invalid voucher code. Please try again.');
+        // Show/hide card panel
+        const cardPanel = document.getElementById('cardSubPanel');
+        if (cardPanel) {
+            cardPanel.classList.toggle('open', id === 'atm' || id === 'intl');
         }
     }
 
-    /* Voucher input: Enter key */
-    document.getElementById('voucherInput').addEventListener('keydown', e => {
-        if (e.key === 'Enter') applyVoucher();
-    });
+    /* ─── DISCOUNT TOGGLE ─── */
+    function toggleDiscount(key, row) {
+        const wrap = document.getElementById('input-' + key);
+        if (!wrap) return;
+        const isOpen = wrap.classList.contains('open');
+        // Close all
+        document.querySelectorAll('.discount-input-wrap').forEach(w => w.classList.remove('open'));
+        if (!isOpen) {
+            wrap.classList.add('open');
+            const inp = document.getElementById('val-' + key);
+            if (inp) setTimeout(() => inp.focus(), 80);
+        }
+    }
 
-    /* ─── Card number formatting ─── */
+    /* ─── APPLY DISCOUNT ─── */
+    async function applyDiscount(key) {
+        const input = document.getElementById('val-' + key);
+        const code = (input ? input.value.trim().toUpperCase() : '');
+
+        if (key === 'points') {
+            const pts = parseInt(input.value || '0', 10);
+            if (!pts || pts <= 0) { showToast('Vui lòng nhập số điểm hợp lệ.', 'error'); return; }
+            // 1 point = 100 VND (demo)
+            const disc = Math.min(pts * 100, booking.totalAmount || 0);
+            applyDiscountAmount(disc, `Điểm thành viên (${pts} điểm)`, key);
+            return;
+        }
+
+        if (!code) { showToast('Vui lòng nhập mã.', 'error'); return; }
+
+        // Call validate-voucher API
+        try {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const res = await fetch('/api/bookings/validate-voucher', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ voucherCode: code })
+            });
+            const json = await res.json();
+            if (json.success && json.voucher) {
+                const v = json.voucher;
+                const orderVal = booking.totalAmount || 0;
+                if (orderVal < (v.minOrderValue || 0)) {
+                    showToast(`Đơn hàng tối thiểu ${(v.minOrderValue).toLocaleString('vi-VN')}đ.`, 'error');
+                    return;
+                }
+                let disc = 0;
+                if (v.discountType === 'percent') {
+                    disc = Math.min(orderVal * v.discountValue / 100, v.maxDiscount || Infinity);
+                } else {
+                    disc = Math.min(v.discountValue, orderVal);
+                }
+                appliedVoucherCode = code;
+                applyDiscountAmount(disc, `Voucher: ${code}`, key);
+            } else {
+                showToast(json.message || 'Mã không hợp lệ hoặc đã hết hạn.', 'error');
+            }
+        } catch(e) {
+            console.error(e);
+            showToast('Lỗi kết nối. Vui lòng thử lại.', 'error');
+        }
+    }
+
+    function applyDiscountAmount(amount, label, key) {
+        discountAmount = amount;
+        booking.voucherCode = appliedVoucherCode;
+        booking.discountAmount = amount;
+        booking.finalAmount = Math.max(0, (booking.totalAmount || 0) - amount);
+
+        // Badge
+        const badge = document.getElementById('badge-' + key);
+        if (badge) badge.style.display = 'inline-block';
+        const wrap = document.getElementById('input-' + key);
+        if (wrap) wrap.classList.remove('open');
+
+        updateSummaryUI();
+        showToast(`✓ Đã áp dụng! Giảm ${amount.toLocaleString('vi-VN')}đ`, 'success');
+    }
+
+    function resetDiscounts() {
+        discountAmount = 0;
+        appliedVoucherCode = null;
+        booking.voucherCode = null;
+        booking.discountAmount = 0;
+        booking.finalAmount = booking.totalAmount || 0;
+
+        document.querySelectorAll('.discount-badge').forEach(b => b.style.display = 'none');
+        document.querySelectorAll('.discount-input').forEach(i => i.value = '');
+        document.querySelectorAll('.discount-input-wrap').forEach(w => w.classList.remove('open'));
+        updateSummaryUI();
+        showToast('Đã đặt lại toàn bộ ưu đãi.', 'info');
+    }
+
+    function updateSummaryUI() {
+        const ticketTotal = booking.ticketTotal || 0;
+        const fnbTotal = booking.fnbTotal || 0;
+        const totalAmount = ticketTotal + fnbTotal;
+        const finalAmount = Math.max(0, totalAmount - discountAmount);
+
+        document.getElementById('ticketLbl').textContent = `Vé xem phim (${booking.seatCount || 1}x)`;
+        document.getElementById('ticketVal').textContent = ticketTotal.toLocaleString('vi-VN') + ' VND';
+
+        const fnbLine = document.getElementById('fnbSumLine');
+        if (fnbTotal > 0) {
+            fnbLine.style.display = 'flex';
+            document.getElementById('fnbVal').textContent = fnbTotal.toLocaleString('vi-VN') + ' VND';
+        } else {
+            fnbLine.style.display = 'none';
+        }
+
+        document.getElementById('subtotalVal').textContent = totalAmount.toLocaleString('vi-VN') + ' VND';
+
+        if (discountAmount > 0) {
+            document.getElementById('discountLbl').textContent = 'Giảm giá';
+            document.getElementById('discountVal').textContent = '–' + discountAmount.toLocaleString('vi-VN') + ' VND';
+            document.getElementById('discountVal').style.color = '#22c55e';
+        } else {
+            document.getElementById('discountLbl').textContent = 'Chưa có mã giảm giá';
+            document.getElementById('discountVal').textContent = '0,00 đ';
+            document.getElementById('discountVal').style.color = '#8a8f9a';
+        }
+
+        document.getElementById('totalFinalVal').textContent = finalAmount.toLocaleString('vi-VN') + ' VND';
+    }
+
+    /* ─── COUNTDOWN ─── */
+    let countdownSecs = 10 * 60; // 10 minutes
+    const cdMin = document.getElementById('cdMin');
+    const cdSec = document.getElementById('cdSec');
+    const cdWarning = document.getElementById('cdWarning');
+
+    function updateCountdown() {
+        const m = Math.floor(countdownSecs / 60);
+        const s = countdownSecs % 60;
+        cdMin.textContent = String(m).padStart(2, '0');
+        cdSec.textContent = String(s).padStart(2, '0');
+
+        if (countdownSecs <= 60) {
+            cdMin.style.background = '#f0a500';
+            cdSec.style.background = '#f0a500';
+            cdWarning.textContent = '⚠ Sắp hết thời gian! Hoàn tất thanh toán ngay.';
+        } else {
+            cdMin.style.background = '#e50914';
+            cdSec.style.background = '#e50914';
+            cdWarning.textContent = '';
+        }
+
+        if (countdownSecs <= 0) {
+            clearInterval(countdownTimer);
+            cdWarning.textContent = '❌ Hết giờ! Vé đã bị huỷ giữ chỗ.';
+            cdWarning.style.color = '#e50914';
+            cdMin.style.background = '#444';
+            cdSec.style.background = '#444';
+            document.getElementById('btnPayNow').disabled = true;
+        } else {
+            countdownSecs--;
+        }
+    }
+
+    const countdownTimer = setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    /* ─── PAY NOW ─── */
+    async function processPayment() {
+        if (currentPayment === 'atm' || currentPayment === 'intl') {
+            const num  = (document.getElementById('cardNumber').value || '').replace(/\s/g,'');
+            const name = (document.getElementById('cardName').value || '').trim();
+            const exp  = (document.getElementById('cardExpiry').value || '').trim();
+            const cvv  = (document.getElementById('cardCvv').value || '').trim();
+            if (num.length < 16 || !name || exp.length < 7 || cvv.length < 3) {
+                showToast('Vui lòng điền đầy đủ thông tin thẻ.', 'error');
+                return;
+            }
+        }
+
+        const btn = document.getElementById('btnPayNow');
+        btn.disabled = true;
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-9-9"/></svg> Đang xử lý…`;
+
+        try {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const payload = {
+                showtimeId: booking.showtimeId,
+                seatIds: booking.seatIds,
+                foodItems: booking.foodItems || [],
+                voucherCode: appliedVoucherCode || null,
+                paymentMethod: currentPayment
+            };
+
+            const res = await fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+
+            const json = await res.json();
+            if (json.success && json.data) {
+                clearInterval(countdownTimer);
+                booking.bookingId = 'DC-' + json.data.ticketIds.join('-');
+                booking.finalAmount = json.data.finalAmount;
+                sessionStorage.setItem('booking', JSON.stringify(booking));
+                localStorage.setItem('booking', JSON.stringify(booking));
+
+                setTimeout(() => {
+                    window.location.href = 'payment-success.html';
+                }, 800);
+            } else {
+                showToast(json.message || 'Đặt vé thất bại. Vui lòng thử lại.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> THANH TOÁN NGAY`;
+            }
+        } catch(err) {
+            console.error(err);
+            showToast('Lỗi kết nối. Vui lòng thử lại.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> THANH TOÁN NGAY`;
+        }
+    }
+
+    /* ─── TOAST NOTIFICATION ─── */
+    function showToast(msg, type = 'info') {
+        let toast = document.getElementById('globalToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'globalToast';
+            toast.style.cssText = `position:fixed;bottom:28px;left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:10px;font-size:0.85rem;font-weight:600;z-index:9999;transition:opacity 0.3s;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(0,0,0,0.4);font-family:'Inter',sans-serif;`;
+            document.body.appendChild(toast);
+        }
+        const colors = { success: '#22c55e', error: '#e50914', info: '#3b82f6' };
+        toast.style.background = colors[type] || '#333';
+        toast.style.color = '#fff';
+        toast.textContent = msg;
+        toast.style.opacity = '1';
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+    }
+
+    /* ─── CARD NUMBER FORMATTING ─── */
     const cardInput = document.getElementById('cardNumber');
     if (cardInput) {
-        cardInput.addEventListener('input', function () {
+        cardInput.addEventListener('input', function() {
             let v = this.value.replace(/\D/g, '').substring(0, 16);
             this.value = v.replace(/(.{4})/g, '$1  ').trim();
         });
     }
-
     const expiryInput = document.getElementById('cardExpiry');
     if (expiryInput) {
-        expiryInput.addEventListener('input', function () {
+        expiryInput.addEventListener('input', function() {
             let v = this.value.replace(/\D/g, '').substring(0, 4);
             if (v.length > 2) v = v.slice(0,2) + ' / ' + v.slice(2);
             this.value = v;
         });
     }
 
-    /* ─── Pay Now ─── */
-    function processPayment() {
-        if (currentMethod === 'card') {
-            const num  = (document.getElementById('cardNumber').value || '').replace(/\s/g,'');
-            const name = (document.getElementById('cardName').value || '').trim();
-            const exp  = (document.getElementById('cardExpiry').value || '').trim();
-            const cvv  = (document.getElementById('cardCvv').value || '').trim();
-            if (num.length < 16 || !name || exp.length < 7 || cvv.length < 3) {
-                alert('Please fill in all card details correctly.');
-                return;
+    /* ─── LOAD BOOKING DATA ─── */
+    document.addEventListener('DOMContentLoaded', () => {
+        // User
+        try {
+            const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                const av = document.getElementById('navAvatar');
+                if (av) av.textContent = (user.fullName || 'U').charAt(0).toUpperCase();
             }
-        }
-        const btn = document.getElementById('btnPayNow');
-        btn.disabled = true;
-        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-9-9"/></svg> Processing…`;
+        } catch(e) {}
 
-        // Simulate processing → redirect to success page
-        setTimeout(() => {
-            window.location.href = 'payment-success.html';
-        }, 2200);
-    }
+        // Load booking
+        try {
+            booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
+        } catch(e) { booking = {}; }
 
-    function closeModal() {
-        document.getElementById('successModal').classList.remove('show');
-        setTimeout(() => { window.location.href = 'index.html'; }, 300);
-    }
-
-    /* ─── Session countdown timer ─── */
-    let totalSecs = 14 * 60 + 57;
-    const timerEl = document.getElementById('sessionTimer');
-
-    const timerInterval = setInterval(() => {
-        totalSecs--;
-        if (totalSecs <= 0) {
-            clearInterval(timerInterval);
-            timerEl.textContent = '00:00';
-            timerEl.style.color = '#e50914';
-            alert('⏰ Your session has expired. Please re-select your seats.');
-            window.location.href = 'booking.html';
+        if (!booking.showtimeId) {
+            showToast('Không tìm thấy thông tin đặt vé!', 'error');
+            setTimeout(() => { window.location.href = 'booking.html'; }, 2000);
             return;
         }
-        const m = String(Math.floor(totalSecs / 60)).padStart(2, '0');
-        const s = String(totalSecs % 60).padStart(2, '0');
-        timerEl.textContent = `${m}:${s}`;
-        if (totalSecs <= 60) timerEl.style.color = '#e50914';
-    }, 1000);
 
-    /* ─── Navbar: user info ─── */
-    document.addEventListener('DOMContentLoaded', () => {
-        const userStr = localStorage.getItem('user');
-        const btnLogin = document.getElementById('btnLogin');
-        if (userStr && btnLogin) {
-            try {
-                const user = JSON.parse(userStr);
-                btnLogin.textContent = user.fullName || user.email || 'Tài khoản';
-                btnLogin.href = 'profile.html';
-            } catch(e) {}
+        // Fill info
+        if (booking.poster) {
+            const poster = document.getElementById('summaryPoster');
+            if (poster) { poster.src = booking.poster; poster.onerror = () => poster.src = 'images/default_poster.svg'; }
         }
+        if (booking.movieTitle) {
+            const el = document.getElementById('summaryTitle');
+            if (el) el.textContent = booking.movieTitle;
+        }
+        if (booking.time && booking.hall) {
+            document.getElementById('summaryTime').textContent = `${booking.time} • ${booking.hall}`;
+        }
+        if (booking.cinemaName) {
+            document.getElementById('summaryHall').textContent = booking.cinemaName;
+        }
+        if (booking.date) {
+            document.getElementById('summaryDate').textContent = booking.date;
+        }
+        if (booking.seats) {
+            document.getElementById('seatsDisplay').textContent = booking.seats;
+        }
+
+        // F&B
+        if (booking.foodDisplayItems && booking.foodDisplayItems.length > 0) {
+            const foodText = booking.foodDisplayItems.map(i => `${i.quantity}x ${i.name}`).join(', ');
+            document.getElementById('combosDisplay').textContent = foodText;
+            document.getElementById('foodRow').style.display = 'flex';
+        }
+
+        updateSummaryUI();
     });
     </script>
 
     <style>
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .form-label { font-size:0.72rem; font-weight:700; color:#8a8f9a; letter-spacing:0.5px; text-transform:uppercase; margin-bottom:4px; display:block; }
+        .form-input { width:100%; padding:10px 13px; background:#252830; border:1.5px solid #2a2d33; border-radius:8px; color:#f0f0f0; font-size:0.85rem; font-family:'Inter',sans-serif; transition:border-color 0.2s; }
+        .form-input::placeholder { color:#4a4f5a; }
+        .form-input:focus { border-color:#e50914; outline:none; }
     </style>
 
 </body>

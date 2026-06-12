@@ -258,76 +258,72 @@ img {
     border-color: var(--text-light);
 }
 
-/* ─── Hero Section ─── */
-.hero {
+/* ─── Hero Carousel Section ─── */
+.hero-carousel {
     position: relative;
     height: 550px;
+    overflow: hidden;
     display: flex;
     align-items: center;
     color: var(--text-light);
-    overflow: hidden;
 }
 
-.hero-bg {
+.carousel-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+    display: flex;
+    align-items: center;
+}
+
+.hero-slide.active {
+    opacity: 1;
+    z-index: 1;
+}
+
+.hero-background {
     position: absolute;
     inset: 0;
     background-size: cover;
     background-position: center;
-    z-index: 0;
-    transition: background-image 0.5s ease-in-out;
+    background-repeat: no-repeat;
 }
 
 .hero-overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(to right, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
-    z-index: 0;
-}
-
-.zoom-animate {
-    animation: kenBurns 12s ease-in-out infinite alternate;
-}
-
-@keyframes kenBurns {
-    0% {
-        transform: scale(1);
-    }
-    100% {
-        transform: scale(1.12);
-    }
+    z-index: 2;
 }
 
 .hero-content {
     position: relative;
-    z-index: 1;
+    z-index: 3;
     max-width: 600px;
     padding: 0 40px;
+    animation: slideInLeft 0.8s ease-out;
 }
 
-.hero-content .hero-badge,
-.hero-content .hero-title,
-.hero-content .hero-meta,
-.hero-content .hero-desc,
-.hero-content .hero-actions {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
-
-.hero-content.active .hero-badge,
-.hero-content.active .hero-title,
-.hero-content.active .hero-meta,
-.hero-content.active .hero-desc,
-.hero-content.active .hero-actions {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.hero-content.active .hero-badge { transition-delay: 0.05s; }
-.hero-content.active .hero-title { transition-delay: 0.12s; }
-.hero-content.active .hero-meta { transition-delay: 0.18s; }
-.hero-content.active .hero-desc { transition-delay: 0.24s; }
-.hero-content.active .hero-actions { transition-delay: 0.3s; }
 
 .hero-badge {
     display: inline-block;
@@ -381,6 +377,42 @@ img {
     gap: 15px;
 }
 
+/* ─── Carousel Navigation ─── */
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all var(--transition);
+    backdrop-filter: blur(5px);
+}
+
+.carousel-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-prev {
+    left: 30px;
+}
+
+.carousel-next {
+    right: 30px;
+}
+
+/* ─── Indicator Dots ─── */
 .hero-dots {
     position: absolute;
     bottom: 20px;
@@ -388,7 +420,7 @@ img {
     transform: translateX(-50%);
     display: flex;
     gap: 10px;
-    z-index: 1;
+    z-index: 10;
 }
 
 .dot {
@@ -398,21 +430,18 @@ img {
     background: rgba(255, 255, 255, 0.3);
     cursor: pointer;
     transition: all var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .dot:hover {
-    background: rgba(255, 255, 255, 0.7);
-    transform: scale(1.2);
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .dot.active {
     background: var(--primary);
     width: 24px;
     border-radius: 5px;
-}
-
-.dot.active:hover {
-    transform: none;
+    border-color: var(--primary);
 }
 
 /* ─── Section: News & Promotions (Dark Theme Background) ─── */
@@ -987,27 +1016,9 @@ img {
 }
 
 .ai-match {
-    display: inline-block;
     color: var(--primary);
-    background: rgba(229, 9, 20, 0.1);
-    border: 1px solid rgba(229, 9, 20, 0.3);
-    padding: 4px 10px;
-    border-radius: 20px;
     font-weight: 700;
-    font-size: 0.8rem;
-    box-shadow: 0 0 10px rgba(229, 9, 20, 0.2);
-    animation: pulseGlow 2s infinite alternate;
-}
-
-@keyframes pulseGlow {
-    0% {
-        box-shadow: 0 0 5px rgba(229, 9, 20, 0.2);
-        transform: scale(1);
-    }
-    100% {
-        box-shadow: 0 0 15px rgba(229, 9, 20, 0.5);
-        transform: scale(1.04);
-    }
+    font-size: 0.85rem;
 }
 
 /* ─── Footer (Light Theme) ─── */
@@ -1186,73 +1197,4 @@ img {
     .promotions-grid {
         grid-template-columns: 1fr;
     }
-}
-
-/* ─── Dropdown Menu (Light Navbar Theme) ─── */
-.dropdown {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(15px);
-    background: #ffffff;
-    min-width: 170px;
-    border-radius: 6px;
-    border: 1px solid #e0e0e0;
-    padding: 8px 0;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
-    z-index: 999;
-}
-
-.dropdown:hover .dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(5px);
-}
-
-.nav-links .dropdown-menu a.dropdown-item {
-    display: block;
-    color: #555555;
-    padding: 10px 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-align: left;
-    width: 100%;
-    white-space: nowrap;
-    position: relative;
-    transition: all 0.2s ease;
-}
-
-.nav-links .dropdown-menu a.dropdown-item::after {
-    display: none !important;
-}
-
-.nav-links .dropdown-menu a.dropdown-item:hover {
-    color: var(--primary) !important;
-    background: rgba(229, 9, 20, 0.08);
-}
-
-.nav-links .dropdown-menu a.dropdown-item.active {
-    color: var(--primary) !important;
-    background: rgba(229, 9, 20, 0.12);
-}
-
-.nav-arrow {
-    font-size: 0.7rem;
-    margin-left: 4px;
-    display: inline-block;
-    transition: transform 0.2s ease;
-    vertical-align: middle;
-}
-
-.dropdown:hover .nav-arrow {
-    transform: rotate(180deg);
 }

@@ -5,21 +5,18 @@ class AdminModel {
   static async createMovie(data) {
     const pool = await getPool();
     const result = await pool.request()
-      .input('title', sql.NVarChar, data.title)
-      .input('genre', sql.NVarChar, data.genre)
-      .input('duration', sql.Int, data.duration)
-      .input('rating', sql.Decimal, data.rating || null)
+      .input('title', sql.NVarChar, data.title || null)
       .input('description', sql.NVarChar, data.description || null)
-      .input('posterURL', sql.NVarChar, data.posterURL || null)
-      .input('trailerURL', sql.NVarChar, data.trailerURL || null)
-      .input('releaseDate', sql.Date, data.releaseDate)
-      .input('status', sql.NVarChar, data.status || 'coming-soon')
+      .input('director', sql.NVarChar, data.director || null)
+      .input('duration', sql.Int, (data.duration === '' || isNaN(data.duration)) ? null : parseInt(data.duration))
+      .input('ageRating', sql.VarChar, data.ageRating || null)
+      .input('posterURL', sql.VarChar, data.posterURL || null)
+      .input('status', sql.VarChar, data.status || 'Coming Soon')
+      .input('mainCast', sql.NVarChar, data.mainCast || null)
       .query(`
-        INSERT INTO Movies (Title, Genre, Duration, Rating, Description,
-                            PosterURL, TrailerURL, ReleaseDate, Status, CreatedAt)
+        INSERT INTO Movies (Title, Description, Director, Duration, AgeRating, PosterURL, Status, MainCast)
         OUTPUT INSERTED.*
-        VALUES (@title, @genre, @duration, @rating, @description,
-                @posterURL, @trailerURL, @releaseDate, @status, GETDATE())
+        VALUES (@title, @description, @director, @duration, @ageRating, @posterURL, @status, @mainCast)
       `);
     return result.recordset[0];
   }
@@ -28,27 +25,24 @@ class AdminModel {
     const pool = await getPool();
     const result = await pool.request()
       .input('movieId', sql.Int, movieId)
-      .input('title', sql.NVarChar, data.title)
-      .input('genre', sql.NVarChar, data.genre)
-      .input('duration', sql.Int, data.duration)
-      .input('rating', sql.Decimal, data.rating)
-      .input('description', sql.NVarChar, data.description)
-      .input('posterURL', sql.NVarChar, data.posterURL)
-      .input('trailerURL', sql.NVarChar, data.trailerURL)
-      .input('releaseDate', sql.Date, data.releaseDate)
-      .input('status', sql.NVarChar, data.status)
+      .input('title', sql.NVarChar, data.title || null)
+      .input('description', sql.NVarChar, data.description || null)
+      .input('director', sql.NVarChar, data.director || null)
+      .input('duration', sql.Int, (data.duration === '' || isNaN(data.duration)) ? null : parseInt(data.duration))
+      .input('ageRating', sql.VarChar, data.ageRating || null)
+      .input('posterURL', sql.VarChar, data.posterURL || null)
+      .input('status', sql.VarChar, data.status || null)
+      .input('mainCast', sql.NVarChar, data.mainCast || null)
       .query(`
         UPDATE Movies
         SET Title       = COALESCE(@title, Title),
-            Genre       = COALESCE(@genre, Genre),
-            Duration    = COALESCE(@duration, Duration),
-            Rating      = COALESCE(@rating, Rating),
             Description = COALESCE(@description, Description),
+            Director    = COALESCE(@director, Director),
+            Duration    = COALESCE(@duration, Duration),
+            AgeRating   = COALESCE(@ageRating, AgeRating),
             PosterURL   = COALESCE(@posterURL, PosterURL),
-            TrailerURL  = COALESCE(@trailerURL, TrailerURL),
-            ReleaseDate = COALESCE(@releaseDate, ReleaseDate),
             Status      = COALESCE(@status, Status),
-            UpdatedAt   = GETDATE()
+            MainCast    = COALESCE(@mainCast, MainCast)
         OUTPUT INSERTED.*
         WHERE MovieID = @movieId
       `);
@@ -62,7 +56,103 @@ class AdminModel {
       .query(`UPDATE Movies SET Status = 'deleted' WHERE MovieID = @movieId`);
   }
 
-  // --- SHOWTIME MANAGEMENT ---
+  static async getRooms() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT r.RoomID, r.RoomName, r.TotalSeats, r.CinemaID,
+             c.CinemaName, c.Address
+      FROM   Rooms r
+      JOIN   Cinemas c ON r.CinemaID = c.CinemaID
+      ORDER BY c.CinemaName, r.RoomName
+    `);
+    return result.recordset;
+  }
+
+  static async getSeatsByRoom(roomId) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('roomId', sql.Int, roomId)
+      .query(`
+        SELECT SeatID, RoomID, SeatRow, SeatNumber, SeatType, PriceMultiplier
+        FROM Seats
+        WHERE RoomID = @roomId
+        ORDER BY SeatRow, SeatNumber
+      `);
+    return result.recordset;
+  }
+
+  static async saveSeats(roomId, seatsArray) {
+    const pool = await getPool();
+    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
+
+    try {
+      const request = new sql.Request(transaction);
+      request.input('roomId', sql.Int, roomId);
+
+      // 1. Get currently booked seats for this room to avoid deleting/modifying booked seats.
+      const bookedSeatsResult = await request.query(`
+        SELECT DISTINCT s.SeatID
+        FROM Seats s
+        JOIN Tickets t ON t.SeatID = s.SeatID
+        JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+        WHERE s.RoomID = @roomId AND st.StartTime > GETDATE()
+          AND t.Status IN ('confirmed', 'pending', 'used')
+      `);
+      
+      const bookedSeatIds = bookedSeatsResult.recordset.map(r => r.SeatID);
+
+      // 2. Clear existing seats that are NOT currently booked in upcoming showtimes
+      if (bookedSeatIds.length > 0) {
+        await request.query(`
+          DELETE FROM Seats 
+          WHERE RoomID = @roomId AND SeatID NOT IN (${bookedSeatIds.join(',')})
+        `);
+      } else {
+        await request.query(`DELETE FROM Seats WHERE RoomID = @roomId`);
+      }
+
+      // 3. Insert or update the new seats
+      for (const seat of seatsArray) {
+        // If seat has a SeatID and it's in the booked list, update its type/multiplier safely (or skip)
+        // For simplicity, we just try to insert new seats (ones without an ID or ones that were deleted).
+        // A robust logic would check if the seat exists.
+        
+        const reqSeat = new sql.Request(transaction);
+        reqSeat.input('roomId', sql.Int, roomId);
+        reqSeat.input('seatRow', sql.VarChar, seat.SeatRow);
+        reqSeat.input('seatNumber', sql.Int, seat.SeatNumber);
+        reqSeat.input('seatType', sql.VarChar, seat.SeatType);
+        reqSeat.input('priceMultiplier', sql.Decimal, seat.PriceMultiplier || 1.0);
+        
+        // Use MERGE to insert or update based on Row and Number for this Room
+        await reqSeat.query(`
+          MERGE Seats AS target
+          USING (SELECT @roomId AS RoomID, @seatRow AS SeatRow, @seatNumber AS SeatNumber) AS source
+          ON (target.RoomID = source.RoomID AND target.SeatRow = source.SeatRow AND target.SeatNumber = source.SeatNumber)
+          WHEN MATCHED THEN
+              UPDATE SET SeatType = @seatType, PriceMultiplier = @priceMultiplier
+          WHEN NOT MATCHED THEN
+              INSERT (RoomID, SeatRow, SeatNumber, SeatType, PriceMultiplier)
+              VALUES (@roomId, @seatRow, @seatNumber, @seatType, @priceMultiplier);
+        `);
+      }
+
+      // 4. Update the room's TotalSeats count
+      await request.query(`
+        UPDATE Rooms 
+        SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None')
+        WHERE RoomID = @roomId
+      `);
+
+      await transaction.commit();
+      return true;
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
+  }
+
   static async getAllShowtimes({ movieId, date, cinemaId }) {
     const pool = await getPool();
     const request = pool.request();
@@ -73,10 +163,13 @@ class AdminModel {
     if (cinemaId) { request.input('cinemaId', sql.Int, parseInt(cinemaId)); filters += ' AND c.CinemaID = @cinemaId'; }
 
     const result = await request.query(`
-      SELECT st.ShowtimeID, st.StartTime, st.EndTime, st.Price, st.Status,
+      SELECT st.ShowtimeID, st.MovieID, st.RoomID,
+             st.StartTime, st.EndTime,
+             COALESCE(st.Price, st.BasePrice, 0) AS Price,
+             st.Status,
              m.Title AS MovieTitle,
              r.RoomName, r.TotalSeats,
-             c.CinemaName,
+             c.CinemaName, c.CinemaID,
              COUNT(t.TicketID) AS TicketsSold
       FROM   Showtimes st
       JOIN   Movies  m ON st.MovieID = m.MovieID
@@ -84,9 +177,10 @@ class AdminModel {
       JOIN   Cinemas c ON r.CinemaID = c.CinemaID
       LEFT   JOIN Tickets t ON t.ShowtimeID = st.ShowtimeID AND t.Status IN ('confirmed','pending')
       ${filters}
-      GROUP BY st.ShowtimeID, st.StartTime, st.EndTime, st.Price, st.Status,
-               m.Title, r.RoomName, r.TotalSeats, c.CinemaName
-      ORDER BY st.StartTime DESC
+      GROUP BY st.ShowtimeID, st.MovieID, st.RoomID, st.StartTime, st.EndTime,
+               COALESCE(st.Price, st.BasePrice, 0), st.Status,
+               m.Title, r.RoomName, r.TotalSeats, c.CinemaName, c.CinemaID
+      ORDER BY st.StartTime ASC
     `);
     return result.recordset;
   }
@@ -114,9 +208,9 @@ class AdminModel {
       .input('roomId', sql.Int, data.roomId)
       .input('startTime', sql.DateTime, data.startTime)
       .input('endTime', sql.DateTime, data.endTime)
-      .input('price', sql.Decimal, data.price)
+      .input('price', sql.Decimal(18,2), data.price)
       .query(`
-        INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, Price, Status)
+        INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, BasePrice, Status)
         OUTPUT INSERTED.*
         VALUES (@movieId, @roomId, @startTime, @endTime, @price, 'active')
       `);
@@ -125,18 +219,73 @@ class AdminModel {
 
   static async updateShowtime(showtimeId, data) {
     const pool = await getPool();
+
+    const currentResult = await pool.request()
+      .input('showtimeId', sql.Int, showtimeId)
+      .query('SELECT MovieID, RoomID, StartTime, EndTime FROM Showtimes WHERE ShowtimeID = @showtimeId');
+
+    if (currentResult.recordset.length === 0) return null;
+
+    const current = currentResult.recordset[0];
+    const movieId = data.movieId != null ? parseInt(data.movieId) : current.MovieID;
+    const roomId = data.roomId != null ? parseInt(data.roomId) : current.RoomID;
+    const startTime = data.startTime || current.StartTime;
+    const endTime = data.endTime || current.EndTime;
+
+    const conflictCheck = await pool.request()
+      .input('roomId', sql.Int, roomId)
+      .input('startTime', sql.DateTime, startTime)
+      .input('endTime', sql.DateTime, endTime)
+      .input('showtimeId', sql.Int, showtimeId)
+      .query(`
+        SELECT ShowtimeID FROM Showtimes
+        WHERE RoomID = @roomId AND Status = 'active' AND ShowtimeID != @showtimeId
+          AND NOT (@endTime <= StartTime OR @startTime >= EndTime)
+      `);
+
+    if (conflictCheck.recordset.length > 0) {
+      throw new Error('Phòng chiếu đã có lịch trong khung giờ này.');
+    }
+
     const result = await pool.request()
       .input('showtimeId', sql.Int, showtimeId)
-      .input('startTime', sql.DateTime, data.startTime)
-      .input('endTime', sql.DateTime, data.endTime)
-      .input('price', sql.Decimal, data.price)
+      .input('movieId', sql.Int, movieId)
+      .input('roomId', sql.Int, roomId)
+      .input('startTime', sql.DateTime, startTime)
+      .input('endTime', sql.DateTime, endTime)
+      .input('price', sql.Decimal(18,2), data.price)
       .input('status', sql.NVarChar, data.status)
       .query(`
         UPDATE Showtimes
-        SET StartTime = COALESCE(@startTime, StartTime),
-            EndTime   = COALESCE(@endTime, EndTime),
-            Price     = COALESCE(@price, Price),
+        SET MovieID   = @movieId,
+            RoomID    = @roomId,
+            StartTime = @startTime,
+            EndTime   = @endTime,
+            BasePrice = COALESCE(@price, BasePrice),
             Status    = COALESCE(@status, Status)
+        OUTPUT INSERTED.*
+        WHERE ShowtimeID = @showtimeId
+      `);
+    return result.recordset.length > 0 ? result.recordset[0] : null;
+  }
+
+  static async deleteShowtime(showtimeId) {
+    const pool = await getPool();
+    // Check if there are confirmed tickets
+    const ticketCheck = await pool.request()
+      .input('showtimeId', sql.Int, showtimeId)
+      .query(`
+        SELECT COUNT(TicketID) AS cnt FROM Tickets
+        WHERE ShowtimeID = @showtimeId AND Status IN ('confirmed', 'used')
+      `);
+    if (ticketCheck.recordset[0].cnt > 0) {
+      throw new Error('Không thể xóa suất chiếu đã có vé được bán.');
+    }
+    
+    const result = await pool.request()
+      .input('showtimeId', sql.Int, showtimeId)
+      .query(`
+        UPDATE Showtimes SET Status = 'cancelled'
         OUTPUT INSERTED.*
         WHERE ShowtimeID = @showtimeId
       `);
@@ -212,6 +361,99 @@ class AdminModel {
     return result.recordset[0];
   }
 
+  // --- F&B MANAGEMENT ---
+  static async getAllFnB() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT FnBID, Name, Description, Category, Price, Stock, ImageURL, IsAvailable
+      FROM FoodBeverages
+      ORDER BY Category, Name
+    `);
+    return result.recordset;
+  }
+
+  static async createFnB(data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('name', sql.NVarChar, data.name)
+      .input('description', sql.NVarChar, data.description || null)
+      .input('category', sql.NVarChar, data.category || 'Combos')
+      .input('price', sql.Decimal, data.price)
+      .input('stock', sql.Int, data.stock || 0)
+      .input('imageURL', sql.VarChar, data.imageURL || 'images/default_fnb.png')
+      .input('isAvailable', sql.Bit, data.isAvailable !== false ? 1 : 0)
+      .query(`
+        INSERT INTO FoodBeverages (Name, Description, Category, Price, Stock, ImageURL, IsAvailable)
+        OUTPUT INSERTED.*
+        VALUES (@name, @description, @category, @price, @stock, @imageURL, @isAvailable)
+      `);
+    return result.recordset[0];
+  }
+
+  static async updateFnB(id, data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, id)
+      .input('name', sql.NVarChar, data.name)
+      .input('description', sql.NVarChar, data.description || null)
+      .input('category', sql.NVarChar, data.category)
+      .input('price', sql.Decimal, data.price)
+      .input('stock', sql.Int, data.stock)
+      .input('imageURL', sql.VarChar, data.imageURL || null)
+      .query(`
+        UPDATE FoodBeverages
+        SET Name = COALESCE(@name, Name),
+            Description = COALESCE(@description, Description),
+            Category = COALESCE(@category, Category),
+            Price = COALESCE(@price, Price),
+            Stock = COALESCE(@stock, Stock),
+            ImageURL = COALESCE(@imageURL, ImageURL)
+        OUTPUT INSERTED.*
+        WHERE FnBID = @id
+      `);
+    return result.recordset.length > 0 ? result.recordset[0] : null;
+  }
+
+  static async deleteFnB(id) {
+    const pool = await getPool();
+    // Check if it's used in Ticket_FnB
+    const usageCheck = await pool.request()
+      .input('id', sql.Int, id)
+      .query(`SELECT COUNT(*) as cnt FROM Ticket_FnB WHERE FnBID = @id`);
+    if (usageCheck.recordset[0].cnt > 0) {
+      throw new Error('Không thể xóa món ăn đã có người mua.');
+    }
+    await pool.request()
+      .input('id', sql.Int, id)
+      .query(`DELETE FROM FoodBeverages WHERE FnBID = @id`);
+  }
+
+  static async toggleFnBAvailability(id) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, id)
+      .query(`
+        UPDATE FoodBeverages
+        SET IsAvailable = CASE WHEN IsAvailable = 1 THEN 0 ELSE 1 END
+        OUTPUT INSERTED.*
+        WHERE FnBID = @id
+      `);
+    return result.recordset.length > 0 ? result.recordset[0] : null;
+  }
+
+  static async getFnBStats() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT 
+        (SELECT COUNT(*) FROM FoodBeverages) AS TotalItems,
+        (SELECT COUNT(*) FROM FoodBeverages WHERE Stock < 20) AS LowStockItems,
+        (SELECT ISNULL(SUM(tf.Quantity * fb.Price), 0) FROM Ticket_FnB tf JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID JOIN Tickets t ON tf.TicketID = t.TicketID WHERE t.Status IN ('confirmed', 'used')) AS TotalRevenue,
+        (SELECT ISNULL(SUM(tf.Quantity), 0) FROM Ticket_FnB tf JOIN Tickets t ON tf.TicketID = t.TicketID WHERE t.Status IN ('confirmed', 'used')) AS TotalVouchersUsed
+    `);
+    return result.recordset[0];
+  }
+
+
   // --- STATISTICS ---
   static async getRevenueStats({ startDate, endDate, movieId, cinemaId }) {
     const pool = await getPool();
@@ -253,21 +495,89 @@ class AdminModel {
   static async getDashboardStats() {
     const pool = await getPool();
     const result = await pool.request().query(`
+      DECLARE @TotalSeats INT = (
+        SELECT ISNULL(SUM(r.TotalSeats), 1)
+        FROM Showtimes st JOIN Rooms r ON st.RoomID = r.RoomID
+        WHERE st.Status = 'active'
+      );
+      DECLARE @BookedSeats INT = (
+        SELECT COUNT(*) FROM Tickets WHERE Status IN ('confirmed', 'used', 'pending')
+      );
+
       SELECT
-        (SELECT COUNT(*) FROM Movies WHERE Status = 'now-showing')                                      AS MoviesNowShowing,
-        (SELECT COUNT(*) FROM Movies WHERE Status = 'coming-soon')                                      AS MoviesComingSoon,
-        (SELECT COUNT(*) FROM Showtimes WHERE CAST(StartTime AS DATE) = CAST(GETDATE() AS DATE))        AS ShowtimesToday,
-        (SELECT COUNT(*) FROM Tickets WHERE Status IN ('confirmed','used'))                              AS TotalTicketsSold,
-        (SELECT ISNULL(SUM(TotalAmount), 0) FROM Tickets
-         WHERE Status IN ('confirmed','used')
-           AND CAST(BookedAt AS DATE) = CAST(GETDATE() AS DATE))                                        AS RevenueToday,
-        (SELECT ISNULL(SUM(TotalAmount), 0) FROM Tickets
-         WHERE Status IN ('confirmed','used')
-           AND MONTH(BookedAt) = MONTH(GETDATE())
-           AND YEAR(BookedAt)  = YEAR(GETDATE()))                                                       AS RevenueThisMonth,
-        (SELECT COUNT(*) FROM Users)                                                                     AS TotalUsers
+        (SELECT ISNULL(SUM(TotalAmount), 0) FROM Tickets WHERE Status IN ('confirmed', 'used')) AS TotalRevenue,
+        (SELECT COUNT(*) FROM Tickets WHERE Status IN ('confirmed', 'used', 'pending')) AS TicketSales,
+        (
+          SELECT ISNULL(SUM(tf.Quantity * fb.Price), 0)
+          FROM Ticket_FnB tf
+          JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
+          JOIN Tickets t ON tf.TicketID = t.TicketID
+          WHERE t.Status IN ('confirmed', 'used')
+        ) AS FnBSales,
+        (CAST(@BookedSeats * 100.0 / NULLIF(@TotalSeats, 0) AS DECIMAL(5,1))) AS OccupancyRate
     `);
     return result.recordset[0];
+  }
+
+  static async getRecentTransactions(limit = 10) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('limit', sql.Int, limit)
+      .query(`
+        SELECT TOP (@limit)
+          '#TXN-' + RIGHT('0000' + CAST(t.TicketID AS VARCHAR(10)), 4) AS id,
+          c.CinemaName AS branch,
+          m.Title AS item,
+          FORMAT(t.BookedAt, 'dd MMM, HH:mm') AS date,
+          FORMAT(t.TotalAmount, 'N0') + ' đ' AS amount,
+          CASE t.Status
+            WHEN 'confirmed' THEN 'COMPLETED'
+            WHEN 'pending' THEN 'PENDING'
+            WHEN 'cancelled' THEN 'CANCELLED'
+            ELSE UPPER(t.Status)
+          END AS status
+        FROM Tickets t
+        JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+        JOIN Movies m ON st.MovieID = m.MovieID
+        JOIN Rooms r ON st.RoomID = r.RoomID
+        JOIN Cinemas c ON r.CinemaID = c.CinemaID
+        ORDER BY t.BookedAt DESC
+      `);
+    return result.recordset;
+  }
+
+  static async getMonthlyRevenue(year) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('year', sql.Int, year || new Date().getFullYear())
+      .query(`
+        WITH Months AS (
+            SELECT 1 AS MonthNumber UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+            UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8
+            UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL SELECT 12
+        )
+        SELECT 
+            m.MonthNumber,
+            (
+                SELECT ISNULL(SUM(t.TicketPrice), 0) 
+                FROM Tickets t
+                WHERE MONTH(t.BookedAt) = m.MonthNumber
+                  AND YEAR(t.BookedAt) = @year
+                  AND t.Status IN ('confirmed', 'used')
+            ) AS TicketRevenue,
+            (
+                SELECT ISNULL(SUM(tf.Quantity * fb.Price), 0) 
+                FROM Ticket_FnB tf
+                JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
+                JOIN Tickets t ON tf.TicketID = t.TicketID
+                WHERE MONTH(t.BookedAt) = m.MonthNumber
+                  AND YEAR(t.BookedAt) = @year
+                  AND t.Status IN ('confirmed', 'used')
+            ) AS FnBRevenue
+        FROM Months m
+        ORDER BY m.MonthNumber
+      `);
+    return result.recordset;
   }
 
   static async getTopMovies(limit) {
@@ -276,15 +586,22 @@ class AdminModel {
       .input('limit', sql.Int, limit)
       .query(`
         SELECT TOP (@limit)
-          m.MovieID, m.Title, m.Genre, m.PosterURL,
-          COUNT(t.TicketID)  AS TotalTickets,
-          SUM(t.TotalAmount) AS TotalRevenue
+          m.MovieID, m.Title, m.PosterURL,
+          (
+             SELECT ISNULL(SUM(t2.TotalAmount), 0) 
+             FROM Tickets t2 
+             JOIN Showtimes st2 ON t2.ShowtimeID = st2.ShowtimeID
+             WHERE st2.MovieID = m.MovieID
+               AND CAST(t2.BookedAt AS DATE) = CAST(GETDATE() AS DATE)
+               AND t2.Status IN ('confirmed', 'used')
+          ) AS TodayRevenue,
+          COUNT(t.TicketID) AS TotalTickets
         FROM   Tickets t
         JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
         JOIN   Movies    m  ON st.MovieID   = m.MovieID
-        WHERE  t.Status IN ('confirmed', 'used')
-        GROUP BY m.MovieID, m.Title, m.Genre, m.PosterURL
-        ORDER BY TotalRevenue DESC
+        WHERE  t.Status IN ('confirmed', 'used', 'pending')
+        GROUP BY m.MovieID, m.Title, m.PosterURL
+        ORDER BY TodayRevenue DESC, TotalTickets DESC
       `);
     return result.recordset;
   }

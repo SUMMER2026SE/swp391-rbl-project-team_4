@@ -10,27 +10,21 @@
 </head>
 
 <body>
-    <header class="navbar">
+    <!-- Navbar -->
+        <header class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">
                 <span class="logo-d">D</span>
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <div class="dropdown">
-                    <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
-                    <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Phim Đang Chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Phim Sắp Chiếu</a>
-                    </div>
-                </div>
+                <a href="movies.html" id="nav-phim" class="active">Phim</a>
                 <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
-                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
@@ -47,82 +41,51 @@
         </div>
     </header>
 
+    <!-- Main Content -->
     <div class="movies-container">
+        <!-- Sidebar: Filters -->
         <aside class="filters-sidebar">
             <div class="filters-section">
-                <h3 class="filters-title">Bộ lọc</h3>
+                <h3 class="filters-title">Filters</h3>
 
+                <!-- Genres Filter -->
                 <div class="filter-group">
-                    <h4 class="filter-header">Thể loại</h4>
+                    <h4 class="filter-header">GENRES</h4>
                     <div class="filter-list">
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="hành động">
+                            <input type="checkbox" name="genre" value="action" checked>
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Hành động</span>
+                            <span class="filter-label">Action</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="hài hước">
+                            <input type="checkbox" name="genre" value="comedy">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Hài hước</span>
+                            <span class="filter-label">Comedy</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="hoạt hình">
+                            <input type="checkbox" name="genre" value="drama">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Hoạt hình</span>
+                            <span class="filter-label">Drama</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="phiêu lưu">
+                            <input type="checkbox" name="genre" value="scifi">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Phiêu lưu</span>
+                            <span class="filter-label">Sci-Fi</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="kinh dị">
+                            <input type="checkbox" name="genre" value="horror">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Kinh dị</span>
-                        </label>
-                        <label class="filter-item">
-                            <input type="checkbox" name="genre" value="viễn tưởng">
-                            <span class="filter-checkbox"></span>
-                            <span class="filter-label">Khoa học Viễn tưởng</span>
-                        </label>
-                        <label class="filter-item">
-                            <input type="checkbox" name="genre" value="chính kịch">
-                            <span class="filter-checkbox"></span>
-                            <span class="filter-label">Chính kịch</span>
-                        </label>
-                        <label class="filter-item">
-                            <input type="checkbox" name="genre" value="gia đình">
-                            <span class="filter-checkbox"></span>
-                            <span class="filter-label">Gia đình</span>
-                        </label>
-                        <label class="filter-item">
-                            <input type="checkbox" name="genre" value="tâm lý">
-                            <span class="filter-checkbox"></span>
-                            <span class="filter-label">Tâm lý</span>
-                        </label>
-                        <label class="filter-item">
-                            <input type="checkbox" name="genre" value="hình sự">
-                            <span class="filter-checkbox"></span>
-                            <span class="filter-label">Hình sự</span>
-                        </label>
-                        <label class="filter-item">
-                            <input type="checkbox" name="genre" value="lãng mạn">
-                            <span class="filter-checkbox"></span>
-                            <span class="filter-label">Lãng mạn</span>
-                        </label>
-                        <label class="filter-item">
-                            <input type="checkbox" name="genre" value="giật gân">
-                            <span class="filter-checkbox"></span>
-                            <span class="filter-label">Giật gân</span>
+                            <span class="filter-label">Horror</span>
                         </label>
                     </div>
                 </div>
 
+                <!-- Formats Filter -->
                 <div class="filter-group">
-                    <h4 class="filter-header">Định dạng</h4>
+                    <h4 class="filter-header">FORMATS</h4>
                     <div class="filter-list">
                         <label class="filter-item">
-                            <input type="checkbox" name="format" value="2d">
+                            <input type="checkbox" name="format" value="2d" checked>
                             <span class="filter-checkbox"></span>
                             <span class="filter-label">2D</span>
                         </label>
@@ -132,7 +95,7 @@
                             <span class="filter-label">3D</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="format" value="imax">
+                            <input type="checkbox" name="format" value="imax" checked>
                             <span class="filter-checkbox"></span>
                             <span class="filter-label">IMAX</span>
                         </label>
@@ -141,39 +104,49 @@
             </div>
         </aside>
 
+        <!-- Main Content: Movies -->
         <main class="movies-main">
-            <div class="movies-breadcrumbs">
-                <a href="index.html">Trang chủ</a> &gt; <span>Phim</span> &gt; <span id="breadcrumb-status">Phim Đang
-                    Chiếu</span>
-            </div>
-
-            <div class="movies-title-tabs">
-                <a href="movies.html?status=showing" id="tab-showing" class="tab-title active">Phim Đang Chiếu</a>
-                <a href="movies.html?status=coming" id="tab-coming" class="tab-title">Phim Sắp Chiếu</a>
-            </div>
-
-            <div class="movies-header" style="margin-bottom: 20px;">
-                <h3 id="current-view-title" style="font-size: 1.2rem; font-weight: 700; text-transform: uppercase;">Phim
-                    Đang Chiếu</h3>
+            <!-- Header: Title & Sort -->
+            <div class="movies-header">
+                <h2 class="movies-title">Now Showing</h2>
                 <div class="sort-container">
-                    <label for="sortSelect">Sắp xếp theo:</label>
+                    <label for="sortSelect">Sort by:</label>
                     <select id="sortSelect" class="sort-select">
-                        <option value="popular" selected>Phổ biến nhất</option>
-                        <option value="rating">Đánh giá cao nhất</option>
-                        <option value="newest">Mới nhất</option>
-                        <option value="title">Tiêu đề (A-Z)</option>
+                        <option value="popular" selected>Most Popular</option>
+                        <option value="rating">Highest Rated</option>
+                        <option value="newest">Newest</option>
+                        <option value="title">Title (A-Z)</option>
                     </select>
                 </div>
             </div>
 
-            <div class="movies-grid" id="movies-grid">
+            <!-- Movies Grid -->
+            <div class="movies-grid">
+                <!-- Data will be loaded dynamically by app.js -->
             </div>
 
+            <!-- Pagination -->
             <div class="pagination">
+                <button class="pagination-btn prev" onclick="previousPage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                </button>
+                <button class="pagination-btn active">1</button>
+                <button class="pagination-btn">2</button>
+                <button class="pagination-btn">3</button>
+                <span class="pagination-dots">...</span>
+                <button class="pagination-btn">12</button>
+                <button class="pagination-btn next" onclick="nextPage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
+                </button>
             </div>
         </main>
     </div>
 
+    <!-- Footer (Light Theme) -->
     <footer class="site-footer">
         <div class="container footer-grid">
             <div class="footer-col footer-brand">
@@ -228,343 +201,22 @@
         </div>
     </footer>
 
-    <div class="modal fade" id="trailerModal" tabindex="-1" aria-labelledby="trailerModalLabel" aria-hidden="true"
-        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1050;">
-        <div class="modal-dialog modal-lg modal-dialog-centered"
-            style="position: relative; width: auto; max-width: 800px; margin: 1.75rem auto; top: 50%; transform: translateY(-50%);">
-            <div class="modal-content bg-transparent border-0">
-                <div class="modal-header border-0 pb-0" style="display: flex; justify-content: flex-end;">
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"
-                        style="background: transparent; border: none; color: white; font-size: 2rem; cursor: pointer;"
-                        onclick="closeTrailerModal()">&times;</button>
-                </div>
-                <div class="modal-body p-0">
-                    <div class="ratio ratio-16x9" style="position: relative; width: 100%; padding-top: 56.25%;">
-                        <iframe id="trailerVideo" src="" title="YouTube video player" frameborder="0"
-                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen></iframe>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js?v=2"></script>
+    <script src="app.js"></script>
     <script>
-        // Mock data fallback matching CGV layout (20 movies each)
-        const mockMoviesNowShowing = [
-            { id: 1, title: "Doraemon Movie 45 (2026): Nobita Và Lâu Đài Dưới Đáy Biển", rating: "P", image: "images/doraemon_sea.png", genre: "Hoạt Hình, Gia Đình, Phiêu Lưu, Viễn Tưởng", duration: "101 phút", releaseDate: "2026-05-22", stars: "8.5", popularScore: 100, ranking: 1, trailerURL: "https://www.youtube.com/embed/u3JgYkmuK78" },
-            { id: 2, title: "Tạm Biệt Gohan", rating: "K", image: "images/tam_biet_gohan.png", genre: "Gia đình, Drama", duration: "105 phút", releaseDate: "2026-05-15", stars: "9.0", popularScore: 98, ranking: 2, trailerURL: "https://www.youtube.com/embed/gCcx85zLyz4" },
-            { id: 3, title: "Ngôi Đền Kỳ Quái 5", rating: "T16", image: "images/ngoi_den_ky_quai_5.png", genre: "Hài, Kinh Dị", duration: "110 phút", releaseDate: "2026-05-28", stars: "7.8", popularScore: 95, ranking: 3, trailerURL: "https://www.youtube.com/embed/gCcx85zLyz4" },
-            { id: 4, title: "Star Wars: Mandalorian và Grogu", rating: "T13", image: "images/mandalorian_grogu.png", genre: "Hành Động, Khoa Học Viễn Tưởng", duration: "120 phút", releaseDate: "2026-05-29", stars: "8.8", popularScore: 92, trailerURL: "https://www.youtube.com/embed/gCcx85zLyz4" },
-            { id: 5, title: "Interstellar: Hành Trình Giữa Các Vì Sao", rating: "T13", image: "images/movie_interstellar.png", genre: "Drama, Khoa Học Viễn Tưởng", duration: "169 phút", releaseDate: "2026-05-10", stars: "9.1", popularScore: 90, trailerURL: "https://www.youtube.com/embed/gCcx85zLyz4" },
-            { id: 6, title: "Oppenheimer: Kẻ Hủy Diệt Thế Giới", rating: "T18", image: "images/movie_oppenheimer.png", genre: "Drama, Lịch Sử", duration: "180 phút", releaseDate: "2026-05-12", stars: "8.9", popularScore: 88, trailerURL: "https://www.youtube.com/embed/gCcx85zLyz4" },
-            { id: 7, title: "Dune: Hành Tinh Cát - Phần 2", rating: "T13", image: "images/dune_poster.png", genre: "Hành Động, Khoa Học Viễn Tưởng", duration: "166 phút", releaseDate: "2026-05-20", stars: "9.0", popularScore: 86, trailerURL: "https://www.youtube.com/watch?v=kCO-RO3q7U4" },
-            { id: 8, title: "Neon Dreams: Ánh Sáng Đô Thị", rating: "T16", image: "images/movie_neon_dreams.png", genre: "Hành Động, Viễn Tưởng", duration: "115 phút", releaseDate: "2026-05-18", stars: "7.6", popularScore: 84, trailerURL: "https://www.youtube.com/embed/gCcx85zLyz4" }
-        ];
-
-        const mockMoviesComingSoon = [
-            { id: 21, title: "Lật Mặt 7: Một Điều Ước", rating: "T13", image: "images/lat_mat_7.png", genre: "Drama, Gia Đình", duration: "138 phút", releaseDate: "2026-06-15", stars: "9.2", popularScore: 100, trailerURL: "https://www.youtube.com/embed/gCcx85zLyz4" },
-            { id: 22, title: "Deadpool & Wolverine", rating: "T18", image: "images/deadpool_wolverine.png", genre: "Hành Động, Hài, Khoa Học Viễn Tưởng", duration: "127 phút", releaseDate: "2026-07-26", stars: "9.0", popularScore: 98, trailerURL: "https://www.youtube.com/embed/gCcx85zLyz4" },
-            { id: 23, title: "Inside Out 2 (Những Mảnh Thế Giới Cảm Xúc 2)", rating: "P", image: "images/movie_summer_echoes.png", genre: "Hoạt Hình, Gia Đình, Hài", duration: "96 phút", releaseDate: "2026-06-14", stars: "8.9", popularScore: 95, trailerURL: "https://www.youtube.com/embed/gCcx85zLyz4" },
-            { id: 24, title: "Despicable Me 4 (Kẻ Trộm Mặt Trăng 4)", rating: "P", image: "images/movie_nebula.png", genre: "Hoạt Hình, Gia Đình, Hài", duration: "94 phút", releaseDate: "2026-07-03", stars: "8.2", popularScore: 92, trailerURL: "https://www.youtube.com/embed/gCcx85zLyz4" }
-        ];
-
-        let allMovies = [];
-        const MOVIES_PER_PAGE = 4;
-        let currentPage = 1;
-
-        function getQueryStatus() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('status') || 'showing';
+        // Pagination
+        function previousPage() {
+            console.log('Previous page');
         }
 
-        function updateTabsUI(status) {
-            const tabShowing = document.getElementById('tab-showing');
-            const tabComing = document.getElementById('tab-coming');
-            const breadcrumbStatus = document.getElementById('breadcrumb-status');
-            const currentViewTitle = document.getElementById('current-view-title');
-
-            if (status === 'coming') {
-                tabShowing.classList.remove('active');
-                tabComing.classList.add('active');
-                breadcrumbStatus.textContent = 'Phim Sắp Chiếu';
-                currentViewTitle.textContent = 'Phim Sắp Chiếu';
-                document.title = 'Phim Sắp Chiếu | D-Cinema';
-            } else {
-                tabShowing.classList.add('active');
-                tabComing.classList.remove('active');
-                breadcrumbStatus.textContent = 'Phim Đang Chiếu';
-                currentViewTitle.textContent = 'Phim Đang Chiếu';
-                document.title = 'Phim Đang Chiếu | D-Cinema';
-            }
+        function nextPage() {
+            console.log('Next page');
         }
 
-        async function loadMovies() {
-            const status = getQueryStatus();
-            updateTabsUI(status);
-            currentPage = 1;
-
-            const apiEndpoint = status === 'coming' ? '/api/movies/coming-soon' : '/api/movies/now-showing';
-            try {
-                const res = await fetch(apiEndpoint);
-                const result = await res.json();
-                if (result.success && result.data && result.data.length > 0) {
-                    allMovies = result.data.map((m, index) => ({
-                        id: m.MovieID,
-                        title: m.Title,
-                        description: m.Description || '',
-                        director: m.Director || '',
-                        duration: m.Duration ? `${m.Duration} phút` : '120 phút',
-                        rating: m.AgeRating || 'P',
-                        image: m.PosterURL || 'images/poster.png',
-                        genre: m.Genre || 'Chưa phân loại',
-                        releaseDate: m.ReleaseDate ? m.ReleaseDate.substring(0, 10) : '2026-05-29',
-                        trailerURL: m.TrailerURL || 'https://www.youtube.com/embed/gCcx85zLyz4', // Bắt link Trailer từ DB
-                        stars: (9.0 - (index * 0.3)).toFixed(1),
-                        popularScore: 100 - (index * 5),
-                        ranking: (status === 'showing' && index < 3) ? (index + 1) : null
-                    }));
-                } else {
-                    allMovies = status === 'coming' ? mockMoviesComingSoon : mockMoviesNowShowing;
-                }
-            } catch (err) {
-                console.warn("Could not fetch movies from API, loading mock data.", err);
-                allMovies = status === 'coming' ? mockMoviesComingSoon : mockMoviesNowShowing;
-            }
-
-            const params = new URLSearchParams(window.location.search);
-            const searchVal = params.get('search');
-            if (searchVal) {
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput) {
-                    searchInput.value = searchVal;
-                }
-            }
-
-            applyFiltersAndSort();
-        }
-
-        function applyFiltersAndSort() {
-            const checkedGenres = Array.from(document.querySelectorAll('input[name="genre"]:checked')).map(el => el.value.toLowerCase());
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
-
-            let filtered = allMovies.filter(m => {
-                if (searchQuery && !m.title.toLowerCase().includes(searchQuery)) {
-                    return false;
-                }
-
-                if (checkedGenres.length > 0) {
-                    let matchesGenre = false;
-                    const mgLower = m.genre.toLowerCase();
-                    checkedGenres.forEach(cg => {
-                        // Check if it matches Vietnamese or English equivalent
-                        if (mgLower.includes(cg)) {
-                            matchesGenre = true;
-                        }
-                        // Support equivalents to ensure mock data (which has 'Drama' or 'Hài') also filters correctly
-                        if (cg === 'hành động' && (mgLower.includes('action') || mgLower.includes('hành động') || mgLower.includes('phiêu lưu') || mgLower.includes('adventure'))) matchesGenre = true;
-                        if (cg === 'hài hước' && (mgLower.includes('comedy') || mgLower.includes('hài') || mgLower.includes('hài hước'))) matchesGenre = true;
-                        if (cg === 'chính kịch' && (mgLower.includes('drama') || mgLower.includes('chính kịch') || mgLower.includes('tâm lý') || mgLower.includes('gia đình'))) matchesGenre = true;
-                        if (cg === 'viễn tưởng' && (mgLower.includes('sci-fi') || mgLower.includes('scifi') || mgLower.includes('viễn tưởng') || mgLower.includes('khoa học viễn tưởng'))) matchesGenre = true;
-                        if (cg === 'kinh dị' && (mgLower.includes('horror') || mgLower.includes('kinh dị') || mgLower.includes('ma'))) matchesGenre = true;
-                        if (cg === 'hoạt hình' && (mgLower.includes('hoạt hình') || mgLower.includes('animation') || mgLower.includes('hoạt hình'))) matchesGenre = true;
-                        if (cg === 'phiêu lưu' && (mgLower.includes('phiêu lưu') || mgLower.includes('adventure'))) matchesGenre = true;
-                        if (cg === 'gia đình' && (mgLower.includes('gia đình') || mgLower.includes('family'))) matchesGenre = true;
-                        if (cg === 'tâm lý' && (mgLower.includes('tâm lý') || mgLower.includes('drama') || mgLower.includes('chính kịch'))) matchesGenre = true;
-                        if (cg === 'hình sự' && (mgLower.includes('hình sự') || mgLower.includes('crime') || mgLower.includes('trinh thám'))) matchesGenre = true;
-                        if (cg === 'lãng mạn' && (mgLower.includes('lãng mạn') || mgLower.includes('romance') || mgLower.includes('tình cảm'))) matchesGenre = true;
-                        if (cg === 'giật gân' && (mgLower.includes('giật gân') || mgLower.includes('thriller'))) matchesGenre = true;
-                    });
-                    if (!matchesGenre) return false;
-                }
-
-                return true;
-            });
-
-            const sortVal = document.getElementById('sortSelect').value;
-            if (sortVal === 'popular') {
-                filtered.sort((a, b) => b.popularScore - a.popularScore);
-            } else if (sortVal === 'rating') {
-                filtered.sort((a, b) => parseFloat(b.stars) - parseFloat(a.stars));
-            } else if (sortVal === 'newest') {
-                filtered.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
-            } else if (sortVal === 'title') {
-                filtered.sort((a, b) => a.title.localeCompare(b.title));
-            }
-
-            // Paginate
-            const totalPages = Math.min(5, Math.ceil(filtered.length / MOVIES_PER_PAGE));
-            if (currentPage > totalPages) {
-                currentPage = 1;
-            }
-
-            const startIdx = (currentPage - 1) * MOVIES_PER_PAGE;
-            const paginatedMovies = filtered.slice(startIdx, startIdx + MOVIES_PER_PAGE);
-
-            renderGrid(paginatedMovies);
-            renderPagination(totalPages);
-        }
-
-        function renderGrid(moviesList) {
-            const grid = document.getElementById('movies-grid');
-            if (!moviesList || moviesList.length === 0) {
-                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted-light);">Không tìm thấy bộ phim nào phù hợp.</div>`;
-                return;
-            }
-
-            const status = getQueryStatus();
-
-            grid.innerHTML = moviesList.map(m => {
-                let ribbonHTML = '';
-                if (status === 'showing' && currentPage === 1 && m.ranking && m.ranking <= 3) {
-                    ribbonHTML = `
-                        <div class="rank-badge-container rank-${m.ranking}">
-                            <div class="rank-medal">${m.ranking}</div>
-                            <div class="rank-ribbon-tail"></div>
-                        </div>
-                    `;
-                }
-
-                const ratingClass = `age-${m.rating.toLowerCase()}`;
-                const releaseFormatted = formatDate(m.releaseDate);
-
-                return `
-                    <div class="movie-card" onclick="window.location.href='movie-detail.html?id=${m.id}'">
-                        <div class="movie-poster">
-                            <span class="rating-badge ${ratingClass}">${m.rating}</span>
-                            ${ribbonHTML}
-                            <img src="${m.image}" alt="${m.title}">
-                            <div class="movie-overlay" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                                <button class="btn-trailer" onclick="event.stopPropagation(); openTrailerModal('${m.trailerURL}')" style="margin-bottom: 15px; background: rgba(0,0,0,0.7); color: white; border: 1px solid white; padding: 10px 20px; border-radius: 4px; cursor: pointer; transition: 0.3s; font-weight: bold; font-size: 14px;">XEM TRAILER</button>
-                                
-                                <button class="btn-tickets" onclick="event.stopPropagation(); window.location.href='booking.html?movieId=${m.id}'">ĐẶT VÉ</button>
-                            </div>
-                        </div>
-                        <div class="movie-info">
-                            <h3 class="movie-title" title="${m.title}">${m.title}</h3>
-                            <div class="movie-rating">
-                                <span class="stars">★ ${m.stars}</span>
-                                <span class="movie-genre-text"><strong>Thể loại:</strong> ${m.genre}</span>
-                                <span class="movie-meta-text"><strong>Thời lượng:</strong> ${m.duration}</span>
-                                <span class="movie-meta-text"><strong>Khởi chiếu:</strong> ${releaseFormatted}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderPagination(totalPages) {
-            const paginationContainer = document.querySelector('.pagination');
-            if (!paginationContainer) return;
-
-            if (totalPages <= 1) {
-                paginationContainer.style.display = 'none';
-                return;
-            }
-            paginationContainer.style.display = 'flex';
-
-            let html = `
-                <button class="pagination-btn prev" ${currentPage === 1 ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''} onclick="changePage(${currentPage - 1})">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m15 18-6-6 6-6" />
-                    </svg>
-                </button>
-            `;
-
-            for (let i = 1; i <= totalPages; i++) {
-                html += `
-                    <button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>
-                `;
-            }
-
-            html += `
-                <button class="pagination-btn next" ${currentPage === totalPages ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''} onclick="changePage(${currentPage + 1})">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m9 18 6-6-6-6" />
-                    </svg>
-                </button>
-            `;
-
-            paginationContainer.innerHTML = html;
-        }
-
-        function changePage(pageNum) {
-            currentPage = pageNum;
-            applyFiltersAndSort();
-            document.querySelector('.movies-title-tabs').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return '...';
-            try {
-                const date = new Date(dateStr);
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = date.getFullYear();
-                return `${day}/${month}/${year}`;
-            } catch (e) {
-                return dateStr;
-            }
-        }
-
-        // --- XỬ LÝ TRAILER MODAL ---
-        function getEmbedUrl(url) {
-            if (!url) return '';
-            if (url.includes('youtube.com/embed/')) return url;
-            
-            let videoId = '';
-            try {
-                if (url.includes('youtube.com/watch')) {
-                    const urlParams = new URLSearchParams(new URL(url).search);
-                    videoId = urlParams.get('v');
-                } else if (url.includes('youtu.be/')) {
-                    videoId = url.split('youtu.be/')[1].split('?')[0];
-                } else if (url.includes('youtube.com/v/')) {
-                    videoId = url.split('youtube.com/v/')[1].split('?')[0];
-                }
-            } catch (e) {
-                console.error(e);
-            }
-            
-            return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
-        }
-
-        function openTrailerModal(videoSrc) {
-            const modal = document.getElementById('trailerModal');
-            const iframe = document.getElementById('trailerVideo');
-
-            if (videoSrc) {
-                iframe.setAttribute('src', getEmbedUrl(videoSrc));
-            }
-
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeTrailerModal() {
-            const modal = document.getElementById('trailerModal');
-            const iframe = document.getElementById('trailerVideo');
-
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-
-            iframe.setAttribute('src', '');
-        }
-
-        window.onclick = function (event) {
-            const modal = document.getElementById('trailerModal');
-            if (event.target == modal) {
-                closeTrailerModal();
-            }
-        }
-
-        // Initialize Page
+        // Check login state for navbar
         document.addEventListener('DOMContentLoaded', () => {
-            const userStr = localStorage.getItem('user');
+            const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
             if (userStr) {
                 const user = JSON.parse(userStr);
                 const btnLogin = document.getElementById('btnLogin');
@@ -573,25 +225,6 @@
                     btnLogin.href = 'profile.html';
                 }
             }
-
-            loadMovies();
-
-            document.querySelectorAll('.filter-item input').forEach(input => {
-                input.addEventListener('change', () => {
-                    currentPage = 1;
-                    applyFiltersAndSort();
-                });
-            });
-
-            document.getElementById('sortSelect').addEventListener('change', () => {
-                currentPage = 1;
-                applyFiltersAndSort();
-            });
-
-            document.getElementById('searchInput').addEventListener('input', () => {
-                currentPage = 1;
-                applyFiltersAndSort();
-            });
         });
     </script>
 </body>
