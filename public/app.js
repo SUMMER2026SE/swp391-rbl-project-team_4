@@ -2,7 +2,7 @@ const socket = io('http://localhost:9999');
 
 const mockMovies = [
     { id: 1, title: 'LẬT MẶT 7: MỘT ĐIỀU ƯỚC', rating: 'T16', image: 'images/poster.png', genre: 'Hành động', duration: 120, trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
-    { id: 2, title: 'DORAEMON: NOBITA VÀ BẢN GIAO HƯỞNG', rating: 'P', image: 'images/poster.png', genre: 'Hoạt hình', duration: 110, trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
+    { id: 2, title: 'Doraemon Movie 45 (2026): Nobita Và Lâu Đài Dưới Đáy Biển', rating: 'P', image: 'images/doraemon_sea.png', genre: 'Hoạt hình', duration: 101, trailer: 'https://www.youtube.com/embed/u3JgYkmuK78' },
     { id: 3, title: 'HÀNH TINH KHỈ: VƯƠNG QUỐC MỚI', rating: 'T13', image: 'images/poster.png', genre: 'Viễn tưởng', duration: 145, trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ' }
 ];
 

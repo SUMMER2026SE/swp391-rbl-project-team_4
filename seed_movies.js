@@ -55,13 +55,13 @@ async function seed() {
     const movies = [
       {
         id: 1,
-        title: 'Doraemon: Nobita và Bản Giao Hưởng Địa Cầu',
-        description: 'Nobita và những người bạn cùng tham gia vào một cuộc phiêu lưu âm nhạc kỳ thú để giải cứu Trái Đất khỏi hiểm họa diệt vong bằng sức mạnh của những bản giao hương kỳ diệu.',
-        director: 'Imai Kazuaki',
-        duration: 115,
+        title: 'Doraemon Movie 45 (2026): Nobita Và Lâu Đài Dưới Đáy Biển',
+        description: 'Bước vào kì nghỉ hè, Nobita và các bạn tranh cãi chí chóe về địa điểm cắm trại. Theo đề xuất của Doraemon, cả nhóm quyết định cắm trại giữa lòng đại dương! Sử dụng bảo bối thần kì “xe Buggy chạy dưới nước” và “đèn pin thích nghi”, 5 bạn nhỏ tận hưởng chuyến cắm trại dưới biển, gặp gỡ vô vàn sinh vật lí thú trên đường đi. Sau khi phát hiện một chiếc tàu đắm, nhóm bạn đã gặp chàng thanh niên bí ẩn El. Thật bất ngờ, anh ta lại là cư dân đáy biển, sống tại “liên bang Mu”, một vùng biển rộng lớn! Vốn căm ghét người mặt đất, cư dân đáy biển không thể nào tin tưởng Nobita và các bạn. Đúng lúc đó, lời thông báo “lâu đài quỷ… đã bắt đầu phục sinh!!” được truyền tới. “Lâu đài quỷ” khiến cư dân đáy biển khiếp sợ, rốt cuộc là gì? Đặt trọn niềm tin vào bè bạn trong lồng ngực, chuyến phiêu lưu vĩ đại quyết định số phận của trái đất, bắt đầu!',
+        director: 'Tetsuo Yajima',
+        duration: 101,
         rating: 'P',
-        trailer: 'https://www.youtube.com/embed/drcWuhD1Xb4',
-        poster: 'images/doraemon_orchestra.png',
+        trailer: 'https://www.youtube.com/embed/u3JgYkmuK78',
+        poster: 'images/doraemon_sea.png',
         status: 'now-showing',
         genres: [6, 8, 7]
       },
