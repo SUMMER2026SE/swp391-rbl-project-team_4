@@ -352,12 +352,22 @@ body {
 }
 
 .rating-badge.age-t16 {
-    background: #f59e0b;
-    color: #000;
+    background: #f97316; /* Orange */
+    color: #fff;
 }
 
-.rating-badge.age-all {
-    background: #10b981;
+.rating-badge.age-all, .rating-badge.age-p {
+    background: #10b981; /* Green */
+    color: var(--text-light);
+}
+
+.rating-badge.age-k {
+    background: #3b82f6; /* Blue */
+    color: var(--text-light);
+}
+
+.rating-badge.age-t18 {
+    background: #e50914; /* Red */
     color: var(--text-light);
 }
 
@@ -366,8 +376,10 @@ body {
     inset: 0;
     background: rgba(0, 0, 0, 0.7);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 15px;
     opacity: 0;
     transition: opacity var(--transition);
     z-index: 1;
@@ -375,6 +387,25 @@ body {
 
 .movie-card:hover .movie-overlay {
     opacity: 1;
+}
+
+.btn-trailer {
+    padding: 10px 24px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 2px solid var(--text-light);
+    background: transparent;
+    color: var(--text-light);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.btn-trailer:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--primary);
+    border-color: var(--primary);
 }
 
 .btn-tickets {
@@ -656,4 +687,147 @@ body {
         height: 36px;
         font-size: 0.8rem;
     }
+}
+
+/* ─── CGV Style Breadcrumbs ─── */
+.movies-breadcrumbs {
+    font-size: 0.85rem;
+    color: #a0a0a0;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.movies-breadcrumbs a {
+    color: #ccc;
+    text-decoration: none;
+    transition: color var(--transition);
+}
+.movies-breadcrumbs a:hover {
+    color: var(--primary);
+}
+
+/* ─── CGV Style Tabs ─── */
+.movies-title-tabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 30px;
+    border-bottom: 2px solid #333333;
+    padding-bottom: 8px;
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.movies-title-tabs .tab-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #666666;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    padding-bottom: 8px;
+    position: relative;
+    cursor: pointer;
+}
+
+.movies-title-tabs .tab-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: var(--primary);
+    transition: width 0.25s ease;
+}
+
+.movies-title-tabs .tab-title.active {
+    color: #ffffff;
+    font-size: 1.8rem;
+}
+
+.movies-title-tabs .tab-title.active::after {
+    width: 100%;
+}
+
+/* ─── CGV Rank Badge Ribbon ─── */
+.rank-badge-container {
+    position: absolute;
+    top: -6px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 3;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+
+.rank-medal {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #ffffff;
+    position: relative;
+    z-index: 4;
+}
+
+.rank-ribbon-tail {
+    width: 24px;
+    height: 20px;
+    margin-top: -8px;
+    position: relative;
+    z-index: 3;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 70%, 0% 100%);
+}
+
+.rank-badge-container.rank-1 .rank-medal {
+    background: #e50914; /* Red */
+}
+.rank-badge-container.rank-1 .rank-ribbon-tail {
+    background: #b2070f;
+}
+
+.rank-badge-container.rank-2 .rank-medal {
+    background: #f59e0b; /* Orange/Gold */
+}
+.rank-badge-container.rank-2 .rank-ribbon-tail {
+    background: #c27d09;
+}
+
+.rank-badge-container.rank-3 .rank-medal {
+    background: #3b82f6; /* Blue */
+}
+.rank-badge-container.rank-3 .rank-ribbon-tail {
+    background: #1d4ed8;
+}
+
+/* Move age rating to top-left of the poster to fit CGV style and not overlap ribbon */
+.movie-card .rating-badge {
+    left: 12px !important;
+    right: auto !important;
+    top: 12px !important;
+}
+
+/* Adjust card text layout */
+.movie-info .movie-genre-text {
+    font-size: 0.8rem;
+    color: var(--text-muted-light);
+    margin-top: 4px;
+}
+
+.movie-info .movie-meta-text {
+    font-size: 0.8rem;
+    color: var(--text-muted-light);
+    margin-top: 2px;
+}
+
+/* Adjust layout: center main area or make it clean */
+.movies-container {
+    grid-template-columns: 240px 1fr; /* clean sidebar sizing */
 }
