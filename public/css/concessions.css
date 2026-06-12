@@ -225,6 +225,14 @@ body {
     box-shadow: 0 12px 36px rgba(0,0,0,0.45);
     border-color: rgba(255,255,255,0.12);
 }
+.item-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 4px 20px rgba(232, 25, 44, 0.18);
+}
+.item-card.selected:hover {
+    box-shadow: 0 12px 36px rgba(232, 25, 44, 0.25);
+    border-color: var(--accent2);
+}
 
 /* Card image */
 .card-img-wrap {
@@ -329,12 +337,23 @@ body {
     color: var(--text);
 }
 .qty-num {
-    min-width: 28px;
+    width: 36px;
+    background: transparent;
+    border: none;
+    outline: none;
     text-align: center;
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--text);
-    user-select: none;
+    font-family: inherit;
+}
+.qty-num::-webkit-outer-spin-button,
+.qty-num::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.qty-num[type=number] {
+    -moz-appearance: textfield;
 }
 
 /* Add to cart / Update button */

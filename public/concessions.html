@@ -1,22 +1,252 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Concessions | CINESTAR</title>
-    <meta name="description" content="Complete your movie experience with our fresh combos, snacks and drinks at CINESTAR Cinemas.">
+    <title>Chọn Đồ Ăn & Nước Uống | D-CINEMA</title>
+    <meta name="description" content="Chọn đồ ăn và nước uống để hoàn thiện trải nghiệm điện ảnh của bạn tại D-CINEMA.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/concessions.css">
     <link rel="stylesheet" href="css/shared-layout.css">
+    <style>
+        /* ── LOADING SKELETON ── */
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .skeleton-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .skeleton-img {
+            height: 180px;
+            background: linear-gradient(90deg, #1e2334 25%, #252a3a 50%, #1e2334 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+        }
+        .skeleton-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; }
+        .skeleton-line {
+            height: 14px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #1e2334 25%, #252a3a 50%, #1e2334 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+        }
+        .skeleton-line.w60 { width: 60%; }
+        .skeleton-line.w40 { width: 40%; }
+        .skeleton-line.w80 { width: 80%; }
+        .skeleton-btn { height: 36px; border-radius: 8px; margin-top: 6px; }
+        @keyframes shimmer { to { background-position: -200% 0; } }
+
+        /* ── STOCK BADGE ── */
+        .badge-stock {
+            position: absolute;
+            top: 10px; left: 10px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            letter-spacing: 0.03em;
+            z-index: 3;
+        }
+        .badge-low { background: rgba(245,197,24,0.18); color: #f5c518; border: 1px solid rgba(245,197,24,0.35); }
+        .badge-out { background: rgba(200,50,50,0.25); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.4); }
+
+        /* ── OUT OF STOCK OVERLAY ── */
+        .item-card.out-of-stock .card-img-wrap::after {
+            content: 'HẾT HÀNG';
+            position: absolute;
+            inset: 0;
+            background: rgba(10,12,17,0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            color: #ff6b6b;
+        }
+        .item-card.out-of-stock .qty-btn,
+        .item-card.out-of-stock .btn-add { opacity: 0.4; pointer-events: none; cursor: not-allowed; }
+
+        /* ── SEARCH BAR ── */
+        .search-bar-wrap {
+            margin-bottom: 20px;
+        }
+        .search-bar {
+            width: 100%;
+            padding: 10px 16px 10px 42px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            color: var(--text);
+            font-size: 0.88rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+            position: relative;
+        }
+        .search-bar:focus { border-color: var(--accent); }
+        .search-bar-wrap { position: relative; }
+        .search-bar-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text2);
+            pointer-events: none;
+        }
+        .search-bar::placeholder { color: var(--text2); }
+
+        /* ── ORDER SUMMARY – REMOVE ITEM ── */
+        .fb-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0;
+        }
+        .fb-item-left { display: flex; flex-direction: column; gap: 1px; flex: 1; }
+        .fb-item-name { font-size: 0.82rem; color: var(--text2); }
+        .fb-item-price { font-size: 0.82rem; font-weight: 600; color: var(--text); white-space: nowrap; }
+        .btn-remove-item {
+            background: none;
+            border: none;
+            color: var(--text2);
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s, background 0.2s;
+            flex-shrink: 0;
+        }
+        .btn-remove-item:hover { color: var(--accent); background: rgba(232,25,44,0.08); }
+
+        /* ── CART BADGE on btn-add ── */
+        .btn-add { position: relative; }
+        .cart-badge {
+            position: absolute;
+            top: -6px; right: -6px;
+            background: var(--gold);
+            color: #111;
+            font-size: 0.65rem;
+            font-weight: 800;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none;
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text2);
+        }
+        .empty-state svg { margin-bottom: 12px; opacity: 0.4; }
+        .empty-state p { font-size: 0.88rem; }
+
+        /* ── SKIP BUTTON ── */
+        .btn-skip {
+            width: 100%;
+            padding: 11px 20px;
+            background: transparent;
+            color: var(--text2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 0.02em;
+            transition: all 0.2s;
+            font-family: inherit;
+            margin-top: 10px;
+        }
+        .btn-skip:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
+
+        /* ── FB SUBTOTAL LABEL ── */
+        .fb-subtotal-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0 2px;
+            border-top: 1px solid var(--border);
+            margin-top: 4px;
+        }
+        .fb-subtotal-lbl { font-size: 0.75rem; color: var(--text2); font-weight: 600; }
+        .fb-subtotal-val { font-size: 0.82rem; color: var(--accent); font-weight: 700; }
+
+        /* ── CART ITEM COUNT IN HEADER ── */
+        .cart-count-badge {
+            display: none;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 20px;
+            margin-left: 6px;
+        }
+        .cart-count-badge.visible { display: inline-block; }
+
+        /* ── NO BOOKING WARNING BANNER ── */
+        .booking-warn-banner {
+            display: none;
+            background: rgba(232,25,44,0.08);
+            border: 1px solid rgba(232,25,44,0.25);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            font-size: 0.83rem;
+            color: var(--accent2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .booking-warn-banner a { color: var(--accent2); text-decoration: underline; font-weight: 600; }
+
+        /* ── SORT/FILTER ROW ── */
+        .filter-sort-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .results-count { font-size: 0.8rem; color: var(--text2); }
+        .sort-select {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text2);
+            font-size: 0.8rem;
+            font-family: inherit;
+            padding: 6px 10px;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .sort-select:focus { border-color: rgba(255,255,255,0.2); }
+    </style>
 </head>
 
 <body>
 
     <!-- ── NAVBAR ── -->
-        <header class="navbar">
+    <header class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">
                 <span class="logo-d">D</span>
@@ -54,230 +284,54 @@
 
             <!-- Page Heading -->
             <div class="page-heading">
-                <h1>CONCESSIONS</h1>
-                <p>Complete your movie experience with our fresh combos.</p>
+                <h1>ĐỒ ĂN & THỨC UỐNG</h1>
+                <p>Hoàn thiện trải nghiệm điện ảnh với các combo tươi ngon hấp dẫn.</p>
+            </div>
+
+            <!-- No Booking Warning -->
+            <div class="booking-warn-banner" id="bookingWarnBanner">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Bạn chưa chọn phim và ghế. <a href="booking.html">Đặt vé ngay</a> để tiếp tục.
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar-wrap">
+                <svg class="search-bar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input type="text" class="search-bar" id="fnbSearchInput" placeholder="Tìm món ăn, thức uống...">
             </div>
 
             <!-- Category Tabs -->
             <div class="tabs-row">
-                <button class="tab-btn active" data-tab="combos" onclick="switchTab('combos', this)">Combos</button>
-                <button class="tab-btn" data-tab="snacks" onclick="switchTab('snacks', this)">Snacks</button>
-                <button class="tab-btn" data-tab="drinks" onclick="switchTab('drinks', this)">Drinks</button>
+                <button class="tab-btn active" data-tab="combos" id="tabBtn-combos" onclick="switchTab('combos', this)">
+                    Combos <span class="cart-count-badge" id="badge-combos"></span>
+                </button>
+                <button class="tab-btn" data-tab="snacks" id="tabBtn-snacks" onclick="switchTab('snacks', this)">
+                    Snacks <span class="cart-count-badge" id="badge-snacks"></span>
+                </button>
+                <button class="tab-btn" data-tab="drinks" id="tabBtn-drinks" onclick="switchTab('drinks', this)">
+                    Drinks <span class="cart-count-badge" id="badge-drinks"></span>
+                </button>
             </div>
 
-            <!-- ── COMBOS GRID ── -->
-            <div class="items-grid" id="tab-combos">
-
-                <!-- Mega Combo -->
-                <div class="item-card" id="card-mega">
-                    <div class="card-img-wrap">
-                        <span class="badge-bestseller">Best Seller</span>
-                        <img src="images/combo_mega.png" alt="Mega Combo" loading="lazy">
-                    </div>
-                    <div class="card-body">
-                        <div class="card-top-row">
-                            <span class="item-name">Mega Combo</span>
-                            <span class="item-price">$24.00</span>
-                        </div>
-                        <p class="item-desc">1x Extra Large Popcorn (Sweet or Salted), 2x Large Soft Drinks, and 1x Premium…</p>
-                        <div class="card-actions">
-                            <div class="qty-control">
-                                <button class="qty-btn minus" onclick="changeQty('mega', -1)" aria-label="Decrease">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                                <span class="qty-num" id="qty-mega">0</span>
-                                <button class="qty-btn plus" onclick="changeQty('mega', 1)" aria-label="Increase">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                            </div>
-                            <button class="btn-add" id="btn-mega" onclick="addToCart('mega')">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Couple Combo -->
-                <div class="item-card" id="card-couple">
-                    <div class="card-img-wrap">
-                        <img src="images/combo_couple.png" alt="Couple Combo" loading="lazy">
-                    </div>
-                    <div class="card-body">
-                        <div class="card-top-row">
-                            <span class="item-name">Couple Combo</span>
-                            <span class="item-price">$18.50</span>
-                        </div>
-                        <p class="item-desc">2x Medium Popcorn, 2x Medium Soft Drinks. Perfect sharing size for two mo…</p>
-                        <div class="card-actions">
-                            <div class="qty-control">
-                                <button class="qty-btn minus" onclick="changeQty('couple', -1)" aria-label="Decrease">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                                <span class="qty-num" id="qty-couple">0</span>
-                                <button class="qty-btn plus" onclick="changeQty('couple', 1)" aria-label="Increase">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                            </div>
-                            <button class="btn-add" id="btn-couple" onclick="addToCart('couple')">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Solo Feast -->
-                <div class="item-card" id="card-solo">
-                    <div class="card-img-wrap">
-                        <img src="images/combo_solo.png" alt="Solo Feast" loading="lazy">
-                    </div>
-                    <div class="card-body">
-                        <div class="card-top-row">
-                            <span class="item-name">Solo Feast</span>
-                            <span class="item-price">$14.00</span>
-                        </div>
-                        <p class="item-desc">1x Regular Popcorn, 1x Hot Dog, and 1x Soft Drink (500ml). The ultimate solo…</p>
-                        <div class="card-actions">
-                            <div class="qty-control">
-                                <button class="qty-btn minus" onclick="changeQty('solo', -1)" aria-label="Decrease">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                                <span class="qty-num" id="qty-solo">0</span>
-                                <button class="qty-btn plus" onclick="changeQty('solo', 1)" aria-label="Increase">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                            </div>
-                            <button class="btn-add" id="btn-solo" onclick="addToCart('solo')">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Kids Pack -->
-                <div class="item-card" id="card-kids">
-                    <div class="card-img-wrap">
-                        <img src="images/combo_kids.png" alt="Kids Pack" loading="lazy">
-                    </div>
-                    <div class="card-body">
-                        <div class="card-top-row">
-                            <span class="item-name">Kids Pack</span>
-                            <span class="item-price">$9.50</span>
-                        </div>
-                        <p class="item-desc">1x Small Popcorn, 1x Fruit Juice, and a small surprise toy for our little movie…</p>
-                        <div class="card-actions">
-                            <div class="qty-control">
-                                <button class="qty-btn minus" onclick="changeQty('kids', -1)" aria-label="Decrease">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                                <span class="qty-num" id="qty-kids">0</span>
-                                <button class="qty-btn plus" onclick="changeQty('kids', 1)" aria-label="Increase">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                            </div>
-                            <button class="btn-add" id="btn-kids" onclick="addToCart('kids')">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-
-            </div><!-- end combos grid -->
-
-            <!-- ── SNACKS GRID ── -->
-            <div class="items-grid hidden" id="tab-snacks">
-                <div class="item-card">
-                    <div class="card-img-wrap">
-                        <img src="images/combo_popcorn.png" alt="Large Popcorn" loading="lazy">
-                    </div>
-                    <div class="card-body">
-                        <div class="card-top-row">
-                            <span class="item-name">Large Popcorn</span>
-                            <span class="item-price">$6.50</span>
-                        </div>
-                        <p class="item-desc">Extra large bucket of freshly popped butter popcorn. Choose sweet or salted.</p>
-                        <div class="card-actions">
-                            <div class="qty-control">
-                                <button class="qty-btn minus" onclick="changeQty('lpopcorn', -1)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                                <span class="qty-num" id="qty-lpopcorn">0</span>
-                                <button class="qty-btn plus" onclick="changeQty('lpopcorn', 1)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                            </div>
-                            <button class="btn-add" id="btn-lpopcorn" onclick="addToCart('lpopcorn')">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="item-card">
-                    <div class="card-img-wrap">
-                        <img src="images/combo_solo.png" alt="Hot Dog" loading="lazy">
-                    </div>
-                    <div class="card-body">
-                        <div class="card-top-row">
-                            <span class="item-name">Hot Dog</span>
-                            <span class="item-price">$5.00</span>
-                        </div>
-                        <p class="item-desc">Classic beef hot dog with ketchup, mustard, and your choice of toppings.</p>
-                        <div class="card-actions">
-                            <div class="qty-control">
-                                <button class="qty-btn minus" onclick="changeQty('hotdog', -1)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                                <span class="qty-num" id="qty-hotdog">0</span>
-                                <button class="qty-btn plus" onclick="changeQty('hotdog', 1)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                            </div>
-                            <button class="btn-add" id="btn-hotdog" onclick="addToCart('hotdog')">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
+            <!-- Filter/Sort row -->
+            <div class="filter-sort-row">
+                <span class="results-count" id="resultsCount"></span>
+                <select class="sort-select" id="sortSelect" onchange="applySortFilter()">
+                    <option value="default">Mặc định</option>
+                    <option value="price-asc">Giá: Thấp → Cao</option>
+                    <option value="price-desc">Giá: Cao → Thấp</option>
+                    <option value="name-asc">Tên A → Z</option>
+                </select>
             </div>
 
-            <!-- ── DRINKS GRID ── -->
-            <div class="items-grid hidden" id="tab-drinks">
-                <div class="item-card">
-                    <div class="card-img-wrap">
-                        <img src="images/combo_solo.png" alt="Mineral Water" loading="lazy">
-                    </div>
-                    <div class="card-body">
-                        <div class="card-top-row">
-                            <span class="item-name">Mineral Water</span>
-                            <span class="item-price">$2.50</span>
-                        </div>
-                        <p class="item-desc">Chilled mineral water 500ml. Refreshing and hydrating for your movie experience.</p>
-                        <div class="card-actions">
-                            <div class="qty-control">
-                                <button class="qty-btn minus" onclick="changeQty('water', -1)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                                <span class="qty-num" id="qty-water">0</span>
-                                <button class="qty-btn plus" onclick="changeQty('water', 1)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                            </div>
-                            <button class="btn-add" id="btn-water" onclick="addToCart('water')">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="item-card">
-                    <div class="card-img-wrap">
-                        <img src="images/combo_couple.png" alt="Large Soft Drink" loading="lazy">
-                    </div>
-                    <div class="card-body">
-                        <div class="card-top-row">
-                            <span class="item-name">Large Soft Drink</span>
-                            <span class="item-price">$4.50</span>
-                        </div>
-                        <p class="item-desc">Large 700ml fountain drink. Choose from Coke, Sprite, Fanta, or Iced Tea.</p>
-                        <div class="card-actions">
-                            <div class="qty-control">
-                                <button class="qty-btn minus" onclick="changeQty('soda', -1)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                                <span class="qty-num" id="qty-soda">0</span>
-                                <button class="qty-btn plus" onclick="changeQty('soda', 1)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                            </div>
-                            <button class="btn-add" id="btn-soda" onclick="addToCart('soda')">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- COMBOS GRID (filled by JS) -->
+            <div class="items-grid" id="tab-combos"></div>
+            <!-- SNACKS GRID -->
+            <div class="items-grid hidden" id="tab-snacks"></div>
+            <!-- DRINKS GRID -->
+            <div class="items-grid hidden" id="tab-drinks"></div>
 
         </section><!-- end left-col -->
 
@@ -293,25 +347,25 @@
                         <circle cx="5.5" cy="18.5" r="2.5"/>
                         <circle cx="18.5" cy="18.5" r="2.5"/>
                     </svg>
-                    <h2>Order Summary</h2>
+                    <h2>Tóm tắt đơn hàng</h2>
                 </div>
 
                 <!-- Movie Info -->
                 <div class="movie-card">
-                    <img src="images/movie_oppenheimer.png" alt="Oppenheimer" class="movie-thumb" id="summaryPoster">
+                    <img src="images/default_poster.svg" alt="Poster" class="movie-thumb" id="summaryPoster">
                     <div class="movie-info">
-                        <div class="movie-title" id="summaryTitle">Oppenheimer</div>
+                        <div class="movie-title" id="summaryTitle">—</div>
                         <div class="movie-meta-row">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span id="summaryDate">24 May, 2024</span>
+                            <span id="summaryDate">—</span>
                         </div>
                         <div class="movie-meta-row">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            <span id="summaryTime">19:45 • Hall 4</span>
+                            <span id="summaryTime">—</span>
                         </div>
                         <div class="movie-meta-row seats-row">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0Z"/></svg>
-                            <span class="seats-val" id="summarySeats">Seats: J12, J13</span>
+                            <span class="seats-val" id="summarySeats">—</span>
                         </div>
                     </div>
                 </div>
@@ -321,52 +375,58 @@
                 <!-- Ticket Lines -->
                 <div class="order-lines" id="ticketLines">
                     <div class="order-line">
-                        <span class="line-label">Adult Tickets (x2)</span>
-                        <span class="line-val">$32.00</span>
-                    </div>
-                    <div class="order-line">
-                        <span class="line-label">Booking Fee</span>
-                        <span class="line-val">$1.50</span>
+                        <span class="line-label">Vé xem phim</span>
+                        <span class="line-val">—</span>
                     </div>
                 </div>
 
                 <!-- Food & Beverage Lines -->
                 <div class="fb-section" id="fbSection" style="display:none;">
-                    <div class="fb-label">FOOD &amp; BEVERAGE</div>
+                    <div class="fb-label">ĐỒ ĂN & THỨC UỐNG</div>
                     <div id="fbLines"></div>
+                    <div class="fb-subtotal-row">
+                        <span class="fb-subtotal-lbl">Tạm tính F&B</span>
+                        <span class="fb-subtotal-val" id="fbSubtotal">0 VND</span>
+                    </div>
                 </div>
 
                 <div class="order-divider"></div>
 
                 <!-- Total -->
                 <div class="total-row">
-                    <span class="total-lbl">Total Amount</span>
-                    <span class="total-val" id="totalAmount">$33.50</span>
+                    <span class="total-lbl">Tổng cộng</span>
+                    <span class="total-val" id="totalAmount">0 VND</span>
                 </div>
 
                 <!-- CTA Button -->
                 <button class="btn-continue" id="btnContinue" onclick="goToPayment()">
-                    Continue to Payment
+                    Tiếp tục thanh toán
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </button>
 
-                <p class="terms-note">By clicking continue, you agree to our <a href="#">Terms of Service</a>.</p>
+                <!-- Skip F&B -->
+                <button class="btn-skip" id="btnSkip" onclick="skipFnB()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    Bỏ qua, tiếp tục thanh toán
+                </button>
+
+                <p class="terms-note">Khi bấm tiếp tục, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a>.</p>
 
                 <!-- Progress Steps -->
                 <div class="steps-row">
                     <div class="step done">
                         <div class="step-circle">1</div>
-                        <div class="step-label">SEATS</div>
+                        <div class="step-label">GHẾ</div>
                     </div>
                     <div class="step-line done-line"></div>
                     <div class="step active">
                         <div class="step-circle">2</div>
-                        <div class="step-label">F&amp;B</div>
+                        <div class="step-label">F&B</div>
                     </div>
                     <div class="step-line"></div>
                     <div class="step">
                         <div class="step-circle">3</div>
-                        <div class="step-label">PAY</div>
+                        <div class="step-label">THANH TOÁN</div>
                     </div>
                 </div>
 
@@ -385,18 +445,8 @@
                 </a>
                 <p>Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
                 <div class="footer-socials">
-                    <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <circle cx="18" cy="5" r="3" />
-                            <circle cx="6" cy="12" r="3" />
-                            <circle cx="18" cy="19" r="3" />
-                            <path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98" />
-                        </svg></a>
-                    <a href="#" aria-label="Email"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="4" width="20" height="16" rx="2" />
-                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                        </svg></a>
+                    <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg></a>
+                    <a href="#" aria-label="Email"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></a>
                 </div>
             </div>
             <div class="footer-col">
@@ -417,10 +467,7 @@
                 <form class="newsletter-form" onsubmit="event.preventDefault()">
                     <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
                     <button type="submit" class="newsletter-btn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </button>
                 </form>
             </div>
@@ -433,48 +480,281 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>
     <script>
+    /* ═══════════════════════════════════════════════════════════
+       D-CINEMA — Concessions Page JS
+       Business rules:
+         1. All products fetched live from DB (incl. Stock)
+         2. Stock limit: cannot exceed available stock
+         3. Quantity cap: max 10 per item (sensible per-transaction limit)
+         4. Out-of-stock items show badge + disabled controls
+         5. Remove item button in order summary
+         6. Tab cart-count badges
+         7. Search/filter with empty-state message
+         8. Sort: default / price-asc / price-desc / name-asc
+         9. Booking session guard (redirect if no booking)
+        10. Skip F&B allowed (proceed without food)
+    ═══════════════════════════════════════════════════════════ */
+
+    const MAX_PER_ITEM = 10;  // business rule: max 10 of one item per transaction
+
     let dbProducts = [];
+    let filteredProducts = [];
     const quantities = {};
     let BASE_TICKET = 0;
     let booking = {};
+    let currentTab = 'combos';
+    let searchQuery = '';
 
+    /* ── TOAST ── */
+    function showToast(msg, type = 'info') {
+        let toast = document.getElementById('globalToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'globalToast';
+            toast.style.cssText = `position:fixed;bottom:28px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:10px;font-size:0.85rem;font-weight:600;z-index:99999;transition:opacity 0.3s;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,0.5);font-family:'Inter',sans-serif;white-space:nowrap;max-width:90vw;`;
+            document.body.appendChild(toast);
+        }
+        const colors = { success: '#22c55e', error: '#e8192c', info: '#3b82f6', warn: '#f59e0b' };
+        toast.style.background = colors[type] || '#333';
+        toast.style.color = '#fff';
+        toast.style.opacity = '1';
+        toast.textContent = msg;
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 3500);
+    }
+
+    /* ── TAB SWITCH ── */
     function switchTab(tabId, btn) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         document.querySelectorAll('.items-grid').forEach(g => g.classList.add('hidden'));
         document.getElementById('tab-' + tabId).classList.remove('hidden');
+        currentTab = tabId;
+        applySearchFilter();
     }
 
+    /* ── SEARCH INPUT ── */
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchEl = document.getElementById('fnbSearchInput');
+        if (searchEl) {
+            searchEl.addEventListener('input', function () {
+                searchQuery = this.value.toLowerCase().trim();
+                applySearchFilter();
+            });
+        }
+    });
+
+    /* ── SORT SELECT ── */
+    function applySortFilter() {
+        applySearchFilter();
+    }
+
+    /* ── APPLY SEARCH + SORT to current tab's container ── */
+    function applySearchFilter() {
+        const tabEl = document.getElementById('tab-' + currentTab);
+        if (!tabEl) return;
+        const allCards = tabEl.querySelectorAll('.item-card[data-fnbid]');
+        let visible = 0;
+        allCards.forEach(card => {
+            const name = (card.dataset.name || '').toLowerCase();
+            const desc = (card.dataset.desc || '').toLowerCase();
+            const match = !searchQuery || name.includes(searchQuery) || desc.includes(searchQuery);
+            card.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+
+        // Empty state
+        let emptyEl = tabEl.querySelector('.empty-state');
+        if (visible === 0 && searchQuery) {
+            if (!emptyEl) {
+                emptyEl = document.createElement('div');
+                emptyEl.className = 'empty-state';
+                emptyEl.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><p>Không tìm thấy "<strong>${searchQuery}</strong>" trong mục này.</p>`;
+                tabEl.appendChild(emptyEl);
+            }
+        } else {
+            if (emptyEl) emptyEl.remove();
+        }
+
+        // Results count
+        const total = allCards.length;
+        document.getElementById('resultsCount').textContent = searchQuery
+            ? `${visible} / ${total} kết quả`
+            : `${total} sản phẩm`;
+
+        // Apply sort to visible cards
+        const sortVal = document.getElementById('sortSelect').value;
+        const cards = [...allCards].filter(c => c.style.display !== 'none');
+        if (cards.length > 1) {
+            cards.sort((a, b) => {
+                if (sortVal === 'default') {
+                    const idxA = dbProducts.findIndex(p => p.FnBID === parseInt(a.dataset.fnbid));
+                    const idxB = dbProducts.findIndex(p => p.FnBID === parseInt(b.dataset.fnbid));
+                    return idxA - idxB;
+                }
+                const pa = parseFloat(a.dataset.price) || 0;
+                const pb = parseFloat(b.dataset.price) || 0;
+                const na = a.dataset.name || '';
+                const nb = b.dataset.name || '';
+                if (sortVal === 'price-asc') return pa - pb;
+                if (sortVal === 'price-desc') return pb - pa;
+                if (sortVal === 'name-asc') return na.localeCompare(nb, 'vi');
+                return 0;
+            });
+            cards.forEach(c => tabEl.appendChild(c));
+        }
+    }
+
+    /* ── QUANTITY CHANGE via ± buttons ── */
     function changeQty(id, delta) {
-        quantities[id] = Math.max(0, (quantities[id] || 0) + delta);
-        const el = document.getElementById('qty-' + id);
-        if (el) el.textContent = quantities[id];
+        const product = dbProducts.find(p => p.FnBID === id);
+        if (!product) return;
+        if (product.Stock === 0) {
+            showToast(`"${product.Name}" đã hết hàng.`, 'error');
+            return;
+        }
+        const maxAllowed = Math.min(product.Stock, MAX_PER_ITEM);
+
+        let newQty = Math.max(0, (quantities[id] || 0) + delta);
+
+        if (newQty > maxAllowed) {
+            if (product.Stock < MAX_PER_ITEM) {
+                showToast(`"${product.Name}" chỉ còn ${product.Stock} phần trong kho.`, 'warn');
+            } else {
+                showToast(`Bạn chỉ được đặt tối đa ${MAX_PER_ITEM} phần cho mỗi món.`, 'warn');
+            }
+            newQty = maxAllowed;
+        }
+
+        quantities[id] = newQty;
+        _syncCardUI(id);
         updateOrderSummary();
     }
 
+    /* ── QUANTITY CHANGE via manual input ── */
+    function inputQty(id, rawValue) {
+        const product = dbProducts.find(p => p.FnBID === id);
+        if (!product) return;
+
+        let val = parseInt(rawValue);
+        if (isNaN(val)) val = 0;
+        if (val < 0) {
+            showToast('Số lượng phải lớn hơn hoặc bằng 0.', 'warn');
+            val = 0;
+            const el = document.getElementById('qty-' + id);
+            if (el) el.value = val;
+        }
+
+        const maxAllowed = Math.min(product.Stock, MAX_PER_ITEM);
+        if (val > maxAllowed) {
+            if (product.Stock < MAX_PER_ITEM) {
+                showToast(`"${product.Name}" chỉ còn ${product.Stock} phần trong kho.`, 'warn');
+            } else {
+                showToast(`Tối đa ${MAX_PER_ITEM} phần mỗi món.`, 'warn');
+            }
+            val = maxAllowed;
+            const el = document.getElementById('qty-' + id);
+            if (el) el.value = val;
+        }
+
+        quantities[id] = val;
+        _syncCardUI(id);
+        updateOrderSummary();
+    }
+
+    /* ── REMOVE ITEM from cart (set qty=0) ── */
+    function removeItem(id) {
+        quantities[id] = 0;
+        const el = document.getElementById('qty-' + id);
+        if (el) el.value = 0;
+        _syncCardUI(id);
+        updateOrderSummary();
+        showToast('Đã xóa khỏi giỏ hàng.', 'info');
+    }
+
+    /* ── ADD TO CART button click ── */
     function addToCart(id) {
-        const qty = quantities[id];
+        const product = dbProducts.find(p => p.FnBID === id);
+        if (product && product.Stock === 0) {
+            showToast(`"${product.Name}" đã hết hàng.`, 'error');
+            return;
+        }
+        const qty = quantities[id] || 0;
+        if (qty === 0) {
+            changeQty(id, 1);
+            showToast('Đã thêm vào giỏ! 🛒', 'success');
+        } else {
+            const btn = document.getElementById('btn-' + id);
+            if (btn) {
+                btn.classList.add('btn-flash');
+                setTimeout(() => btn.classList.remove('btn-flash'), 400);
+            }
+            showToast('Đã cập nhật số lượng.', 'info');
+        }
+    }
+
+    /* ── SYNC card visual state (selected border, button text, badge) ── */
+    function _syncCardUI(id) {
+        const card = document.getElementById('card-' + id);
         const btn = document.getElementById('btn-' + id);
-        if (!btn) return;
+        const qtyEl = document.getElementById('qty-' + id);
+        const qty = quantities[id] || 0;
+
+        if (qtyEl) {
+            if (document.activeElement !== qtyEl) {
+                qtyEl.value = qty;
+            } else {
+                const parsedVal = parseInt(qtyEl.value) || 0;
+                if (parsedVal !== qty) {
+                    qtyEl.value = qty;
+                }
+            }
+        }
 
         if (qty > 0) {
-            btn.textContent = 'Cập nhật';
-            btn.classList.add('btn-update');
+            if (card) card.classList.add('selected');
+            if (btn) {
+                btn.classList.add('btn-update');
+                btn.innerHTML = `Cập nhật <span class="cart-badge">${qty}</span>`;
+            }
         } else {
-            btn.textContent = 'Thêm';
-            btn.classList.remove('btn-update');
+            if (card) card.classList.remove('selected');
+            if (btn) {
+                btn.classList.remove('btn-update');
+                btn.textContent = 'Thêm';
+            }
         }
-        updateOrderSummary();
 
-        // Flash animation
-        btn.classList.add('btn-flash');
-        setTimeout(() => btn.classList.remove('btn-flash'), 400);
+        updateTabBadges();
     }
 
+    /* ── UPDATE TAB CART COUNT BADGES ── */
+    function updateTabBadges() {
+        const tabs = ['combos', 'snacks', 'drinks'];
+        tabs.forEach(tab => {
+            const tabEl = document.getElementById('tab-' + tab);
+            const badgeEl = document.getElementById('badge-' + tab);
+            if (!tabEl || !badgeEl) return;
+            let count = 0;
+            tabEl.querySelectorAll('.item-card[data-fnbid]').forEach(card => {
+                const id = parseInt(card.dataset.fnbid);
+                if ((quantities[id] || 0) > 0) count++;
+            });
+            if (count > 0) {
+                badgeEl.textContent = count;
+                badgeEl.classList.add('visible');
+            } else {
+                badgeEl.classList.remove('visible');
+            }
+        });
+    }
+
+    /* ── UPDATE ORDER SUMMARY PANEL ── */
     function updateOrderSummary() {
         const fbSection = document.getElementById('fbSection');
         const fbLines = document.getElementById('fbLines');
         const totalEl = document.getElementById('totalAmount');
+        const fbSubtotal = document.getElementById('fbSubtotal');
 
         let fbTotal = 0;
         let fbHtml = '';
@@ -485,9 +765,14 @@
                 const subtotal = qty * p.Price;
                 fbTotal += subtotal;
                 fbHtml += `
-                    <div class="order-line">
-                        <span class="line-label">${qty}x ${p.Name}</span>
-                        <span class="line-val">${subtotal.toLocaleString('vi-VN')} VND</span>
+                    <div class="fb-item-row">
+                        <div class="fb-item-left">
+                            <span class="fb-item-name">${qty}x ${p.Name}</span>
+                        </div>
+                        <span class="fb-item-price">${subtotal.toLocaleString('vi-VN')} VND</span>
+                        <button class="btn-remove-item" onclick="removeItem(${p.FnBID})" title="Xóa khỏi giỏ">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
                     </div>`;
             }
         });
@@ -495,6 +780,7 @@
         if (fbTotal > 0) {
             fbSection.style.display = 'block';
             fbLines.innerHTML = fbHtml;
+            if (fbSubtotal) fbSubtotal.textContent = fbTotal.toLocaleString('vi-VN') + ' VND';
         } else {
             fbSection.style.display = 'none';
             fbLines.innerHTML = '';
@@ -503,27 +789,66 @@
         totalEl.textContent = (BASE_TICKET + fbTotal).toLocaleString('vi-VN') + ' VND';
     }
 
+    /* ── SKIP F&B ── */
+    function skipFnB() {
+        if (!booking || !booking.showtimeId) {
+            showToast('Không tìm thấy thông tin đặt vé! Vui lòng chọn phim và ghế trước.', 'error');
+            setTimeout(() => { window.location.href = 'booking.html'; }, 2000);
+            return;
+        }
+        // Clear any previously selected food
+        booking.foodItems = [];
+        booking.foodDisplayItems = [];
+        booking.fnbTotal = 0;
+        booking.totalAmount = BASE_TICKET;
+        sessionStorage.setItem('booking', JSON.stringify(booking));
+        localStorage.setItem('booking', JSON.stringify(booking));
+        window.location.href = 'checkout.html';
+    }
+
+    /* ── PROCEED TO PAYMENT ── */
     function goToPayment() {
+        if (!booking || !booking.showtimeId) {
+            showToast('Không tìm thấy thông tin đặt vé! Vui lòng chọn phim và ghế trước.', 'error');
+            setTimeout(() => { window.location.href = 'booking.html'; }, 2000);
+            return;
+        }
+
         const foodItems = [];
         const foodDisplayItems = [];
         let fbTotal = 0;
 
-        dbProducts.forEach(p => {
-            const qty = quantities[p.FnBID] || 0;
-            if (qty > 0) {
-                fbTotal += qty * p.Price;
-                foodItems.push({
-                    fnbId: p.FnBID,
-                    quantity: qty
-                });
-                foodDisplayItems.push({
-                    name: p.Name,
-                    quantity: qty,
-                    price: p.Price,
-                    subtotal: qty * p.Price
-                });
+        // Validate stock and max allowed quantity one more time before navigating
+        for (const p of dbProducts) {
+            const qtyEl = document.getElementById('qty-' + p.FnBID);
+            let qty = quantities[p.FnBID] || 0;
+            if (qtyEl) {
+                const domQty = parseInt(qtyEl.value) || 0;
+                if (domQty !== qty) {
+                    qty = domQty;
+                    quantities[p.FnBID] = qty;
+                }
             }
-        });
+
+            if (qty < 0) {
+                showToast(`Số lượng của món "${p.Name}" phải lớn hơn hoặc bằng 0.`, 'error');
+                return;
+            }
+            if (qty === 0) continue;
+
+            const maxAllowed = Math.min(p.Stock, MAX_PER_ITEM);
+            if (qty > maxAllowed) {
+                if (p.Stock < MAX_PER_ITEM) {
+                    showToast(`"${p.Name}" chỉ còn ${p.Stock} phần trong kho. Vui lòng điều chỉnh số lượng.`, 'error');
+                } else {
+                    showToast(`Bạn chỉ được đặt tối đa ${MAX_PER_ITEM} phần cho món "${p.Name}".`, 'error');
+                }
+                return;
+            }
+            fbTotal += qty * p.Price;
+            foodItems.push({ fnbId: p.FnBID, quantity: qty });
+            foodDisplayItems.push({ name: p.Name, quantity: qty, price: p.Price, subtotal: qty * p.Price });
+        }
 
         booking.foodItems = foodItems;
         booking.foodDisplayItems = foodDisplayItems;
@@ -532,42 +857,161 @@
 
         sessionStorage.setItem('booking', JSON.stringify(booking));
         localStorage.setItem('booking', JSON.stringify(booking));
-
         window.location.href = 'checkout.html';
     }
 
+    /* ── RENDER PRODUCTS from DB ── */
+    function getCategoryForTab(category) {
+        const cat = (category || '').toLowerCase();
+        if (cat.includes('combo')) return 'combos';
+        if (cat.includes('nước') || cat.includes('nuoc') || cat.includes('drink')) return 'drinks';
+        return 'snacks';
+    }
+
+    function renderProducts() {
+        const tabCombos = document.getElementById('tab-combos');
+        const tabSnacks = document.getElementById('tab-snacks');
+        const tabDrinks = document.getElementById('tab-drinks');
+
+        // Remove skeletons
+        tabCombos.innerHTML = '';
+        tabSnacks.innerHTML = '';
+        tabDrinks.innerHTML = '';
+
+        if (!dbProducts.length) {
+            tabCombos.innerHTML = `<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h18l-2 14H5L3 2Z"/><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/></svg><p>Chưa có sản phẩm nào.</p></div>`;
+            return;
+        }
+
+        dbProducts.forEach(p => {
+            quantities[p.FnBID] = 0;
+
+            const tab = getCategoryForTab(p.Category);
+            const container = tab === 'combos' ? tabCombos : tab === 'drinks' ? tabDrinks : tabSnacks;
+
+            const isOutOfStock = p.Stock === 0;
+            const isLowStock = p.Stock > 0 && p.Stock <= 10;
+            const maxAllowed = Math.min(p.Stock, MAX_PER_ITEM);
+
+            const card = document.createElement('div');
+            card.className = 'item-card' + (isOutOfStock ? ' out-of-stock' : '');
+            card.id = `card-${p.FnBID}`;
+            card.dataset.fnbid = p.FnBID;
+            card.dataset.name = p.Name;
+            card.dataset.desc = p.Description || '';
+            card.dataset.price = p.Price;
+
+            const displayImage = p.ImageURL || 'images/combo_mega.png';
+
+            // Badge HTML
+            let badgeHtml = '';
+            if (isOutOfStock) {
+                badgeHtml = `<span class="badge-stock badge-out">Hết hàng</span>`;
+            } else if (isLowStock) {
+                badgeHtml = `<span class="badge-stock badge-low">Còn ${p.Stock} phần</span>`;
+            }
+
+            // Controls disabled if out of stock
+            const disabled = isOutOfStock ? 'disabled' : '';
+            const disabledCls = isOutOfStock ? ' style="opacity:0.45;pointer-events:none"' : '';
+
+            card.innerHTML = `
+                <div class="card-img-wrap">
+                    ${badgeHtml}
+                    <img src="${displayImage}" alt="${p.Name}" onerror="this.onerror=null;this.src='images/combo_mega.png';" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <div class="card-top-row">
+                        <span class="item-name">${p.Name}</span>
+                        <span class="item-price">${p.Price.toLocaleString('vi-VN')} VND</span>
+                    </div>
+                    <p class="item-desc" title="${p.Description || ''}">${p.Description || 'Đồ ăn bắp nước chuẩn rạp chiếu phim.'}</p>
+                    <div class="card-actions">
+                        <div class="qty-control"${disabledCls}>
+                            <button class="qty-btn minus" onclick="changeQty(${p.FnBID}, -1)" aria-label="Giảm" ${disabled}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
+                            <input type="number" class="qty-num" id="qty-${p.FnBID}" value="0" min="0" max="${maxAllowed}"
+                                oninput="inputQty(${p.FnBID}, this.value)"
+                                onblur="if(this.value.trim()===''){this.value=0;inputQty(${p.FnBID},0);}"
+                                ${disabled} ${isOutOfStock ? 'style="opacity:0.45"' : ''}>
+                            <button class="qty-btn plus" onclick="changeQty(${p.FnBID}, 1)" aria-label="Tăng" ${disabled}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
+                        </div>
+                        <button class="btn-add" id="btn-${p.FnBID}" onclick="addToCart(${p.FnBID})" ${disabled}>
+                            ${isOutOfStock ? 'Hết hàng' : 'Thêm'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        applySearchFilter();
+    }
+
+    /* ── LOADING SKELETON ── */
+    function showSkeleton(containerId, count = 4) {
+        const el = document.getElementById(containerId);
+        if (!el) return;
+        el.innerHTML = '';
+        const grid = document.createElement('div');
+        grid.className = 'skeleton-grid';
+        for (let i = 0; i < count; i++) {
+            grid.innerHTML += `
+                <div class="skeleton-card">
+                    <div class="skeleton-img"></div>
+                    <div class="skeleton-body">
+                        <div class="skeleton-line w60"></div>
+                        <div class="skeleton-line w40"></div>
+                        <div class="skeleton-line w80"></div>
+                        <div class="skeleton-line skeleton-btn"></div>
+                    </div>
+                </div>`;
+        }
+        el.appendChild(grid);
+    }
+
+    /* ── DOMContentLoaded ── */
     document.addEventListener('DOMContentLoaded', async () => {
-        // User avatar
-        const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
+        // User auth display
+        const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
         const btnLogin = document.getElementById('btnLogin');
         if (userStr && btnLogin) {
             try {
                 const user = JSON.parse(userStr);
                 btnLogin.textContent = user.fullName || user.email || 'Tài khoản';
                 btnLogin.href = 'profile.html';
-            } catch(e) {}
+            } catch (e) {}
         }
 
-        // Booking details
+        // Load booking session
         try {
             booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
-        } catch(e) { booking = {}; }
+        } catch (e) { booking = {}; }
 
-        if (booking.movieTitle) {
-            document.getElementById('summaryTitle').textContent = booking.movieTitle;
+        // Show warning if no active booking
+        const warnBanner = document.getElementById('bookingWarnBanner');
+        if (!booking || !booking.showtimeId) {
+            if (warnBanner) warnBanner.style.display = 'flex';
+            // Still allow browsing but disable checkout button
+            const btnContinue = document.getElementById('btnContinue');
+            const btnSkip = document.getElementById('btnSkip');
+            if (btnContinue) btnContinue.title = 'Vui lòng chọn phim và ghế trước';
+        } else {
+            if (warnBanner) warnBanner.style.display = 'none';
         }
-        if (booking.date) {
-            document.getElementById('summaryDate').textContent = booking.date;
-        }
-        if (booking.time && booking.hall) {
-            document.getElementById('summaryTime').textContent = booking.time + ' • ' + booking.hall;
-        }
-        if (booking.seats) {
-            document.getElementById('summarySeats').textContent = 'Ghế: ' + booking.seats;
-        }
+
+        // Populate sidebar booking info
+        if (booking.movieTitle) document.getElementById('summaryTitle').textContent = booking.movieTitle;
+        if (booking.date) document.getElementById('summaryDate').textContent = booking.date;
+        if (booking.time && booking.hall) document.getElementById('summaryTime').textContent = booking.time + ' • ' + booking.hall;
+        if (booking.seats) document.getElementById('summarySeats').textContent = 'Ghế: ' + booking.seats;
         if (booking.poster) {
-            document.getElementById('summaryPoster').src = booking.poster;
-            document.getElementById('summaryPoster').onerror = function() { this.src = 'images/default_poster.svg'; };
+            const posterEl = document.getElementById('summaryPoster');
+            posterEl.src = booking.poster;
+            posterEl.onerror = () => { posterEl.src = 'images/default_poster.svg'; };
         }
 
         BASE_TICKET = booking.ticketTotal || 0;
@@ -582,7 +1026,10 @@
             </div>
         `;
 
-        // Fetch Concessions from database
+        // Show loading skeleton while fetching
+        showSkeleton('tab-combos', 6);
+
+        // Fetch products from DB
         try {
             const res = await fetch('/api/bookings/food-beverages');
             const json = await res.json();
@@ -590,70 +1037,17 @@
                 dbProducts = json.data;
                 renderProducts();
             } else {
-                console.error('Failed to fetch concessions');
+                document.getElementById('tab-combos').innerHTML = `<div class="empty-state"><p>Không thể tải danh sách sản phẩm. Vui lòng thử lại.</p></div>`;
+                showToast('Không thể tải danh sách đồ ăn.', 'error');
             }
         } catch (err) {
             console.error('Error fetching concessions:', err);
+            document.getElementById('tab-combos').innerHTML = `<div class="empty-state"><p>Lỗi kết nối. Vui lòng tải lại trang.</p></div>`;
+            showToast('Lỗi kết nối server.', 'error');
         }
 
         updateOrderSummary();
     });
-
-    function renderProducts() {
-        const tabCombos = document.getElementById('tab-combos');
-        const tabSnacks = document.getElementById('tab-snacks');
-        const tabDrinks = document.getElementById('tab-drinks');
-
-        tabCombos.innerHTML = '';
-        tabSnacks.innerHTML = '';
-        tabDrinks.innerHTML = '';
-
-        dbProducts.forEach(p => {
-            quantities[p.FnBID] = 0;
-
-            const category = (p.Category || '').toLowerCase();
-            let container = tabSnacks; // default
-            if (category.includes('combo')) {
-                container = tabCombos;
-            } else if (category.includes('drink') || category.includes('nước') || category.includes('nuoc')) {
-                container = tabDrinks;
-            } else if (category.includes('snack') || category.includes('bắp') || category.includes('bap') || category.includes('kẹo') || category.includes('keo')) {
-                container = tabSnacks;
-            }
-
-            const card = document.createElement('div');
-            card.className = 'item-card';
-            card.id = `card-${p.FnBID}`;
-
-            const displayImage = p.ImageURL || 'images/combo_mega.png';
-
-            card.innerHTML = `
-                <div class="card-img-wrap">
-                    <img src="${displayImage}" alt="${p.Name}" onerror="this.onerror=null; this.src='images/combo_mega.png';" loading="lazy">
-                </div>
-                <div class="card-body">
-                    <div class="card-top-row">
-                        <span class="item-name">${p.Name}</span>
-                        <span class="item-price">${p.Price.toLocaleString('vi-VN')} VND</span>
-                    </div>
-                    <p class="item-desc" title="${p.Description || ''}">${p.Description || 'Đồ ăn bắp nước chuẩn rạp chiếu phim.'}</p>
-                    <div class="card-actions">
-                        <div class="qty-control">
-                            <button class="qty-btn minus" onclick="changeQty(${p.FnBID}, -1)" aria-label="Decrease">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            </button>
-                            <span class="qty-num" id="qty-${p.FnBID}">0</span>
-                            <button class="qty-btn plus" onclick="changeQty(${p.FnBID}, 1)" aria-label="Increase">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            </button>
-                        </div>
-                        <button class="btn-add" id="btn-${p.FnBID}" onclick="addToCart(${p.FnBID})">Thêm</button>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
     </script>
 
 </body>
