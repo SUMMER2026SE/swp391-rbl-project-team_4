@@ -61,6 +61,11 @@ class BookingModel {
   }
 
   static async createBooking(userId, { showtimeId, seatIds, foodItems, voucherCode, paymentMethod }) {
+    // Validate payment method
+    const allowedMethods = ['qrpay', 'momo'];
+    if (!allowedMethods.includes(paymentMethod)) {
+      throw new Error(`Phương thức thanh toán "${paymentMethod}" không được hỗ trợ. Chỉ chấp nhận: qrpay, momo.`);
+    }
     const pool = await getPool();
     const transaction = pool.transaction();
 
@@ -257,6 +262,18 @@ class BookingModel {
       await transaction.rollback();
       throw err;
     }
+  }
+
+  static async getPaymentQRImages() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT PaymentMethod, ImagePath, DisplayName, Description,
+             AccountName, AccountNumber, BankName, IsActive
+      FROM   PaymentQRImages
+      WHERE  IsActive = 1
+      ORDER  BY QRImageID ASC
+    `);
+    return result.recordset;
   }
 
   static async getMyBookings(userId) {
