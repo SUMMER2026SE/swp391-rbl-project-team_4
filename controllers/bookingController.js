@@ -17,6 +17,23 @@ exports.getFoodBeverages = async (req, res) => {
   }
 };
 
+exports.getPaymentQRImages = async (req, res) => {
+  try {
+    const data = await BookingModel.getPaymentQRImages();
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[bookingController] getPaymentQRImages:', err.message);
+    // Fallback nếu bảng chưa tạo
+    res.json({
+      success: true,
+      data: [
+        { PaymentMethod: 'qrpay', ImagePath: '/images/qr_vietqr_mb.png', DisplayName: 'QR Pay (VietQR/MB)', AccountName: 'D-CINEMA PAYMENT', AccountNumber: '', BankName: 'MB Bank' },
+        { PaymentMethod: 'momo',  ImagePath: '/images/qr_momo.png',      DisplayName: 'Ví MoMo',           AccountName: 'D-CINEMA',         AccountNumber: '', BankName: 'MoMo'    }
+      ]
+    });
+  }
+};
+
 exports.getActiveVouchers = async (req, res) => {
   try {
     const data = await BookingModel.getActiveVouchers();
@@ -97,7 +114,8 @@ exports.createBooking = async (req, res) => {
       err.message.includes('chưa được thiết lập giá') ||
       err.message.includes('không hợp lệ') ||
       err.message.includes('không đủ số lượng') ||
-      err.message.includes('đã ngừng bán')
+      err.message.includes('đã ngừng bán') ||
+      err.message.includes('không được hỗ trợ')
     ) {
       return res.status(409).json({ success: false, message: err.message });
     }
