@@ -21,7 +21,6 @@ function assignDynamicPoster(movie) {
 class MovieModel {
   static async getNowShowing(city) {
     const pool = await getPool();
-<<<<<<< HEAD
     const request = pool.request();
     let query = `
       SELECT DISTINCT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
@@ -42,28 +41,6 @@ class MovieModel {
     query += ` ORDER BY m.MovieID DESC `;
 
     const result = await request.query(query);
-=======
-    const result = await pool.request().query(`
-      SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
-             m.TrailerURL, m.PosterURL, m.Status, m.MainCast,
-             (SELECT STRING_AGG(g.GenreName, ', ') 
-              FROM Movie_Genres mg 
-              JOIN Genres g ON mg.GenreID = g.GenreID 
-              WHERE mg.MovieID = m.MovieID) AS Genres,
-             COALESCE((SELECT STRING_AGG(Format, ', ') 
-                       FROM (SELECT DISTINCT CASE 
-                               WHEN r.RoomName LIKE '%3D%' THEN '3D'
-                               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
-                               ELSE '2D'
-                             END AS Format 
-                             FROM Showtimes st 
-                             JOIN Rooms r ON st.RoomID = r.RoomID 
-                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
-      FROM   Movies m
-      WHERE  m.Status = 'Now Showing'
-      ORDER BY m.MovieID DESC
-    `);
->>>>>>> 232b1fb93c84966cafe2e0cadb7d0afd71f76a82
     result.recordset.forEach(assignDynamicPoster);
     return result.recordset;
   }
