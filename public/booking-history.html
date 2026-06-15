@@ -13,6 +13,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="css/booking-history.css">
     <link rel="stylesheet" href="css/shared-layout.css">
+    <link rel="stylesheet" href="css/chatbot.css">
 </head>
 
 <body>
@@ -26,7 +27,12 @@
             </a>
             <nav class="nav-links">
                 <a href="movies.html" id="nav-phim">Phim</a>
-                <a href="booking.html" id="nav-rap" class="active">Rạp</a>
+                <div class="nav-dropdown">
+                    <a href="booking.html" id="nav-rap" class="active">Rạp <span style="font-size: 0.8em;">▼</span></a>
+                    <div class="nav-dropdown-content" id="cinemaDropdown">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
             <div class="nav-actions">
@@ -649,6 +655,7 @@
         }
     </style>
 
+    <script src="js/chatbot.js"></script>
 </body>
 
 </html>

@@ -6,7 +6,7 @@ const sql = require('mssql');
 
 const dbConfig = {
   user: 'sa',                        // SQL Server login
-  password: '123456',   // Đổi thành password thật của bạn
+  password: '240405',   // Đổi thành password thật của bạn
   server: 'localhost',               // Hoặc tên server / IP Azure
   port: 1433,
   database: 'CinemaManagement',             // Tên database trên SQL Server

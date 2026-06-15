@@ -241,6 +241,7 @@
         }
         .sort-select:focus { border-color: rgba(255,255,255,0.2); }
     </style>
+    <link rel="stylesheet" href="css/chatbot.css">
 </head>
 
 <body>
@@ -254,7 +255,12 @@
             </a>
             <nav class="nav-links">
                 <a href="movies.html" id="nav-phim">Phim</a>
-                <a href="booking.html" id="nav-rap" class="active">Rạp</a>
+                <div class="nav-dropdown">
+                    <a href="booking.html" id="nav-rap" class="active">Rạp <span style="font-size: 0.8em;">▼</span></a>
+                    <div class="nav-dropdown-content" id="cinemaDropdown">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
             <div class="nav-actions">
@@ -1050,5 +1056,7 @@
     });
     </script>
 
+    <script src="js/chatbot.js"></script>
 </body>
 </html>
+
