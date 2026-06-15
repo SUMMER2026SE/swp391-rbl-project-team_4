@@ -71,6 +71,16 @@ router.get('/vouchers', adminCtrl.getAllVouchers);
 // POST   /api/admin/vouchers           — Tạo voucher
 router.post('/vouchers', adminCtrl.createVoucher);
 
+// PUT    /api/admin/vouchers/:id       — Sửa voucher
+router.put('/vouchers/:id', adminCtrl.updateVoucher);
+
+// DELETE /api/admin/vouchers/:id       — Xóa voucher
+router.delete('/vouchers/:id', adminCtrl.deleteVoucher);
+
+// PATCH  /api/admin/vouchers/:id/toggle — Bật/tắt trạng thái hoạt động của voucher
+router.patch('/vouchers/:id/toggle', adminCtrl.toggleVoucherActive);
+
+
 // ─── F&B Management ────────────────────────────────────────────
 // GET    /api/admin/fnb                — Danh sách F&B
 router.get('/fnb', adminCtrl.getAllFnB);

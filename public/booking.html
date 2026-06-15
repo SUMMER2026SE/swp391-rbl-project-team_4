@@ -76,6 +76,75 @@
         .btn-login { background:linear-gradient(135deg,var(--primary),#b00710); color:#fff; padding:9px 20px; border-radius:7px; font-weight:700; font-size:0.84rem; transition:all var(--tr); box-shadow:0 2px 12px rgba(229,9,20,0.3); }
         .btn-login:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(229,9,20,0.5); }
 
+        /* ── Dropdown Menu ── */
+        .dropdown {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(15px);
+            background: var(--card);
+            min-width: 170px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            padding: 8px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+            z-index: 999;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(5px);
+        }
+
+        .nav-links .dropdown-menu a.dropdown-item {
+            display: block;
+            color: var(--sub);
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: left;
+            width: 100%;
+            white-space: nowrap;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .nav-links .dropdown-menu a.dropdown-item::after {
+            display: none !important;
+        }
+
+        .nav-links .dropdown-menu a.dropdown-item:hover {
+            color: #ffffff !important;
+            background: rgba(229, 9, 20, 0.1);
+        }
+
+        .nav-links .dropdown-menu a.dropdown-item.active {
+            color: var(--primary) !important;
+            background: rgba(229, 9, 20, 0.15);
+        }
+
+        .nav-arrow {
+            font-size: 0.7rem;
+            margin-left: 4px;
+            display: inline-block;
+            transition: transform 0.2s ease;
+            vertical-align: middle;
+        }
+
+        .dropdown:hover .nav-arrow {
+            transform: rotate(180deg);
+        }
+
         /* ── HERO STRIP ── */
         .booking-hero {
             background:linear-gradient(180deg, rgba(229,9,20,0.1) 0%, transparent 100%);
@@ -559,9 +628,15 @@
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <a href="movies.html">Phim</a>
-                <a href="booking.html" class="active">Rạp</a>
-                <a href="promotions.html">Khuyến mãi</a>
+                <div class="dropdown">
+                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
+                    <div class="dropdown-menu">
+                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                    </div>
+                </div>
+                <a href="booking.html" class="active" id="nav-rap">Rạp</a>
+                <a href="promotions.html" id="nav-promo">Khuyến mãi</a>
             </nav>
             <div class="nav-actions">
                 <div class="nav-search" id="navSearch">

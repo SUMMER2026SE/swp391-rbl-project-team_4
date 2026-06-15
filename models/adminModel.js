@@ -361,6 +361,62 @@ class AdminModel {
     return result.recordset[0];
   }
 
+  static async updateVoucher(id, data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, id)
+      .input('code', sql.NVarChar, data.code.toUpperCase())
+      .input('discountType', sql.NVarChar, data.discountType)
+      .input('discountValue', sql.Decimal, data.discountValue)
+      .input('minOrderValue', sql.Decimal, data.minOrderValue || 0)
+      .input('maxDiscount', sql.Decimal, data.maxDiscount || null)
+      .input('usageLimit', sql.Int, data.usageLimit || null)
+      .input('startDate', sql.Date, data.startDate)
+      .input('endDate', sql.Date, data.endDate)
+      .query(`
+        UPDATE Vouchers
+        SET Code = @code,
+            DiscountType = @discountType,
+            DiscountValue = @discountValue,
+            MinOrderValue = @minOrderValue,
+            MaxDiscount = @maxDiscount,
+            UsageLimit = @usageLimit,
+            StartDate = @startDate,
+            EndDate = @endDate
+        OUTPUT INSERTED.*
+        WHERE VoucherID = @id
+      `);
+    return result.recordset.length > 0 ? result.recordset[0] : null;
+  }
+
+  static async deleteVoucher(id) {
+    const pool = await getPool();
+    // Check usage in Tickets table
+    const usageCheck = await pool.request()
+      .input('id', sql.Int, id)
+      .query(`SELECT COUNT(*) as cnt FROM Tickets WHERE VoucherID = @id`);
+    if (usageCheck.recordset[0].cnt > 0) {
+      throw new Error('Không thể xóa voucher đã có người sử dụng.');
+    }
+    await pool.request()
+      .input('id', sql.Int, id)
+      .query(`DELETE FROM Vouchers WHERE VoucherID = @id`);
+  }
+
+  static async toggleVoucherActive(id) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, id)
+      .query(`
+        UPDATE Vouchers
+        SET IsActive = CASE WHEN IsActive = 1 THEN 0 ELSE 1 END
+        OUTPUT INSERTED.*
+        WHERE VoucherID = @id
+      `);
+    return result.recordset.length > 0 ? result.recordset[0] : null;
+  }
+
+
   // --- F&B MANAGEMENT ---
   static async getAllFnB() {
     const pool = await getPool();
