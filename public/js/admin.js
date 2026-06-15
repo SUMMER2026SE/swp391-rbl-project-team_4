@@ -826,16 +826,21 @@ function renderFnB() {
         html += `
             <div class="fnb-card-sm" style="position:relative; opacity: ${item.IsAvailable ? 1 : 0.5};">
                 ${getActionBtns(item)}
-                <div class="fc-sm-top" style="padding-top:20px;">
-                    <h4>${item.Name}</h4>
-                    <span class="fc-sm-price text-red">${item.Price.toLocaleString()}đ</span>
+                <div class="fc-sm-img-wrap" style="margin-top:10px;">
+                    <img src="${item.ImageURL || 'images/default_poster.svg'}" alt="${item.Name}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                 </div>
-                <div class="fc-sm-bottom">
-                    <div class="fc-sm-inv">
-                        <span class="fc-sm-label">TỒN KHO</span>
-                        <span class="fc-sm-val">${item.Stock} đơn vị</span>
+                <div class="fc-sm-info-block">
+                    <div class="fc-sm-top" style="padding-top:10px;">
+                        <h4>${item.Name}</h4>
+                        <span class="fc-sm-price text-red">${item.Price.toLocaleString()}đ</span>
                     </div>
-                    <span class="inv-badge ${stockClass}">${stockLabel}</span>
+                    <div class="fc-sm-bottom">
+                        <div class="fc-sm-inv">
+                            <span class="fc-sm-label">TỒN KHO</span>
+                            <span class="fc-sm-val">${item.Stock} đơn vị</span>
+                        </div>
+                        <span class="inv-badge ${stockClass}">${stockLabel}</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -967,6 +972,265 @@ async function saveFnB() {
     } finally {
         document.getElementById('fnbBtnText').textContent = oldText;
         btn.disabled = false;
+    }
+}
+
+/* ══════════════════════════
+   VOUCHER & PROMOTIONS MANAGEMENT
+   ══════════════════════════ */
+let VOUCHER_DATA = [];
+
+function switchFnbTab(tab, btn) {
+    // 1. Switch active classes on buttons
+    document.querySelectorAll('.fnb-tab').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    // 2. Toggle visibility of layouts
+    const fnbSubpage = document.getElementById('fnbSubpage');
+    const voucherSubpage = document.getElementById('voucherSubpage');
+    
+    if (tab === 'fnb') {
+        if (fnbSubpage) fnbSubpage.style.display = 'flex';
+        if (voucherSubpage) voucherSubpage.style.display = 'none';
+        loadFnB();
+    } else {
+        if (fnbSubpage) fnbSubpage.style.display = 'none';
+        if (voucherSubpage) voucherSubpage.style.display = 'flex';
+        loadVouchers();
+    }
+}
+
+function toggleVoucherFields() {
+    const type = document.getElementById('voucherDiscountType').value;
+    const maxDiscountInput = document.getElementById('voucherMaxDiscount');
+    const lblMaxDiscount = document.getElementById('lblMaxDiscount');
+    
+    if (type === 'fixed') {
+        maxDiscountInput.disabled = true;
+        maxDiscountInput.placeholder = 'Không khả dụng';
+        maxDiscountInput.value = '';
+        if (lblMaxDiscount) lblMaxDiscount.style.opacity = '0.5';
+    } else {
+        maxDiscountInput.disabled = false;
+        maxDiscountInput.placeholder = 'Không giới hạn';
+        if (lblMaxDiscount) lblMaxDiscount.style.opacity = '1';
+    }
+}
+
+async function loadVouchers() {
+    try {
+        const res = await apiFetch('/api/admin/vouchers');
+        if (res.success && res.data) {
+            VOUCHER_DATA = res.data;
+            renderVouchers();
+        }
+    } catch (err) {
+        console.error('Failed to load Vouchers:', err);
+    }
+}
+
+function renderVouchers() {
+    const container = document.getElementById('voucherItemsContainer');
+    if (!container) return;
+
+    if (VOUCHER_DATA.length === 0) {
+        container.innerHTML = '<div style="padding:20px;color:#9ca3af;">Chưa có mã khuyến mãi nào.</div>';
+        return;
+    }
+
+    let html = '<div class="fnb-cards-grid" style="grid-template-columns: repeat(2, 1fr);">';
+
+    const getVoucherActionBtns = (item) => `
+        <div style="position:absolute; top:10px; right:10px; display:flex; gap:5px; background:rgba(0,0,0,0.6); padding:4px; border-radius:6px; z-index:10;">
+            <button onclick='editVoucher(${JSON.stringify(item).replace(/'/g, "&apos;")})' title="Sửa" style="background:none;border:none;color:#3b82f6;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button onclick="toggleVoucherActive(${item.VoucherID})" title="${item.IsActive ? 'Ẩn/Tắt' : 'Hiện/Bật'}" style="background:none;border:none;color:${item.IsActive ? '#10b981' : '#6b7280'};cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <button onclick="deleteVoucher(${item.VoucherID})" title="Xóa" style="background:none;border:none;color:#ef4444;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        </div>
+    `;
+
+    VOUCHER_DATA.forEach(item => {
+        const discountStr = item.DiscountType === 'percent' 
+            ? `${item.DiscountValue}%` 
+            : `${item.DiscountValue.toLocaleString('vi-VN')} đ`;
+        
+        const minOrderStr = item.MinOrderValue > 0 
+            ? `Đơn tối thiểu ${item.MinOrderValue.toLocaleString('vi-VN')}đ` 
+            : 'Không yêu cầu đơn tối thiểu';
+
+        const maxDiscStr = (item.DiscountType === 'percent' && item.MaxDiscount) 
+            ? `Giảm tối đa ${item.MaxDiscount.toLocaleString('vi-VN')}đ` 
+            : '';
+
+        const usageLimitStr = item.UsageLimit 
+            ? `Giới hạn: ${item.UsedCount}/${item.UsageLimit}` 
+            : `Đã dùng: ${item.UsedCount}`;
+
+        const formatDate = (isoString) => {
+            if (!isoString) return '';
+            const d = new Date(isoString);
+            return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        };
+
+        const activeClass = item.IsActive ? 'high' : 'danger';
+        const activeLabel = item.IsActive ? 'HOẠT ĐỘNG' : 'TẠM KHÓA';
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const endStr = new Date(item.EndDate).toISOString().split('T')[0];
+        const isExpired = endStr < todayStr;
+        const expiredHtml = isExpired ? '<span class="inv-badge danger" style="margin-left:5px;">HẾT HẠN</span>' : '';
+
+        html += `
+            <div class="fnb-card-sm" style="position:relative; opacity: ${(item.IsActive && !isExpired) ? 1 : 0.6}; padding: 24px; border-color: ${item.IsActive ? 'rgba(16,185,129,0.3)' : 'var(--border)'}">
+                ${getVoucherActionBtns(item)}
+                
+                <div class="fc-sm-info-block" style="gap: 8px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-family:'Courier New',Courier,monospace; font-weight:900; font-size:1.2rem; background:rgba(232,25,44,0.1); color:var(--accent); padding:4px 12px; border-radius:6px; border:1px dashed var(--accent); letter-spacing:0.05em;">${item.Code}</span>
+                        <span class="inv-badge ${activeClass}">${activeLabel}</span>
+                        ${expiredHtml}
+                    </div>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: var(--text); margin-top: 6px;">Giảm ${discountStr}</div>
+                    <div style="font-size: 0.85rem; color: var(--text2); line-height: 1.4;">
+                        <div>• ${minOrderStr}</div>
+                        ${maxDiscStr ? `<div>• ${maxDiscStr}</div>` : ''}
+                        <div>• ${usageLimitStr}</div>
+                        <div style="margin-top:6px; font-size:0.78rem; font-weight:600; color:var(--text3);">Thời hạn: ${formatDate(item.StartDate)} - ${formatDate(item.EndDate)}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function editVoucher(item) {
+    document.getElementById('voucherFormTitle').textContent = 'SỬA VOUCHER';
+    document.getElementById('voucherId').value = item.VoucherID;
+    document.getElementById('voucherCode').value = item.Code;
+    document.getElementById('voucherDiscountType').value = item.DiscountType;
+    document.getElementById('voucherDiscountValue').value = item.DiscountValue;
+    document.getElementById('voucherMinOrderValue').value = item.MinOrderValue;
+    document.getElementById('voucherMaxDiscount').value = item.MaxDiscount || '';
+    document.getElementById('voucherUsageLimit').value = item.UsageLimit || '';
+    
+    const formatDateForInput = (isoString) => {
+        if (!isoString) return '';
+        return new Date(isoString).toISOString().split('T')[0];
+    };
+    document.getElementById('voucherStartDate').value = formatDateForInput(item.StartDate);
+    document.getElementById('voucherEndDate').value = formatDateForInput(item.EndDate);
+
+    toggleVoucherFields();
+
+    document.getElementById('btnSaveVoucher').querySelector('#voucherBtnText').textContent = 'Cập nhật Voucher';
+    document.getElementById('btnCancelVoucher').style.display = 'block';
+
+    document.querySelector('#voucherSubpage .fnb-form-side').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelEditVoucher() {
+    document.getElementById('voucherFormTitle').textContent = 'THÊM VOUCHER';
+    document.getElementById('addVoucherForm').reset();
+    document.getElementById('voucherId').value = '';
+    document.getElementById('btnSaveVoucher').querySelector('#voucherBtnText').textContent = 'Tạo Voucher';
+    document.getElementById('btnCancelVoucher').style.display = 'none';
+    toggleVoucherFields();
+}
+
+async function deleteVoucher(id) {
+    if (!confirm('Bạn có chắc chắn muốn xóa voucher này?')) return;
+    try {
+        const res = await apiFetch(`/api/admin/vouchers/${id}`, { method: 'DELETE' });
+        if (res.success) {
+            alert('Đã xóa voucher thành công.');
+            loadVouchers();
+        } else {
+            alert('Không thể xóa: ' + res.message);
+        }
+    } catch (err) {
+        console.error('deleteVoucher error:', err);
+        alert('Lỗi kết nối.');
+    }
+}
+
+async function toggleVoucherActive(id) {
+    try {
+        const res = await apiFetch(`/api/admin/vouchers/${id}/toggle`, { method: 'PATCH' });
+        if (res.success) {
+            loadVouchers();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        console.error('toggleVoucherActive error:', err);
+        alert('Lỗi kết nối.');
+    }
+}
+
+async function saveVoucher() {
+    const form = document.getElementById('addVoucherForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    const btn = document.getElementById('btnSaveVoucher');
+    const oldText = document.getElementById('voucherBtnText').textContent;
+    document.getElementById('voucherBtnText').textContent = 'Đang lưu...';
+    btn.disabled = true;
+
+    try {
+        const id = document.getElementById('voucherId').value;
+        const type = document.getElementById('voucherDiscountType').value;
+        
+        const payload = {
+            code: document.getElementById('voucherCode').value.trim().toUpperCase(),
+            discountType: type,
+            discountValue: parseFloat(document.getElementById('voucherDiscountValue').value),
+            minOrderValue: parseFloat(document.getElementById('voucherMinOrderValue').value || 0),
+            maxDiscount: type === 'fixed' ? null : (parseFloat(document.getElementById('voucherMaxDiscount').value) || null),
+            usageLimit: parseInt(document.getElementById('voucherUsageLimit').value) || null,
+            startDate: document.getElementById('voucherStartDate').value,
+            endDate: document.getElementById('voucherEndDate').value
+        };
+
+        if (new Date(payload.endDate) < new Date(payload.startDate)) {
+            alert('Ngày kết thúc không thể trước ngày bắt đầu.');
+            btn.disabled = false;
+            document.getElementById('voucherBtnText').textContent = oldText;
+            return;
+        }
+
+        let res;
+        if (id) {
+            // Update
+            res = await apiFetch(`/api/admin/vouchers/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+        } else {
+            // Create
+            res = await apiFetch('/api/admin/vouchers', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+        }
+
+        if (res.success) {
+            alert(id ? 'Cập nhật voucher thành công!' : 'Tạo voucher thành công!');
+            cancelEditVoucher();
+            loadVouchers();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        console.error('saveVoucher error:', err);
+        alert('Lỗi kết nối khi lưu voucher.');
+    } finally {
+        btn.disabled = false;
+        document.getElementById('voucherBtnText').textContent = oldText;
     }
 }
 
@@ -1837,6 +2101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMovies();
     loadRecentTransactions();
     loadFnB();
+    loadVouchers();
     loadStaff();
     loadRooms();
     loadCinemas();

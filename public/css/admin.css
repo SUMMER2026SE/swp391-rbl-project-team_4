@@ -1167,8 +1167,21 @@ textarea.form-control { resize: vertical; }
 .fnb-card-sm {
     background: var(--bg-white); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 20px;
-    display: flex; flex-direction: column; gap: 20px;
+    display: flex; flex-direction: row; gap: 20px;
+    align-items: center;
     transition: all var(--tr);
+}
+.fc-sm-img-wrap {
+    width: 80px; height: 80px; border-radius: 8px;
+    overflow: hidden; flex-shrink: 0; background: #f1f5f9;
+    border: 1px solid var(--border);
+}
+.fc-sm-img-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.fc-sm-info-block {
+    flex: 1; display: flex; flex-direction: column; gap: 12px;
+    min-width: 0;
 }
 .fnb-card-sm:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); }
 .fc-sm-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }

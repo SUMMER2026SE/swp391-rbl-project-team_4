@@ -243,6 +243,50 @@ exports.createVoucher = async (req, res) => {
   }
 };
 
+exports.updateVoucher = async (req, res) => {
+  try {
+    const { code, discountType, discountValue, startDate, endDate } = req.body;
+    if (!code || !discountType || discountValue == null || !startDate || !endDate) {
+      return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc.' });
+    }
+
+    const voucher = await AdminModel.updateVoucher(parseInt(req.params.id), req.body);
+    if (!voucher) return res.status(404).json({ success: false, message: 'Không tìm thấy voucher.' });
+    res.json({ success: true, message: 'Cập nhật voucher thành công!', data: voucher });
+  } catch (err) {
+    console.error('[adminController] updateVoucher:', err.message);
+    if (err.message.includes('Mã voucher đã tồn tại') || (err.number === 2627)) {
+      return res.status(409).json({ success: false, message: 'Mã voucher đã tồn tại.' });
+    }
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.deleteVoucher = async (req, res) => {
+  try {
+    await AdminModel.deleteVoucher(parseInt(req.params.id));
+    res.json({ success: true, message: 'Xóa voucher thành công!' });
+  } catch (err) {
+    console.error('[adminController] deleteVoucher:', err.message);
+    if (err.message.includes('đã có người sử dụng')) {
+      return res.status(409).json({ success: false, message: err.message });
+    }
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.toggleVoucherActive = async (req, res) => {
+  try {
+    const voucher = await AdminModel.toggleVoucherActive(parseInt(req.params.id));
+    if (!voucher) return res.status(404).json({ success: false, message: 'Không tìm thấy voucher.' });
+    res.json({ success: true, message: 'Đã thay đổi trạng thái khả dụng.', data: voucher });
+  } catch (err) {
+    console.error('[adminController] toggleVoucherActive:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+
 // ════════════════════════════════════════════════════════════
 //  F&B MANAGEMENT
 // ════════════════════════════════════════════════════════════

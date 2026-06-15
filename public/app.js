@@ -1,4 +1,5 @@
-const socket = io();
+const socket = typeof io !== 'undefined' ? io() : { on: () => {}, emit: () => {} };
+const API_BASE = (window.location.protocol === 'file:' || window.location.hostname === '') ? 'http://localhost:9999' : '';
 
 const mockMovies = [
     { id: 1, title: 'LẬT MẶT 7: MỘT ĐIỀU ƯỚC', rating: 'T16', image: 'images/poster.png', genre: 'Hành động', duration: 120, trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
@@ -391,13 +392,20 @@ const app = {
     },
 
     // --- Dynamic Movie Fetching for Guest Pages ---
+    allMovies: [],
+    filterState: {
+        status: 'Now Showing',
+        search: '',
+        genres: [],
+        formats: []
+    },
+
     async loadDynamicMovies() {
         // 1. For index.html (Now Showing) -> .movie-grid
         const nowShowingGrid = document.querySelector('.movie-grid');
         if (nowShowingGrid) {
             try {
-                const cityQuery = this.currentCity && this.currentCity !== 'Toàn quốc' ? `?city=${encodeURIComponent(this.currentCity)}` : '';
-                const res = await fetch(`/api/movies/now-showing${cityQuery}`);
+                const res = await fetch(`${API_BASE}/api/movies/now-showing`);
                 const json = await res.json();
                 if (json.success && json.data) {
                     nowShowingGrid.innerHTML = json.data.map(movie => `
@@ -412,7 +420,7 @@ const app = {
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.MainCast ? movie.MainCast : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                <div class="movie-genre">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</div>
                                 <div class="movie-rating">★ 8.5</div>
                             </div>
                         </div>
@@ -427,7 +435,7 @@ const app = {
         const comingSoonGrid = document.querySelector('#coming-soon .movie-grid');
         if (comingSoonGrid) {
             try {
-                const res = await fetch('/api/movies/coming-soon');
+                const res = await fetch(`${API_BASE}/api/movies/coming-soon`);
                 const json = await res.json();
                 if (json.success && json.data) {
                     comingSoonGrid.innerHTML = json.data.map(movie => `
@@ -435,8 +443,12 @@ const app = {
                             <div class="movie-poster">
                                 <span class="coming-badge">SẮP CHIẾU</span>
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                                <div class="poster-overlay">
-                                    <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                            </div>
+                            <div class="movie-info-large">
+                                <h3 class="movie-title-large">${movie.Title}</h3>
+                                <div class="movie-meta-large">
+                                    <span>${movie.Genres ? movie.Genres : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</span>
+                                    <span class="movie-date">Sắp chiếu</span>
                                 </div>
                             </div>
                             <div class="movie-info">
@@ -456,27 +468,32 @@ const app = {
         const allMoviesGrid = document.querySelector('.movies-grid');
         if (allMoviesGrid) {
             try {
-                const res = await fetch('/api/movies');
+                const res = await fetch(`${API_BASE}/api/movies`);
                 const json = await res.json();
                 if (json.success && json.data) {
-                    allMoviesGrid.innerHTML = json.data.map(movie => `
-                        <div class="movie-card">
-                            <div class="movie-poster">
-                                <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
-                                <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                                <div class="movie-overlay">
-                                    <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Get Tickets</button>
-                                </div>
-                            </div>
-                            <div class="movie-info">
-                                <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-rating">
-                                    <span class="stars">★ 4.9</span>
-                                    <span class="genres">${movie.Duration} phút</span>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
+                    this.allMovies = json.data;
+                    
+                    // Parse query parameters to pre-fill filters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const statusParam = urlParams.get('status');
+                    const searchParam = urlParams.get('search');
+                    
+                    if (statusParam === 'showing' || statusParam === 'Now Showing') {
+                        this.filterState.status = 'Now Showing';
+                    } else if (statusParam === 'coming' || statusParam === 'Coming Soon') {
+                        this.filterState.status = 'Coming Soon';
+                    } else {
+                        this.filterState.status = 'Now Showing'; // Default view
+                    }
+                    
+                    if (searchParam) {
+                        this.filterState.search = searchParam;
+                        const searchInput = document.getElementById('searchInput');
+                        if (searchInput) searchInput.value = searchParam;
+                    }
+                    
+                    this.updateTabUI();
+                    this.filterAndRenderMovies();
                 }
             } catch (err) {
                 console.error('Failed to load all movies:', err);
@@ -484,38 +501,126 @@ const app = {
         }
     },
 
-    // --- Load Cinemas for Navbar ---
-    async loadCinemasNavbar() {
-        const dropdown = document.getElementById('cinemaDropdown');
-        if (!dropdown) return;
+    switchMovieStatusTab(status) {
+        this.filterState.status = status;
+        this.updateTabUI();
+        this.filterAndRenderMovies();
+    },
 
-        try {
-            const res = await fetch('/api/movies/cinemas');
-            const json = await res.json();
-            if (json.success && json.data) {
-                const grouped = {};
-                json.data.forEach(c => {
-                    if (!grouped[c.City]) grouped[c.City] = [];
-                    grouped[c.City].push(c);
-                });
-
-                let html = '';
-                for (const city in grouped) {
-                    html += `<div class="dropdown-group">${city}</div>`;
-                    grouped[city].forEach(c => {
-                        html += `<a href="booking.html?cinemaId=${c.CinemaID}">${c.CinemaName}</a>`;
-                    });
-                }
-                dropdown.innerHTML = html;
+    updateTabUI() {
+        const tabNowShowing = document.getElementById('tab-now-showing');
+        const tabComingSoon = document.getElementById('tab-coming-soon');
+        if (tabNowShowing && tabComingSoon) {
+            if (this.filterState.status === 'Now Showing') {
+                tabNowShowing.classList.add('active');
+                tabComingSoon.classList.remove('active');
+            } else {
+                tabNowShowing.classList.remove('active');
+                tabComingSoon.classList.add('active');
             }
-        } catch (err) {
-            console.error('Failed to load cinemas for navbar:', err);
         }
+    },
+
+    filterAndRenderMovies() {
+        const allMoviesGrid = document.querySelector('.movies-grid');
+        if (!allMoviesGrid || !this.allMovies) return;
+
+        // Collect checked genre & format filter values
+        const selectedGenres = Array.from(document.querySelectorAll('input[name="genre"]:checked')).map(cb => cb.value);
+        const selectedFormats = Array.from(document.querySelectorAll('input[name="format"]:checked')).map(cb => cb.value);
+        const searchQuery = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+
+        const filtered = this.allMovies.filter(movie => {
+            // 1. Status Tab filter
+            if (movie.Status !== this.filterState.status) {
+                return false;
+            }
+
+            // 2. Text Search filter
+            if (searchQuery) {
+                const titleMatch = movie.Title.toLowerCase().includes(searchQuery);
+                const descMatch = movie.Description && movie.Description.toLowerCase().includes(searchQuery);
+                const directorMatch = movie.Director && movie.Director.toLowerCase().includes(searchQuery);
+                const castMatch = movie.MainCast && movie.MainCast.toLowerCase().includes(searchQuery);
+                if (!titleMatch && !descMatch && !directorMatch && !castMatch) {
+                    return false;
+                }
+            }
+
+            // 3. Genre checkbox filter (logical OR within genres)
+            if (selectedGenres.length > 0) {
+                const movieGenres = movie.Genres ? movie.Genres.split(',').map(g => g.trim()) : [];
+                const matchesGenre = selectedGenres.some(g => movieGenres.includes(g));
+                if (!matchesGenre) return false;
+            }
+
+            // 4. Format checkbox filter (logical OR within formats)
+            if (selectedFormats.length > 0) {
+                const movieFormats = movie.Formats ? movie.Formats.split(',').map(f => f.trim()) : ['2D'];
+                const matchesFormat = selectedFormats.some(f => movieFormats.includes(f));
+                if (!matchesFormat) return false;
+            }
+
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            allMoviesGrid.innerHTML = `
+                <div class="no-movies-found" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted-light);">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.5; display: inline-block;">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M8 12h8" />
+                    </svg>
+                    <p style="font-size: 1.1rem; font-weight: 500;">Không tìm thấy phim phù hợp với bộ lọc.</p>
+                </div>
+            `;
+            return;
+        }
+
+        allMoviesGrid.innerHTML = filtered.map(movie => `
+            <div class="movie-card">
+                <div class="movie-poster">
+                    <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                    <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                    <div class="movie-overlay">
+                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                    </div>
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title" title="${movie.Title}">${movie.Title}</h3>
+                    <div class="movie-rating">
+                        <span class="stars">★ 8.5</span>
+                        <span class="genres">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     app.initSocket();
     app.loadDynamicMovies();
-    app.loadCinemasNavbar();
+
+    const searchInput = document.getElementById('searchInput');
+    const isMoviesPage = !!document.querySelector('.movies-grid');
+
+    if (searchInput) {
+        if (isMoviesPage) {
+            searchInput.addEventListener('input', () => app.filterAndRenderMovies());
+        } else {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    window.location.href = `movies.html?search=${encodeURIComponent(searchInput.value)}`;
+                }
+            });
+        }
+    }
+
+    // Bind change listeners to genre and format checkboxes on movies page
+    if (isMoviesPage) {
+        document.querySelectorAll('input[name="genre"], input[name="format"]').forEach(cb => {
+            cb.addEventListener('change', () => app.filterAndRenderMovies());
+        });
+    }
 });
