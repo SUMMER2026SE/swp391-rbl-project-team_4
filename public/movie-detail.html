@@ -105,31 +105,16 @@
                     <!-- Synopsis -->
                     <section class="detail-section">
                         <h2 class="section-title">Synopsis</h2>
-                        <p class="section-content">
-                            Duke Paul Atreides joins the Fremen and begins a spiritual and martial journey to become
-                            Muad'Dib, while trying to prevent the horrible but inevitable future he's witnessed: a Holy
-                            War in his name, spreading throughout the known universe. Facing a choice between the love
-                            of his life and the fate of his people between which the love of his life and the fate of
-                            the known universe, he endeavors to prevent a terrible future only he can foresee.
+                        <p class="section-content" id="detailSynopsis">
+                            Đang tải...
                         </p>
                     </section>
 
                     <!-- Director & Cast -->
                     <section class="detail-section">
                         <h2 class="section-title">Director & Cast</h2>
-                        <div class="cast-grid">
-                            <div class="cast-card">
-                                <div class="cast-role">Director</div>
-                                <div class="cast-name">Denis Villeneuve</div>
-                            </div>
-                            <div class="cast-card">
-                                <div class="cast-role">Paul Atreides</div>
-                                <div class="cast-name">Timothée Chalamet</div>
-                            </div>
-                            <div class="cast-card">
-                                <div class="cast-role">Chani</div>
-                                <div class="cast-name">Zendaya</div>
-                            </div>
+                        <div class="cast-grid" id="castGrid">
+                            <!-- Loaded dynamically -->
                         </div>
                     </section>
 
@@ -138,10 +123,10 @@
                         <h2 class="section-title">Stills</h2>
                         <div class="stills-grid">
                             <div class="still-card">
-                                <img src="images/still_1.png" alt="Still 1">
+                                <img src="images/dune_hero.png" alt="Still 1" id="still1">
                             </div>
                             <div class="still-card">
-                                <img src="images/still_2.png" alt="Still 2">
+                                <img src="images/dune_hero.png" alt="Still 2" id="still2">
                             </div>
                         </div>
                     </section>
@@ -154,19 +139,19 @@
                         <h3 class="info-title">Movie Info</h3>
                         <div class="info-item">
                             <span class="info-label">Duration</span>
-                            <span class="info-value">166 mins</span>
+                            <span class="info-value" id="infoDuration">...</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Release Date</span>
-                            <span class="info-value">Mar 1, 2024</span>
+                            <span class="info-value" id="infoReleaseDate">Đang chiếu</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Language</span>
-                            <span class="info-value">English</span>
+                            <span class="info-value" id="infoLanguage">Tiếng Việt</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Genre</span>
-                            <span class="info-value">Sci-Fi, Adventure</span>
+                            <span class="info-value" id="infoGenre">...</span>
                         </div>
                         <div class="info-divider"></div>
                         <div class="share-section">
@@ -308,19 +293,63 @@
                 const badge = document.getElementById('heroBadge');
                 const rating = document.getElementById('heroRating');
                 const duration = document.getElementById('heroDuration');
-                const releaseDate = document.getElementById('heroReleaseDate');
                 const description = document.getElementById('movieDescription');
                 const score = document.getElementById('heroScore');
+                const heroBg = document.querySelector('.hero-bg');
+                
+                // Synopsis & Info Card
+                const detailSynopsis = document.getElementById('detailSynopsis');
+                const infoDuration = document.getElementById('infoDuration');
+                const infoGenre = document.getElementById('infoGenre');
+                const infoLanguage = document.getElementById('infoLanguage');
+                const castGrid = document.getElementById('castGrid');
+                const still1 = document.getElementById('still1');
+                const still2 = document.getElementById('still2');
 
                 if (poster && movie.PosterURL) {
                     poster.src = movie.PosterURL;
                     poster.alt = movie.Title || poster.alt;
                 }
+                if (heroBg && movie.PosterURL) {
+                    heroBg.style.backgroundImage = `url('${movie.PosterURL}')`;
+                }
+                if (still1 && movie.PosterURL) still1.src = movie.PosterURL;
+                if (still2 && movie.PosterURL) still2.src = movie.PosterURL;
+
                 if (title) title.textContent = movie.Title || title.textContent;
                 if (badge) badge.textContent = movie.AgeRating || badge.textContent;
-                if (rating) rating.textContent = `★ ${movie.Rating || '8.5'}/10`;
-                if (duration) duration.textContent = movie.Duration ? `${movie.Duration} mins` : duration.textContent;
+                if (rating) rating.textContent = movie.AgeRating || rating.textContent;
+                if (score) score.textContent = `★ ${movie.Rating || '8.5'}/10`;
+                if (duration) duration.textContent = movie.Duration ? `${movie.Duration} phút` : duration.textContent;
                 if (description) description.textContent = movie.Description || description.textContent;
+
+                if (detailSynopsis) detailSynopsis.textContent = movie.Description || 'Chưa có thông tin synopsis.';
+                if (infoDuration) infoDuration.textContent = movie.Duration ? `${movie.Duration} phút` : 'Chưa rõ';
+                if (infoGenre) infoGenre.textContent = movie.Genre || 'Chính kịch';
+                if (infoLanguage) infoLanguage.textContent = 'Tiếng Việt (Phụ đề Tiếng Anh)';
+
+                // Render Cast & Director
+                if (castGrid) {
+                    let castHtml = '';
+                    if (movie.Director) {
+                        castHtml += `
+                            <div class="cast-card">
+                                <div class="cast-role">Đạo diễn</div>
+                                <div class="cast-name">${movie.Director}</div>
+                            </div>`;
+                      }
+                      if (movie.MainCast) {
+                          const actors = movie.MainCast.split(',');
+                          actors.forEach(actor => {
+                              castHtml += `
+                                  <div class="cast-card">
+                                      <div class="cast-role">Diễn viên</div>
+                                      <div class="cast-name">${actor.trim()}</div>
+                                  </div>`;
+                          });
+                      }
+                      castGrid.innerHTML = castHtml || '<p style="color: var(--muted); font-size: 0.85rem;">Đang cập nhật...</p>';
+                  }
 
                 if (trailerBtn) {
                     trailerBtn.addEventListener('click', () => {

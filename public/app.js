@@ -2,7 +2,7 @@ const socket = io();
 
 const mockMovies = [
     { id: 1, title: 'LẬT MẶT 7: MỘT ĐIỀU ƯỚC', rating: 'T16', image: 'images/poster.png', genre: 'Hành động', duration: 120, trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
-    { id: 2, title: 'DORAEMON: NOBITA VÀ BẢN GIAO HƯỞNG', rating: 'P', image: 'images/poster.png', genre: 'Hoạt hình', duration: 110, trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
+    { id: 2, title: 'Doraemon Movie 45 (2026): Nobita Và Lâu Đài Dưới Đáy Biển', rating: 'P', image: 'images/doraemon_sea.png', genre: 'Hoạt hình', duration: 101, trailer: 'https://www.youtube.com/embed/u3JgYkmuK78' },
     { id: 3, title: 'HÀNH TINH KHỈ: VƯƠNG QUỐC MỚI', rating: 'T13', image: 'images/poster.png', genre: 'Viễn tưởng', duration: 145, trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ' }
 ];
 
@@ -78,16 +78,71 @@ const app = {
         `).join('');
     },
     openTrailer(url) {
-        const modal = document.getElementById('trailerModal');
+        let modal = document.getElementById('trailerModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'trailerModal';
+            modal.className = 'modal-overlay hidden';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="btn-close-modal" onclick="app.closeTrailer()">×</button>
+                    <div class="video-container">
+                        <iframe id="trailerIframe" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        let embedUrl = url;
+        if (!url) {
+            embedUrl = '';
+        } else if (url.includes('youtube.com/embed/')) {
+            embedUrl = url;
+        } else {
+            try {
+                let videoId = '';
+                if (url.includes('youtube.com/watch')) {
+                    const urlParams = new URLSearchParams(new URL(url.search ? url : url.replace('#', '?')).search);
+                    videoId = urlParams.get('v') || new URL(url).searchParams.get('v');
+                    if (!videoId) {
+                        // Fallback regex
+                        const match = url.match(/[?&]v=([^&]+)/);
+                        if (match) videoId = match[1];
+                    }
+                } else if (url.includes('youtu.be/')) {
+                    videoId = url.split('youtu.be/')[1].split('?')[0];
+                } else if (url.includes('youtube.com/v/')) {
+                    videoId = url.split('youtube.com/v/')[1].split('?')[0];
+                }
+                if (videoId) {
+                    embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                }
+            } catch (e) {
+                console.error("Error parsing YouTube URL:", e);
+                // Fallback to simple replace
+                if (url.includes('youtube.com/watch?v=')) {
+                    embedUrl = url.replace('watch?v=', 'embed/');
+                    const ampersandPos = embedUrl.indexOf('&');
+                    if (ampersandPos !== -1) {
+                        embedUrl = embedUrl.substring(0, ampersandPos);
+                    }
+                }
+            }
+        }
+        console.log("Original URL:", url, "-> Embed URL:", embedUrl);
+        
         const iframe = document.getElementById('trailerIframe');
-        iframe.src = url;
+        iframe.src = embedUrl;
         modal.classList.remove('hidden');
     },
     closeTrailer() {
         const modal = document.getElementById('trailerModal');
-        const iframe = document.getElementById('trailerIframe');
-        iframe.src = '';
-        modal.classList.add('hidden');
+        if (modal) {
+            const iframe = document.getElementById('trailerIframe');
+            iframe.src = '';
+            modal.classList.add('hidden');
+        }
     },
     switchMovieTab(tab) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
