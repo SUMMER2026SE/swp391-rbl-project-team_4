@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cổng giả lập thanh toán Webhook | CinemaVerse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: #1a1c23;
+            --border-color: #2e303f;
+            --primary-color: #e50914;
+            --primary-hover: #ff1f2d;
+            --text-main: #f5f6fa;
+            --text-muted: #8a8f9a;
+            --success-color: #22c55e;
+            --warning-color: #eab308;
+            --accent-glow: rgba(229, 9, 20, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        /* Background animated glow */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80vw;
+            height: 40vh;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        header {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto 24px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 950;
+            letter-spacing: -0.5px;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--primary-color);
+        }
+
+        .badge-dev {
+            background-color: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            color: var(--warning-color);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 24px;
+            flex: 1;
+        }
+
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Glass Cards */
+        .card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #fff;
+        }
+
+        .btn-refresh {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-refresh:hover {
+            color: #fff;
+            border-color: #8a8f9a;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Pending List */
+        .pending-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            max-height: 480px;
+            padding-right: 4px;
+        }
+
+        .pending-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .pending-list::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            font-size: 0.88rem;
+        }
+
+        .pending-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+
+        .pending-item:hover {
+            border-color: var(--primary-color);
+            background: rgba(229, 9, 20, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .pending-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+
+        .pending-customer {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .pending-time {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .pending-movie {
+            font-size: 0.82rem;
+            color: #c5c8cf;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .pending-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.76rem;
+            margin-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            padding-top: 8px;
+        }
+
+        .pending-seats {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .pending-amount {
+            color: var(--success-color);
+            font-weight: 800;
+        }
+
+        .pending-note-badge {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            color: #fff;
+            font-size: 0.72rem;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input,
+        select {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.15);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-gen {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 0 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-gen:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #8a8f9a;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.45);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        /* Console Logger */
+        .console-container {
+            margin-top: 24px;
+            max-width: 1200px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .console-box {
+            background-color: #050608;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-family: 'Fira Code', monospace;
+            padding: 16px;
+            height: 220px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            color: #a9b2c3;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.9);
+        }
+
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .console-line {
+            margin-bottom: 6px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .line-info {
+            color: #3b82f6;
+        }
+
+        .line-success {
+            color: var(--success-color);
+        }
+
+        .line-error {
+            color: #ef4444;
+        }
+
+        .line-warn {
+            color: var(--warning-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="logo">D<span>-</span>CINEMA<span>+</span></a>
+        <div>
+            <span class="badge-dev">Developer simulator</span>
+        </div>
+    </header>
+
+    <main class="main-container">
+
+        <!-- LEFT PANEL: Pending Bookings -->
+        <section class="card">
+            <div class="card-title">
+                <span>Vé đang chờ thanh toán</span>
+                <button class="btn-refresh" onclick="fetchPendingBookings()">
+                    🔄 Làm mới
+                </button>
+            </div>
+            <div class="pending-list" id="pendingList">
+                <div class="empty-state">Đang tải danh sách đặt vé...</div>
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: Webhook form simulator -->
+        <section class="card">
+            <div class="card-title">Giả lập cổng thanh toán Webhook</div>
+
+            <form id="webhookForm" onsubmit="sendWebhook(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gateway">Cổng ngân hàng (Gateway)</label>
+                        <select id="gateway" required>
+                            <option value="MBBank">🏦 MB Bank (Napas 247)</option>
+                            <option value="MoMo">💖 Ví MoMo QR</option>
+                            <option value="Vietcombank">🏦 Vietcombank</option>
+                            <option value="Techcombank">🏦 Techcombank</option>
+                            <option value="PayOS">⚡ PayOS Gateway</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="referenceNumber">Mã giao dịch (Ref No)</label>
+                        <div class="input-group">
+                            <input type="text" id="referenceNumber" placeholder="Ví dụ: FT2415..." required autocomplete="off">
+                            <button type="button" class="btn-gen" onclick="generateRefNo()" title="Tạo mã ngẫu nhiên">🎲</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="accountNumber">Số tài khoản nhận</label>
+                        <input type="text" id="accountNumber" value="0949391487" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">Số tiền chuyển (VND)</label>
+                        <input type="number" id="amount" placeholder="Nhập số tiền..." required min="1000">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionContent">Nội dung chuyển khoản (ĐỐI SOÁT CHÍNH)</label>
+                    <input type="text" id="transactionContent" placeholder="Mã chuyển khoản (Ví dụ: DCVIP8)" required autocomplete="off" style="font-family:'Fira Code', monospace; letter-spacing:0.5px; font-weight:700;">
+                </div>
+
+                <div class="form-group">
+                    <label for="webhookSecret">Webhook Secret Token</label>
+                    <input type="password" id="webhookSecret" value="dev_webhook_secret_token" placeholder="Không bắt buộc..." autocomplete="off">
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnSubmit">
+                    <span>🚀 GỬI THÔNG BÁO WEBHOOK</span>
+                </button>
+            </form>
+        </section>
+
+    </main>
+
+    <!-- CONSOLE LOGGER -->
+    <section class="console-container">
+        <div class="console-header">
+            <span>Terminal Logs</span>
+            <span style="cursor:pointer;" onclick="clearLogs()">Clear</span>
+        </div>
+        <div class="console-box" id="consoleBox">
+            <div class="console-line line-info">[System] Dev Simulator ready. Quét các vé pending từ CSDL để kiểm thử một click.</div>
+        </div>
+    </section>
+
+    <script>
+        // Generate random reference number
+        function generateRefNo() {
+            const randomId = Math.floor(10000000 + Math.random() * 90000000);
+            const gateways = ['FT', 'MOMO', 'POS', 'VCB', 'TCB'];
+            const prefix = gateways[Math.floor(Math.random() * gateways.length)];
+            document.getElementById('referenceNumber').value = prefix + randomId;
+            logToConsole(`🎲 Đã tạo mã giao dịch ngẫu nhiên: ${prefix + randomId}`);
+        }
+
+        // Write to terminal
+        function logToConsole(message, type = 'info') {
+            const consoleBox = document.getElementById('consoleBox');
+            const date = new Date().toLocaleTimeString();
+            const cssClass = `line-${type}`;
+            const line = document.createElement('div');
+            line.className = `console-line ${cssClass}`;
+            line.textContent = `[${date}] ${message}`;
+            consoleBox.appendChild(line);
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('consoleBox').innerHTML = `<div class="console-line line-info">[System] Logs cleared.</div>`;
+        }
+
+        // Fetch pending tickets from our public helper API
+        async function fetchPendingBookings() {
+            try {
+                const listContainer = document.getElementById('pendingList');
+                listContainer.innerHTML = '<div class="empty-state">Đang tải danh sách đặt vé...</div>';
+
+                const response = await fetch('/api/bookings/webhook/pending');
+                const json = await response.json();
+
+                if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+                    listContainer.innerHTML = '';
+                    json.data.forEach(item => {
+                        const dateObj = new Date(item.bookedAt);
+                        const displayTime = dateObj.toLocaleDateString('vi-VN') + ' ' + dateObj.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                        
+                        const itemHtml = `
+                            <div class="pending-item" onclick="autoFillPending('${item.transferNote}', ${item.totalAmount})">
+                                <div class="pending-item-header">
+                                    <span class="pending-customer">👤 ${item.customerName}</span>
+                                    <span class="pending-time">${displayTime}</span>
+                                </div>
+                                <div class="pending-movie">🎬 ${item.movieTitle}</div>
+                                <div class="pending-details">
+                                    <span>Ghế: <span class="pending-seats">${item.seats.join(', ')}</span></span>
+                                    <span class="pending-note-badge" title="Mã chuyển khoản">${item.transferNote}</span>
+                                    <span class="pending-amount">${item.totalAmount.toLocaleString('vi-VN')} đ</span>
+                                </div>
+                            </div>
+                        `;
+                        listContainer.insertAdjacentHTML('beforeend', itemHtml);
+                    });
+                    logToConsole(`Loaded ${json.data.length} pending bookings from database.`, 'info');
+                } else {
+                    listContainer.innerHTML = '<div class="empty-state">Không có vé nào đang chờ thanh toán trong CSDL (Trạng thái pending). Hãy đặt vé ở tab Checkout trước.</div>';
+                    logToConsole('No pending bookings found in database.', 'warn');
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('pendingList').innerHTML = '<div class="empty-state" style="color: #ef4444;">Lỗi kết nối tới Server.</div>';
+                logToConsole(`Error loading pending bookings: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto fill form
+        function autoFillPending(note, amount) {
+            document.getElementById('transactionContent').value = note;
+            document.getElementById('amount').value = amount;
+            generateRefNo();
+            logToConsole(`📝 Đã điền thông tin vé: Nội dung="${note}", Số tiền=${amount}đ.`, 'success');
+        }
+
+        // Trigger POST Webhook request
+        async function sendWebhook(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.textContent = '⏳ ĐANG GỬI WEBHOOK...';
+
+            const gateway = document.getElementById('gateway').value;
+            const refNo = document.getElementById('referenceNumber').value.trim();
+            const accNum = document.getElementById('accountNumber').value.trim();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const content = document.getElementById('transactionContent').value.trim();
+            const secret = document.getElementById('webhookSecret').value;
+
+            // Prepare SePay Webhook payload format
+            const payload = {
+                gateway: gateway,
+                transactionDate: new Date().toISOString().replace('T', ' ').slice(0, 19),
+                accountNumber: accNum,
+                transferAmount: amount, // SePay transferAmount
+                amount_in: amount,       // SePay amount_in fallback
+                amountIn: amount,       // fallback
+                code: refNo,            // SePay transaction code
+                referenceCode: refNo,   // SePay sub-code
+                content: content,       // SePay transaction content
+                transferType: 'in'
+            };
+
+            logToConsole(`>> Sending POST Request to /api/bookings/webhook...`, 'info');
+            logToConsole(`Payload: ${JSON.stringify(payload)}`, 'info');
+
+            try {
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (secret) {
+                    headers['Authorization'] = 'Bearer ' + secret;
+                    headers['x-api-key'] = secret;
+                }
+
+                const response = await fetch('/api/bookings/webhook', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload)
+                });
+
+                const responseText = await response.text();
+                let result = {};
+                try { result = JSON.parse(responseText); } catch(e) { result = responseText; }
+
+                logToConsole(`<< Server Response [HTTP ${response.status}]`, response.ok ? 'success' : 'error');
+                logToConsole(`Body: ${JSON.stringify(result)}`, response.ok ? 'success' : 'error');
+
+                if (response.ok && result.success) {
+                    alert('Simulated Webhook sent successfully! Booking has been confirmed.');
+                    fetchPendingBookings(); // refresh
+                } else {
+                    alert('Webhook processed, but failed to confirm booking:\n' + (result.message || responseText));
+                }
+            } catch (error) {
+                console.error(error);
+                logToConsole(`Webhook delivery failed: ${error.message}`, 'error');
+                alert('Connection error. Could not send webhook.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🚀 GỬI THÔNG BÁO WEBHOOK';
+            }
+        }
+
+        // On Load
+        document.addEventListener('DOMContentLoaded', () => {
+            generateRefNo();
+            fetchPendingBookings();
+            
+            // Poll for pending bookings every 10 seconds to keep list updated
+            setInterval(fetchPendingBookings, 10000);
+        });
+    </script>
+</body>
+
+</html>
