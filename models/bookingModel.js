@@ -268,7 +268,7 @@ class BookingModel {
     const pool = await getPool();
     const result = await pool.request().query(`
       SELECT PaymentMethod, ImagePath, DisplayName, Description,
-             AccountName, AccountNumber, BankName, IsActive
+             AccountName, AccountNumber, BankName, BankCode, IsActive
       FROM   PaymentQRImages
       WHERE  IsActive = 1
       ORDER  BY QRImageID ASC

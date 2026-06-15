@@ -1,4 +1,4 @@
-git<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -1087,8 +1087,19 @@ git<!DOCTYPE html>
                 </div>
                 <div class="qr-bank-info" id="qrBankInfo">
                     <div class="qr-bank-row"><span class="qr-bank-key">Ngân hàng / Ví</span><span class="qr-bank-val" id="qrBankName">—</span></div>
+                    <div class="qr-bank-row"><span class="qr-bank-key">Số tài khoản</span>
+                        <span class="qr-bank-val" style="display:flex;align-items:center;gap:8px;">
+                            <span id="qrAccNumber">—</span>
+                            <button onclick="copyToClipboard('qrAccNumber')" title="Sao chép" style="background:rgba(255,255,255,0.08);border:1px solid #3a3e47;border-radius:5px;padding:2px 7px;color:#8a8f9a;font-size:0.72rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.color='#f0f0f0'" onmouseout="this.style.color='#8a8f9a'">📋</button>
+                        </span>
+                    </div>
                     <div class="qr-bank-row"><span class="qr-bank-key">Tên tài khoản</span><span class="qr-bank-val" id="qrAccName">—</span></div>
-                    <div class="qr-bank-row"><span class="qr-bank-key">Nội dung CK</span><span class="qr-bank-val" id="qrTransferNote">—</span></div>
+                    <div class="qr-bank-row"><span class="qr-bank-key">Nội dung CK</span>
+                        <span class="qr-bank-val" style="display:flex;align-items:center;gap:8px;">
+                            <span id="qrTransferNote">—</span>
+                            <button onclick="copyToClipboard('qrTransferNote')" title="Sao chép" style="background:rgba(255,255,255,0.08);border:1px solid #3a3e47;border-radius:5px;padding:2px 7px;color:#8a8f9a;font-size:0.72rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.color='#f0f0f0'" onmouseout="this.style.color='#8a8f9a'">📋</button>
+                        </span>
+                    </div>
                 </div>
                 <ol class="qr-steps">
                     <li class="qr-step-item"><div class="qr-step-num">1</div><span>Mở app ngân hàng hoặc MoMo trên điện thoại</span></li>
@@ -1105,12 +1116,13 @@ git<!DOCTYPE html>
     </div>
 
     <!-- ── SUCCESS MODAL ── -->
-    <div class="modal-overlay" id="successModal">
+    <div class="modal-overlay" id="successModal" style="display:none;">
         <div class="modal-box">
             <div class="modal-icon">🎬</div>
             <h2>Đặt vé thành công!</h2>
-            <p>Vé của bạn đã được xác nhận. Cảm ơn bạn đã thanh toán!</p>
-            <button class="btn-modal-close" onclick="window.location.href='payment-success.html'">Xem vé của tôi</button>
+            <p>Vé của bạn đã được xác nhận và lưu vào hệ thống. Cảm ơn bạn đã thanh toán!</p>
+            <p id="successRedirectNote" style="font-size:0.78rem;color:#8a8f9a;margin-top:-8px;">Tự động chuyển trang sau <span id="redirectCountdown">3</span> giây…</p>
+            <button class="btn-modal-close" onclick="window.location.href='payment-success.html'">Xem vé của tôi ngay</button>
         </div>
     </div>
 
@@ -1145,21 +1157,93 @@ git<!DOCTYPE html>
                 json.data.forEach(item => { qrImagesData[item.PaymentMethod] = item; });
             }
         } catch(e) {
-            console.warn('Could not load QR images:', e.message);
-            qrImagesData['qrpay'] = { PaymentMethod:'qrpay', ImagePath:'/images/qr_vietqr_mb.png', DisplayName:'QR Pay (VietQR/MB)', AccountName:'D-CINEMA PAYMENT', AccountNumber:'', BankName:'MB Bank' };
-            qrImagesData['momo']  = { PaymentMethod:'momo',  ImagePath:'/images/qr_momo.png',      DisplayName:'Ví MoMo',            AccountName:'D-CINEMA',         AccountNumber:'', BankName:'MoMo'    };
+            console.warn('Could not load QR images, dùng fallback:', e.message);
+            // Fallback với thông tin tài khoản thật
+            qrImagesData['qrpay'] = {
+                PaymentMethod: 'qrpay',
+                ImagePath:     '/images/qr_vietqr_mb.png',
+                DisplayName:   'QR Pay (VietQR / MB Bank)',
+                AccountName:   'NGUYEN MINH HUY',
+                AccountNumber: '0949391487',
+                BankName:      'MB Bank',
+                BankCode:      'MB'
+            };
+            qrImagesData['momo'] = {
+                PaymentMethod: 'momo',
+                ImagePath:     '/images/qr_momo.png',
+                DisplayName:   'Ví điện tử MoMo',
+                AccountName:   'NGUYEN MINH HUY',
+                AccountNumber: '0949391487',
+                BankName:      'MoMo',
+                BankCode:      'MOMO'
+            };
         }
+    }
+
+    /* ─── COPY TO CLIPBOARD ─── */
+    function copyToClipboard(elementId) {
+        const text = document.getElementById(elementId).textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('✓ Đã sao chép: ' + text, 'success');
+        }).catch(() => {
+            // Fallback cho trình duyệt cũ
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast('✓ Đã sao chép: ' + text, 'success');
+        });
     }
 
     /* ─── OPEN QR MODAL ─── */
     function openQrModal(method, amount) {
-        const info = qrImagesData[method] || { DisplayName: method, ImagePath: '', BankName: '—', AccountName: '—' };
+        const info = qrImagesData[method] || {
+            DisplayName: method, ImagePath: '', BankName: '—',
+            AccountName: '—', AccountNumber: '—', BankCode: ''
+        };
+
+        // Tạo nội dung chuyển khoản duy nhất (lưu vào pendingPayload để gửi lên server)
+        const transferNote = 'DCVIP' + Date.now().toString().slice(-6);
+        if (pendingPayload) pendingPayload.transferNote = transferNote;
+
+        // ─── Tạo QR URL ───
+        let qrSrc;
+        if (method === 'qrpay' && info.BankCode && info.BankCode !== 'MOMO' && info.AccountNumber) {
+            // VietQR dynamic: số tiền được nhúng thẳng vào QR → app ngân hàng tự điền
+            qrSrc = `https://img.vietqr.io/image/${info.BankCode}-${info.AccountNumber}-qr_only.png` +
+                    `?amount=${Math.round(amount)}` +
+                    `&addInfo=${encodeURIComponent(transferNote)}` +
+                    `&accountName=${encodeURIComponent(info.AccountName || '')}`;
+        } else if (method === 'momo' && info.AccountNumber) {
+            // MoMo: dùng ảnh QR tĩnh (MoMo cần merchant contract để tạo QR động)
+            qrSrc = info.ImagePath || '/images/qr_momo.png';
+        } else {
+            qrSrc = info.ImagePath || '';
+        }
+
+        // ─── Điền thông tin vào modal ───
         document.getElementById('qrModalTitle').textContent = 'Thanh toán qua ' + (info.DisplayName || method);
         document.getElementById('qrAmountDisplay').textContent = amount.toLocaleString('vi-VN') + ' VND';
-        document.getElementById('qrCodeImg').src = info.ImagePath || '';
+
+        // Loading spinner trong khi chờ QR load
+        const qrImg = document.getElementById('qrCodeImg');
+        qrImg.style.opacity = '0.3';
+        qrImg.src = qrSrc;
+        qrImg.onload = () => { qrImg.style.opacity = '1'; };
+        qrImg.onerror = () => {
+            // Fallback về ảnh tĩnh nếu VietQR API lỗi
+            qrImg.src = info.ImagePath || '';
+            qrImg.style.opacity = '1';
+            console.warn('[QR] VietQR API lỗi, dùng ảnh tĩnh fallback');
+        };
+
         document.getElementById('qrBankName').textContent = info.BankName || '—';
+        document.getElementById('qrAccNumber').textContent = info.AccountNumber || '—';
         document.getElementById('qrAccName').textContent = info.AccountName || '—';
-        document.getElementById('qrTransferNote').textContent = 'DCVIP' + Date.now().toString().slice(-6);
+        document.getElementById('qrTransferNote').textContent = transferNote;
+
         const confirmBtn = document.getElementById('qrConfirmBtn');
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Tôi đã thanh toán xong';
@@ -1197,7 +1281,19 @@ git<!DOCTYPE html>
                 sessionStorage.setItem('booking', JSON.stringify(booking));
                 localStorage.setItem('booking', JSON.stringify(booking));
                 document.getElementById('qrModal').classList.remove('open');
-                document.getElementById('successModal').style.display = 'flex';
+                // Hiển thị modal thành công + đếm ngược tự redirect
+                const successModal = document.getElementById('successModal');
+                successModal.style.display = 'flex';
+                let secs = 3;
+                const cdEl = document.getElementById('redirectCountdown');
+                const autoRedirect = setInterval(() => {
+                    secs--;
+                    if (cdEl) cdEl.textContent = secs;
+                    if (secs <= 0) {
+                        clearInterval(autoRedirect);
+                        window.location.href = 'payment-success.html';
+                    }
+                }, 1000);
             } else {
                 showToast(json.message || 'Xác nhận thất bại. Vui lòng thử lại.', 'error');
                 btn.disabled = false;
@@ -1374,15 +1470,23 @@ git<!DOCTYPE html>
     updateCountdown();
 
     /* ─── PAY NOW — show QR modal first ─── */
-    function processPayment() {
+    async function processPayment() {
         if (!currentPayment) {
             showToast('Vui lòng chọn phương thức thanh toán.', 'error');
             return;
         }
+
+        // Validate: kiểm tra đã có dữ liệu đặt vé chưa
+        if (!booking.showtimeId || !booking.seatIds || booking.seatIds.length === 0) {
+            showToast('Không tìm thấy thông tin đặt vé. Vui lòng quay lại chọn ghế.', 'error');
+            return;
+        }
+
         const btn = document.getElementById('btnPayNow');
         btn.disabled = true;
         btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-9-9"/></svg> Đang tải QR…';
 
+        // Chuẩn bị payload gửi lên server
         pendingPayload = {
             showtimeId: booking.showtimeId,
             seatIds: booking.seatIds,
@@ -1391,8 +1495,14 @@ git<!DOCTYPE html>
             paymentMethod: currentPayment
         };
 
+        // Mở QR modal để người dùng quét và xác nhận
+        // Việc gọi API POST /api/bookings thực hiện trong confirmPaymentDone()
         const finalAmt = Math.max(0, (booking.totalAmount || 0) - discountAmount);
         openQrModal(currentPayment, finalAmt);
+
+        // Khôi phục nút sau khi mở modal
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> THANH TOÁN NGAY';
     }
 
     /* ─── TOAST NOTIFICATION ─── */
@@ -1433,6 +1543,13 @@ git<!DOCTYPE html>
         try {
             booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
         } catch(e) { booking = {}; }
+
+        // Nghiệp vụ: Nếu giao dịch đã hoàn thành thì không cho đặt lại
+        if (booking.completed) {
+            showToast('Giao dịch này đã hoàn thành!', 'success');
+            setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+            return;
+        }
 
         if (!booking.showtimeId) {
             showToast('Không tìm thấy thông tin đặt vé!', 'error');
