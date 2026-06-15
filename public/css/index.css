@@ -1265,159 +1265,71 @@ img {
     }
 }
 
-/* ─── City Modal ─── */
-.city-modal-content {
-    background: #2b2d31;
-    color: #fff;
-    max-width: 600px;
-    padding: 30px;
-    border-radius: 4px;
-}
-
-.city-modal-header {
-    display: flex;
-    justify-content: space-between;
+/* ─── Dropdown Menu (Light Navbar Theme) ─── */
+.dropdown {
+    position: relative;
+    display: inline-flex;
     align-items: center;
-    margin-bottom: 25px;
-    border-bottom: 1px solid #fff;
-    padding-bottom: 15px;
 }
 
-.city-modal-header h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #fff;
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(15px);
+    background: var(--bg-white);
+    min-width: 170px;
+    border-radius: 6px;
+    border: 1px solid var(--border-light);
+    padding: 8px 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    z-index: 999;
 }
 
-.city-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+.dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(5px);
 }
 
-.city-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.city-item:hover {
-    transform: translateY(-5px);
-}
-
-.city-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 1.2rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.city-item span {
-    font-size: 0.9rem;
+.nav-links .dropdown-menu a.dropdown-item {
+    display: block;
+    color: var(--text-muted-dark);
+    padding: 10px 20px;
+    font-size: 0.85rem;
     font-weight: 500;
-    text-align: center;
-    color: #ddd;
+    text-align: left;
+    width: 100%;
+    white-space: nowrap;
+    position: relative;
+    transition: all 0.2s ease;
 }
 
-@media (max-width: 480px) {
-    .city-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* ─── Modal Classes (imported from style.css) ─── */
-.hidden {
+.nav-links .dropdown-menu a.dropdown-item::after {
     display: none !important;
 }
 
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.nav-links .dropdown-menu a.dropdown-item:hover {
+    color: var(--primary) !important;
+    background: rgba(229, 9, 20, 0.05);
 }
 
-.modal-content {
-    width: 90%;
-    max-width: 900px;
-    position: relative;
-    background: var(--surface-dark);
-    border-radius: var(--radius);
+.nav-links .dropdown-menu a.dropdown-item.active {
+    color: var(--primary) !important;
+    background: rgba(229, 9, 20, 0.08);
 }
 
-.btn-close-modal {
-    position: absolute;
-    top: -40px;
-    right: 0;
-    background: transparent;
-    color: #fff;
-    font-size: 2rem;
-    cursor: pointer;
-}
-
-.city-modal-header .btn-close-modal {
-    position: static;
-    color: #aaa;
-    font-size: 1.5rem;
-}
-
-/* ─── Nav Dropdown ─── */
-.nav-dropdown {
-    position: relative;
+.nav-arrow {
+    font-size: 0.7rem;
+    margin-left: 4px;
     display: inline-block;
+    transition: transform 0.2s ease;
+    vertical-align: middle;
 }
 
-.nav-dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: var(--surface-dark);
-    min-width: 250px;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    border-radius: var(--radius-sm);
-    top: 100%;
-    left: 0;
-    padding: 10px 0;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.nav-dropdown-content a {
-    color: var(--text-light);
-    padding: 10px 16px;
-    text-decoration: none;
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: background-color var(--transition);
-}
-
-.nav-dropdown-content a:hover {
-    background-color: var(--primary);
-    color: white;
-}
-
-.nav-dropdown-content .dropdown-group {
-    padding: 5px 16px;
-    font-size: 0.75rem;
-    color: var(--primary);
-    text-transform: uppercase;
-    font-weight: 800;
-    margin-top: 5px;
-}
-
-.nav-dropdown:hover .nav-dropdown-content {
-    display: block;
+.dropdown:hover .nav-arrow {
+    transform: rotate(180deg);
 }

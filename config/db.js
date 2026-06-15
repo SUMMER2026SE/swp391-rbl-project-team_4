@@ -2,17 +2,17 @@
 //  config/db.js  –  SQL Server connection (mssql + tedious)
 //  Quản lý qua Azure Data Studio: dùng đúng server/database bên dưới
 // ============================================================
-const sql = require('mssql');
+const sql = require("mssql");
 
 const dbConfig = {
   user: 'sa',                        // SQL Server login
   password: '240405',   // Đổi thành password thật của bạn
   server: 'localhost',               // Hoặc tên server / IP Azure
   port: 1433,
-  database: 'CinemaManagement',             // Tên database trên SQL Server
+  database: "CinemaManagement", // Tên database trên SQL Server
   options: {
-    encrypt: false,                  // true nếu dùng Azure SQL
-    trustServerCertificate: true,    // Bỏ qua self-signed cert (local dev)
+    encrypt: false, // true nếu dùng Azure SQL
+    trustServerCertificate: true, // Bỏ qua self-signed cert (local dev)
     enableArithAbort: true,
   },
   pool: {
@@ -33,9 +33,12 @@ async function getPool() {
   if (!pool) {
     try {
       pool = await sql.connect(dbConfig);
-      console.log('[DB] ✅  Kết nối SQL Server thành công –', dbConfig.database);
+      console.log(
+        "[DB] ✅  Kết nối SQL Server thành công –",
+        dbConfig.database,
+      );
     } catch (err) {
-      console.error('[DB] ❌  Kết nối thất bại:', err.message);
+      console.error("[DB] ❌  Kết nối thất bại:", err.message);
       throw err;
     }
   }
