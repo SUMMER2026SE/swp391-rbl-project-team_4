@@ -96,7 +96,7 @@ class AdminModel {
         FROM Seats s
         JOIN Tickets t ON t.SeatID = s.SeatID
         JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
-        WHERE s.RoomID = @roomId AND st.StartTime > GETDATE()
+        WHERE s.RoomID = @roomId AND st.StartTime > GETUTCDATE()
           AND t.Status IN ('confirmed', 'pending', 'used')
       `);
       
@@ -666,6 +666,53 @@ class AdminModel {
     return result.recordset;
   }
 
+  static async getRevenueChartData({ period, cinemaId }) {
+    const pool = await getPool();
+    const request = pool.request();
+    
+    let cinemaJoin = '';
+    let cinemaFilter = '';
+    if (cinemaId) {
+      request.input('cinemaId', sql.Int, parseInt(cinemaId));
+      cinemaJoin = `
+        JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID 
+        JOIN Rooms r ON st.RoomID = r.RoomID 
+      `;
+      cinemaFilter = `AND r.CinemaID = @cinemaId`;
+    }
+
+    let dateFilter = '';
+    if (period === 'today') {
+      dateFilter = 'CAST(t.BookedAt AS DATE) = CAST(GETUTCDATE() AS DATE)';
+    } else if (period === 'week') {
+      dateFilter = 't.BookedAt >= DATEADD(wk, DATEDIFF(wk, 0, GETUTCDATE()), 0)';
+    } else if (period === 'month') {
+      dateFilter = 'MONTH(t.BookedAt) = MONTH(GETUTCDATE()) AND YEAR(t.BookedAt) = YEAR(GETUTCDATE())';
+    } else {
+      dateFilter = 'YEAR(t.BookedAt) = YEAR(GETUTCDATE())'; // all = this year
+    }
+
+    const result = await request.query(`
+        SELECT 
+            t.TicketID,
+            t.TotalAmount,
+            t.BookedAt,
+            (
+                SELECT ISNULL(SUM(tf.Quantity * fb.Price), 0)
+                FROM Ticket_FnB tf
+                JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
+                WHERE tf.TicketID = t.TicketID
+            ) AS FnBRevenue
+        FROM Tickets t
+        ${cinemaJoin}
+        WHERE t.Status IN ('confirmed', 'used')
+        AND ${dateFilter}
+        ${cinemaFilter}
+    `);
+
+    return result.recordset;
+  }
+
   static async getTopMovies(limit) {
     const pool = await getPool();
     const result = await pool.request()
@@ -713,8 +760,8 @@ class AdminModel {
       JOIN Cinemas c ON r.CinemaID = c.CinemaID
       LEFT JOIN Showtimes st ON r.RoomID = st.RoomID 
           AND st.Status = 'active'
-          AND GETDATE() >= DATEADD(minute, -15, st.StartTime) 
-          AND GETDATE() <= DATEADD(minute, 15, st.EndTime)
+          AND GETUTCDATE() >= DATEADD(minute, -15, st.StartTime) 
+          AND GETUTCDATE() <= DATEADD(minute, 15, st.EndTime)
       LEFT JOIN Movies m ON st.MovieID = m.MovieID
       WHERE 1=1
     `;

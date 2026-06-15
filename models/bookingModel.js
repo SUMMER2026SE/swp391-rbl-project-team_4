@@ -95,22 +95,18 @@ class BookingModel {
       const couplePairsCharged = new Set();
 
       for (const seatId of seatIds) {
-        const seatReq = transaction.request();
-        seatReq.input('sid', sql.Int, seatId);
-        seatReq.input('stid', sql.Int, showtimeId);
-        const seatCheck = await seatReq.query(`
-          SELECT TicketID FROM Tickets
-          WHERE SeatID = @sid AND ShowtimeID = @stid AND Status IN ('confirmed','pending')
-        `);
+        // Kiểm tra ghế đã được đặt chưa bằng LOCK
+        const seatCheckReq = transaction.request();
+        seatCheckReq.input('sid', sql.Int, seatId);
+        seatCheckReq.input('stid', sql.Int, showtimeId);
+        const seatCheck = await seatCheckReq.query(`SELECT TicketID FROM Tickets WITH (UPDLOCK) WHERE SeatID = @sid AND ShowtimeID = @stid AND Status IN ('confirmed','pending')`);
         if (seatCheck.recordset.length > 0) {
           throw new Error(`Ghế ID ${seatId} đã được đặt.`);
         }
 
-        const infoReq = transaction.request();
-        infoReq.input('sid', sql.Int, seatId);
-        const seatInfo = await infoReq.query(`
-          SELECT SeatRow, SeatNumber, SeatType, PriceMultiplier FROM Seats WHERE SeatID = @sid
-        `);
+        const seatReq = transaction.request();
+        seatReq.input('sid', sql.Int, seatId);
+        const seatInfo = await seatReq.query(`SELECT SeatRow, SeatNumber, SeatType, PriceMultiplier FROM Seats WHERE SeatID = @sid`);
         if (seatInfo.recordset.length === 0) {
           throw new Error(`Ghế ID ${seatId} không tồn tại.`);
         }
@@ -144,7 +140,7 @@ class BookingModel {
         }
         const fnbReq = transaction.request();
         fnbReq.input('fnbId', sql.Int, item.fnbId);
-        const fnbResult = await fnbReq.query('SELECT Name, Price, Stock FROM FoodBeverages WHERE FnBID = @fnbId AND IsAvailable = 1');
+        const fnbResult = await fnbReq.query('SELECT Name, Price, Stock FROM FoodBeverages WITH (UPDLOCK) WHERE FnBID = @fnbId AND IsActive = 1');
         if (fnbResult.recordset.length === 0) {
           throw new Error(`Sản phẩm đồ ăn ID ${item.fnbId} không tồn tại hoặc đã ngừng bán.`);
         }
@@ -158,11 +154,14 @@ class BookingModel {
         }
         fnbTotal += fnbItem.Price * qty;
 
-        // Giảm tồn kho thực tế
+        // Giảm tồn kho thực tế (đã lock nên an toàn)
         const updateFnbReq = transaction.request();
         updateFnbReq.input('fnbId', sql.Int, item.fnbId);
         updateFnbReq.input('qty', sql.Int, item.quantity);
-        await updateFnbReq.query('UPDATE FoodBeverages SET Stock = Stock - @qty WHERE FnBID = @fnbId');
+        const updateRes = await updateFnbReq.query('UPDATE FoodBeverages SET Stock = Stock - @qty WHERE FnBID = @fnbId AND Stock >= @qty');
+        if (updateRes.rowsAffected[0] === 0) {
+           throw new Error(`Lỗi cập nhật số lượng món "${fnbItem.Name}". Vui lòng thử lại.`);
+        }
       }
       totalAmount += fnbTotal;
 
@@ -174,8 +173,9 @@ class BookingModel {
         vReq.input('code', sql.NVarChar, voucherCode.trim().toUpperCase());
         const vResult = await vReq.query(`
           SELECT VoucherID, DiscountType, DiscountValue, MaxDiscount, MinOrderValue
-          FROM Vouchers WHERE Code = @code AND IsActive = 1
-            AND StartDate <= GETDATE() AND EndDate >= GETDATE()
+          FROM Vouchers WITH (UPDLOCK) 
+          WHERE Code = @code AND IsActive = 1
+            AND StartDate <= GETUTCDATE() AND EndDate >= GETUTCDATE()
             AND (UsageLimit IS NULL OR UsedCount < UsageLimit)
         `);
         if (vResult.recordset.length > 0) {
@@ -242,7 +242,10 @@ class BookingModel {
       if (voucherId) {
         const vuReq = transaction.request();
         vuReq.input('voucherId', sql.Int, voucherId);
-        await vuReq.query('UPDATE Vouchers SET UsedCount = UsedCount + 1 WHERE VoucherID = @voucherId');
+        const updateVoucher = await vuReq.query('UPDATE Vouchers SET UsedCount = UsedCount + 1 WHERE VoucherID = @voucherId AND (UsageLimit IS NULL OR UsedCount < UsageLimit)');
+        if (updateVoucher.rowsAffected[0] === 0) {
+           throw new Error('Voucher đã hết lượt sử dụng trong khi xử lý giao dịch.');
+        }
       }
 
       await transaction.commit();

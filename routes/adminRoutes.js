@@ -112,6 +112,9 @@ router.get('/stats/top-movies', adminCtrl.getTopMovies);
 // GET    /api/admin/stats/monthly-revenue — Doanh thu hàng tháng cho chart
 router.get('/stats/monthly-revenue', adminCtrl.getMonthlyRevenue);
 
+// GET    /api/admin/stats/revenue-chart — Doanh thu cho biểu đồ động
+router.get('/stats/revenue-chart', adminCtrl.getRevenueChartData);
+
 // GET    /api/admin/stats/live-rooms      — Trạng thái phòng chiếu live
 router.get('/stats/live-rooms', adminCtrl.getLiveRooms);
 

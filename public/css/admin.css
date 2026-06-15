@@ -1329,3 +1329,116 @@ textarea.form-control { resize: vertical; }
 .lr-occ.playing { color: #ef4444; }
 .lr-occ.cleaning { color: #f59e0b; }
 .lr-occ.empty { color: #10b981; }
+
+
+/* ══════════════════════════════════════
+   QUICK SELL MODAL (POS) CSS
+══════════════════════════════════════ */
+.qs-showtime-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.qs-showtime-card:hover {
+    border-color: var(--accent);
+    background: #eff6ff;
+}
+.qs-showtime-card.selected {
+    border-color: var(--accent);
+    background: #eff6ff;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
+}
+.qs-movie-title {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+.qs-room-time {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* Sơ đồ ghế Quick Sell */
+.qs-seat-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+    justify-content: center;
+}
+.qs-seat {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    background: #374151; /* Trống */
+    transition: all 0.2s;
+}
+.qs-seat:hover:not(.sold) {
+    transform: scale(1.1);
+    background: #4b5563;
+}
+.qs-seat.selected {
+    background: #10b981; /* Đang chọn */
+    box-shadow: 0 0 8px rgba(16,185,129,0.5);
+}
+.qs-seat.sold {
+    background: #e8192c; /* Đã bán */
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+.qs-seat.vip {
+    border: 2px solid #f59e0b;
+}
+
+/* F&B Items */
+.qs-fnb-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9fafb;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+.qs-fnb-info {
+    flex: 1;
+}
+.qs-fnb-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+.qs-fnb-price {
+    font-size: 0.8rem;
+    color: var(--accent);
+}
+.qs-fnb-qty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.qs-btn-qty {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background: #e5e7eb;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #374151;
+}
+.qs-btn-qty:hover {
+    background: #d1d5db;
+}

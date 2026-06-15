@@ -52,7 +52,7 @@ class StaffModel {
         sReq.input('seatId', sql.Int, seatId);
         sReq.input('showtimeId', sql.Int, showtimeId);
         const sCheck = await sReq.query(`
-          SELECT TicketID FROM Tickets
+          SELECT TicketID FROM Tickets WITH (UPDLOCK)
           WHERE SeatID = @seatId AND ShowtimeID = @showtimeId AND Status IN ('confirmed','pending')
         `);
         if (sCheck.recordset.length > 0) {
@@ -65,7 +65,7 @@ class StaffModel {
       for (const item of foodItems) {
         const fReq = transaction.request();
         fReq.input('fnbId', sql.Int, item.fnbId);
-        const fResult = await fReq.query('SELECT Price FROM FoodBeverages WHERE FnBID = @fnbId AND IsAvailable = 1');
+        const fResult = await fReq.query('SELECT Price FROM FoodBeverages WITH (UPDLOCK) WHERE FnBID = @fnbId AND IsAvailable = 1');
         if (fResult.recordset.length > 0) {
           fnbTotal += fResult.recordset[0].Price * item.quantity;
         }
@@ -81,8 +81,9 @@ class StaffModel {
         vReq.input('code', sql.NVarChar, voucherCode.trim().toUpperCase());
         const vResult = await vReq.query(`
           SELECT VoucherID, DiscountType, DiscountValue, MaxDiscount, MinOrderValue
-          FROM Vouchers WHERE Code = @code AND IsActive = 1
-            AND StartDate <= GETDATE() AND EndDate >= GETDATE()
+          FROM Vouchers WITH (UPDLOCK) 
+          WHERE Code = @code AND IsActive = 1
+            AND StartDate <= GETUTCDATE() AND EndDate >= GETUTCDATE()
             AND (UsageLimit IS NULL OR UsedCount < UsageLimit)
         `);
         if (vResult.recordset.length > 0) {
@@ -137,7 +138,10 @@ class StaffModel {
       if (voucherId) {
         const vuReq = transaction.request();
         vuReq.input('voucherId', sql.Int, voucherId);
-        await vuReq.query('UPDATE Vouchers SET UsedCount = UsedCount + 1 WHERE VoucherID = @voucherId');
+        const vuResult = await vuReq.query('UPDATE Vouchers SET UsedCount = UsedCount + 1 WHERE VoucherID = @voucherId AND (UsageLimit IS NULL OR UsedCount < UsageLimit)');
+        if (vuResult.rowsAffected[0] === 0) {
+           throw new Error('Voucher đã hết lượt sử dụng.');
+        }
       }
 
       await transaction.commit();
