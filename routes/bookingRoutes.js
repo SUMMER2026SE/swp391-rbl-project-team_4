@@ -16,7 +16,13 @@ router.get('/vouchers',                     bookingCtrl.getActiveVouchers);
 // GET  /api/bookings/payment-qr             — Ảnh QR thanh toán (Public)
 router.get('/payment-qr',                   bookingCtrl.getPaymentQRImages);
 
-// Áp dụng verifyToken cho toàn bộ booking routes (trừ food-beverages)
+// POST /api/bookings/webhook                — Webhook nhận thông báo chuyển khoản ngân hàng (Public)
+router.post('/webhook',                     bookingCtrl.receivePaymentWebhook);
+
+// GET  /api/bookings/webhook/pending        — Lấy danh sách vé đang chờ thanh toán (Public - phục vụ Simulator)
+router.get('/webhook/pending',              bookingCtrl.getPendingWebhooks);
+
+// Áp dụng verifyToken cho toàn bộ booking routes (trừ các routes public bên trên)
 router.use(verifyToken);
 
 // POST /api/bookings/validate-voucher       — Kiểm tra voucher

@@ -282,6 +282,89 @@ class BookingModel {
     `);
   }
 
+  static async getBookingTotalAmount(ticketIds) {
+    const pool = await getPool();
+    const ticketIdList = ticketIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+    if (ticketIdList.length === 0) return 0;
+
+    const ticketsResult = await pool.request().query(`
+      SELECT SUM(TotalAmount) AS TicketSum FROM Tickets WHERE TicketID IN (${ticketIdList.join(',')})
+    `);
+    
+    const fnbResult = await pool.request().query(`
+      SELECT SUM(tf.Quantity * fb.Price) AS FnBSum
+      FROM Ticket_FnB tf
+      JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
+      WHERE tf.TicketID IN (${ticketIdList.join(',')})
+    `);
+
+    const ticketSum = parseFloat(ticketsResult.recordset[0].TicketSum || 0);
+    const fnbSum = parseFloat(fnbResult.recordset[0].FnBSum || 0);
+
+    return ticketSum + fnbSum;
+  }
+
+  static async confirmBookingWithTransaction(ticketIds, transactionDetails) {
+    const pool = await getPool();
+    const transaction = pool.transaction();
+    await transaction.begin();
+
+    try {
+      // 1. Kiểm tra xem giao dịch đã tồn tại chưa để tránh trùng lặp (Idempotency)
+      const checkTxReq = transaction.request();
+      checkTxReq.input('refNo', sql.NVarChar, transactionDetails.referenceNumber);
+      const checkTxResult = await checkTxReq.query(`
+        SELECT TransactionID FROM PaymentTransactions WHERE ReferenceNumber = @refNo
+      `);
+
+      if (checkTxResult.recordset.length > 0) {
+        await transaction.rollback();
+        const err = new Error(`Giao dịch ${transactionDetails.referenceNumber} đã tồn tại.`);
+        err.code = 'DUPLICATE_TRANSACTION';
+        throw err;
+      }
+
+      // 2. Lưu thông tin giao dịch vào bảng PaymentTransactions
+      const insertTxReq = transaction.request();
+      insertTxReq.input('gateway', sql.NVarChar, transactionDetails.gateway);
+      insertTxReq.input('txDate', sql.DateTime, new Date(transactionDetails.transactionDate));
+      insertTxReq.input('accNum', sql.NVarChar, transactionDetails.accountNumber);
+      insertTxReq.input('amountIn', sql.Decimal(18, 2), transactionDetails.amountIn);
+      insertTxReq.input('refNo', sql.NVarChar, transactionDetails.referenceNumber);
+      insertTxReq.input('content', sql.NVarChar, transactionDetails.transactionContent);
+      insertTxReq.input('method', sql.NVarChar, transactionDetails.paymentMethod);
+      insertTxReq.input('rawData', sql.NVarChar, JSON.stringify(transactionDetails.rawData));
+
+      await insertTxReq.query(`
+        INSERT INTO PaymentTransactions (Gateway, TransactionDate, AccountNumber, AmountIn, ReferenceNumber, TransactionContent, PaymentMethod, RawData, CreatedAt)
+        VALUES (@gateway, @txDate, @accNum, @amountIn, @refNo, @content, @method, @rawData, GETDATE())
+      `);
+
+      // 3. Cập nhật trạng thái vé thành 'confirmed'
+      const ticketIdList = ticketIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+      const confirmReq = transaction.request();
+      await confirmReq.query(`
+        UPDATE Tickets
+        SET Status = 'confirmed'
+        WHERE TicketID IN (${ticketIdList.join(',')}) AND Status = 'pending'
+      `);
+
+      await transaction.commit();
+      console.log(`[DB Webhook] ✅ Confirm booking successfully for tickets: ${ticketIdList.join(', ')}`);
+      return true;
+    } catch (err) {
+      if (err.code !== 'DUPLICATE_TRANSACTION') {
+        try {
+          await transaction.rollback();
+        } catch (rollbackErr) {
+          console.error('[DB] Rollback failed:', rollbackErr.message);
+        }
+      }
+      throw err;
+    }
+  }
+
+
   static async cancelBooking(ticketIds) {
     const pool = await getPool();
     const ticketIdList = ticketIds.map(id => parseInt(id)).filter(id => !isNaN(id));
