@@ -690,7 +690,8 @@ img {
 .tab-link.active::after {
     content: '';
     position: absolute;
-    bottom: -16px; /* align with the border-bottom of tabs-header */
+    bottom: -16px;
+    /* align with the border-bottom of tabs-header */
     left: 0;
     width: 100%;
     height: 3px;
@@ -1317,7 +1318,7 @@ img {
     color: white;
     font-weight: bold;
     font-size: 1.2rem;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .city-item span {
@@ -1334,12 +1335,14 @@ img {
 }
 
 /* ─── Modal Classes (imported from style.css) ─── */
-.hidden { display: none !important; }
+.hidden {
+    display: none !important;
+}
 
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.8);
     z-index: 1000;
     display: flex;
     justify-content: center;
@@ -1381,7 +1384,7 @@ img {
     position: absolute;
     background-color: var(--surface-dark);
     min-width: 250px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.5);
     z-index: 1000;
     border-radius: var(--radius-sm);
     top: 100%;
@@ -1417,4 +1420,4 @@ img {
 
 .nav-dropdown:hover .nav-dropdown-content {
     display: block;
-}
+}
