@@ -15,6 +15,7 @@ const mockFB = [
 
 const app = {
     currentShowtimeId: null,
+    currentCity: 'Toàn quốc',
     bookingData: {
         step: 1,
         movieId: null,
@@ -22,6 +23,23 @@ const app = {
         fb: {}, // { fbId: quantity }
         priceSeat: 85000,
         priceVIP: 105000
+    },
+
+    // --- City Modal ---
+    openCityModal() {
+        const modal = document.getElementById('cityModal');
+        if (modal) modal.classList.remove('hidden');
+    },
+    closeCityModal() {
+        const modal = document.getElementById('cityModal');
+        if (modal) modal.classList.add('hidden');
+    },
+    selectCity(city) {
+        this.currentCity = city;
+        const textEl = document.getElementById('currentCityText');
+        if (textEl) textEl.innerText = city;
+        this.closeCityModal();
+        this.loadDynamicMovies();
     },
 
     // --- Navigation & Views ---
@@ -42,7 +60,7 @@ const app = {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(viewId).classList.remove('hidden');
         document.getElementById(viewId).classList.add('active');
-        window.scrollTo(0,0);
+        window.scrollTo(0, 0);
     },
     switchAuthTab(tab) {
         const tabs = document.querySelectorAll('.auth-tab');
@@ -94,7 +112,7 @@ const app = {
             `;
             document.body.appendChild(modal);
         }
-        
+
         let embedUrl = url;
         if (!url) {
             embedUrl = '';
@@ -132,7 +150,7 @@ const app = {
             }
         }
         console.log("Original URL:", url, "-> Embed URL:", embedUrl);
-        
+
         const iframe = document.getElementById('trailerIframe');
         iframe.src = embedUrl;
         modal.classList.remove('hidden');
@@ -165,7 +183,7 @@ const app = {
         this.bookingData.movieId = movieId;
         const movie = mockMovies.find(m => m.id === movieId);
         document.getElementById('summaryMovieName').innerText = movie ? movie.title : 'Phim Đang Chọn';
-        
+
         this.switchView('booking-view');
         this.renderTimeSlots();
         this.updateBookingStep(1);
@@ -201,10 +219,10 @@ const app = {
     },
     updateBookingStep(step) {
         this.bookingData.step = step;
-        
+
         // Hide all steps
         document.querySelectorAll('.booking-step').forEach(s => s.classList.add('hidden'));
-        document.getElementById(`step-${step}-${['filter','seat','fb','checkout'][step-1]}`).classList.remove('hidden');
+        document.getElementById(`step-${step}-${['filter', 'seat', 'fb', 'checkout'][step - 1]}`).classList.remove('hidden');
 
         // Update Progress Bar
         document.querySelectorAll('.booking-progress .step').forEach((s, idx) => {
@@ -349,7 +367,7 @@ const app = {
             const seatEl = document.getElementById(`seat-${seatId}`);
             if (!seatEl) return;
             const type = seatEl.dataset.type; // vip, empty
-            
+
             if (status === 'Đang chọn' && !this.bookingData.seats.has(seatId)) {
                 seatEl.className = 'seat holding';
             } else if (status === 'Trống') {
@@ -413,16 +431,16 @@ const app = {
             }
         }
 
-        // 2. For index.html (Coming Soon) -> .movie-grid-large
-        const comingSoonGrid = document.querySelector('.movie-grid-large');
+        // 2. For index.html (Coming Soon) -> .movie-grid
+        const comingSoonGrid = document.querySelector('#coming-soon .movie-grid');
         if (comingSoonGrid) {
             try {
                 const res = await fetch(`${API_BASE}/api/movies/coming-soon`);
                 const json = await res.json();
                 if (json.success && json.data) {
                     comingSoonGrid.innerHTML = json.data.map(movie => `
-                        <div class="movie-card-large">
-                            <div class="movie-poster-large">
+                        <div class="movie-card">
+                            <div class="movie-poster">
                                 <span class="coming-badge">SẮP CHIẾU</span>
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                             </div>
@@ -432,6 +450,11 @@ const app = {
                                     <span>${movie.Genres ? movie.Genres : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</span>
                                     <span class="movie-date">Sắp chiếu</span>
                                 </div>
+                            </div>
+                            <div class="movie-info">
+                                <h3 class="movie-title">${movie.Title}</h3>
+                                <div class="movie-genre">${movie.MainCast ? movie.MainCast : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</div>
+                                <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">Sắp chiếu</div>
                             </div>
                         </div>
                     `).join('');
