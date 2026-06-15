@@ -1,4 +1,4 @@
-git<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -1374,7 +1374,7 @@ git<!DOCTYPE html>
     updateCountdown();
 
     /* ─── PAY NOW — show QR modal first ─── */
-    function processPayment() {
+    async function processPayment() {
         if (!currentPayment) {
             showToast('Vui lòng chọn phương thức thanh toán.', 'error');
             return;
