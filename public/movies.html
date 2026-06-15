@@ -7,6 +7,7 @@
     <title>Danh sách Phim | D-Cinema</title>
     <link rel="stylesheet" href="css/movies.css">
     <link rel="stylesheet" href="css/shared-layout.css">
+    <link rel="stylesheet" href="css/chatbot.css">
 </head>
 
 <body>
@@ -18,7 +19,13 @@
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <a href="movies.html" id="nav-phim" class="active">Phim</a>
+                <div class="dropdown">
+                    <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
+                    <div class="dropdown-menu">
+                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                    </div>
+                </div>
                 <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
@@ -53,29 +60,59 @@
                     <h4 class="filter-header">GENRES</h4>
                     <div class="filter-list">
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="action" checked>
+                            <input type="checkbox" name="genre" value="Hành động">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Action</span>
+                            <span class="filter-label">Hành động</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="comedy">
+                            <input type="checkbox" name="genre" value="Hài">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Comedy</span>
+                            <span class="filter-label">Hài</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="drama">
+                            <input type="checkbox" name="genre" value="Kinh dị">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Drama</span>
+                            <span class="filter-label">Kinh dị</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="scifi">
+                            <input type="checkbox" name="genre" value="Tình cảm">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Sci-Fi</span>
+                            <span class="filter-label">Tình cảm</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="genre" value="horror">
+                            <input type="checkbox" name="genre" value="Viễn tưởng">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Horror</span>
+                            <span class="filter-label">Viễn tưởng</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="Tâm lý">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Tâm lý</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="Hoạt hình">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Hoạt hình</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="Phiêu lưu">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Phiêu lưu</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="Ca Nhạc">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Ca Nhạc</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="Ly Kì">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Ly Kì</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="Gia đình">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Gia đình</span>
                         </label>
                     </div>
                 </div>
@@ -85,31 +122,34 @@
                     <h4 class="filter-header">FORMATS</h4>
                     <div class="filter-list">
                         <label class="filter-item">
-                            <input type="checkbox" name="format" value="2d" checked>
+                            <input type="checkbox" name="format" value="2D">
                             <span class="filter-checkbox"></span>
                             <span class="filter-label">2D</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="format" value="3d">
+                            <input type="checkbox" name="format" value="3D">
                             <span class="filter-checkbox"></span>
                             <span class="filter-label">3D</span>
                         </label>
                         <label class="filter-item">
-                            <input type="checkbox" name="format" value="imax" checked>
+                            <input type="checkbox" name="format" value="IMAX">
                             <span class="filter-checkbox"></span>
                             <span class="filter-label">IMAX</span>
                         </label>
                     </div>
                 </div>
+
             </div>
         </aside>
 
-        <!-- Main Content: Movies -->
         <main class="movies-main">
             <!-- Header: Title & Sort -->
-            <div class="movies-header">
-                <h2 class="movies-title">Now Showing</h2>
-                <div class="sort-container">
+            <div class="movies-header" style="flex-direction: column; align-items: flex-start; gap: 15px;">
+                <div class="movies-title-tabs">
+                    <span class="tab-title active" id="tab-now-showing" onclick="app.switchMovieStatusTab('Now Showing')">Phim Đang Chiếu</span>
+                    <span class="tab-title" id="tab-coming-soon" onclick="app.switchMovieStatusTab('Coming Soon')">Phim Sắp Chiếu</span>
+                </div>
+                <div class="sort-container" style="align-self: flex-end; margin-top: -50px; z-index: 10;">
                     <label for="sortSelect">Sort by:</label>
                     <select id="sortSelect" class="sort-select">
                         <option value="popular" selected>Most Popular</option>
@@ -227,6 +267,7 @@
             }
         });
     </script>
+    <script src="js/chatbot.js"></script>
 </body>
 
 </html>

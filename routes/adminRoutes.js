@@ -71,6 +71,16 @@ router.get('/vouchers', adminCtrl.getAllVouchers);
 // POST   /api/admin/vouchers           — Tạo voucher
 router.post('/vouchers', adminCtrl.createVoucher);
 
+// PUT    /api/admin/vouchers/:id       — Sửa voucher
+router.put('/vouchers/:id', adminCtrl.updateVoucher);
+
+// DELETE /api/admin/vouchers/:id       — Xóa voucher
+router.delete('/vouchers/:id', adminCtrl.deleteVoucher);
+
+// PATCH  /api/admin/vouchers/:id/toggle — Bật/tắt trạng thái hoạt động của voucher
+router.patch('/vouchers/:id/toggle', adminCtrl.toggleVoucherActive);
+
+
 // ─── F&B Management ────────────────────────────────────────────
 // GET    /api/admin/fnb                — Danh sách F&B
 router.get('/fnb', adminCtrl.getAllFnB);
@@ -91,11 +101,17 @@ router.patch('/fnb/:id/toggle', adminCtrl.toggleFnBAvailability);
 router.get('/fnb/stats', adminCtrl.getFnBStats);
 
 // ─── Statistics ──────────────────────────────────────────────
-// GET    /api/admin/stats/dashboard    — Tổng quan dashboard
+// GET    /api/admin/cinemas           — Danh sách rạp chiếu
+router.get('/cinemas', adminCtrl.getCinemas);
+
+// GET    /api/admin/stats/dashboard    — Tổng quan dashboard (hỗ trợ ?cinemaId=&period=)
 router.get('/stats/dashboard', adminCtrl.getDashboardStats);
 
 // GET    /api/admin/stats/recent-transactions — Giao dịch gần đây
 router.get('/stats/recent-transactions', adminCtrl.getRecentTransactions);
+
+// GET    /api/admin/stats/export-pdf   — Xuất báo cáo PDF
+router.get('/stats/export-pdf', adminCtrl.exportPdf);
 
 // GET    /api/admin/stats/revenue      — Thống kê doanh thu
 router.get('/stats/revenue', adminCtrl.getRevenueStats);
@@ -105,5 +121,11 @@ router.get('/stats/top-movies', adminCtrl.getTopMovies);
 
 // GET    /api/admin/stats/monthly-revenue — Doanh thu hàng tháng cho chart
 router.get('/stats/monthly-revenue', adminCtrl.getMonthlyRevenue);
+
+// GET    /api/admin/stats/revenue-chart — Doanh thu cho biểu đồ động
+router.get('/stats/revenue-chart', adminCtrl.getRevenueChartData);
+
+// GET    /api/admin/stats/live-rooms      — Trạng thái phòng chiếu live
+router.get('/stats/live-rooms', adminCtrl.getLiveRooms);
 
 module.exports = router;

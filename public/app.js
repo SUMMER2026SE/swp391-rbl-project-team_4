@@ -1,4 +1,5 @@
-const socket = io();
+const socket = typeof io !== 'undefined' ? io() : { on: () => {}, emit: () => {} };
+const API_BASE = (window.location.protocol === 'file:' || window.location.hostname === '') ? 'http://localhost:9999' : '';
 
 const mockMovies = [
     { id: 1, title: 'LẬT MẶT 7: MỘT ĐIỀU ƯỚC', rating: 'T16', image: 'images/poster.png', genre: 'Hành động', duration: 120, trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
@@ -14,6 +15,7 @@ const mockFB = [
 
 const app = {
     currentShowtimeId: null,
+    currentCity: 'Toàn quốc',
     bookingData: {
         step: 1,
         movieId: null,
@@ -21,6 +23,23 @@ const app = {
         fb: {}, // { fbId: quantity }
         priceSeat: 85000,
         priceVIP: 105000
+    },
+
+    // --- City Modal ---
+    openCityModal() {
+        const modal = document.getElementById('cityModal');
+        if (modal) modal.classList.remove('hidden');
+    },
+    closeCityModal() {
+        const modal = document.getElementById('cityModal');
+        if (modal) modal.classList.add('hidden');
+    },
+    selectCity(city) {
+        this.currentCity = city;
+        const textEl = document.getElementById('currentCityText');
+        if (textEl) textEl.innerText = city;
+        this.closeCityModal();
+        this.loadDynamicMovies();
     },
 
     // --- Navigation & Views ---
@@ -41,7 +60,7 @@ const app = {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(viewId).classList.remove('hidden');
         document.getElementById(viewId).classList.add('active');
-        window.scrollTo(0,0);
+        window.scrollTo(0, 0);
     },
     switchAuthTab(tab) {
         const tabs = document.querySelectorAll('.auth-tab');
@@ -93,7 +112,7 @@ const app = {
             `;
             document.body.appendChild(modal);
         }
-        
+
         let embedUrl = url;
         if (!url) {
             embedUrl = '';
@@ -131,7 +150,7 @@ const app = {
             }
         }
         console.log("Original URL:", url, "-> Embed URL:", embedUrl);
-        
+
         const iframe = document.getElementById('trailerIframe');
         iframe.src = embedUrl;
         modal.classList.remove('hidden');
@@ -164,7 +183,7 @@ const app = {
         this.bookingData.movieId = movieId;
         const movie = mockMovies.find(m => m.id === movieId);
         document.getElementById('summaryMovieName').innerText = movie ? movie.title : 'Phim Đang Chọn';
-        
+
         this.switchView('booking-view');
         this.renderTimeSlots();
         this.updateBookingStep(1);
@@ -200,10 +219,10 @@ const app = {
     },
     updateBookingStep(step) {
         this.bookingData.step = step;
-        
+
         // Hide all steps
         document.querySelectorAll('.booking-step').forEach(s => s.classList.add('hidden'));
-        document.getElementById(`step-${step}-${['filter','seat','fb','checkout'][step-1]}`).classList.remove('hidden');
+        document.getElementById(`step-${step}-${['filter', 'seat', 'fb', 'checkout'][step - 1]}`).classList.remove('hidden');
 
         // Update Progress Bar
         document.querySelectorAll('.booking-progress .step').forEach((s, idx) => {
@@ -348,7 +367,7 @@ const app = {
             const seatEl = document.getElementById(`seat-${seatId}`);
             if (!seatEl) return;
             const type = seatEl.dataset.type; // vip, empty
-            
+
             if (status === 'Đang chọn' && !this.bookingData.seats.has(seatId)) {
                 seatEl.className = 'seat holding';
             } else if (status === 'Trống') {
@@ -373,12 +392,20 @@ const app = {
     },
 
     // --- Dynamic Movie Fetching for Guest Pages ---
+    allMovies: [],
+    filterState: {
+        status: 'Now Showing',
+        search: '',
+        genres: [],
+        formats: []
+    },
+
     async loadDynamicMovies() {
         // 1. For index.html (Now Showing) -> .movie-grid
         const nowShowingGrid = document.querySelector('.movie-grid');
         if (nowShowingGrid) {
             try {
-                const res = await fetch('/api/movies/now-showing');
+                const res = await fetch(`${API_BASE}/api/movies/now-showing`);
                 const json = await res.json();
                 if (json.success && json.data) {
                     nowShowingGrid.innerHTML = json.data.map(movie => `
@@ -393,7 +420,7 @@ const app = {
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.MainCast ? movie.MainCast : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                <div class="movie-genre">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</div>
                                 <div class="movie-rating">★ 8.5</div>
                             </div>
                         </div>
@@ -404,25 +431,30 @@ const app = {
             }
         }
 
-        // 2. For index.html (Coming Soon) -> .movie-grid-large
-        const comingSoonGrid = document.querySelector('.movie-grid-large');
+        // 2. For index.html (Coming Soon) -> .movie-grid
+        const comingSoonGrid = document.querySelector('#coming-soon .movie-grid');
         if (comingSoonGrid) {
             try {
-                const res = await fetch('/api/movies/coming-soon');
+                const res = await fetch(`${API_BASE}/api/movies/coming-soon`);
                 const json = await res.json();
                 if (json.success && json.data) {
                     comingSoonGrid.innerHTML = json.data.map(movie => `
-                        <div class="movie-card-large">
-                            <div class="movie-poster-large">
+                        <div class="movie-card">
+                            <div class="movie-poster">
                                 <span class="coming-badge">SẮP CHIẾU</span>
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                             </div>
                             <div class="movie-info-large">
                                 <h3 class="movie-title-large">${movie.Title}</h3>
                                 <div class="movie-meta-large">
-                                    <span>${movie.MainCast ? movie.MainCast : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</span>
+                                    <span>${movie.Genres ? movie.Genres : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</span>
                                     <span class="movie-date">Sắp chiếu</span>
                                 </div>
+                            </div>
+                            <div class="movie-info">
+                                <h3 class="movie-title">${movie.Title}</h3>
+                                <div class="movie-genre">${movie.MainCast ? movie.MainCast : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</div>
+                                <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">Sắp chiếu</div>
                             </div>
                         </div>
                     `).join('');
@@ -436,36 +468,159 @@ const app = {
         const allMoviesGrid = document.querySelector('.movies-grid');
         if (allMoviesGrid) {
             try {
-                const res = await fetch('/api/movies');
+                const res = await fetch(`${API_BASE}/api/movies`);
                 const json = await res.json();
                 if (json.success && json.data) {
-                    allMoviesGrid.innerHTML = json.data.map(movie => `
-                        <div class="movie-card">
-                            <div class="movie-poster">
-                                <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
-                                <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                                <div class="movie-overlay">
-                                    <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Get Tickets</button>
-                                </div>
-                            </div>
-                            <div class="movie-info">
-                                <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-rating">
-                                    <span class="stars">★ 4.9</span>
-                                    <span class="genres">${movie.Duration} phút</span>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
+                    this.allMovies = json.data;
+                    
+                    // Parse query parameters to pre-fill filters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const statusParam = urlParams.get('status');
+                    const searchParam = urlParams.get('search');
+                    
+                    if (statusParam === 'showing' || statusParam === 'Now Showing') {
+                        this.filterState.status = 'Now Showing';
+                    } else if (statusParam === 'coming' || statusParam === 'Coming Soon') {
+                        this.filterState.status = 'Coming Soon';
+                    } else {
+                        this.filterState.status = 'Now Showing'; // Default view
+                    }
+                    
+                    if (searchParam) {
+                        this.filterState.search = searchParam;
+                        const searchInput = document.getElementById('searchInput');
+                        if (searchInput) searchInput.value = searchParam;
+                    }
+                    
+                    this.updateTabUI();
+                    this.filterAndRenderMovies();
                 }
             } catch (err) {
                 console.error('Failed to load all movies:', err);
             }
         }
+    },
+
+    switchMovieStatusTab(status) {
+        this.filterState.status = status;
+        this.updateTabUI();
+        this.filterAndRenderMovies();
+    },
+
+    updateTabUI() {
+        const tabNowShowing = document.getElementById('tab-now-showing');
+        const tabComingSoon = document.getElementById('tab-coming-soon');
+        if (tabNowShowing && tabComingSoon) {
+            if (this.filterState.status === 'Now Showing') {
+                tabNowShowing.classList.add('active');
+                tabComingSoon.classList.remove('active');
+            } else {
+                tabNowShowing.classList.remove('active');
+                tabComingSoon.classList.add('active');
+            }
+        }
+    },
+
+    filterAndRenderMovies() {
+        const allMoviesGrid = document.querySelector('.movies-grid');
+        if (!allMoviesGrid || !this.allMovies) return;
+
+        // Collect checked genre & format filter values
+        const selectedGenres = Array.from(document.querySelectorAll('input[name="genre"]:checked')).map(cb => cb.value);
+        const selectedFormats = Array.from(document.querySelectorAll('input[name="format"]:checked')).map(cb => cb.value);
+        const searchQuery = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+
+        const filtered = this.allMovies.filter(movie => {
+            // 1. Status Tab filter
+            if (movie.Status !== this.filterState.status) {
+                return false;
+            }
+
+            // 2. Text Search filter
+            if (searchQuery) {
+                const titleMatch = movie.Title.toLowerCase().includes(searchQuery);
+                const descMatch = movie.Description && movie.Description.toLowerCase().includes(searchQuery);
+                const directorMatch = movie.Director && movie.Director.toLowerCase().includes(searchQuery);
+                const castMatch = movie.MainCast && movie.MainCast.toLowerCase().includes(searchQuery);
+                if (!titleMatch && !descMatch && !directorMatch && !castMatch) {
+                    return false;
+                }
+            }
+
+            // 3. Genre checkbox filter (logical OR within genres)
+            if (selectedGenres.length > 0) {
+                const movieGenres = movie.Genres ? movie.Genres.split(',').map(g => g.trim()) : [];
+                const matchesGenre = selectedGenres.some(g => movieGenres.includes(g));
+                if (!matchesGenre) return false;
+            }
+
+            // 4. Format checkbox filter (logical OR within formats)
+            if (selectedFormats.length > 0) {
+                const movieFormats = movie.Formats ? movie.Formats.split(',').map(f => f.trim()) : ['2D'];
+                const matchesFormat = selectedFormats.some(f => movieFormats.includes(f));
+                if (!matchesFormat) return false;
+            }
+
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            allMoviesGrid.innerHTML = `
+                <div class="no-movies-found" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted-light);">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.5; display: inline-block;">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M8 12h8" />
+                    </svg>
+                    <p style="font-size: 1.1rem; font-weight: 500;">Không tìm thấy phim phù hợp với bộ lọc.</p>
+                </div>
+            `;
+            return;
+        }
+
+        allMoviesGrid.innerHTML = filtered.map(movie => `
+            <div class="movie-card">
+                <div class="movie-poster">
+                    <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                    <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                    <div class="movie-overlay">
+                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                    </div>
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title" title="${movie.Title}">${movie.Title}</h3>
+                    <div class="movie-rating">
+                        <span class="stars">★ 8.5</span>
+                        <span class="genres">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     app.initSocket();
     app.loadDynamicMovies();
+
+    const searchInput = document.getElementById('searchInput');
+    const isMoviesPage = !!document.querySelector('.movies-grid');
+
+    if (searchInput) {
+        if (isMoviesPage) {
+            searchInput.addEventListener('input', () => app.filterAndRenderMovies());
+        } else {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    window.location.href = `movies.html?search=${encodeURIComponent(searchInput.value)}`;
+                }
+            });
+        }
+    }
+
+    // Bind change listeners to genre and format checkboxes on movies page
+    if (isMoviesPage) {
+        document.querySelectorAll('input[name="genre"], input[name="format"]').forEach(cb => {
+            cb.addEventListener('change', () => app.filterAndRenderMovies());
+        });
+    }
 });

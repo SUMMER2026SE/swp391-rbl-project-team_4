@@ -144,6 +144,15 @@ exports.createBooking = async (req, res) => {
       paymentMethod
     });
 
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('adminNotification', {
+        title: 'Khách hàng đặt vé Online',
+        message: `Đã đặt ${seatIds.length} vé cho suất chiếu ${showtimeId}.`,
+        time: new Date().toISOString()
+      });
+    }
+
     res.status(201).json({
       success: true,
       message: 'Đặt vé thành công!',

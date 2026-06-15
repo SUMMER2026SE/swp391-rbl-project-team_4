@@ -6,13 +6,13 @@ const sql = require('mssql');
 
 const dbConfig = {
   user: process.env.DB_USER || 'sa',                        // SQL Server login
-  password: process.env.DB_PASSWORD || '123456',   // Đổi thành password thật của bạn
-  server: process.env.DB_SERVER || 'localhost',               // Hoặc tên server / IP Azure
+  password: process.env.DB_PASSWORD || '123456',            // Đổi thành password thật của bạn
+  server: process.env.DB_SERVER || 'localhost',             // Hoặc tên server / IP Azure
   port: parseInt(process.env.DB_PORT) || 1433,
-  database: process.env.DB_DATABASE || 'CinemaManagement',             // Tên database trên SQL Server
+  database: process.env.DB_DATABASE || 'CinemaManagement',  // Tên database trên SQL Server
   options: {
-    encrypt: process.env.DB_ENCRYPT === 'true',                  // true nếu dùng Azure SQL
-    trustServerCertificate: true,    // Bỏ qua self-signed cert (local dev)
+    encrypt: process.env.DB_ENCRYPT === 'true',             // true nếu dùng Azure SQL
+    trustServerCertificate: true,                           // Bỏ qua self-signed cert (local dev)
     enableArithAbort: true,
   },
   pool: {
@@ -71,4 +71,3 @@ async function getPool() {
 }
 
 module.exports = { sql, dbConfig, getPool };
-

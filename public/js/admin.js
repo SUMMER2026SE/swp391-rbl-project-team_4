@@ -1,4 +1,11 @@
 /* ══════════════════════════
+   DASHBOARD FILTER STATE
+══════════════════════════ */
+let dashCinemaId = '';
+let dashPeriod = '';
+let filterCinemas = [];
+
+/* ══════════════════════════
    FETCH DATA FROM BACKEND
 ══════════════════════════ */
 async function apiFetch(url, options = {}) {
@@ -8,37 +15,292 @@ async function apiFetch(url, options = {}) {
         'Authorization': `Bearer ${token}`
     };
     const res = await fetch(url, { ...options, headers });
-    return res.json();
+    const text = await res.text();
+    try {
+        return JSON.parse(text);
+    } catch(e) {
+        console.error('[apiFetch] Non-JSON response for', url, ':', text.substring(0, 200));
+        return { success: false, message: 'Invalid response' };
+    }
 }
 
 let chartInstance = null;
 
 async function loadDashboardData() {
     try {
-        const statsRes = await apiFetch('/api/admin/stats/dashboard');
+        // Build query params for filters
+        const params = new URLSearchParams();
+        if (dashCinemaId) params.set('cinemaId', dashCinemaId);
+        if (dashPeriod) params.set('period', dashPeriod);
+        const qs = params.toString() ? '?' + params.toString() : '';
+
+        const statsRes = await apiFetch('/api/admin/stats/dashboard' + qs);
         if (statsRes.success) {
             const data = statsRes.data;
             const kpiVals = document.querySelectorAll('.kpi-value');
             if (kpiVals.length >= 4) {
-                animateCounter(kpiVals[0], data.TotalRevenue || 0, '$', '', 0);
+                animateCounter(kpiVals[0], data.TotalRevenue || 0, '', ' đ', 0, true);
                 animateCounter(kpiVals[1], data.TicketSales || 0, '', '', 0);
-                animateCounter(kpiVals[2], data.FnBSales || 0, '$', '', 0);
+                animateCounter(kpiVals[2], data.FnBSales || 0, '', ' đ', 0, true);
                 animateCounter(kpiVals[3], data.OccupancyRate || 0, '', '%', 1);
             }
         }
 
-        const monthlyRes = await apiFetch('/api/admin/stats/monthly-revenue');
-        if (monthlyRes.success) {
-            buildChart(monthlyRes.data);
+        const chartParams = new URLSearchParams();
+        if (dashCinemaId) chartParams.set('cinemaId', dashCinemaId);
+        if (dashPeriod) chartParams.set('period', dashPeriod);
+        const mqStr = chartParams.toString() ? '?' + chartParams.toString() : '';
+
+        const chartRes = await apiFetch('/api/admin/stats/revenue-chart' + mqStr);
+        if (chartRes.success) {
+            buildChart(chartRes.data);
         }
 
         const topMoviesRes = await apiFetch('/api/admin/stats/top-movies?limit=4');
         if (topMoviesRes.success) {
             renderTopMovies(topMoviesRes.data);
         }
+
+        // Fetch Live Rooms Status
+        fetchLiveRoomsStatus();
     } catch (err) {
         console.error('Error loading dashboard data:', err);
     }
+}
+
+async function exportPdf() {
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    if (!token) return alert('Vui lòng đăng nhập!');
+
+    const params = new URLSearchParams();
+    if (dashCinemaId) params.set('cinemaId', dashCinemaId);
+    if (dashPeriod) params.set('period', dashPeriod);
+    const qs = params.toString() ? '?' + params.toString() : '';
+
+    try {
+        const res = await fetch('/api/admin/stats/export-pdf' + qs, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            return alert(errData.message || 'Không thể xuất file PDF (Lỗi xác thực hoặc server).');
+        }
+        
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'D-Cinema-Report.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error('Error downloading PDF:', err);
+        alert('Lỗi kết nối khi xuất PDF!');
+    }
+}
+
+
+async function fetchLiveRoomsStatus() {
+    try {
+        const params = new URLSearchParams();
+        if (dashCinemaId) params.set('cinemaId', dashCinemaId);
+        const qs = params.toString() ? '?' + params.toString() : '';
+
+        const res = await apiFetch('/api/admin/stats/live-rooms' + qs);
+        if (res.success) {
+            renderLiveRooms(res.data);
+        }
+    } catch (err) {
+        console.error('Failed to load live rooms:', err);
+    }
+}
+
+let liveRoomsInterval = null;
+
+function renderLiveRooms(rooms) {
+    const grid = document.getElementById('liveRoomsGrid');
+    if (!grid) return;
+
+    if (!rooms || rooms.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text3);">Không có phòng chiếu.</p>';
+        return;
+    }
+
+    grid.innerHTML = rooms.map(r => {
+        let status = 'empty'; // empty, playing, cleaning
+        let statusClass = 'empty';
+        let progressPercent = 0;
+        let occStr = '0%';
+
+        if (r.ShowtimeID && r.StartTime && r.EndTime) {
+            const now = new Date();
+            const start = new Date(r.StartTime);
+            const end = new Date(r.EndTime);
+            
+            // "Cleaning" happens 15 mins before end, up to 15 mins after end
+            const cleaningStart = new Date(end.getTime() - 15 * 60000);
+            const cleaningEnd = new Date(end.getTime() + 15 * 60000);
+
+            if (now >= cleaningStart && now <= cleaningEnd) {
+                status = 'cleaning';
+                statusClass = 'cleaning';
+            } else if (now >= new Date(start.getTime() - 15 * 60000) && now < cleaningStart) {
+                status = 'playing';
+                statusClass = 'playing';
+            }
+
+            if (status !== 'empty') {
+                const duration = end.getTime() - start.getTime();
+                const elapsed = now.getTime() - start.getTime();
+                progressPercent = Math.max(0, Math.min(100, (elapsed / duration) * 100));
+                
+                const occ = r.TotalSeats > 0 ? Math.round((r.TicketsSold / r.TotalSeats) * 100) : 0;
+                occStr = occ + '%';
+            }
+        }
+
+        return `
+            <div class="lr-card">
+                <div class="lr-header">
+                    <div class="lr-name">${r.RoomName}</div>
+                    <div class="lr-status-dot ${statusClass}"></div>
+                </div>
+                <div class="lr-movie">${status === 'empty' ? 'Chưa có lịch' : (r.MovieTitle || 'Unknown')}</div>
+                ${status !== 'empty' ? `
+                    <div class="lr-progress-bg">
+                        <div class="lr-progress-fill ${statusClass}" style="width: ${progressPercent}%"></div>
+                    </div>
+                    <div class="lr-occ ${statusClass}">${occStr}</div>
+                ` : `
+                    <div class="lr-progress-bg"></div>
+                    <div class="lr-occ empty">-</div>
+                `}
+            </div>
+        `;
+    }).join('');
+
+    // Setup periodic refresh (every 1 minute)
+    if (!liveRoomsInterval) {
+        liveRoomsInterval = setInterval(fetchLiveRoomsStatus, 60000);
+    }
+}
+
+/* ══════════════════════════
+   CINEMA FILTER FUNCTIONS
+══════════════════════════ */
+async function loadCinemasForFilter() {
+    try {
+        const res = await apiFetch('/api/admin/cinemas');
+        console.log('[CinemaFilter] API response:', res);
+        if (res.success && res.data) {
+            filterCinemas = res.data;
+            console.log('[CinemaFilter] Loaded', filterCinemas.length, 'cinemas');
+            renderCinemaList(filterCinemas);
+        } else {
+            console.warn('[CinemaFilter] No data:', res);
+        }
+    } catch (err) {
+        console.error('Failed to load cinemas for filter:', err);
+    }
+}
+
+function renderCinemaList(cinemas) {
+    const list = document.getElementById('cinemaList');
+    if (!list) return;
+
+    // Build the "all" item + all cinema items as HTML
+    const allActiveClass = (!dashCinemaId) ? ' active' : '';
+    let html = `
+        <div class="fdm-item${allActiveClass}" data-id="" onclick="selectCinema('', 'Tất cả cụm rạp', this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Tất cả cụm rạp
+        </div>
+    `;
+
+    cinemas.forEach(c => {
+        const activeClass = (dashCinemaId == c.CinemaID) ? ' active' : '';
+        html += `
+            <div class="fdm-item${activeClass}" data-id="${c.CinemaID}" onclick="selectCinema('${c.CinemaID}', '${c.CinemaName.replace(/'/g, '&apos;')}', this)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>${c.CinemaName}</span>
+            </div>
+        `;
+    });
+
+    list.innerHTML = html;
+}
+
+function filterCinemaList(query) {
+    const filtered = query
+        ? filterCinemas.filter(c => c.CinemaName.toLowerCase().includes(query.toLowerCase()))
+        : filterCinemas;
+    renderCinemaList(filtered);
+}
+
+function toggleCinemaDropdown() {
+    const btn = document.getElementById('cinemaDropdownBtn');
+    const menu = document.getElementById('cinemaDropdownMenu');
+    const isOpen = menu.classList.contains('open');
+    if (isOpen) {
+        menu.classList.remove('open');
+        btn.classList.remove('open');
+    } else {
+        menu.classList.add('open');
+        btn.classList.add('open');
+        // Lazy-load cinemas every time dropdown opens if not yet loaded
+        if (filterCinemas.length === 0) {
+            loadCinemasForFilter();
+        }
+        const searchEl = document.getElementById('cinemaSearch');
+        if (searchEl) searchEl.focus();
+    }
+}
+
+function selectCinema(id, label, el) {
+    dashCinemaId = id;
+    document.getElementById('cinemaDropdownLabel').textContent = label;
+    // Update active state
+    document.querySelectorAll('#cinemaList .fdm-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    // Close dropdown
+    document.getElementById('cinemaDropdownMenu').classList.remove('open');
+    document.getElementById('cinemaDropdownBtn').classList.remove('open');
+    document.getElementById('cinemaSearch').value = '';
+    renderCinemaList(filterCinemas);
+    // Refresh data
+    loadDashboardData();
+}
+
+function selectPeriod(period, btn) {
+    dashPeriod = period;
+    document.querySelectorAll('.period-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    loadDashboardData();
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    const wrap = document.getElementById('cinemaDropdownWrap');
+    if (wrap && !wrap.contains(e.target)) {
+        const menu = document.getElementById('cinemaDropdownMenu');
+        const btn = document.getElementById('cinemaDropdownBtn');
+        if (menu) menu.classList.remove('open');
+        if (btn) btn.classList.remove('open');
+    }
+});
+
+function showDashboardFilters() {
+    const f = document.getElementById('dashboardFilters');
+    if (f) f.classList.remove('hidden');
+}
+function hideDashboardFilters() {
+    const f = document.getElementById('dashboardFilters');
+    if (f) f.classList.add('hidden');
 }
 
 function renderTopMovies(movies) {
@@ -61,8 +323,8 @@ function renderTopMovies(movies) {
                 </div>
             </div>
             <div class="rank-revenue">
-                <div class="rank-amount">$${(m.TodayRevenue / 1000).toFixed(1)}K</div>
-                <div class="rank-today">TODAY</div>
+                <div class="rank-amount">${formatCurrency(m.TodayRevenue)} đ</div>
+                <div class="rank-today">HÔM NAY</div>
             </div>
         </div>
     `).join('');
@@ -151,22 +413,18 @@ function clearFilter() {
 /* ══════════════════════════
    CHART
 ══════════════════════════ */
-function buildChart(monthlyData) {
+function buildChart(chartData) {
     const ctx = document.getElementById('revenueChart');
     if(!ctx) return;
     
-    const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    
-    // Fill missing months with 0
-    const ticketData = new Array(12).fill(0);
-    const fnbData = new Array(12).fill(0);
-    
-    if (monthlyData) {
-        monthlyData.forEach(row => {
-            const mIndex = row.MonthNumber - 1;
-            ticketData[mIndex] = row.TicketRevenue;
-            fnbData[mIndex] = row.FnBRevenue;
-        });
+    let labels = [];
+    let ticketData = [];
+    let fnbData = [];
+
+    if (chartData) {
+        labels = chartData.labels || [];
+        ticketData = chartData.ticketData || [];
+        fnbData = chartData.fnbData || [];
     }
 
     if (chartInstance) {
@@ -211,7 +469,7 @@ function buildChart(monthlyData) {
                     borderColor: 'rgba(255,255,255,0.08)',
                     borderWidth: 1,
                     callbacks: {
-                        label: ctx => ` $${(ctx.raw/1000).toFixed(1)}K`
+                        label: ctx => ` ${formatCurrency(ctx.raw)} đ`
                     }
                 }
             },
@@ -225,7 +483,7 @@ function buildChart(monthlyData) {
                     grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
                     ticks: {
                         color: '#9ca3af', font: { size: 11 },
-                        callback: v => '$' + (v/1000) + 'K'
+                        callback: v => (v / 1000000) + ' Tr'
                     },
                     border: { display: false }
                 }
@@ -447,13 +705,20 @@ function navigate(page, btn) {
     if (page === 'cinema') {
         topbarTitle.style.display = 'block';
         ttabs.style.display = 'flex';
+        hideDashboardFilters();
     } else if (page === 'schedule') {
         topbarTitle.textContent = 'LỊCH CHIẾU';
         topbarTitle.style.display = 'block';
         ttabs.style.display = 'flex';
+        hideDashboardFilters();
+    } else if (page === 'dashboard') {
+        topbarTitle.style.display = 'none';
+        ttabs.style.display = 'flex';
+        showDashboardFilters();
     } else {
         topbarTitle.style.display = 'none';
         ttabs.style.display = 'flex';
+        hideDashboardFilters();
     }
     
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -561,16 +826,21 @@ function renderFnB() {
         html += `
             <div class="fnb-card-sm" style="position:relative; opacity: ${item.IsAvailable ? 1 : 0.5};">
                 ${getActionBtns(item)}
-                <div class="fc-sm-top" style="padding-top:20px;">
-                    <h4>${item.Name}</h4>
-                    <span class="fc-sm-price text-red">${item.Price.toLocaleString()}đ</span>
+                <div class="fc-sm-img-wrap" style="margin-top:10px;">
+                    <img src="${item.ImageURL || 'images/default_poster.svg'}" alt="${item.Name}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                 </div>
-                <div class="fc-sm-bottom">
-                    <div class="fc-sm-inv">
-                        <span class="fc-sm-label">TỒN KHO</span>
-                        <span class="fc-sm-val">${item.Stock} đơn vị</span>
+                <div class="fc-sm-info-block">
+                    <div class="fc-sm-top" style="padding-top:10px;">
+                        <h4>${item.Name}</h4>
+                        <span class="fc-sm-price text-red">${item.Price.toLocaleString()}đ</span>
                     </div>
-                    <span class="inv-badge ${stockClass}">${stockLabel}</span>
+                    <div class="fc-sm-bottom">
+                        <div class="fc-sm-inv">
+                            <span class="fc-sm-label">TỒN KHO</span>
+                            <span class="fc-sm-val">${item.Stock} đơn vị</span>
+                        </div>
+                        <span class="inv-badge ${stockClass}">${stockLabel}</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -706,6 +976,265 @@ async function saveFnB() {
 }
 
 /* ══════════════════════════
+   VOUCHER & PROMOTIONS MANAGEMENT
+   ══════════════════════════ */
+let VOUCHER_DATA = [];
+
+function switchFnbTab(tab, btn) {
+    // 1. Switch active classes on buttons
+    document.querySelectorAll('.fnb-tab').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    // 2. Toggle visibility of layouts
+    const fnbSubpage = document.getElementById('fnbSubpage');
+    const voucherSubpage = document.getElementById('voucherSubpage');
+    
+    if (tab === 'fnb') {
+        if (fnbSubpage) fnbSubpage.style.display = 'flex';
+        if (voucherSubpage) voucherSubpage.style.display = 'none';
+        loadFnB();
+    } else {
+        if (fnbSubpage) fnbSubpage.style.display = 'none';
+        if (voucherSubpage) voucherSubpage.style.display = 'flex';
+        loadVouchers();
+    }
+}
+
+function toggleVoucherFields() {
+    const type = document.getElementById('voucherDiscountType').value;
+    const maxDiscountInput = document.getElementById('voucherMaxDiscount');
+    const lblMaxDiscount = document.getElementById('lblMaxDiscount');
+    
+    if (type === 'fixed') {
+        maxDiscountInput.disabled = true;
+        maxDiscountInput.placeholder = 'Không khả dụng';
+        maxDiscountInput.value = '';
+        if (lblMaxDiscount) lblMaxDiscount.style.opacity = '0.5';
+    } else {
+        maxDiscountInput.disabled = false;
+        maxDiscountInput.placeholder = 'Không giới hạn';
+        if (lblMaxDiscount) lblMaxDiscount.style.opacity = '1';
+    }
+}
+
+async function loadVouchers() {
+    try {
+        const res = await apiFetch('/api/admin/vouchers');
+        if (res.success && res.data) {
+            VOUCHER_DATA = res.data;
+            renderVouchers();
+        }
+    } catch (err) {
+        console.error('Failed to load Vouchers:', err);
+    }
+}
+
+function renderVouchers() {
+    const container = document.getElementById('voucherItemsContainer');
+    if (!container) return;
+
+    if (VOUCHER_DATA.length === 0) {
+        container.innerHTML = '<div style="padding:20px;color:#9ca3af;">Chưa có mã khuyến mãi nào.</div>';
+        return;
+    }
+
+    let html = '<div class="fnb-cards-grid" style="grid-template-columns: repeat(2, 1fr);">';
+
+    const getVoucherActionBtns = (item) => `
+        <div style="position:absolute; top:10px; right:10px; display:flex; gap:5px; background:rgba(0,0,0,0.6); padding:4px; border-radius:6px; z-index:10;">
+            <button onclick='editVoucher(${JSON.stringify(item).replace(/'/g, "&apos;")})' title="Sửa" style="background:none;border:none;color:#3b82f6;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button onclick="toggleVoucherActive(${item.VoucherID})" title="${item.IsActive ? 'Ẩn/Tắt' : 'Hiện/Bật'}" style="background:none;border:none;color:${item.IsActive ? '#10b981' : '#6b7280'};cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <button onclick="deleteVoucher(${item.VoucherID})" title="Xóa" style="background:none;border:none;color:#ef4444;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        </div>
+    `;
+
+    VOUCHER_DATA.forEach(item => {
+        const discountStr = item.DiscountType === 'percent' 
+            ? `${item.DiscountValue}%` 
+            : `${item.DiscountValue.toLocaleString('vi-VN')} đ`;
+        
+        const minOrderStr = item.MinOrderValue > 0 
+            ? `Đơn tối thiểu ${item.MinOrderValue.toLocaleString('vi-VN')}đ` 
+            : 'Không yêu cầu đơn tối thiểu';
+
+        const maxDiscStr = (item.DiscountType === 'percent' && item.MaxDiscount) 
+            ? `Giảm tối đa ${item.MaxDiscount.toLocaleString('vi-VN')}đ` 
+            : '';
+
+        const usageLimitStr = item.UsageLimit 
+            ? `Giới hạn: ${item.UsedCount}/${item.UsageLimit}` 
+            : `Đã dùng: ${item.UsedCount}`;
+
+        const formatDate = (isoString) => {
+            if (!isoString) return '';
+            const d = new Date(isoString);
+            return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        };
+
+        const activeClass = item.IsActive ? 'high' : 'danger';
+        const activeLabel = item.IsActive ? 'HOẠT ĐỘNG' : 'TẠM KHÓA';
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const endStr = new Date(item.EndDate).toISOString().split('T')[0];
+        const isExpired = endStr < todayStr;
+        const expiredHtml = isExpired ? '<span class="inv-badge danger" style="margin-left:5px;">HẾT HẠN</span>' : '';
+
+        html += `
+            <div class="fnb-card-sm" style="position:relative; opacity: ${(item.IsActive && !isExpired) ? 1 : 0.6}; padding: 24px; border-color: ${item.IsActive ? 'rgba(16,185,129,0.3)' : 'var(--border)'}">
+                ${getVoucherActionBtns(item)}
+                
+                <div class="fc-sm-info-block" style="gap: 8px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-family:'Courier New',Courier,monospace; font-weight:900; font-size:1.2rem; background:rgba(232,25,44,0.1); color:var(--accent); padding:4px 12px; border-radius:6px; border:1px dashed var(--accent); letter-spacing:0.05em;">${item.Code}</span>
+                        <span class="inv-badge ${activeClass}">${activeLabel}</span>
+                        ${expiredHtml}
+                    </div>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: var(--text); margin-top: 6px;">Giảm ${discountStr}</div>
+                    <div style="font-size: 0.85rem; color: var(--text2); line-height: 1.4;">
+                        <div>• ${minOrderStr}</div>
+                        ${maxDiscStr ? `<div>• ${maxDiscStr}</div>` : ''}
+                        <div>• ${usageLimitStr}</div>
+                        <div style="margin-top:6px; font-size:0.78rem; font-weight:600; color:var(--text3);">Thời hạn: ${formatDate(item.StartDate)} - ${formatDate(item.EndDate)}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function editVoucher(item) {
+    document.getElementById('voucherFormTitle').textContent = 'SỬA VOUCHER';
+    document.getElementById('voucherId').value = item.VoucherID;
+    document.getElementById('voucherCode').value = item.Code;
+    document.getElementById('voucherDiscountType').value = item.DiscountType;
+    document.getElementById('voucherDiscountValue').value = item.DiscountValue;
+    document.getElementById('voucherMinOrderValue').value = item.MinOrderValue;
+    document.getElementById('voucherMaxDiscount').value = item.MaxDiscount || '';
+    document.getElementById('voucherUsageLimit').value = item.UsageLimit || '';
+    
+    const formatDateForInput = (isoString) => {
+        if (!isoString) return '';
+        return new Date(isoString).toISOString().split('T')[0];
+    };
+    document.getElementById('voucherStartDate').value = formatDateForInput(item.StartDate);
+    document.getElementById('voucherEndDate').value = formatDateForInput(item.EndDate);
+
+    toggleVoucherFields();
+
+    document.getElementById('btnSaveVoucher').querySelector('#voucherBtnText').textContent = 'Cập nhật Voucher';
+    document.getElementById('btnCancelVoucher').style.display = 'block';
+
+    document.querySelector('#voucherSubpage .fnb-form-side').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelEditVoucher() {
+    document.getElementById('voucherFormTitle').textContent = 'THÊM VOUCHER';
+    document.getElementById('addVoucherForm').reset();
+    document.getElementById('voucherId').value = '';
+    document.getElementById('btnSaveVoucher').querySelector('#voucherBtnText').textContent = 'Tạo Voucher';
+    document.getElementById('btnCancelVoucher').style.display = 'none';
+    toggleVoucherFields();
+}
+
+async function deleteVoucher(id) {
+    if (!confirm('Bạn có chắc chắn muốn xóa voucher này?')) return;
+    try {
+        const res = await apiFetch(`/api/admin/vouchers/${id}`, { method: 'DELETE' });
+        if (res.success) {
+            alert('Đã xóa voucher thành công.');
+            loadVouchers();
+        } else {
+            alert('Không thể xóa: ' + res.message);
+        }
+    } catch (err) {
+        console.error('deleteVoucher error:', err);
+        alert('Lỗi kết nối.');
+    }
+}
+
+async function toggleVoucherActive(id) {
+    try {
+        const res = await apiFetch(`/api/admin/vouchers/${id}/toggle`, { method: 'PATCH' });
+        if (res.success) {
+            loadVouchers();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        console.error('toggleVoucherActive error:', err);
+        alert('Lỗi kết nối.');
+    }
+}
+
+async function saveVoucher() {
+    const form = document.getElementById('addVoucherForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    const btn = document.getElementById('btnSaveVoucher');
+    const oldText = document.getElementById('voucherBtnText').textContent;
+    document.getElementById('voucherBtnText').textContent = 'Đang lưu...';
+    btn.disabled = true;
+
+    try {
+        const id = document.getElementById('voucherId').value;
+        const type = document.getElementById('voucherDiscountType').value;
+        
+        const payload = {
+            code: document.getElementById('voucherCode').value.trim().toUpperCase(),
+            discountType: type,
+            discountValue: parseFloat(document.getElementById('voucherDiscountValue').value),
+            minOrderValue: parseFloat(document.getElementById('voucherMinOrderValue').value || 0),
+            maxDiscount: type === 'fixed' ? null : (parseFloat(document.getElementById('voucherMaxDiscount').value) || null),
+            usageLimit: parseInt(document.getElementById('voucherUsageLimit').value) || null,
+            startDate: document.getElementById('voucherStartDate').value,
+            endDate: document.getElementById('voucherEndDate').value
+        };
+
+        if (new Date(payload.endDate) < new Date(payload.startDate)) {
+            alert('Ngày kết thúc không thể trước ngày bắt đầu.');
+            btn.disabled = false;
+            document.getElementById('voucherBtnText').textContent = oldText;
+            return;
+        }
+
+        let res;
+        if (id) {
+            // Update
+            res = await apiFetch(`/api/admin/vouchers/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+        } else {
+            // Create
+            res = await apiFetch('/api/admin/vouchers', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+        }
+
+        if (res.success) {
+            alert(id ? 'Cập nhật voucher thành công!' : 'Tạo voucher thành công!');
+            cancelEditVoucher();
+            loadVouchers();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        console.error('saveVoucher error:', err);
+        alert('Lỗi kết nối khi lưu voucher.');
+    } finally {
+        btn.disabled = false;
+        document.getElementById('voucherBtnText').textContent = oldText;
+    }
+}
+
+/* ══════════════════════════
    STAFF MANAGEMENT
 ══════════════════════════ */
 let STAFF_DATA = [];
@@ -820,9 +1349,13 @@ function updateClock() {
 }
 
 /* ══════════════════════════
-   ANIMATED COUNTERS
+   UTILITIES & ANIMATED COUNTERS
 ══════════════════════════ */
-function animateCounter(el, target, prefix='', suffix='', decimals=0) {
+function formatCurrency(val) {
+    return new Intl.NumberFormat('vi-VN').format(Math.round(val));
+}
+
+function animateCounter(el, target, prefix='', suffix='', decimals=0, isCurrency=false) {
     const duration = 1200;
     const start = performance.now();
     function update(now) {
@@ -830,7 +1363,17 @@ function animateCounter(el, target, prefix='', suffix='', decimals=0) {
         const progress = Math.min(elapsed / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
         const val = eased * target;
-        el.textContent = prefix + (decimals > 0 ? val.toFixed(decimals) : Math.round(val).toLocaleString()) + suffix;
+        
+        let formattedVal;
+        if (isCurrency) {
+            formattedVal = formatCurrency(val);
+        } else if (decimals > 0) {
+            formattedVal = val.toFixed(decimals);
+        } else {
+            formattedVal = Math.round(val).toLocaleString('vi-VN');
+        }
+        
+        el.textContent = prefix + formattedVal + suffix;
         if (progress < 1) requestAnimationFrame(update);
     }
     requestAnimationFrame(update);
@@ -1558,9 +2101,11 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMovies();
     loadRecentTransactions();
     loadFnB();
+    loadVouchers();
     loadStaff();
     loadRooms();
     loadCinemas();
+    loadCinemasForFilter(); // load cinemas for topbar filter dropdown
     
     // Add event listener for search bar
     const searchInput = document.getElementById('adminSearch');
@@ -1602,5 +2147,437 @@ document.addEventListener('DOMContentLoaded', () => {
     updateClock();
 
     // Fetch live dashboard data
+    showDashboardFilters(); // dashboard is the default page
     loadDashboardData();
 });
+
+/* ══════════════════════════════════════
+   NOTIFICATIONS (Socket.io)
+══════════════════════════════════════ */
+let notifs = [];
+
+function toggleNotifDropdown() {
+    const el = document.getElementById('notifDropdown');
+    el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+    if (el.style.display === 'flex') {
+        document.getElementById('notifDot').style.display = 'none';
+    }
+}
+
+function clearNotifs() {
+    notifs = [];
+    renderNotifs();
+}
+
+function renderNotifs() {
+    const listEl = document.getElementById('notifList');
+    if (notifs.length === 0) {
+        listEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #9ca3af; font-size: 0.9rem;">Không có thông báo mới</div>';
+        return;
+    }
+    
+    let html = '';
+    notifs.forEach(n => {
+        const time = new Date(n.time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+        html += `
+            <div style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; background: #fff;">
+                <div style="font-weight: 600; font-size: 0.9rem; color: #1f2937;">${n.title}</div>
+                <div style="font-size: 0.8rem; color: #4b5563; margin-top: 4px;">${n.message}</div>
+                <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 6px;">${time}</div>
+            </div>
+        `;
+    });
+    listEl.innerHTML = html;
+}
+
+function showToast(title, message) {
+    const container = document.getElementById('adminToastContainer');
+    const toast = document.createElement('div');
+    toast.style.background = '#1f2937';
+    toast.style.color = '#fff';
+    toast.style.padding = '12px 20px';
+    toast.style.borderRadius = '8px';
+    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    toast.style.fontSize = '0.9rem';
+    toast.style.minWidth = '250px';
+    toast.style.transform = 'translateX(100%)';
+    toast.style.opacity = '0';
+    toast.style.transition = 'all 0.3s ease';
+    
+    toast.innerHTML = `
+        <div style="font-weight: bold; color: #10b981; margin-bottom: 4px;">${title}</div>
+        <div>${message}</div>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+        toast.style.opacity = '1';
+    }, 10);
+    
+    // Auto remove
+    setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+
+// Initialize Socket.io connection for admin
+if (typeof io !== 'undefined') {
+    const socket = io();
+    socket.on('adminNotification', (data) => {
+        // Add to list
+        notifs.unshift(data);
+        if (notifs.length > 50) notifs.pop(); // Keep max 50
+        
+        // Show red dot if dropdown is closed
+        const dropdown = document.getElementById('notifDropdown');
+        if (dropdown && dropdown.style.display !== 'flex') {
+            document.getElementById('notifDot').style.display = 'block';
+        }
+        
+        renderNotifs();
+        showToast(data.title, data.message);
+        
+        // Optionally refresh dashboard if we are on dashboard page
+        if (document.getElementById('page-dashboard').classList.contains('active')) {
+            loadDashboardData();
+        }
+    });
+}
+
+
+/* ══════════════════════════════════════
+   QUICK SELL MODAL (POS) LOGIC
+══════════════════════════════════════ */
+
+let qsState = {
+    showtimes: [],
+    selectedShowtimeId: null,
+    seats: [],
+    selectedSeatIds: [],
+    fnbItems: [],
+    selectedFnb: {}, // { fnbId: qty }
+    voucher: null,   // { id, discountType, discountValue, maxDiscount }
+    ticketPrice: 0
+};
+
+function openQuickSellModal() {
+    document.getElementById('quickSellModal').classList.add('active');
+    document.getElementById('quickSellModalOverlay').classList.add('active');
+    resetQsState();
+    loadQsShowtimes();
+    loadQsFnb();
+}
+
+function closeQuickSellModal() {
+    document.getElementById('quickSellModal').classList.remove('active');
+    document.getElementById('quickSellModalOverlay').classList.remove('active');
+}
+
+function resetQsState() {
+    qsState.selectedShowtimeId = null;
+    qsState.seats = [];
+    qsState.selectedSeatIds = [];
+    qsState.selectedFnb = {};
+    qsState.voucher = null;
+    qsState.ticketPrice = 0;
+    
+    document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: #9ca3af;">Vui lòng chọn suất chiếu trước</p>';
+    document.getElementById('qsSelectedSeats').textContent = 'Chưa chọn ghế';
+    document.getElementById('qsCustomerPhone').value = '';
+    document.getElementById('qsVoucherCode').value = '';
+    document.getElementById('qsVoucherMessage').textContent = '';
+    document.getElementById('btnSubmitQuickSell').disabled = true;
+    updateQsTotals();
+}
+
+async function loadQsShowtimes() {
+    const listEl = document.getElementById('qsShowtimesList');
+    listEl.innerHTML = '<p style="color: #6b7280; font-size: 0.9rem;">Đang tải suất chiếu...</p>';
+    try {
+        const res = await apiFetch('/api/staff/showtimes/today');
+        if (res.success) {
+            qsState.showtimes = res.data;
+            if (res.data.length === 0) {
+                listEl.innerHTML = '<p style="color: #6b7280; font-size: 0.9rem;">Không có suất chiếu nào trong ngày hôm nay.</p>';
+                return;
+            }
+            let html = '';
+            res.data.forEach(st => {
+                const start = new Date(st.StartTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                const end = new Date(st.EndTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                html += `
+                    <div class="qs-showtime-card" id="qs-st-${st.ShowtimeID}" onclick="selectQsShowtime(${st.ShowtimeID}, ${st.Price})">
+                        <div class="qs-movie-title">${st.MovieTitle}</div>
+                        <div class="qs-room-time">${st.CinemaName} - ${st.RoomName}</div>
+                        <div class="qs-room-time" style="color: var(--accent); margin-top: 5px; font-weight: bold;">
+                            🕒 ${start} - ${end} &nbsp;|&nbsp; 💰 ${formatCurrency(st.Price)}đ
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+        }
+    } catch (err) {
+        listEl.innerHTML = '<p style="color: red;">Lỗi tải suất chiếu</p>';
+    }
+}
+
+async function selectQsShowtime(showtimeId, price) {
+    qsState.selectedShowtimeId = showtimeId;
+    qsState.ticketPrice = price;
+    qsState.selectedSeatIds = [];
+    qsState.voucher = null;
+    
+    // UI selection
+    document.querySelectorAll('.qs-showtime-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById(`qs-st-${showtimeId}`).classList.add('selected');
+    
+    document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: #9ca3af;">Đang tải sơ đồ ghế...</p>';
+    
+    try {
+        const res = await apiFetch(`/api/staff/showtimes/${showtimeId}/seats`);
+        if (res.success) {
+            qsState.seats = res.data;
+            renderQsSeatMap();
+        }
+    } catch (err) {
+        document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: red;">Lỗi tải sơ đồ ghế</p>';
+    }
+    updateQsTotals();
+}
+
+function renderQsSeatMap() {
+    const container = document.getElementById('qsSeatMapContainer');
+    if (!qsState.seats || qsState.seats.length === 0) {
+        container.innerHTML = '<p style="color: #9ca3af;">Không có dữ liệu ghế.</p>';
+        return;
+    }
+
+    // Nhóm ghế theo dòng (A, B, C...)
+    const rows = {};
+    qsState.seats.forEach(s => {
+        if (!rows[s.SeatRow]) rows[s.SeatRow] = [];
+        rows[s.SeatRow].push(s);
+    });
+
+    let html = '<div style="margin-bottom:20px; font-weight:bold; color:#6b7280; letter-spacing:5px;">MÀN HÌNH</div>';
+    
+    const rowKeys = Object.keys(rows).sort();
+    rowKeys.forEach(rk => {
+        rows[rk].sort((a,b) => a.SeatNumber - b.SeatNumber);
+        html += `<div class="qs-seat-row">`;
+        html += `<div style="width: 20px; text-align: center; font-weight: bold; color: #9ca3af; line-height: 28px;">${rk}</div>`;
+        rows[rk].forEach(seat => {
+            let sClass = 'qs-seat';
+            if (seat.Status !== 'available') sClass += ' sold';
+            if (seat.SeatType === 'VIP') sClass += ' vip';
+            if (qsState.selectedSeatIds.includes(seat.SeatID)) sClass += ' selected';
+            
+            const onclick = seat.Status === 'available' ? `onclick="toggleQsSeat(${seat.SeatID}, '${seat.SeatRow}${seat.SeatNumber}')"` : '';
+            html += `<div class="${sClass}" ${onclick}>${seat.SeatNumber}</div>`;
+        });
+        html += `<div style="width: 20px;"></div>`;
+        html += `</div>`;
+    });
+    
+    container.innerHTML = html;
+}
+
+function toggleQsSeat(seatId, seatName) {
+    const idx = qsState.selectedSeatIds.indexOf(seatId);
+    if (idx > -1) {
+        qsState.selectedSeatIds.splice(idx, 1);
+    } else {
+        if (qsState.selectedSeatIds.length >= 8) {
+            return alert('Chỉ được đặt tối đa 8 ghế một lần!');
+        }
+        qsState.selectedSeatIds.push(seatId);
+    }
+    renderQsSeatMap();
+    updateQsTotals();
+}
+
+async function loadQsFnb() {
+    try {
+        const res = await apiFetch('/api/admin/fnb'); // Hoặc dùng public route /api/bookings/food-beverages
+        if (res.success) {
+            qsState.fnbItems = res.data.filter(f => f.IsAvailable);
+            renderQsFnb();
+        }
+    } catch (e) {}
+}
+
+function renderQsFnb() {
+    const listEl = document.getElementById('qsFnbList');
+    let html = '';
+    qsState.fnbItems.forEach(f => {
+        const qty = qsState.selectedFnb[f.FnBID] || 0;
+        html += `
+            <div class="qs-fnb-item">
+                <div class="qs-fnb-info">
+                    <div class="qs-fnb-name">${f.Name} <span style="font-size:0.75rem;color:#6b7280;">(Còn ${f.Stock})</span></div>
+                    <div class="qs-fnb-price">${formatCurrency(f.Price)}đ</div>
+                </div>
+                <div class="qs-fnb-qty">
+                    <button class="qs-btn-qty" onclick="updateQsFnb(${f.FnBID}, -1, ${f.Stock})">-</button>
+                    <span style="width:20px;text-align:center;font-weight:600;">${qty}</span>
+                    <button class="qs-btn-qty" onclick="updateQsFnb(${f.FnBID}, 1, ${f.Stock})">+</button>
+                </div>
+            </div>
+        `;
+    });
+    listEl.innerHTML = html;
+}
+
+function updateQsFnb(fnbId, delta, stock) {
+    let curr = qsState.selectedFnb[fnbId] || 0;
+    curr += delta;
+    if (curr < 0) curr = 0;
+    if (curr > 10) curr = 10;
+    if (curr > stock) curr = stock;
+    
+    if (curr === 0) delete qsState.selectedFnb[fnbId];
+    else qsState.selectedFnb[fnbId] = curr;
+    
+    renderQsFnb();
+    updateQsTotals();
+}
+
+function getSelectedSeatNames() {
+    return qsState.selectedSeatIds.map(id => {
+        const s = qsState.seats.find(x => x.SeatID === id);
+        return s ? `${s.SeatRow}${s.SeatNumber}` : '';
+    }).join(', ');
+}
+
+function updateQsTotals() {
+    const seatNames = getSelectedSeatNames();
+    document.getElementById('qsSelectedSeats').textContent = seatNames || 'Chưa chọn ghế';
+    
+    let ticketTotal = 0;
+    qsState.selectedSeatIds.forEach(id => {
+        const s = qsState.seats.find(x => x.SeatID === id);
+        const mult = s && s.PriceMultiplier ? s.PriceMultiplier : 1;
+        ticketTotal += qsState.ticketPrice * mult;
+    });
+    
+    let fnbTotal = 0;
+    Object.keys(qsState.selectedFnb).forEach(id => {
+        const item = qsState.fnbItems.find(x => x.FnBID == id);
+        if (item) fnbTotal += item.Price * qsState.selectedFnb[id];
+    });
+    
+    let subTotal = ticketTotal + fnbTotal;
+    let discount = 0;
+    
+    if (qsState.voucher) {
+        if (subTotal >= qsState.voucher.MinOrderValue) {
+            if (qsState.voucher.DiscountType === 'percent') {
+                discount = subTotal * qsState.voucher.DiscountValue / 100;
+                if (qsState.voucher.MaxDiscount) discount = Math.min(discount, qsState.voucher.MaxDiscount);
+            } else {
+                discount = Math.min(subTotal, qsState.voucher.DiscountValue);
+            }
+        }
+    }
+    
+    let finalTotal = subTotal - discount;
+    if (finalTotal < 0) finalTotal = 0;
+    
+    document.getElementById('qsTicketTotal').textContent = formatCurrency(ticketTotal) + ' đ';
+    document.getElementById('qsFnbTotal').textContent = formatCurrency(fnbTotal) + ' đ';
+    document.getElementById('qsDiscountTotal').textContent = '- ' + formatCurrency(discount) + ' đ';
+    document.getElementById('qsFinalTotal').textContent = formatCurrency(finalTotal) + ' đ';
+    
+    document.getElementById('btnSubmitQuickSell').disabled = qsState.selectedSeatIds.length === 0;
+}
+
+async function applyQsVoucher() {
+    const code = document.getElementById('qsVoucherCode').value.trim();
+    const msgEl = document.getElementById('qsVoucherMessage');
+    
+    if (!code) {
+        qsState.voucher = null;
+        msgEl.textContent = '';
+        updateQsTotals();
+        return;
+    }
+    
+    msgEl.textContent = 'Đang kiểm tra...';
+    msgEl.style.color = '#6b7280';
+    
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const res = await fetch('/api/bookings/validate-voucher', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ code })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            qsState.voucher = data.data;
+            msgEl.textContent = 'Mã hợp lệ!';
+            msgEl.style.color = '#10b981';
+            updateQsTotals();
+        } else {
+            qsState.voucher = null;
+            msgEl.textContent = data.message || 'Mã không hợp lệ';
+            msgEl.style.color = '#e8192c';
+            updateQsTotals();
+        }
+    } catch (e) {
+        msgEl.textContent = 'Lỗi kết nối';
+    }
+}
+
+async function submitQuickSell() {
+    if (qsState.selectedSeatIds.length === 0) return alert('Vui lòng chọn ghế!');
+    
+    const btn = document.getElementById('btnSubmitQuickSell');
+    btn.disabled = true;
+    btn.textContent = 'Đang xử lý...';
+    
+    const foodItems = Object.keys(qsState.selectedFnb).map(id => ({
+        fnbId: id,
+        quantity: qsState.selectedFnb[id]
+    }));
+    
+    const payload = {
+        showtimeId: qsState.selectedShowtimeId,
+        seatIds: qsState.selectedSeatIds,
+        foodItems: foodItems,
+        customerPhone: document.getElementById('qsCustomerPhone').value.trim(),
+        voucherCode: qsState.voucher ? document.getElementById('qsVoucherCode').value.trim() : null,
+        paymentMethod: 'cash'
+    };
+    
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const res = await fetch('/api/staff/sell-ticket', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            alert('Thanh toán thành công!\nMã vé: ' + data.data.ticketIds.map(t => 'TKT-'+t).join(', '));
+            closeQuickSellModal();
+            loadDashboardData(); // Cập nhật lại biểu đồ/KPIs
+        } else {
+            alert('Lỗi: ' + data.message);
+        }
+    } catch (e) {
+        alert('Lỗi kết nối');
+    }
+    
+    btn.textContent = 'Thanh Toán & In Vé';
+    btn.disabled = false;
+}
+

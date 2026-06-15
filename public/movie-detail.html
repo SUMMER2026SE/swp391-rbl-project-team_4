@@ -7,6 +7,7 @@
     <title>Chi tiết Phim | D-Cinema</title>
     <link rel="stylesheet" href="css/movie-detail.css">
     <link rel="stylesheet" href="css/shared-layout.css">
+    <link rel="stylesheet" href="css/chatbot.css">
 </head>
 
 <body>
@@ -18,7 +19,13 @@
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <a href="movies.html" id="nav-phim" class="active">Phim</a>
+                <div class="dropdown">
+                    <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
+                    <div class="dropdown-menu">
+                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                    </div>
+                </div>
                 <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
@@ -325,7 +332,7 @@
 
                 if (detailSynopsis) detailSynopsis.textContent = movie.Description || 'Chưa có thông tin synopsis.';
                 if (infoDuration) infoDuration.textContent = movie.Duration ? `${movie.Duration} phút` : 'Chưa rõ';
-                if (infoGenre) infoGenre.textContent = movie.Genre || 'Chính kịch';
+                if (infoGenre) infoGenre.textContent = movie.Genres || 'Chính kịch';
                 if (infoLanguage) infoLanguage.textContent = 'Tiếng Việt (Phụ đề Tiếng Anh)';
 
                 // Render Cast & Director
@@ -365,6 +372,7 @@
             }
         });
     </script>
+    <script src="js/chatbot.js"></script>
 </body>
 
 </html>
