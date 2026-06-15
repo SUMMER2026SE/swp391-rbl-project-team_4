@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -81,7 +81,12 @@
                         <a href="movies.html?status=coming" class="dropdown-item">Phim Sắp Chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap">Rạp</a>
+                <div class="nav-dropdown">
+                    <a href="booking.html" id="nav-rap">Rạp <span style="font-size: 0.8em;">▼</span></a>
+                    <div class="nav-dropdown-content" id="cinemaDropdown">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
             <div class="nav-actions">

@@ -482,10 +482,40 @@ const app = {
                 console.error('Failed to load all movies:', err);
             }
         }
+    },
+
+    // --- Load Cinemas for Navbar ---
+    async loadCinemasNavbar() {
+        const dropdown = document.getElementById('cinemaDropdown');
+        if (!dropdown) return;
+
+        try {
+            const res = await fetch('/api/movies/cinemas');
+            const json = await res.json();
+            if (json.success && json.data) {
+                const grouped = {};
+                json.data.forEach(c => {
+                    if (!grouped[c.City]) grouped[c.City] = [];
+                    grouped[c.City].push(c);
+                });
+
+                let html = '';
+                for (const city in grouped) {
+                    html += `<div class="dropdown-group">${city}</div>`;
+                    grouped[city].forEach(c => {
+                        html += `<a href="booking.html?cinemaId=${c.CinemaID}">${c.CinemaName}</a>`;
+                    });
+                }
+                dropdown.innerHTML = html;
+            }
+        } catch (err) {
+            console.error('Failed to load cinemas for navbar:', err);
+        }
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     app.initSocket();
     app.loadDynamicMovies();
+    app.loadCinemasNavbar();
 });
