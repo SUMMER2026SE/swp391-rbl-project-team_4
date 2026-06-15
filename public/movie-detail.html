@@ -331,7 +331,7 @@
 
                 if (detailSynopsis) detailSynopsis.textContent = movie.Description || 'Chưa có thông tin synopsis.';
                 if (infoDuration) infoDuration.textContent = movie.Duration ? `${movie.Duration} phút` : 'Chưa rõ';
-                if (infoGenre) infoGenre.textContent = movie.Genre || 'Chính kịch';
+                if (infoGenre) infoGenre.textContent = movie.Genres || 'Chính kịch';
                 if (infoLanguage) infoLanguage.textContent = 'Tiếng Việt (Phụ đề Tiếng Anh)';
 
                 // Render Cast & Director

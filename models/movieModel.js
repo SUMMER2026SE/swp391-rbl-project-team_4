@@ -21,6 +21,7 @@ function assignDynamicPoster(movie) {
 class MovieModel {
   static async getNowShowing(city) {
     const pool = await getPool();
+<<<<<<< HEAD
     const request = pool.request();
     let query = `
       SELECT DISTINCT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
@@ -41,6 +42,28 @@ class MovieModel {
     query += ` ORDER BY m.MovieID DESC `;
 
     const result = await request.query(query);
+=======
+    const result = await pool.request().query(`
+      SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
+             m.TrailerURL, m.PosterURL, m.Status, m.MainCast,
+             (SELECT STRING_AGG(g.GenreName, ', ') 
+              FROM Movie_Genres mg 
+              JOIN Genres g ON mg.GenreID = g.GenreID 
+              WHERE mg.MovieID = m.MovieID) AS Genres,
+             COALESCE((SELECT STRING_AGG(Format, ', ') 
+                       FROM (SELECT DISTINCT CASE 
+                               WHEN r.RoomName LIKE '%3D%' THEN '3D'
+                               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
+                               ELSE '2D'
+                             END AS Format 
+                             FROM Showtimes st 
+                             JOIN Rooms r ON st.RoomID = r.RoomID 
+                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
+      FROM   Movies m
+      WHERE  m.Status = 'Now Showing'
+      ORDER BY m.MovieID DESC
+    `);
+>>>>>>> 232b1fb93c84966cafe2e0cadb7d0afd71f76a82
     result.recordset.forEach(assignDynamicPoster);
     return result.recordset;
   }
@@ -48,36 +71,66 @@ class MovieModel {
   static async getComingSoon() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT MovieID, Title, Description, Director, Duration, AgeRating,
-             TrailerURL, PosterURL, Status, MainCast
-      FROM   Movies
-      WHERE  Status = 'Coming Soon'
-      ORDER BY MovieID ASC
+      SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
+             m.TrailerURL, m.PosterURL, m.Status, m.MainCast,
+             (SELECT STRING_AGG(g.GenreName, ', ') 
+              FROM Movie_Genres mg 
+              JOIN Genres g ON mg.GenreID = g.GenreID 
+              WHERE mg.MovieID = m.MovieID) AS Genres,
+             COALESCE((SELECT STRING_AGG(Format, ', ') 
+                       FROM (SELECT DISTINCT CASE 
+                               WHEN r.RoomName LIKE '%3D%' THEN '3D'
+                               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
+                               ELSE '2D'
+                             END AS Format 
+                             FROM Showtimes st 
+                             JOIN Rooms r ON st.RoomID = r.RoomID 
+                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
+      FROM   Movies m
+      WHERE  m.Status = 'Coming Soon'
+      ORDER BY m.MovieID ASC
     `);
     result.recordset.forEach(assignDynamicPoster);
     return result.recordset;
   }
 
-  static async getAllMovies({ status, search }) {
+  static async getAllMovies({ status, genre, search }) {
     const pool = await getPool();
     const request = pool.request();
 
-    let whereClause = "WHERE Status != 'deleted'";
+    let whereClause = "WHERE m.Status != 'deleted'";
     if (status) {
       request.input('status', sql.NVarChar, status);
-      whereClause += ' AND Status = @status';
+      whereClause += ' AND m.Status = @status';
     }
     if (search) {
       request.input('search', sql.NVarChar, `%${search}%`);
-      whereClause += ' AND Title LIKE @search';
+      whereClause += ' AND m.Title LIKE @search';
+    }
+    if (genre) {
+      request.input('genre', sql.NVarChar, genre);
+      whereClause += ' AND EXISTS (SELECT 1 FROM Movie_Genres mg2 JOIN Genres g2 ON mg2.GenreID = g2.GenreID WHERE mg2.MovieID = m.MovieID AND g2.GenreName = @genre)';
     }
 
     const result = await request.query(`
-      SELECT MovieID, Title, Description, Director, Duration, AgeRating,
-             TrailerURL, PosterURL, Status, MainCast
-      FROM   Movies
+      SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
+             m.TrailerURL, m.PosterURL, m.Status, m.MainCast,
+             (SELECT STRING_AGG(g.GenreName, ', ') 
+              FROM Movie_Genres mg 
+              JOIN Genres g ON mg.GenreID = g.GenreID 
+              WHERE mg.MovieID = m.MovieID) AS Genres,
+             COALESCE((SELECT STRING_AGG(Format, ', ') 
+                       FROM (SELECT DISTINCT CASE 
+                               WHEN r.RoomName LIKE '%3D%' THEN '3D'
+                               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
+                               ELSE '2D'
+                             END AS Format 
+                             FROM Showtimes st 
+                             JOIN Rooms r ON st.RoomID = r.RoomID 
+                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
+      FROM   Movies m
       ${whereClause}
-      ORDER BY MovieID DESC
+      ORDER BY m.MovieID DESC
     `);
     result.recordset.forEach(assignDynamicPoster);
     return result.recordset;
@@ -88,10 +141,23 @@ class MovieModel {
     const result = await pool.request()
       .input('movieId', sql.Int, parseInt(movieId))
       .query(`
-        SELECT MovieID, Title, Description, Director, Duration, AgeRating,
-               TrailerURL, PosterURL, Status, MainCast
-        FROM   Movies
-        WHERE  MovieID = @movieId
+        SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
+               m.TrailerURL, m.PosterURL, m.Status, m.MainCast,
+               (SELECT STRING_AGG(g.GenreName, ', ') 
+                FROM Movie_Genres mg 
+                JOIN Genres g ON mg.GenreID = g.GenreID 
+                WHERE mg.MovieID = m.MovieID) AS Genres,
+               COALESCE((SELECT STRING_AGG(Format, ', ') 
+                         FROM (SELECT DISTINCT CASE 
+                                 WHEN r.RoomName LIKE '%3D%' THEN '3D'
+                                 WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
+                                 ELSE '2D'
+                               END AS Format 
+                               FROM Showtimes st 
+                               JOIN Rooms r ON st.RoomID = r.RoomID 
+                               WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
+        FROM   Movies m
+        WHERE  m.MovieID = @movieId
       `);
     if (result.recordset.length > 0) {
       assignDynamicPoster(result.recordset[0]);

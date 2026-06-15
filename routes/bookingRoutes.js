@@ -13,6 +13,9 @@ router.get('/food-beverages',               bookingCtrl.getFoodBeverages);
 // GET  /api/bookings/vouchers               — Voucher đang hoạt động (Public)
 router.get('/vouchers',                     bookingCtrl.getActiveVouchers);
 
+// GET  /api/bookings/payment-qr             — Ảnh QR thanh toán (Public)
+router.get('/payment-qr',                   bookingCtrl.getPaymentQRImages);
+
 // Áp dụng verifyToken cho toàn bộ booking routes (trừ food-beverages)
 router.use(verifyToken);
 

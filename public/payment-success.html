@@ -295,6 +295,7 @@
             font-weight:700;
             letter-spacing:0.5px;
         }
+        .banner-qrpay   { background: linear-gradient(90deg, #003d80, #0057a8); color:#fff; }
         .banner-momo    { background:linear-gradient(90deg, #7d1a50, #ae2070); color:#fff; }
         .banner-zalopay { background:linear-gradient(90deg, #004db3, #0068ff); color:#fff; }
         .banner-vnpay   { background:linear-gradient(90deg, #003d80, #005baa); color:#fff; }
@@ -546,198 +547,16 @@
              STEP 1: PAYMENT METHOD PENDING SCREENS
         ════════════════════════════════════════════ -->
 
-        <!-- MoMo QR Screen -->
-        <div class="pending-screen" id="screen-momo">
+        <!-- Screen hiển thị khi đang load (dự phòng) -->
+        <div class="pending-screen" id="screen-loading">
             <div class="pending-header">
                 <div class="pending-badge badge-waiting">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Chờ xác nhận thanh toán
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-9-9"/></svg>
+                    Đang tải thông tin vé
                 </div>
-                <h1 class="pending-title">Quét mã để thanh toán</h1>
-                <p class="pending-sub">Mở app MoMo và quét mã QR bên dưới để hoàn tất</p>
+                <h1 class="pending-title">Xin chờ một chút…</h1>
+                <p class="pending-sub">Chúng tôi đang xác nhận đặt vé của bạn</p>
             </div>
-            <div class="qr-payment-box">
-                <div class="qr-method-header">
-                    <div class="qr-method-logo logo-momo-lg">mo<br>mo</div>
-                    <div class="qr-method-name">Ví điện tử MoMo</div>
-                    <div class="qr-method-desc">Quét mã QR bằng app MoMo</div>
-                </div>
-                <div class="qr-canvas-wrap">
-                    <div id="qr-momo"></div>
-                </div>
-                <div>
-                    <div class="qr-amount-label">Số tiền thanh toán</div>
-                    <div class="qr-amount-value" id="momo-amount">0 VND</div>
-                </div>
-                <div class="qr-countdown-wrap">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Mã hết hạn sau: <strong id="qr-timer-momo">05:00</strong>
-                </div>
-            </div>
-            <div class="qr-steps">
-                <div class="qr-step-item">
-                    <div class="qr-step-num">1</div>
-                    <div class="qr-step-text">Mở ứng dụng <strong>MoMo</strong> trên điện thoại của bạn</div>
-                </div>
-                <div class="qr-step-item">
-                    <div class="qr-step-num">2</div>
-                    <div class="qr-step-text">Chọn <strong>Quét mã QR</strong> và hướng camera vào mã trên màn hình</div>
-                </div>
-                <div class="qr-step-item">
-                    <div class="qr-step-num">3</div>
-                    <div class="qr-step-text">Kiểm tra thông tin và <strong>xác nhận thanh toán</strong> trên app MoMo</div>
-                </div>
-            </div>
-            <br>
-            <button class="btn-qr-confirm" onclick="confirmPayment()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                Tôi đã thanh toán xong
-            </button>
-        </div>
-
-        <!-- ZaloPay QR Screen -->
-        <div class="pending-screen" id="screen-zalopay">
-            <div class="pending-header">
-                <div class="pending-badge badge-waiting">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Chờ xác nhận thanh toán
-                </div>
-                <h1 class="pending-title">Quét mã để thanh toán</h1>
-                <p class="pending-sub">Mở app ZaloPay và quét mã QR bên dưới để hoàn tất</p>
-            </div>
-            <div class="qr-payment-box">
-                <div class="qr-method-header">
-                    <div class="qr-method-logo logo-zalopay-lg">Zalo<br><span style="font-size:0.7rem">Pay</span></div>
-                    <div class="qr-method-name">Ví điện tử ZaloPay</div>
-                    <div class="qr-method-desc">Quét mã QR bằng app ZaloPay</div>
-                </div>
-                <div class="qr-canvas-wrap">
-                    <div id="qr-zalopay"></div>
-                </div>
-                <div>
-                    <div class="qr-amount-label">Số tiền thanh toán</div>
-                    <div class="qr-amount-value" id="zalopay-amount">0 VND</div>
-                </div>
-                <div class="qr-countdown-wrap">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Mã hết hạn sau: <strong id="qr-timer-zalopay">05:00</strong>
-                </div>
-            </div>
-            <div class="qr-steps">
-                <div class="qr-step-item"><div class="qr-step-num">1</div><div class="qr-step-text">Mở ứng dụng <strong>ZaloPay</strong> trên điện thoại của bạn</div></div>
-                <div class="qr-step-item"><div class="qr-step-num">2</div><div class="qr-step-text">Chọn <strong>Quét QR</strong> và hướng camera vào mã trên màn hình</div></div>
-                <div class="qr-step-item"><div class="qr-step-num">3</div><div class="qr-step-text">Kiểm tra số tiền và <strong>xác nhận thanh toán</strong></div></div>
-            </div>
-            <br>
-            <button class="btn-qr-confirm" onclick="confirmPayment()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                Tôi đã thanh toán xong
-            </button>
-        </div>
-
-        <!-- VNPAY QR Screen -->
-        <div class="pending-screen" id="screen-vnpay">
-            <div class="pending-header">
-                <div class="pending-badge badge-waiting">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Chờ xác nhận thanh toán
-                </div>
-                <h1 class="pending-title">Quét mã VNPAY-QR</h1>
-                <p class="pending-sub">Sử dụng app ngân hàng hoặc VNPay để quét mã</p>
-            </div>
-            <div class="qr-payment-box">
-                <div class="qr-method-header">
-                    <div class="qr-method-logo logo-vnpay-lg">VN<br><span style="font-size:0.7rem">PAY</span></div>
-                    <div class="qr-method-name">VNPAY-QR</div>
-                    <div class="qr-method-desc">Hỗ trợ 40+ ngân hàng và ví điện tử</div>
-                </div>
-                <div class="qr-canvas-wrap">
-                    <div id="qr-vnpay"></div>
-                </div>
-                <div>
-                    <div class="qr-amount-label">Số tiền thanh toán</div>
-                    <div class="qr-amount-value" id="vnpay-amount">0 VND</div>
-                </div>
-                <div class="qr-countdown-wrap">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Mã hết hạn sau: <strong id="qr-timer-vnpay">05:00</strong>
-                </div>
-            </div>
-            <div class="qr-steps">
-                <div class="qr-step-item"><div class="qr-step-num">1</div><div class="qr-step-text">Mở app <strong>ngân hàng / VNPay</strong> của bạn</div></div>
-                <div class="qr-step-item"><div class="qr-step-num">2</div><div class="qr-step-text">Chọn <strong>Thanh toán QR</strong> và quét mã</div></div>
-                <div class="qr-step-item"><div class="qr-step-num">3</div><div class="qr-step-text">Nhập mã OTP và <strong>xác nhận giao dịch</strong></div></div>
-            </div>
-            <br>
-            <button class="btn-qr-confirm" onclick="confirmPayment()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                Tôi đã thanh toán xong
-            </button>
-        </div>
-
-        <!-- ShopeePay QR Screen -->
-        <div class="pending-screen" id="screen-shopeepay">
-            <div class="pending-header">
-                <div class="pending-badge badge-waiting">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Chờ xác nhận thanh toán
-                </div>
-                <h1 class="pending-title">Quét mã ShopeePay</h1>
-                <p class="pending-sub">Mở app Shopee và dùng ShopeePay để quét mã</p>
-            </div>
-            <div class="qr-payment-box">
-                <div class="qr-method-header">
-                    <div class="qr-method-logo logo-shopee-lg">S<br><span style="font-size:0.7rem">Pay</span></div>
-                    <div class="qr-method-name">ShopeePay</div>
-                    <div class="qr-method-desc">Thanh toán nhanh qua ví ShopeePay</div>
-                </div>
-                <div class="qr-canvas-wrap">
-                    <div id="qr-shopeepay"></div>
-                </div>
-                <div>
-                    <div class="qr-amount-label">Số tiền thanh toán</div>
-                    <div class="qr-amount-value" id="shopeepay-amount">0 VND</div>
-                </div>
-                <div class="qr-countdown-wrap">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Mã hết hạn sau: <strong id="qr-timer-shopeepay">05:00</strong>
-                </div>
-            </div>
-            <div class="qr-steps">
-                <div class="qr-step-item"><div class="qr-step-num">1</div><div class="qr-step-text">Mở ứng dụng <strong>Shopee</strong> và vào phần <strong>ShopeePay</strong></div></div>
-                <div class="qr-step-item"><div class="qr-step-num">2</div><div class="qr-step-text">Chọn <strong>Quét QR / Thanh toán</strong> và quét mã</div></div>
-                <div class="qr-step-item"><div class="qr-step-num">3</div><div class="qr-step-text">Xác nhận số tiền và <strong>hoàn tất thanh toán</strong></div></div>
-            </div>
-            <br>
-            <button class="btn-qr-confirm" onclick="confirmPayment()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                Tôi đã thanh toán xong
-            </button>
-        </div>
-
-        <!-- ATM/Card Confirm Screen -->
-        <div class="pending-screen" id="screen-card">
-            <div class="pending-header">
-                <div class="pending-badge badge-success">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    Giao dịch thẻ thành công
-                </div>
-                <h1 class="pending-title">Xác nhận thanh toán thẻ</h1>
-                <p class="pending-sub">Giao dịch của bạn đã được xử lý thành công</p>
-            </div>
-            <div class="card-confirm-box">
-                <div class="card-confirm-icon">✅</div>
-                <div class="card-confirm-title">Giao dịch thành công!</div>
-                <div class="card-masked" id="cardMasked">•••• •••• •••• ####</div>
-                <div class="card-confirm-sub">Ngân hàng đã xác nhận giao dịch. Số tiền sẽ bị trừ trong vài giây.</div>
-                <div style="font-size:0.78rem;color:var(--muted);text-align:center;">
-                    Mã giao dịch: <strong style="color:var(--text);letter-spacing:1px;" id="txnCode">TXN-DC-######</strong>
-                </div>
-            </div>
-            <button class="btn-qr-confirm" style="max-width:440px;" onclick="confirmPayment()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                Xem vé điện tử của tôi
-            </button>
         </div>
 
 
@@ -873,6 +692,7 @@
     let qrTimers = {};
 
     const METHOD_LABELS = {
+        qrpay:     'QR Pay (VietQR/MB Bank)',
         momo:      'Ví MoMo',
         zalopay:   'ZaloPay',
         vnpay:     'VNPAY-QR',
@@ -882,6 +702,7 @@
     };
 
     const BANNER_CLASS = {
+        qrpay:     'banner-qrpay',
         momo:      'banner-momo',
         zalopay:   'banner-zalopay',
         vnpay:     'banner-vnpay',
@@ -1104,10 +925,14 @@
             booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
         } catch(e) { booking = {}; }
 
-        const method = booking.paymentMethod || 'momo';
+        // If booking was completed on checkout page → show ticket directly
+        if (booking.completed && (booking.bookingId || booking.showtimeId)) {
+            showTicket();
+            return;
+        }
 
+        // Demo mode — no real booking
         if (!booking.showtimeId && !booking.bookingId) {
-            // Demo mode — no real booking, show ticket directly
             booking = {
                 movieTitle: 'Demo Movie',
                 date: new Date().toLocaleDateString('vi-VN'),
@@ -1117,11 +942,15 @@
                 seatCount: 1,
                 finalAmount: 100000,
                 totalAmount: 100000,
-                paymentMethod: 'momo',
-                bookingId: 'DC-' + Math.floor(1000000 + Math.random() * 9000000)
+                paymentMethod: 'qrpay',
+                bookingId: 'DC-' + Math.floor(1000000 + Math.random() * 9000000),
+                completed: true
             };
+            showTicket();
+            return;
         }
 
+        const method = booking.paymentMethod || 'qrpay';
         showPendingScreen(method);
     });
     </script>
