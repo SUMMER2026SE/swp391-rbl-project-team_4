@@ -171,3 +171,113 @@ exports.getBookingDetail = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+
+// ─────────────────────────────────────────────────────────────
+//  GET /api/bookings/check-status
+// ─────────────────────────────────────────────────────────────
+exports.checkBookingStatus = async (req, res) => {
+  try {
+    const { ticketIds } = req.query;
+    if (!ticketIds) {
+      return res.status(400).json({ success: false, message: 'Thiếu ticketIds.' });
+    }
+
+    const ids = ticketIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+    if (ids.length === 0) {
+      return res.status(400).json({ success: false, message: 'ticketIds không hợp lệ.' });
+    }
+
+    let tickets = await BookingModel.checkBookingStatus(ids);
+    if (tickets.length === 0) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy vé tương ứng.' });
+    }
+
+    const pendingTickets = tickets.filter(t => t.Status === 'pending');
+    if (pendingTickets.length > 0) {
+      const sepayApiKey = process.env.SEPAY_API_KEY;
+      let hasBeenPaid = false;
+
+      if (sepayApiKey && sepayApiKey !== 'DEMO') {
+        // --- REAL SEPAY INTEGRATION ---
+        try {
+          const expectedNote = 'DCVIP' + ids.join('T');
+          const totalRequired = pendingTickets.reduce((sum, t) => sum + parseFloat(t.TotalAmount), 0);
+
+          console.log(`[SePay] Checking transactions for note: ${expectedNote}, amount: ${totalRequired}`);
+          
+          const response = await fetch('https://userapi.sepay.vn/v2/transactions?per_page=30', {
+            headers: { 'Authorization': `Bearer ${sepayApiKey}` }
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (result.transactions && Array.isArray(result.transactions)) {
+              // Tìm giao dịch có nội dung chuyển khoản chứa expectedNote
+              const match = result.transactions.find(tx => {
+                const txContent = tx.transaction_content || '';
+                const txAmount = parseFloat(tx.amount_in || 0);
+                
+                return txContent.toUpperCase().includes(expectedNote.toUpperCase()) &&
+                       txAmount >= totalRequired;
+              });
+
+              if (match) {
+                console.log(`[SePay] ✅ Match found! Transaction ID: ${match.id}. Confirming booking.`);
+                hasBeenPaid = true;
+              }
+            }
+          } else {
+            console.error('[SePay API] Error response:', response.status);
+          }
+        } catch (sepayErr) {
+          console.error('[SePay Integration Error]:', sepayErr.message);
+        }
+      } else {
+        // --- SIMULATED MOCK FALLBACK (12 seconds) ---
+        const firstTicket = pendingTickets[0];
+        if (firstTicket.SecondsElapsed >= 12) {
+          console.log(`[Payment Simulation] Auto-confirming tickets after 12s demo time.`);
+          hasBeenPaid = true;
+        }
+      }
+
+      if (hasBeenPaid) {
+        const ticketIdsToConfirm = pendingTickets.map(t => t.TicketID);
+        await BookingModel.confirmBooking(ticketIdsToConfirm);
+        // Cập nhật trạng thái trong kết quả trả về
+        tickets.forEach(t => {
+          if (ticketIdsToConfirm.includes(t.TicketID)) t.Status = 'confirmed';
+        });
+      }
+    }
+
+    const allConfirmed = tickets.every(t => t.Status === 'confirmed');
+
+    res.json({
+      success: true,
+      data: tickets.map(t => ({ ticketId: t.TicketID, status: t.Status })),
+      allConfirmed
+    });
+  } catch (err) {
+    console.error('[bookingController] checkBookingStatus:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+//  POST /api/bookings/cancel
+// ─────────────────────────────────────────────────────────────
+exports.cancelBooking = async (req, res) => {
+  try {
+    const { ticketIds } = req.body;
+    if (!ticketIds || !Array.isArray(ticketIds)) {
+      return res.status(400).json({ success: false, message: 'Danh sách ticketIds không hợp lệ.' });
+    }
+
+    await BookingModel.cancelBooking(ticketIds);
+    res.json({ success: true, message: 'Đã hủy giữ chỗ thành công.' });
+  } catch (err) {
+    console.error('[bookingController] cancelBooking:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server khi hủy giữ chỗ.' });
+  }
+};

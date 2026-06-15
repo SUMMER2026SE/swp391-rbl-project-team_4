@@ -25,6 +25,12 @@ router.post('/validate-voucher',            bookingCtrl.validateVoucher);
 // GET  /api/bookings/my-bookings            — Lịch sử đặt vé của tôi
 router.get('/my-bookings',                  bookingCtrl.getMyBookings);
 
+// GET  /api/bookings/check-status           — Kiểm tra trạng thái thanh toán
+router.get('/check-status',                 bookingCtrl.checkBookingStatus);
+
+// POST /api/bookings/cancel                 — Huỷ vé pending ngay lập tức
+router.post('/cancel',                      bookingCtrl.cancelBooking);
+
 // GET  /api/bookings/:ticketId              — Chi tiết một vé
 router.get('/:ticketId',                    bookingCtrl.getBookingDetail);
 

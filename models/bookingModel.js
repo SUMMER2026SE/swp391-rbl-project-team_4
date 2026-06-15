@@ -61,6 +61,9 @@ class BookingModel {
   }
 
   static async createBooking(userId, { showtimeId, seatIds, foodItems, voucherCode, paymentMethod }) {
+    // Tự động dọn dẹp các vé pending hết hạn trước khi đặt ghế mới
+    await BookingModel.cleanupExpiredPendingBookings();
+
     // Validate payment method
     const allowedMethods = ['qrpay', 'momo'];
     if (!allowedMethods.includes(paymentMethod)) {
@@ -191,7 +194,7 @@ class BookingModel {
 
       const finalAmount = totalAmount - discountAmount;
 
-      // --- Tạo Ticket cho mỗi ghế ---
+      // --- Tạo Ticket cho mỗi ghế ở trạng thái PENDING ---
       const createdTickets = [];
       for (let i = 0; i < seatIds.length; i++) {
         const seatId = seatIds[i];
@@ -218,7 +221,7 @@ class BookingModel {
                                TotalAmount, PaymentMethod, Status, BookedAt, QRCode)
           OUTPUT INSERTED.TicketID
           VALUES (@userId, @showtimeId, @seatId, @voucherId, @ticketPrice,
-                  @totalAmount, @paymentMethod, 'confirmed', GETDATE(), @qrCode)
+                  @totalAmount, @paymentMethod, 'pending', GETDATE(), @qrCode)
         `);
         const ticketId = tResult.recordset[0].TicketID;
         createdTickets.push({ ticketId, qrCode });
@@ -259,7 +262,7 @@ class BookingModel {
         discountAmount,
         finalAmount,
         paymentMethod,
-        status: 'confirmed',
+        status: 'pending',
       };
     } catch (err) {
       await transaction.rollback();
@@ -267,11 +270,144 @@ class BookingModel {
     }
   }
 
+  static async confirmBooking(ticketIds) {
+    const pool = await getPool();
+    const ticketIdList = ticketIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+    if (ticketIdList.length === 0) return;
+    
+    await pool.request().query(`
+      UPDATE Tickets
+      SET Status = 'confirmed'
+      WHERE TicketID IN (${ticketIdList.join(',')}) AND Status = 'pending'
+    `);
+  }
+
+  static async cancelBooking(ticketIds) {
+    const pool = await getPool();
+    const ticketIdList = ticketIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+    if (ticketIdList.length === 0) return;
+
+    const transaction = pool.transaction();
+    await transaction.begin();
+    try {
+      // 1. Lấy thông tin các vé để hoàn trả voucher
+      const ticketsResult = await transaction.request().query(`
+        SELECT VoucherID FROM Tickets
+        WHERE TicketID IN (${ticketIdList.join(',')}) AND Status = 'pending'
+      `);
+      const tickets = ticketsResult.recordset;
+      if (tickets.length === 0) {
+        await transaction.rollback();
+        return;
+      }
+
+      // 2. Hoàn trả F&B stock
+      const fnbItemsResult = await transaction.request().query(`
+        SELECT FnBID, Quantity FROM Ticket_FnB
+        WHERE TicketID IN (${ticketIdList.join(',')})
+      `);
+      for (const item of fnbItemsResult.recordset) {
+        await transaction.request()
+          .input('qty', sql.Int, item.Quantity)
+          .input('fnbId', sql.Int, item.FnBID)
+          .query('UPDATE FoodBeverages SET Stock = Stock + @qty WHERE FnBID = @fnbId');
+      }
+
+      // 3. Hoàn trả lượt dùng voucher
+      const voucherIds = tickets.map(t => t.VoucherID).filter(v => v !== null);
+      if (voucherIds.length > 0) {
+        const uniqueVoucherIds = [...new Set(voucherIds)];
+        for (const vId of uniqueVoucherIds) {
+          const count = voucherIds.filter(id => id === vId).length;
+          await transaction.request()
+            .input('vId', sql.Int, vId)
+            .input('count', sql.Int, count)
+            .query('UPDATE Vouchers SET UsedCount = CASE WHEN UsedCount >= @count THEN UsedCount - @count ELSE 0 END WHERE VoucherID = @vId');
+        }
+      }
+
+      // 4. Xóa Ticket_FnB và Tickets
+      await transaction.request().query(`
+        DELETE FROM Ticket_FnB WHERE TicketID IN (${ticketIdList.join(',')});
+        DELETE FROM Tickets WHERE TicketID IN (${ticketIdList.join(',')});
+      `);
+
+      await transaction.commit();
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
+  }
+
+  static async checkBookingStatus(ticketIds) {
+    const pool = await getPool();
+    const ticketIdList = ticketIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+    if (ticketIdList.length === 0) return [];
+
+    const result = await pool.request().query(`
+      SELECT TicketID, Status, BookedAt, TotalAmount,
+             DATEDIFF(second, BookedAt, GETDATE()) AS SecondsElapsed
+      FROM Tickets
+      WHERE TicketID IN (${ticketIdList.join(',')})
+    `);
+    return result.recordset;
+  }
+
+  static async cleanupExpiredPendingBookings() {
+    const pool = await getPool();
+    try {
+      // 1. Tìm các vé pending quá 10 phút
+      const expiredTicketsResult = await pool.request().query(`
+        SELECT TicketID, VoucherID FROM Tickets
+        WHERE Status = 'pending' AND DATEDIFF(minute, BookedAt, GETDATE()) >= 10
+      `);
+      const expiredTickets = expiredTicketsResult.recordset;
+      if (expiredTickets.length === 0) return;
+
+      const expiredTicketIds = expiredTickets.map(t => t.TicketID);
+
+      // 2. Hoàn trả tồn kho đồ ăn thức uống
+      const fnbItemsResult = await pool.request().query(`
+        SELECT FnBID, Quantity FROM Ticket_FnB
+        WHERE TicketID IN (${expiredTicketIds.join(',')})
+      `);
+      for (const item of fnbItemsResult.recordset) {
+        await pool.request()
+          .input('qty', sql.Int, item.Quantity)
+          .input('fnbId', sql.Int, item.FnBID)
+          .query('UPDATE FoodBeverages SET Stock = Stock + @qty WHERE FnBID = @fnbId');
+      }
+
+      // 3. Hoàn trả voucher
+      const voucherIds = expiredTickets.map(t => t.VoucherID).filter(v => v !== null);
+      if (voucherIds.length > 0) {
+        const uniqueVoucherIds = [...new Set(voucherIds)];
+        for (const vId of uniqueVoucherIds) {
+          const count = voucherIds.filter(id => id === vId).length;
+          await pool.request()
+            .input('vId', sql.Int, vId)
+            .input('count', sql.Int, count)
+            .query('UPDATE Vouchers SET UsedCount = CASE WHEN UsedCount >= @count THEN UsedCount - @count ELSE 0 END WHERE VoucherID = @vId');
+        }
+      }
+
+      // 4. Xóa liên kết F&B và vé
+      await pool.request().query(`
+        DELETE FROM Ticket_FnB WHERE TicketID IN (${expiredTicketIds.join(',')});
+        DELETE FROM Tickets WHERE TicketID IN (${expiredTicketIds.join(',')});
+      `);
+      
+      console.log(`[DB Cleanup] Đã dọn dẹp ${expiredTicketIds.length} vé pending hết hạn.`);
+    } catch (err) {
+      console.error('[DB Cleanup] Lỗi dọn dẹp vé pending hết hạn:', err.message);
+    }
+  }
+
   static async getPaymentQRImages() {
     const pool = await getPool();
     const result = await pool.request().query(`
       SELECT PaymentMethod, ImagePath, DisplayName, Description,
-             AccountName, AccountNumber, BankName, IsActive
+             AccountName, AccountNumber, BankName, BankCode, IsActive
       FROM   PaymentQRImages
       WHERE  IsActive = 1
       ORDER  BY QRImageID ASC

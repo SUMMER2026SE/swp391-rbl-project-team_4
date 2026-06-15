@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="css/shared-layout.css">
+    <link rel="stylesheet" href="css/chatbot.css">
 </head>
 
 <body>
@@ -24,7 +25,12 @@
             </a>
             <nav class="nav-links">
                 <a href="movies.html" id="nav-phim">Phim</a>
-                <a href="booking.html" id="nav-rap">Rạp</a>
+                <div class="nav-dropdown">
+                    <a href="booking.html" id="nav-rap">Rạp <span style="font-size: 0.8em;">▼</span></a>
+                    <div class="nav-dropdown-content" id="cinemaDropdown">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
             </nav>
             <div class="nav-actions">
@@ -799,5 +805,6 @@
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 
+    <script src="js/chatbot.js"></script>
 </body>
 </html>

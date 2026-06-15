@@ -36,12 +36,14 @@ const userRoutes = require('./routes/userRoutes');
 const movieRoutes = require('./routes/movieRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 app.use('/api/auth', authRoutes);     // Đăng ký, Đăng nhập
 app.use('/api/users', userRoutes);    // Thông tin người dùng (Profile)
 app.use('/api/movies', movieRoutes);    // Thông tin phim & lịch chiếu
 app.use('/api/bookings', bookingRoutes);  // Đặt vé, lịch sử, voucher
 app.use('/api/admin', adminRoutes);    // Quản lý, thống kê (chỉ Super Admin)
+app.use('/api/chat', chatRoutes);      // AI Chatbot
 
 // ─── Health-check ────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

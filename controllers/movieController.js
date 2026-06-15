@@ -10,8 +10,9 @@ const MovieModel = require('../models/movieModel');
 // ─────────────────────────────────────────────────────────────
 exports.getNowShowing = async (req, res) => {
   try {
+    const { city } = req.query;
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    const data = await MovieModel.getNowShowing();
+    const data = await MovieModel.getNowShowing(city);
     res.json({ success: true, data });
   } catch (err) {
     console.error('[movieController] getNowShowing:', err.message);
