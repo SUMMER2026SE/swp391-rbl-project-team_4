@@ -1,4 +1,11 @@
 /* ══════════════════════════
+   DASHBOARD FILTER STATE
+══════════════════════════ */
+let dashCinemaId = '';
+let dashPeriod = '';
+let filterCinemas = [];
+
+/* ══════════════════════════
    FETCH DATA FROM BACKEND
 ══════════════════════════ */
 async function apiFetch(url, options = {}) {
@@ -8,26 +15,42 @@ async function apiFetch(url, options = {}) {
         'Authorization': `Bearer ${token}`
     };
     const res = await fetch(url, { ...options, headers });
-    return res.json();
+    const text = await res.text();
+    try {
+        return JSON.parse(text);
+    } catch(e) {
+        console.error('[apiFetch] Non-JSON response for', url, ':', text.substring(0, 200));
+        return { success: false, message: 'Invalid response' };
+    }
 }
 
 let chartInstance = null;
 
 async function loadDashboardData() {
     try {
-        const statsRes = await apiFetch('/api/admin/stats/dashboard');
+        // Build query params for filters
+        const params = new URLSearchParams();
+        if (dashCinemaId) params.set('cinemaId', dashCinemaId);
+        if (dashPeriod) params.set('period', dashPeriod);
+        const qs = params.toString() ? '?' + params.toString() : '';
+
+        const statsRes = await apiFetch('/api/admin/stats/dashboard' + qs);
         if (statsRes.success) {
             const data = statsRes.data;
             const kpiVals = document.querySelectorAll('.kpi-value');
             if (kpiVals.length >= 4) {
-                animateCounter(kpiVals[0], data.TotalRevenue || 0, '$', '', 0);
+                animateCounter(kpiVals[0], data.TotalRevenue || 0, '', ' đ', 0, true);
                 animateCounter(kpiVals[1], data.TicketSales || 0, '', '', 0);
-                animateCounter(kpiVals[2], data.FnBSales || 0, '$', '', 0);
+                animateCounter(kpiVals[2], data.FnBSales || 0, '', ' đ', 0, true);
                 animateCounter(kpiVals[3], data.OccupancyRate || 0, '', '%', 1);
             }
         }
 
-        const monthlyRes = await apiFetch('/api/admin/stats/monthly-revenue');
+        const monthlyParams = new URLSearchParams();
+        if (dashCinemaId) monthlyParams.set('cinemaId', dashCinemaId);
+        const mqStr = monthlyParams.toString() ? '?' + monthlyParams.toString() : '';
+
+        const monthlyRes = await apiFetch('/api/admin/stats/monthly-revenue' + mqStr);
         if (monthlyRes.success) {
             buildChart(monthlyRes.data);
         }
@@ -36,9 +59,247 @@ async function loadDashboardData() {
         if (topMoviesRes.success) {
             renderTopMovies(topMoviesRes.data);
         }
+
+        // Fetch Live Rooms Status
+        fetchLiveRoomsStatus();
     } catch (err) {
         console.error('Error loading dashboard data:', err);
     }
+}
+
+async function exportPdf() {
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    if (!token) return alert('Vui lòng đăng nhập!');
+
+    const params = new URLSearchParams();
+    if (dashCinemaId) params.set('cinemaId', dashCinemaId);
+    if (dashPeriod) params.set('period', dashPeriod);
+    const qs = params.toString() ? '?' + params.toString() : '';
+
+    try {
+        const res = await fetch('/api/admin/stats/export-pdf' + qs, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            return alert(errData.message || 'Không thể xuất file PDF (Lỗi xác thực hoặc server).');
+        }
+        
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'D-Cinema-Report.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error('Error downloading PDF:', err);
+        alert('Lỗi kết nối khi xuất PDF!');
+    }
+}
+
+
+async function fetchLiveRoomsStatus() {
+    try {
+        const params = new URLSearchParams();
+        if (dashCinemaId) params.set('cinemaId', dashCinemaId);
+        const qs = params.toString() ? '?' + params.toString() : '';
+
+        const res = await apiFetch('/api/admin/stats/live-rooms' + qs);
+        if (res.success) {
+            renderLiveRooms(res.data);
+        }
+    } catch (err) {
+        console.error('Failed to load live rooms:', err);
+    }
+}
+
+let liveRoomsInterval = null;
+
+function renderLiveRooms(rooms) {
+    const grid = document.getElementById('liveRoomsGrid');
+    if (!grid) return;
+
+    if (!rooms || rooms.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text3);">Không có phòng chiếu.</p>';
+        return;
+    }
+
+    grid.innerHTML = rooms.map(r => {
+        let status = 'empty'; // empty, playing, cleaning
+        let statusClass = 'empty';
+        let progressPercent = 0;
+        let occStr = '0%';
+
+        if (r.ShowtimeID && r.StartTime && r.EndTime) {
+            const now = new Date();
+            const start = new Date(r.StartTime);
+            const end = new Date(r.EndTime);
+            
+            // "Cleaning" happens 15 mins before end, up to 15 mins after end
+            const cleaningStart = new Date(end.getTime() - 15 * 60000);
+            const cleaningEnd = new Date(end.getTime() + 15 * 60000);
+
+            if (now >= cleaningStart && now <= cleaningEnd) {
+                status = 'cleaning';
+                statusClass = 'cleaning';
+            } else if (now >= new Date(start.getTime() - 15 * 60000) && now < cleaningStart) {
+                status = 'playing';
+                statusClass = 'playing';
+            }
+
+            if (status !== 'empty') {
+                const duration = end.getTime() - start.getTime();
+                const elapsed = now.getTime() - start.getTime();
+                progressPercent = Math.max(0, Math.min(100, (elapsed / duration) * 100));
+                
+                const occ = r.TotalSeats > 0 ? Math.round((r.TicketsSold / r.TotalSeats) * 100) : 0;
+                occStr = occ + '%';
+            }
+        }
+
+        return `
+            <div class="lr-card">
+                <div class="lr-header">
+                    <div class="lr-name">${r.RoomName}</div>
+                    <div class="lr-status-dot ${statusClass}"></div>
+                </div>
+                <div class="lr-movie">${status === 'empty' ? 'Chưa có lịch' : (r.MovieTitle || 'Unknown')}</div>
+                ${status !== 'empty' ? `
+                    <div class="lr-progress-bg">
+                        <div class="lr-progress-fill ${statusClass}" style="width: ${progressPercent}%"></div>
+                    </div>
+                    <div class="lr-occ ${statusClass}">${occStr}</div>
+                ` : `
+                    <div class="lr-progress-bg"></div>
+                    <div class="lr-occ empty">-</div>
+                `}
+            </div>
+        `;
+    }).join('');
+
+    // Setup periodic refresh (every 1 minute)
+    if (!liveRoomsInterval) {
+        liveRoomsInterval = setInterval(fetchLiveRoomsStatus, 60000);
+    }
+}
+
+/* ══════════════════════════
+   CINEMA FILTER FUNCTIONS
+══════════════════════════ */
+async function loadCinemasForFilter() {
+    try {
+        const res = await apiFetch('/api/admin/cinemas');
+        console.log('[CinemaFilter] API response:', res);
+        if (res.success && res.data) {
+            filterCinemas = res.data;
+            console.log('[CinemaFilter] Loaded', filterCinemas.length, 'cinemas');
+            renderCinemaList(filterCinemas);
+        } else {
+            console.warn('[CinemaFilter] No data:', res);
+        }
+    } catch (err) {
+        console.error('Failed to load cinemas for filter:', err);
+    }
+}
+
+function renderCinemaList(cinemas) {
+    const list = document.getElementById('cinemaList');
+    if (!list) return;
+
+    // Build the "all" item + all cinema items as HTML
+    const allActiveClass = (!dashCinemaId) ? ' active' : '';
+    let html = `
+        <div class="fdm-item${allActiveClass}" data-id="" onclick="selectCinema('', 'Tất cả cụm rạp', this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Tất cả cụm rạp
+        </div>
+    `;
+
+    cinemas.forEach(c => {
+        const activeClass = (dashCinemaId == c.CinemaID) ? ' active' : '';
+        html += `
+            <div class="fdm-item${activeClass}" data-id="${c.CinemaID}" onclick="selectCinema('${c.CinemaID}', '${c.CinemaName.replace(/'/g, '&apos;')}', this)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>${c.CinemaName}</span>
+            </div>
+        `;
+    });
+
+    list.innerHTML = html;
+}
+
+function filterCinemaList(query) {
+    const filtered = query
+        ? filterCinemas.filter(c => c.CinemaName.toLowerCase().includes(query.toLowerCase()))
+        : filterCinemas;
+    renderCinemaList(filtered);
+}
+
+function toggleCinemaDropdown() {
+    const btn = document.getElementById('cinemaDropdownBtn');
+    const menu = document.getElementById('cinemaDropdownMenu');
+    const isOpen = menu.classList.contains('open');
+    if (isOpen) {
+        menu.classList.remove('open');
+        btn.classList.remove('open');
+    } else {
+        menu.classList.add('open');
+        btn.classList.add('open');
+        // Lazy-load cinemas every time dropdown opens if not yet loaded
+        if (filterCinemas.length === 0) {
+            loadCinemasForFilter();
+        }
+        const searchEl = document.getElementById('cinemaSearch');
+        if (searchEl) searchEl.focus();
+    }
+}
+
+function selectCinema(id, label, el) {
+    dashCinemaId = id;
+    document.getElementById('cinemaDropdownLabel').textContent = label;
+    // Update active state
+    document.querySelectorAll('#cinemaList .fdm-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    // Close dropdown
+    document.getElementById('cinemaDropdownMenu').classList.remove('open');
+    document.getElementById('cinemaDropdownBtn').classList.remove('open');
+    document.getElementById('cinemaSearch').value = '';
+    renderCinemaList(filterCinemas);
+    // Refresh data
+    loadDashboardData();
+}
+
+function selectPeriod(period, btn) {
+    dashPeriod = period;
+    document.querySelectorAll('.period-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    loadDashboardData();
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    const wrap = document.getElementById('cinemaDropdownWrap');
+    if (wrap && !wrap.contains(e.target)) {
+        const menu = document.getElementById('cinemaDropdownMenu');
+        const btn = document.getElementById('cinemaDropdownBtn');
+        if (menu) menu.classList.remove('open');
+        if (btn) btn.classList.remove('open');
+    }
+});
+
+function showDashboardFilters() {
+    const f = document.getElementById('dashboardFilters');
+    if (f) f.classList.remove('hidden');
+}
+function hideDashboardFilters() {
+    const f = document.getElementById('dashboardFilters');
+    if (f) f.classList.add('hidden');
 }
 
 function renderTopMovies(movies) {
@@ -61,8 +322,8 @@ function renderTopMovies(movies) {
                 </div>
             </div>
             <div class="rank-revenue">
-                <div class="rank-amount">$${(m.TodayRevenue / 1000).toFixed(1)}K</div>
-                <div class="rank-today">TODAY</div>
+                <div class="rank-amount">${formatCurrency(m.TodayRevenue)} đ</div>
+                <div class="rank-today">HÔM NAY</div>
             </div>
         </div>
     `).join('');
@@ -211,7 +472,7 @@ function buildChart(monthlyData) {
                     borderColor: 'rgba(255,255,255,0.08)',
                     borderWidth: 1,
                     callbacks: {
-                        label: ctx => ` $${(ctx.raw/1000).toFixed(1)}K`
+                        label: ctx => ` ${formatCurrency(ctx.raw)} đ`
                     }
                 }
             },
@@ -225,7 +486,7 @@ function buildChart(monthlyData) {
                     grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
                     ticks: {
                         color: '#9ca3af', font: { size: 11 },
-                        callback: v => '$' + (v/1000) + 'K'
+                        callback: v => (v / 1000000) + ' Tr'
                     },
                     border: { display: false }
                 }
@@ -447,13 +708,20 @@ function navigate(page, btn) {
     if (page === 'cinema') {
         topbarTitle.style.display = 'block';
         ttabs.style.display = 'flex';
+        hideDashboardFilters();
     } else if (page === 'schedule') {
         topbarTitle.textContent = 'LỊCH CHIẾU';
         topbarTitle.style.display = 'block';
         ttabs.style.display = 'flex';
+        hideDashboardFilters();
+    } else if (page === 'dashboard') {
+        topbarTitle.style.display = 'none';
+        ttabs.style.display = 'flex';
+        showDashboardFilters();
     } else {
         topbarTitle.style.display = 'none';
         ttabs.style.display = 'flex';
+        hideDashboardFilters();
     }
     
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -820,9 +1088,13 @@ function updateClock() {
 }
 
 /* ══════════════════════════
-   ANIMATED COUNTERS
+   UTILITIES & ANIMATED COUNTERS
 ══════════════════════════ */
-function animateCounter(el, target, prefix='', suffix='', decimals=0) {
+function formatCurrency(val) {
+    return new Intl.NumberFormat('vi-VN').format(Math.round(val));
+}
+
+function animateCounter(el, target, prefix='', suffix='', decimals=0, isCurrency=false) {
     const duration = 1200;
     const start = performance.now();
     function update(now) {
@@ -830,7 +1102,17 @@ function animateCounter(el, target, prefix='', suffix='', decimals=0) {
         const progress = Math.min(elapsed / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
         const val = eased * target;
-        el.textContent = prefix + (decimals > 0 ? val.toFixed(decimals) : Math.round(val).toLocaleString()) + suffix;
+        
+        let formattedVal;
+        if (isCurrency) {
+            formattedVal = formatCurrency(val);
+        } else if (decimals > 0) {
+            formattedVal = val.toFixed(decimals);
+        } else {
+            formattedVal = Math.round(val).toLocaleString('vi-VN');
+        }
+        
+        el.textContent = prefix + formattedVal + suffix;
         if (progress < 1) requestAnimationFrame(update);
     }
     requestAnimationFrame(update);
@@ -1561,6 +1843,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStaff();
     loadRooms();
     loadCinemas();
+    loadCinemasForFilter(); // load cinemas for topbar filter dropdown
     
     // Add event listener for search bar
     const searchInput = document.getElementById('adminSearch');
@@ -1602,5 +1885,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateClock();
 
     // Fetch live dashboard data
+    showDashboardFilters(); // dashboard is the default page
     loadDashboardData();
 });

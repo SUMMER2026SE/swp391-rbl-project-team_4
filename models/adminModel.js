@@ -454,6 +454,17 @@ class AdminModel {
   }
 
 
+  // --- GET ALL CINEMAS ---
+  static async getCinemas() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT CinemaID, CinemaName, Address
+      FROM Cinemas
+      ORDER BY CinemaName
+    `);
+    return result.recordset;
+  }
+
   // --- STATISTICS ---
   static async getRevenueStats({ startDate, endDate, movieId, cinemaId }) {
     const pool = await getPool();
@@ -492,30 +503,85 @@ class AdminModel {
     return { summary: summaryResult.recordset[0], data: result.recordset };
   }
 
-  static async getDashboardStats() {
+  static async getDashboardStats({ cinemaId, period } = {}) {
     const pool = await getPool();
-    const result = await pool.request().query(`
+    const request = pool.request();
+
+    // Build date filter clause
+    let dateFilter = '';
+    if (period === 'today') {
+      dateFilter = `AND CAST(t.BookedAt AS DATE) = CAST(GETDATE() AS DATE)`;
+    } else if (period === 'week') {
+      dateFilter = `AND CAST(t.BookedAt AS DATE) >= CAST(DATEADD(day, -6, GETDATE()) AS DATE)`;
+    } else if (period === 'month') {
+      dateFilter = `AND MONTH(t.BookedAt) = MONTH(GETDATE()) AND YEAR(t.BookedAt) = YEAR(GETDATE())`;
+    }
+
+    // Build cinema filter clause
+    let cinemaJoin = '';
+    let cinemaFilter = '';
+    if (cinemaId) {
+      request.input('cinemaId', sql.Int, parseInt(cinemaId));
+      cinemaJoin = `JOIN Rooms r2 ON st2.RoomID = r2.RoomID JOIN Cinemas c2 ON r2.CinemaID = c2.CinemaID`;
+      cinemaFilter = `AND c2.CinemaID = @cinemaId`;
+    }
+
+    // For seat occupancy we also need cinema scoping
+    let seatCinemaJoin = cinemaId ? `JOIN Cinemas c_s ON r_s.CinemaID = c_s.CinemaID` : '';
+    let seatCinemaFilter = cinemaId ? `AND c_s.CinemaID = @cinemaId` : '';
+
+    const query = `
       DECLARE @TotalSeats INT = (
-        SELECT ISNULL(SUM(r.TotalSeats), 1)
-        FROM Showtimes st JOIN Rooms r ON st.RoomID = r.RoomID
-        WHERE st.Status = 'active'
+        SELECT ISNULL(SUM(r_s.TotalSeats), 1)
+        FROM Showtimes st_s
+        JOIN Rooms r_s ON st_s.RoomID = r_s.RoomID
+        ${seatCinemaJoin}
+        WHERE st_s.Status = 'active'
+        ${seatCinemaFilter}
       );
       DECLARE @BookedSeats INT = (
-        SELECT COUNT(*) FROM Tickets WHERE Status IN ('confirmed', 'used', 'pending')
+        SELECT COUNT(DISTINCT t2.TicketID)
+        FROM Tickets t2
+        JOIN Showtimes st2 ON t2.ShowtimeID = st2.ShowtimeID
+        ${cinemaId ? 'JOIN Rooms r2 ON st2.RoomID = r2.RoomID JOIN Cinemas c2 ON r2.CinemaID = c2.CinemaID' : ''}
+        WHERE t2.Status IN ('confirmed', 'used', 'pending')
+        ${cinemaId ? 'AND c2.CinemaID = @cinemaId' : ''}
+        ${dateFilter.replace(/t\.BookedAt/g, 't2.BookedAt')}
       );
 
       SELECT
-        (SELECT ISNULL(SUM(TotalAmount), 0) FROM Tickets WHERE Status IN ('confirmed', 'used')) AS TotalRevenue,
-        (SELECT COUNT(*) FROM Tickets WHERE Status IN ('confirmed', 'used', 'pending')) AS TicketSales,
+        (
+          SELECT ISNULL(SUM(t.TotalAmount), 0)
+          FROM Tickets t
+          JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+          ${cinemaId ? 'JOIN Rooms r ON st.RoomID = r.RoomID JOIN Cinemas c ON r.CinemaID = c.CinemaID' : ''}
+          WHERE t.Status IN ('confirmed', 'used')
+          ${cinemaId ? 'AND c.CinemaID = @cinemaId' : ''}
+          ${dateFilter}
+        ) AS TotalRevenue,
+        (
+          SELECT COUNT(DISTINCT t.TicketID)
+          FROM Tickets t
+          JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+          ${cinemaId ? 'JOIN Rooms r ON st.RoomID = r.RoomID JOIN Cinemas c ON r.CinemaID = c.CinemaID' : ''}
+          WHERE t.Status IN ('confirmed', 'used', 'pending')
+          ${cinemaId ? 'AND c.CinemaID = @cinemaId' : ''}
+          ${dateFilter}
+        ) AS TicketSales,
         (
           SELECT ISNULL(SUM(tf.Quantity * fb.Price), 0)
           FROM Ticket_FnB tf
           JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
           JOIN Tickets t ON tf.TicketID = t.TicketID
+          JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+          ${cinemaId ? 'JOIN Rooms r ON st.RoomID = r.RoomID JOIN Cinemas c ON r.CinemaID = c.CinemaID' : ''}
           WHERE t.Status IN ('confirmed', 'used')
+          ${cinemaId ? 'AND c.CinemaID = @cinemaId' : ''}
+          ${dateFilter}
         ) AS FnBSales,
         (CAST(@BookedSeats * 100.0 / NULLIF(@TotalSeats, 0) AS DECIMAL(5,1))) AS OccupancyRate
-    `);
+    `;
+    const result = await request.query(query);
     return result.recordset[0];
   }
 
@@ -546,11 +612,27 @@ class AdminModel {
     return result.recordset;
   }
 
-  static async getMonthlyRevenue(year) {
+  static async getMonthlyRevenue(year, cinemaId) {
     const pool = await getPool();
-    const result = await pool.request()
-      .input('year', sql.Int, year || new Date().getFullYear())
-      .query(`
+    const request = pool.request()
+      .input('year', sql.Int, year || new Date().getFullYear());
+
+    let cinemaJoin = '';
+    let cinemaFilter = '';
+    if (cinemaId) {
+      request.input('cinemaId', sql.Int, parseInt(cinemaId));
+      cinemaJoin = `JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID JOIN Rooms r ON st.RoomID = r.RoomID JOIN Cinemas c ON r.CinemaID = c.CinemaID`;
+      cinemaFilter = `AND c.CinemaID = @cinemaId`;
+    }
+
+    let cinemaJoinFnb = '';
+    let cinemaFilterFnb = '';
+    if (cinemaId) {
+      cinemaJoinFnb = `JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID JOIN Rooms r ON st.RoomID = r.RoomID JOIN Cinemas c ON r.CinemaID = c.CinemaID`;
+      cinemaFilterFnb = `AND c.CinemaID = @cinemaId`;
+    }
+
+    const result = await request.query(`
         WITH Months AS (
             SELECT 1 AS MonthNumber UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
             UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8
@@ -559,20 +641,24 @@ class AdminModel {
         SELECT 
             m.MonthNumber,
             (
-                SELECT ISNULL(SUM(t.TicketPrice), 0) 
+                SELECT ISNULL(SUM(t.TotalAmount), 0) 
                 FROM Tickets t
+                ${cinemaJoin}
                 WHERE MONTH(t.BookedAt) = m.MonthNumber
                   AND YEAR(t.BookedAt) = @year
                   AND t.Status IN ('confirmed', 'used')
+                  ${cinemaFilter}
             ) AS TicketRevenue,
             (
                 SELECT ISNULL(SUM(tf.Quantity * fb.Price), 0) 
                 FROM Ticket_FnB tf
                 JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
                 JOIN Tickets t ON tf.TicketID = t.TicketID
+                ${cinemaJoinFnb}
                 WHERE MONTH(t.BookedAt) = m.MonthNumber
                   AND YEAR(t.BookedAt) = @year
                   AND t.Status IN ('confirmed', 'used')
+                  ${cinemaFilterFnb}
             ) AS FnBRevenue
         FROM Months m
         ORDER BY m.MonthNumber
@@ -603,6 +689,42 @@ class AdminModel {
         GROUP BY m.MovieID, m.Title, m.PosterURL
         ORDER BY TodayRevenue DESC, TotalTickets DESC
       `);
+    return result.recordset;
+  }
+
+  static async getLiveRoomsStatus(cinemaId) {
+    const pool = await getPool();
+    let query = `
+      SELECT 
+          r.RoomID,
+          r.RoomName,
+          r.TotalSeats,
+          c.CinemaName,
+          st.ShowtimeID,
+          st.StartTime,
+          st.EndTime,
+          m.Title AS MovieTitle,
+          (
+              SELECT COUNT(t.TicketID) 
+              FROM Tickets t 
+              WHERE t.ShowtimeID = st.ShowtimeID AND t.Status IN ('confirmed', 'used')
+          ) AS TicketsSold
+      FROM Rooms r
+      JOIN Cinemas c ON r.CinemaID = c.CinemaID
+      LEFT JOIN Showtimes st ON r.RoomID = st.RoomID 
+          AND st.Status = 'active'
+          AND GETDATE() >= DATEADD(minute, -15, st.StartTime) 
+          AND GETDATE() <= DATEADD(minute, 15, st.EndTime)
+      LEFT JOIN Movies m ON st.MovieID = m.MovieID
+      WHERE 1=1
+    `;
+    const request = pool.request();
+    if (cinemaId) {
+      query += ` AND r.CinemaID = @cinemaId`;
+      request.input('cinemaId', sql.Int, parseInt(cinemaId));
+    }
+    query += ` ORDER BY c.CinemaName, r.RoomName`;
+    const result = await request.query(query);
     return result.recordset;
   }
 }

@@ -97,6 +97,40 @@
                 <button class="ttab" onclick="switchTab('health',this)">Tình trạng hệ thống</button>
             </nav>
         </div>
+
+        <!-- Dashboard Filters (cinema + period) -->
+        <div class="topbar-filters" id="dashboardFilters">
+            <!-- Cinema Branch Dropdown -->
+            <div class="filter-dropdown-wrap" id="cinemaDropdownWrap">
+                <button class="filter-dropdown-btn" id="cinemaDropdownBtn" onclick="toggleCinemaDropdown()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span id="cinemaDropdownLabel">Tất cả cụm rạp</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="dropdown-chevron" id="cinemaChevron"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="filter-dropdown-menu" id="cinemaDropdownMenu">
+                    <div class="fdm-search">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <input type="text" id="cinemaSearch" placeholder="Tìm rạp..." oninput="filterCinemaList(this.value)">
+                    </div>
+                    <div class="fdm-list" id="cinemaList">
+                        <div class="fdm-item active" data-id="" onclick="selectCinema('', 'Tất cả cụm rạp', this)">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            Tất cả cụm rạp
+                        </div>
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Period Filter -->
+            <div class="period-pills" id="periodPills">
+                <button class="period-pill" data-period="today" onclick="selectPeriod('today', this)">Hôm nay</button>
+                <button class="period-pill" data-period="week" onclick="selectPeriod('week', this)">Tuần này</button>
+                <button class="period-pill" data-period="month" onclick="selectPeriod('month', this)">Tháng này</button>
+                <button class="period-pill active" data-period="" onclick="selectPeriod('', this)">Tất cả</button>
+            </div>
+        </div>
+
         <div class="topbar-right">
             <div class="tb-search">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -133,7 +167,7 @@
                     30 ngày qua
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
-                <button class="btn-export" onclick="alert('Exporting PDF…')">
+                <button class="btn-export" onclick="exportPdf()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Xuất PDF
                 </button>
@@ -145,7 +179,7 @@
             <div class="kpi-card">
                 <div class="kpi-label">TỔNG DOANH THU</div>
                 <div class="kpi-row">
-                    <div class="kpi-value">$248,392</div>
+                    <div class="kpi-value">-- VND</div>
                     <div class="kpi-badge up">▲12%</div>
                 </div>
                 <div class="kpi-bar"><div class="kpi-bar-fill" style="width:78%;background:var(--accent)"></div></div>
@@ -156,7 +190,7 @@
             <div class="kpi-card">
                 <div class="kpi-label">VÉ ĐÃ BÁN</div>
                 <div class="kpi-row">
-                    <div class="kpi-value">14,205</div>
+                    <div class="kpi-value">--</div>
                     <div class="kpi-badge up">▲8.4%</div>
                 </div>
                 <div class="kpi-bar"><div class="kpi-bar-fill" style="width:65%;background:#e8192c"></div></div>
@@ -167,7 +201,7 @@
             <div class="kpi-card">
                 <div class="kpi-label">DOANH THU ĐỒ ĂN</div>
                 <div class="kpi-row">
-                    <div class="kpi-value">$52,110</div>
+                    <div class="kpi-value">-- VND</div>
                     <div class="kpi-badge down">▼2.1%</div>
                 </div>
                 <div class="kpi-bar"><div class="kpi-bar-fill" style="width:45%;background:#f59e0b"></div></div>
@@ -178,7 +212,7 @@
             <div class="kpi-card">
                 <div class="kpi-label">TỶ LỆ LẤP ĐẦY</div>
                 <div class="kpi-row">
-                    <div class="kpi-value">76.8%</div>
+                    <div class="kpi-value">-- %</div>
                     <div class="kpi-badge up">▲15%</div>
                 </div>
                 <div class="kpi-bar"><div class="kpi-bar-fill" style="width:76.8%;background:#3b82f6"></div></div>
@@ -206,80 +240,41 @@
                 <div class="chart-wrap">
                     <canvas id="revenueChart"></canvas>
                 </div>
-                <div class="chart-branches">
-                    <span>Quận 1</span><span>Quận 3</span><span>Quận 7</span><span>Quận 10</span><span>Sân bay</span>
-                </div>
             </div>
 
-            <!-- Xếp hạng Trực tiếp -->
-            <div class="chart-card small">
-                <div class="chart-card-header">
-                    <div class="chart-title">Xếp hạng Trực tiếp</div>
+            <!-- Right Column -->
+            <div class="right-col" style="display: flex; flex-direction: column; gap: 16px;">
+                <!-- Xếp hạng Trực tiếp -->
+                <div class="chart-card small">
+                    <div class="chart-card-header">
+                        <div class="chart-title">Xếp hạng Trực tiếp</div>
+                    </div>
+                    <div class="rankings-list">
+                        <!-- Populated by JS -->
+                    </div>
+                    <button class="btn-view-reports" onclick="navigate('movies', document.querySelector('[data-page=movies]'))">
+                        Xem tất cả báo cáo
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
                 </div>
-                <div class="rankings-list">
-                    <div class="rank-item">
-                        <img src="images/movie_neon_dreams.png" alt="Neon Horizon" class="rank-poster">
-                        <div class="rank-info">
-                            <div class="rank-title">Neon Horizon</div>
-                            <div class="rank-stars">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                4.9/5
-                            </div>
-                        </div>
-                        <div class="rank-revenue">
-                            <div class="rank-amount">$42K</div>
-                            <div class="rank-today">HÔM NAY</div>
-                        </div>
-                    </div>
-                    <div class="rank-item">
-                        <img src="images/movie_lastnoir.png" alt="The Last Echo" class="rank-poster">
-                        <div class="rank-info">
-                            <div class="rank-title">The Last Echo</div>
-                            <div class="rank-stars">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                4.7/5
-                            </div>
-                        </div>
-                        <div class="rank-revenue">
-                            <div class="rank-amount">$38K</div>
-                            <div class="rank-today">HÔM NAY</div>
-                        </div>
-                    </div>
-                    <div class="rank-item">
-                        <img src="images/movie_oppenheimer.png" alt="Golden Age" class="rank-poster">
-                        <div class="rank-info">
-                            <div class="rank-title">Golden Age</div>
-                            <div class="rank-stars">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                4.8/5
-                            </div>
-                        </div>
-                        <div class="rank-revenue">
-                            <div class="rank-amount">$31K</div>
-                            <div class="rank-today">HÔM NAY</div>
-                        </div>
-                    </div>
-                    <div class="rank-item">
-                        <img src="images/movie_odyssey.png" alt="The Odyssey" class="rank-poster">
-                        <div class="rank-info">
-                            <div class="rank-title">The Odyssey</div>
-                            <div class="rank-stars">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                4.6/5
-                            </div>
-                        </div>
-                        <div class="rank-revenue">
-                            <div class="rank-amount">$24K</div>
-                            <div class="rank-today">HÔM NAY</div>
-                        </div>
-                    </div>
-                </div>
-                <button class="btn-view-reports" onclick="navigate('movies', document.querySelector('[data-page=movies]'))">
-                    Xem tất cả báo cáo
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </button>
-            </div>
 
+                <!-- Live Status Widget -->
+                <div class="chart-card small" style="flex: 1;">
+                    <div class="chart-card-header" style="padding-bottom: 10px;">
+                        <div class="chart-title" style="display: flex; align-items: center; gap: 6px;">
+                            <span class="live-indicator"></span> Live Status
+                        </div>
+                    </div>
+                    <div class="live-legend">
+                        <span class="l-badge empty">🟢 Trống</span>
+                        <span class="l-badge playing">🔴 Đang chiếu</span>
+                        <span class="l-badge cleaning">🟡 Sắp hết/Dọn dẹp</span>
+                    </div>
+                    <div class="live-rooms-grid" id="liveRoomsGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Recent Transactions -->
@@ -1032,7 +1027,7 @@
     </div>
 </div>
 
-<script src="js/admin.js"></script>
+<script src="js/admin.js?v=3"></script>
 
 <style>
 .btn-solid-green { padding: 9px 18px; background: #10b981; color: #fff; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 700; transition: all var(--tr); border: none; cursor: pointer; }

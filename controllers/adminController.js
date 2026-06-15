@@ -3,6 +3,12 @@
 //  Dành cho: Quản lý (Role: Admin, Manager)
 // ============================================================
 const AdminModel = require('../models/adminModel');
+const PDFDocument = require('pdfkit');
+
+function removeAccents(str) {
+  if(!str) return '';
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, 'd').replace(/Đ/g, 'D');
+}
 
 // ════════════════════════════════════════════════════════════
 //  MOVIE MANAGEMENT
@@ -327,10 +333,20 @@ exports.getRevenueStats = async (req, res) => {
 
 exports.getDashboardStats = async (req, res) => {
   try {
-    const data = await AdminModel.getDashboardStats();
+    const data = await AdminModel.getDashboardStats(req.query);
     res.json({ success: true, data });
   } catch (err) {
     console.error('[adminController] getDashboardStats:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getCinemas = async (req, res) => {
+  try {
+    const data = await AdminModel.getCinemas();
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[adminController] getCinemas:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
@@ -349,7 +365,8 @@ exports.getRecentTransactions = async (req, res) => {
 exports.getMonthlyRevenue = async (req, res) => {
   try {
     const year = parseInt(req.query.year) || new Date().getFullYear();
-    const data = await AdminModel.getMonthlyRevenue(year);
+    const cinemaId = req.query.cinemaId || null;
+    const data = await AdminModel.getMonthlyRevenue(year, cinemaId);
     res.json({ success: true, year, data });
   } catch (err) {
     console.error('[adminController] getMonthlyRevenue:', err.message);
@@ -365,5 +382,67 @@ exports.getTopMovies = async (req, res) => {
   } catch (err) {
     console.error('[adminController] getTopMovies:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getLiveRooms = async (req, res) => {
+  try {
+    const cinemaId = req.query.cinemaId || null;
+    const data = await AdminModel.getLiveRoomsStatus(cinemaId);
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[adminController] getLiveRooms:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.exportPdf = async (req, res) => {
+  try {
+    const period = req.query.period || 'all';
+    const cinemaId = req.query.cinemaId || null;
+
+    // Fetch stats
+    const stats = await AdminModel.getDashboardStats({ cinemaId, period });
+
+    const doc = new PDFDocument({ margin: 50 });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=D-Cinema-Report.pdf');
+    doc.pipe(res);
+
+    // Header
+    doc.fontSize(20).text('D-CINEMA DASHBOARD REPORT', { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(12).text('Generated at: ' + new Date().toLocaleString('vi-VN'));
+    doc.moveDown(2);
+
+    // KPI Section
+    doc.fontSize(16).text('1. OVERVIEW STATISTICS', { underline: true });
+    doc.moveDown();
+    doc.fontSize(12);
+    doc.text(`Total Revenue: ${new Intl.NumberFormat('vi-VN').format(stats.TotalRevenue || 0)} VND`);
+    doc.text(`Tickets Sold: ${new Intl.NumberFormat('vi-VN').format(stats.TicketSales || 0)}`);
+    doc.text(`F&B Revenue: ${new Intl.NumberFormat('vi-VN').format(stats.FnBSales || 0)} VND`);
+    doc.text(`Occupancy Rate: ${stats.OccupancyRate || 0}%`);
+    doc.moveDown(2);
+
+    // Top Movies Section
+    const topMovies = await AdminModel.getTopMovies(5);
+    doc.fontSize(16).text('2. TOP MOVIES TODAY', { underline: true });
+    doc.moveDown();
+    if (topMovies && topMovies.length > 0) {
+      topMovies.forEach((m, idx) => {
+        doc.text(`${idx + 1}. ${removeAccents(m.Title)}`);
+        doc.text(`   Revenue: ${new Intl.NumberFormat('vi-VN').format(m.TodayRevenue)} VND | Tickets: ${m.TotalTickets}`);
+        doc.moveDown(0.5);
+      });
+    } else {
+      doc.text('No movie data available.');
+    }
+
+    doc.end();
+
+  } catch (err) {
+    console.error('[adminController] exportPdf:', err.message);
+    res.status(500).json({ success: false, message: 'Server error generating PDF.' });
   }
 };
