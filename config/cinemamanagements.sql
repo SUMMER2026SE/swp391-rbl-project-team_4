@@ -359,7 +359,7 @@ INSERT INTO Movie_Genres (MovieID, GenreID) VALUES
 (1, 7), (1, 3), -- Ốc Mượn Hồn: Tâm lý, Kinh dị
 (2, 3),          -- Ma Xó: Kinh dị
 (3, 7),          -- Dưới Bóng Điện Hạ: Tâm lý
-(4, 2), (4, 8), -- Siêu Quậy Marsupilami: Hài, Phiêu lưu
+(4, 2), (4, 8), (4, 6), -- Siêu Quậy Marsupilami: Hài, Phiêu lưu, Hoạt hình
 (5, 1),          -- John Wick 4: Hành động
 (6, 6), (6, 8), (6, 5), -- Doraemon 45: Hoạt hình, Phiêu lưu, Viễn tưởng
 (7, 9), -- BTS: Ca Nhạc
