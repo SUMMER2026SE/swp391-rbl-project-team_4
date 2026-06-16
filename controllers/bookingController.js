@@ -99,12 +99,20 @@ exports.validateVoucher = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Vui lòng cung cấp mã voucher.' });
     }
 
-    const voucher = await BookingModel.validateVoucher(voucherCode.trim().toUpperCase());
+    const userId = req.user ? req.user.userId : null;
+    const voucher = await BookingModel.validateVoucher(voucherCode.trim().toUpperCase(), userId);
 
     if (!voucher) {
       return res.status(404).json({
         success: false,
         message: 'Mã voucher không hợp lệ, đã hết hạn hoặc đã dùng hết.',
+      });
+    }
+
+    if (voucher.alreadyUsed) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bạn đã sử dụng voucher này rồi. Mỗi khách hàng chỉ được sử dụng mã này 1 lần.',
       });
     }
 

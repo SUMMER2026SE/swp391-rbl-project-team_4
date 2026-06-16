@@ -42,7 +42,7 @@ class BookingModel {
     return result.recordset;
   }
 
-  static async validateVoucher(code) {
+  static async validateVoucher(code, userId) {
     const pool = await getPool();
     const result = await pool.request()
       .input('code', sql.NVarChar, code)
@@ -57,7 +57,25 @@ class BookingModel {
           AND  EndDate   >= GETDATE()
           AND  (UsageLimit IS NULL OR UsedCount < UsageLimit)
       `);
-    return result.recordset.length > 0 ? result.recordset[0] : null;
+    if (result.recordset.length === 0) return null;
+    const voucher = result.recordset[0];
+
+    if (userId) {
+      const checkUsed = await pool.request()
+        .input('userId', sql.Int, userId)
+        .input('voucherId', sql.Int, voucher.VoucherID)
+        .query(`
+          SELECT COUNT(*) as cnt 
+          FROM Tickets 
+          WHERE UserID = @userId 
+            AND VoucherID = @voucherId 
+            AND Status IN ('confirmed', 'used', 'pending')
+        `);
+      if (checkUsed.recordset[0].cnt > 0) {
+        voucher.alreadyUsed = true;
+      }
+    }
+    return voucher;
   }
 
   static async createBooking(userId, { showtimeId, seatIds, foodItems, voucherCode, paymentMethod }) {
@@ -183,6 +201,22 @@ class BookingModel {
         `);
         if (vResult.recordset.length > 0) {
           const v = vResult.recordset[0];
+          
+          // Check if this user has already used this voucher
+          const checkUsedReq = transaction.request();
+          checkUsedReq.input('userId', sql.Int, userId);
+          checkUsedReq.input('voucherId', sql.Int, v.VoucherID);
+          const checkUsedResult = await checkUsedReq.query(`
+            SELECT COUNT(*) as cnt 
+            FROM Tickets 
+            WHERE UserID = @userId 
+              AND VoucherID = @voucherId 
+              AND Status IN ('confirmed', 'used', 'pending')
+          `);
+          if (checkUsedResult.recordset[0].cnt > 0) {
+            throw new Error('Bạn đã sử dụng voucher này rồi. Mỗi khách hàng chỉ được sử dụng mã này 1 lần.');
+          }
+
           voucherId = v.VoucherID;
           if (totalAmount >= (v.MinOrderValue || 0)) {
             discountAmount = v.DiscountType === 'percent'
