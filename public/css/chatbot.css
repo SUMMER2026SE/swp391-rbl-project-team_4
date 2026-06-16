@@ -1,0 +1,127 @@
+/* chatbot.css */
+#moviebot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    font-family: sans-serif;
+}
+
+#moviebot-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff0055, #00d2ff);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: transform 0.3s;
+}
+
+#moviebot-btn:hover {
+    transform: scale(1.1);
+}
+
+#moviebot-btn svg {
+    width: 30px;
+    height: 30px;
+    fill: white;
+}
+
+#moviebot-window {
+    display: none;
+    width: 350px;
+    height: 500px;
+    background: #1a1a1a;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #333;
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+}
+
+#moviebot-header {
+    background: #E50914;
+    color: white;
+    padding: 15px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#moviebot-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+#moviebot-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.msg {
+    max-width: 80%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    line-height: 1.4;
+    font-size: 14px;
+}
+
+.msg.bot {
+    background: #333;
+    color: white;
+    align-self: flex-start;
+    border-bottom-left-radius: 5px;
+}
+
+.msg.user {
+    background: #E50914;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 5px;
+}
+
+#moviebot-input-area {
+    display: flex;
+    padding: 10px;
+    background: #222;
+    border-top: 1px solid #333;
+}
+
+#moviebot-input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #444;
+    background: #111;
+    color: white;
+    outline: none;
+}
+
+#moviebot-send {
+    background: #E50914;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

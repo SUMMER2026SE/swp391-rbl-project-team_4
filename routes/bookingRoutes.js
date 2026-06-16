@@ -13,6 +13,9 @@ router.get('/food-beverages',               bookingCtrl.getFoodBeverages);
 // GET  /api/bookings/vouchers               — Voucher đang hoạt động (Public)
 router.get('/vouchers',                     bookingCtrl.getActiveVouchers);
 
+// GET  /api/bookings/payment-qr             — Ảnh QR thanh toán (Public)
+router.get('/payment-qr',                   bookingCtrl.getPaymentQRImages);
+
 // Áp dụng verifyToken cho toàn bộ booking routes (trừ food-beverages)
 router.use(verifyToken);
 
@@ -21,6 +24,12 @@ router.post('/validate-voucher',            bookingCtrl.validateVoucher);
 
 // GET  /api/bookings/my-bookings            — Lịch sử đặt vé của tôi
 router.get('/my-bookings',                  bookingCtrl.getMyBookings);
+
+// GET  /api/bookings/check-status           — Kiểm tra trạng thái thanh toán
+router.get('/check-status',                 bookingCtrl.checkBookingStatus);
+
+// POST /api/bookings/cancel                 — Huỷ vé pending ngay lập tức
+router.post('/cancel',                      bookingCtrl.cancelBooking);
 
 // GET  /api/bookings/:ticketId              — Chi tiết một vé
 router.get('/:ticketId',                    bookingCtrl.getBookingDetail);

@@ -152,6 +152,7 @@
             color: #fff;
         }
     </style>
+    <link rel="stylesheet" href="css/chatbot.css">
 </head>
 <body>
     <!-- Navbar -->
@@ -169,7 +170,12 @@
                         <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap">Rạp</a>
+                <div class="nav-dropdown">
+                    <a href="booking.html" id="nav-rap">Rạp <span style="font-size: 0.8em;">▼</span></a>
+                    <div class="nav-dropdown-content" id="cinemaDropdown">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
                 <a href="promotions.html" id="nav-promo" class="active">Promotions</a>
             </nav>
             <div class="nav-actions">
@@ -279,5 +285,7 @@
             });
         }
     </script>
+    <script src="js/chatbot.js"></script>
 </body>
 </html>
+

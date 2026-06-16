@@ -34,3 +34,17 @@ Stack: RequestError: The column "Price" cannot be modified because it is either 
     at nextAsync (node:internal/streams/from:194:22)
 Body: {"movieId":10,"roomId":29,"startTime":"2026-06-08T15:24:00.000Z","endTime":"2026-06-08T17:40:00.000Z","price":90000}
 
+2026-06-15T09:52:44.846Z - ERROR: Phòng chiếu đã có lịch trong khung giờ này.
+Stack: Error: Phòng chiếu đã có lịch trong khung giờ này.
+    at AdminModel.createShowtime (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\models\adminModel.js:203:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async exports.createShowtime (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\controllers\adminController.js:127:22)
+Body: {"movieId":8,"roomId":1,"startTime":"2026-06-15T10:53:00.000Z","endTime":"2026-06-15T13:42:00.000Z","price":100000}
+
+2026-06-15T11:06:31.612Z - ERROR: Phòng chiếu đã có lịch trong khung giờ này.
+Stack: Error: Phòng chiếu đã có lịch trong khung giờ này.
+    at AdminModel.createShowtime (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\models\adminModel.js:203:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async exports.createShowtime (D:\PRJ_FN_SWP\swp391-rbl-project-team_4\controllers\adminController.js:127:22)
+Body: {"movieId":11,"roomId":27,"startTime":"2026-06-15T13:07:00.000Z","endTime":"2026-06-15T14:41:00.000Z","price":85000}
+
