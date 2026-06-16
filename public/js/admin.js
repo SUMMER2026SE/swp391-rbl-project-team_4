@@ -2334,38 +2334,44 @@ function renderPromoTable() {
         return;
     }
 
+    // Update KPI counters
+    const totalEl = document.getElementById('promoKpiTotal');
+    const activeEl = document.getElementById('promoKpiActive');
+    const featuredEl = document.getElementById('promoKpiFeatured');
+    if (totalEl) totalEl.textContent = PROMO_DATA.length;
+    if (activeEl) activeEl.textContent = PROMO_DATA.filter(p => p.IsActive).length;
+    if (featuredEl) featuredEl.textContent = PROMO_DATA.filter(p => p.IsFeatured).length;
+
     body.innerHTML = PROMO_DATA.map(p => `
         <tr class="txn-row">
             <td>
                 <img src="${p.ImageURL || 'images/default_poster.svg'}"
                      alt="${p.Title}"
                      onerror="this.onerror=null;this.src='images/default_poster.svg'"
-                     style="width:60px;height:44px;object-fit:cover;border-radius:6px;">
+                     style="width:70px;height:48px;object-fit:cover;border-radius:6px;box-shadow:var(--shadow-xs);border:1px solid var(--border);">
             </td>
             <td>
-                <div style="font-weight:600;color:var(--text);">${p.Title}</div>
-                <div style="font-size:0.8rem;color:var(--text2);margin-top:2px;">${(p.Description || '').substring(0, 50)}${p.Description && p.Description.length > 50 ? '…' : ''}</div>
+                <div style="font-weight:700;color:var(--text);font-size:0.88rem;">${p.Title}</div>
+                <div style="font-size:0.78rem;color:var(--text2);margin-top:4px;line-height:1.4;">${(p.Description || '').substring(0, 75)}${p.Description && p.Description.length > 75 ? '…' : ''}</div>
             </td>
-            <td>${p.BadgeLabel ? `<span style="background:rgba(232,25,44,0.12);color:#e8192c;font-size:0.72rem;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:0.04em;">${p.BadgeLabel}</span>` : '<span style="color:#9ca3af;">—</span>'}</td>
+            <td>${p.BadgeLabel ? `<span class="status-badge" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.18);font-weight:700;font-size:0.68rem;padding:3px 9px;">${p.BadgeLabel}</span>` : '<span style="color:var(--text3); font-style:italic;">—</span>'}</td>
             <td>
                 ${p.IsFeatured
-                    ? '<span style="color:#10b981;font-weight:700;font-size:0.82rem;">★ Nổi bật</span>'
-                    : '<span style="color:#9ca3af;font-size:0.82rem;">Thường</span>'}
+                    ? '<span class="status-badge active" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.22);color:#d97706;font-weight:700;">★ Nổi bật</span>'
+                    : '<span class="status-badge finished" style="background:rgba(107,114,128,0.06);border:1px solid rgba(107,114,128,0.12);color:#6b7280;">Thường</span>'}
             </td>
             <td>
-                <span style="padding:4px 10px;border-radius:20px;font-size:0.78rem;font-weight:600;
-                    background:${p.IsActive ? 'rgba(16,185,129,0.12)' : 'rgba(107,114,128,0.12)'};
-                    color:${p.IsActive ? '#10b981' : '#9ca3af'};">
-                    ${p.IsActive ? 'Đang hiện' : 'Đã ẩn'}
-                </span>
+                ${p.IsActive 
+                    ? '<span class="status-badge active">Đang hiện</span>' 
+                    : '<span class="status-badge finished">Đã ẩn</span>'}
             </td>
-            <td style="color:var(--text2);font-weight:600;">${p.SortOrder}</td>
+            <td style="color:var(--text);font-weight:700;font-size:0.88rem;text-align:center;">${p.SortOrder}</td>
             <td>
                 <div class="table-actions">
                     <button class="tb-icon-sm" title="Sửa" onclick="openPromoModal(${p.PromotionID})">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
-                    <button class="tb-icon-sm" title="${p.IsActive ? 'Ẩn' : 'Hiện'}" onclick="togglePromo(${p.PromotionID})" style="color:${p.IsActive ? '#10b981' : '#9ca3af'}">
+                    <button class="tb-icon-sm" title="${p.IsActive ? 'Ẩn' : 'Hiện'}" onclick="togglePromo(${p.PromotionID})" style="color:${p.IsActive ? '#6b7280' : '#10b981'}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
                     <button class="tb-icon-sm danger" title="Xóa" onclick="deletePromo(${p.PromotionID})" style="color:var(--danger)">

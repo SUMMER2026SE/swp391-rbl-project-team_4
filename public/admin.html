@@ -965,7 +965,78 @@
     <div class="page" id="page-pricing"><div class="placeholder-page"><div class="ph-icon">💵</div><h2>Quản lý Giá vé</h2><p>Thiết lập giá vé, giảm giá và chương trình khuyến mãi.</p></div></div>
     <div class="page" id="page-settings"><div class="placeholder-page"><div class="ph-icon">⚙️</div><h2>Cài đặt</h2><p>Cấu hình tùy chọn hệ thống và tài khoản quản trị.</p></div></div>
 
+    <!-- ══ PROMOTIONS PAGE ══ -->
+    <div class="page" id="page-promotions">
+      <div class="content-scroll" style="padding: 30px 40px; display: flex; flex-direction: column; gap: 24px;">
+        <div class="dash-heading">
+          <div>
+            <h1>QUẢN LÝ TIN TỨC &amp; KHUYẾN MÃI</h1>
+            <p>Thêm, sửa, xóa các chương trình khuyến mãi hiển thị trên trang chủ.</p>
+          </div>
+          <div class="heading-actions">
+            <button class="btn-add-main" onclick="openPromoModal()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Thêm mới
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="promo-kpis" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 8px;">
+            <div class="fkpi-card">
+                <div class="fkpi-icon" style="background: rgba(232,25,44,0.1); color: var(--accent);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+                </div>
+                <div class="fkpi-info">
+                    <div class="fkpi-label">TỔNG KHUYẾN MÃI</div>
+                    <div class="fkpi-val" id="promoKpiTotal">0</div>
+                </div>
+            </div>
+            <div class="fkpi-card">
+                <div class="fkpi-icon" style="background: rgba(16,185,129,0.1); color: #16a34a;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+                <div class="fkpi-info">
+                    <div class="fkpi-label">ĐANG HIỂN THỊ</div>
+                    <div class="fkpi-val" id="promoKpiActive">0</div>
+                </div>
+            </div>
+            <div class="fkpi-card">
+                <div class="fkpi-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div class="fkpi-info">
+                    <div class="fkpi-label">TIN NỔI BẬT</div>
+                    <div class="fkpi-val" id="promoKpiFeatured">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-wrap">
+            <table class="data-table" id="promoTable">
+              <thead>
+                <tr>
+                  <th style="width:80px">ẢNH</th>
+                  <th>TIÊU ĐỀ</th>
+                  <th>BADGE</th>
+                  <th>NỔI BẬT</th>
+                  <th>TRẠNG THÁI</th>
+                  <th>THỨ TỰ</th>
+                  <th>THAO TÁC</th>
+                </tr>
+              </thead>
+              <tbody id="promoBody">
+                <tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
 </div><!-- end main-wrap -->
+
 
 <!-- Side Panel for Thêm Phim -->
 <div class="side-panel-overlay" id="addMovieModalOverlay" onclick="closeAddMovieModal()"></div>
@@ -1112,45 +1183,6 @@
 </div>
 
 <script src="js/admin.js"></script>
-
-<!-- ══ PROMOTIONS PAGE ══ -->
-<div class="page" id="page-promotions">
-  <div class="content-scroll" style="padding: 30px 40px; display: flex; flex-direction: column; gap: 24px;">
-    <div class="dash-heading">
-      <div>
-        <h1>QUẢN LÝ TIN TỨC &amp; KHUYẾN MÃI</h1>
-        <p>Thêm, sửa, xóa các chương trình khuyến mãi hiển thị trên trang chủ.</p>
-      </div>
-      <div class="heading-actions">
-        <button class="btn-add-main" onclick="openPromoModal()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Thêm mới
-        </button>
-      </div>
-    </div>
-
-    <div class="table-card">
-      <div class="table-wrap">
-        <table class="data-table" id="promoTable">
-          <thead>
-            <tr>
-              <th style="width:80px">ẢNH</th>
-              <th>TIÊU ĐỀ</th>
-              <th>BADGE</th>
-              <th>NỔI BẬT</th>
-              <th>TRẠNG THÁI</th>
-              <th>THỨ TỰ</th>
-              <th>THAO TÁC</th>
-            </tr>
-          </thead>
-          <tbody id="promoBody">
-            <tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Promotions Modal -->
 <div id="promoModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;" onclick="closePromoModal()"></div>
