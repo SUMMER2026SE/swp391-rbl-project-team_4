@@ -23,7 +23,6 @@ class MovieModel {
     const pool = await getPool();
     const request = pool.request();
     let query = `
-<<<<<<< HEAD
       SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
              m.TrailerURL, m.PosterURL, m.Status, m.MainCast,
              (SELECT STRING_AGG(g.GenreName, ', ') 
@@ -39,16 +38,11 @@ class MovieModel {
                              FROM Showtimes st 
                              JOIN Rooms r ON st.RoomID = r.RoomID 
                              WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
-=======
-      SELECT DISTINCT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
-             m.TrailerURL, m.PosterURL, m.Status, m.MainCast
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
       FROM   Movies m
     `;
     if (city && city !== 'Toàn quốc') {
       request.input('city', sql.NVarChar, city);
       query += `
-<<<<<<< HEAD
         WHERE m.Status = 'Now Showing'
           AND EXISTS (
             SELECT 1 FROM Showtimes st
@@ -56,12 +50,6 @@ class MovieModel {
             JOIN Cinemas c ON r.CinemaID = c.CinemaID
             WHERE st.MovieID = m.MovieID AND c.City = @city AND st.StartTime > GETDATE() AND st.Status = 'active'
           )
-=======
-        JOIN Showtimes st ON m.MovieID = st.MovieID
-        JOIN Rooms r ON st.RoomID = r.RoomID
-        JOIN Cinemas c ON r.CinemaID = c.CinemaID
-        WHERE m.Status = 'Now Showing' AND c.City = @city AND st.StartTime > GETDATE()
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
       `;
     } else {
       query += ` WHERE m.Status = 'Now Showing' `;
@@ -177,7 +165,7 @@ class MovieModel {
     let dateFilter = '';
     if (date) {
       request.input('date', sql.Date, date);
-      dateFilter = 'AND CAST(st.StartTime AS DATE) = @date';
+      dateFilter = 'AND CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date';
     }
 
     const result = await request.query(`
@@ -285,7 +273,7 @@ class MovieModel {
       JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
       JOIN   Movies  m ON st.MovieID  = m.MovieID
       WHERE  r.CinemaID = @cinemaId
-        AND  CAST(st.StartTime AS DATE) = @date
+        AND  CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date
         AND  st.Status  = 'active'
         AND  st.StartTime > GETUTCDATE()
         ${movieFilter}

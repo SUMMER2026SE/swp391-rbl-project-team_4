@@ -696,9 +696,17 @@
                 Quay lại
             </button>
             <nav class="nav-links">
-                <a href="movies.html">Phim</a>
-                <a href="booking.html" class="active">Rạp</a>
-                <a href="promotions.html">Khuyến mãi</a>
+                <div class="dropdown">
+                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
+                    <div class="dropdown-menu">
+                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                    </div>
+                </div>
+                <a href="booking.html" id="nav-rap" class="active">Rạp</a>
+                <a href="promotions.html" id="nav-promo">Promotions</a>
+                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>

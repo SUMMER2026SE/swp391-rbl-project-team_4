@@ -2155,10 +2155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
 });
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
 /* ══════════════════════════════════════
    NOTIFICATIONS (Socket.io)
 ══════════════════════════════════════ */
@@ -2589,7 +2586,6 @@ async function submitQuickSell() {
     btn.disabled = false;
 }
 
-<<<<<<< HEAD
 
 /* ════════════════════════════════════════════════
    PROMOTIONS MANAGEMENT
@@ -2773,5 +2769,4 @@ async function togglePromo(id) {
 
 
 
-=======
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
+

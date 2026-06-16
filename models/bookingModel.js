@@ -470,6 +470,50 @@ class BookingModel {
     return result.recordset;
   }
 
+  static async cancelConfirmedBooking(ticketId, userId) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('ticketId', sql.Int, ticketId)
+      .input('userId', sql.Int, userId)
+      .query(`
+        DECLARE @ShowtimeID int;
+        DECLARE @Status varchar(20);
+        DECLARE @StartTime datetime;
+        
+        SELECT @ShowtimeID = t.ShowtimeID, @Status = t.Status, @StartTime = st.StartTime
+        FROM Tickets t
+        JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+        WHERE t.TicketID = @ticketId AND t.UserID = @userId;
+
+        IF @ShowtimeID IS NULL
+        BEGIN
+            SELECT 'NOT_FOUND' AS ErrorCode, 'Không tìm thấy vé hợp lệ của bạn.' AS Message;
+            RETURN;
+        END
+
+        IF @Status <> 'confirmed'
+        BEGIN
+            SELECT 'INVALID_STATUS' AS ErrorCode, 'Chỉ có thể hủy vé đã được xác nhận thanh toán.' AS Message;
+            RETURN;
+        END
+
+        IF DATEDIFF(minute, GETUTCDATE(), @StartTime) < 120
+        BEGIN
+            SELECT 'TOO_LATE' AS ErrorCode, 'Chỉ được phép hủy vé trước khi suất chiếu bắt đầu ít nhất 2 giờ.' AS Message;
+            RETURN;
+        END
+
+        UPDATE Tickets SET Status = 'cancelled' WHERE TicketID = @ticketId;
+        SELECT 'SUCCESS' AS ErrorCode, 'Hủy vé thành công.' AS Message;
+      `);
+      
+    const record = result.recordset[0];
+    if (record.ErrorCode !== 'SUCCESS') {
+      throw new Error(record.Message);
+    }
+    return true;
+  }
+
   static async cleanupExpiredPendingBookings() {
     const pool = await getPool();
     try {
@@ -571,7 +615,8 @@ class BookingModel {
                r.RoomName,
                c.CinemaName, c.Address,
                s.SeatRow, s.SeatNumber, s.SeatType,
-               v.Code AS VoucherCode
+               v.Code AS VoucherCode,
+               u.Email AS UserEmail, u.FullName AS UserFullName
         FROM   Tickets t
         JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
         JOIN   Movies    m  ON st.MovieID   = m.MovieID
@@ -579,6 +624,7 @@ class BookingModel {
         JOIN   Cinemas   c  ON r.CinemaID   = c.CinemaID
         JOIN   Seats     s  ON t.SeatID     = s.SeatID
         LEFT   JOIN Vouchers v ON t.VoucherID = v.VoucherID
+        JOIN   Users     u  ON t.UserID     = u.UserID
         WHERE  t.TicketID = @ticketId
       `);
 
