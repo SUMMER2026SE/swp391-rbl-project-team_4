@@ -3,6 +3,12 @@
 //  Dành cho: Quản lý (Role: Admin, Manager)
 // ============================================================
 const AdminModel = require('../models/adminModel');
+const PDFDocument = require('pdfkit');
+
+function removeAccents(str) {
+  if(!str) return '';
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, 'd').replace(/Đ/g, 'D');
+}
 
 // ════════════════════════════════════════════════════════════
 //  MOVIE MANAGEMENT
@@ -371,10 +377,20 @@ exports.getRevenueStats = async (req, res) => {
 
 exports.getDashboardStats = async (req, res) => {
   try {
-    const data = await AdminModel.getDashboardStats();
+    const data = await AdminModel.getDashboardStats(req.query);
     res.json({ success: true, data });
   } catch (err) {
     console.error('[adminController] getDashboardStats:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getCinemas = async (req, res) => {
+  try {
+    const data = await AdminModel.getCinemas();
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[adminController] getCinemas:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
@@ -393,7 +409,8 @@ exports.getRecentTransactions = async (req, res) => {
 exports.getMonthlyRevenue = async (req, res) => {
   try {
     const year = parseInt(req.query.year) || new Date().getFullYear();
-    const data = await AdminModel.getMonthlyRevenue(year);
+    const cinemaId = req.query.cinemaId || null;
+    const data = await AdminModel.getMonthlyRevenue(year, cinemaId);
     res.json({ success: true, year, data });
   } catch (err) {
     console.error('[adminController] getMonthlyRevenue:', err.message);
@@ -411,6 +428,10 @@ exports.getTopMovies = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+<<<<<<< HEAD
+=======
+
+>>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
 exports.getLiveRooms = async (req, res) => {
   try {
     const cinemaId = req.query.cinemaId || null;
@@ -639,6 +660,7 @@ exports.getRevenueChartData = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+<<<<<<< HEAD
 
 // ════════════════════════════════════════════════════════════
 //  PROMOTIONS MANAGEMENT
@@ -723,3 +745,5 @@ exports.togglePromotionActive = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+=======
+>>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a

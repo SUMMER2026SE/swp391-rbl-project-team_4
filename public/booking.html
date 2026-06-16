@@ -1046,7 +1046,7 @@
                 pill.addEventListener('click', () => selectDate(pill, dateStr));
                 container.appendChild(pill);
             }
-            selectedDate = today.toISOString().split('T')[0];
+            selectedDate = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
         }
 
         function selectDate(pill, dateStr) {

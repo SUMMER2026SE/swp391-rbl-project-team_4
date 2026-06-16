@@ -38,6 +38,15 @@ exports.sellTicketAtCounter = async (req, res) => {
       paymentMethod
     });
 
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('adminNotification', {
+        title: 'Bán vé tại quầy thành công',
+        message: `Đã bán ${seatIds.length} vé cho suất chiếu ${showtimeId}.`,
+        time: new Date().toISOString()
+      });
+    }
+
     res.status(201).json({
       success: true,
       message: 'Bán vé tại quầy thành công!',

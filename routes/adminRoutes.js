@@ -101,11 +101,17 @@ router.patch('/fnb/:id/toggle', adminCtrl.toggleFnBAvailability);
 router.get('/fnb/stats', adminCtrl.getFnBStats);
 
 // ─── Statistics ──────────────────────────────────────────────
-// GET    /api/admin/stats/dashboard    — Tổng quan dashboard
+// GET    /api/admin/cinemas           — Danh sách rạp chiếu
+router.get('/cinemas', adminCtrl.getCinemas);
+
+// GET    /api/admin/stats/dashboard    — Tổng quan dashboard (hỗ trợ ?cinemaId=&period=)
 router.get('/stats/dashboard', adminCtrl.getDashboardStats);
 
 // GET    /api/admin/stats/recent-transactions — Giao dịch gần đây
 router.get('/stats/recent-transactions', adminCtrl.getRecentTransactions);
+
+// GET    /api/admin/stats/export-pdf   — Xuất báo cáo PDF
+router.get('/stats/export-pdf', adminCtrl.exportPdf);
 
 // GET    /api/admin/stats/revenue      — Thống kê doanh thu
 router.get('/stats/revenue', adminCtrl.getRevenueStats);
@@ -122,6 +128,7 @@ router.get('/stats/revenue-chart', adminCtrl.getRevenueChartData);
 // GET    /api/admin/stats/live-rooms      — Trạng thái phòng chiếu live
 router.get('/stats/live-rooms', adminCtrl.getLiveRooms);
 
+<<<<<<< HEAD
 // ─── Promotions Management ──────────────────────────────────
 // GET    /api/admin/promotions             — Danh sách tất cả khuyến mãi (admin)
 router.get('/promotions', adminCtrl.getAllPromotions);
@@ -141,5 +148,7 @@ router.delete('/promotions/:id', adminCtrl.deletePromotion);
 // PATCH  /api/admin/promotions/:id/toggle  — Bật/tắt trạng thái
 router.patch('/promotions/:id/toggle', adminCtrl.togglePromotionActive);
 
+=======
+>>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
 module.exports = router;
 

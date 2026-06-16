@@ -625,7 +625,7 @@
 
         function viewTicket(ticketId) {
             sessionStorage.setItem('viewTicketId', ticketId);
-            window.location.href = 'payment-success.html';
+            window.location.href = 'payment-success.html?v=' + Date.now();
         }
 
         function logout(e) {
