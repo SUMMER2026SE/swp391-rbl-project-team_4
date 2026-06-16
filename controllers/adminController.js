@@ -428,7 +428,10 @@ exports.getTopMovies = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+<<<<<<< HEAD
+=======
 
+>>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
 exports.getLiveRooms = async (req, res) => {
   try {
     const cinemaId = req.query.cinemaId || null;
@@ -657,3 +660,90 @@ exports.getRevenueChartData = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+<<<<<<< HEAD
+
+// ════════════════════════════════════════════════════════════
+//  PROMOTIONS MANAGEMENT
+// ════════════════════════════════════════════════════════════
+
+exports.getAllPromotions = async (req, res) => {
+  try {
+    const data = await AdminModel.getAllPromotions();
+    res.json({ success: true, count: data.length, data });
+  } catch (err) {
+    console.error('[adminController] getAllPromotions:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getActivePromotions = async (req, res) => {
+  try {
+    const data = await AdminModel.getActivePromotions();
+    res.json({ success: true, count: data.length, data });
+  } catch (err) {
+    console.error('[adminController] getActivePromotions:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.createPromotion = async (req, res) => {
+  try {
+    const { title, description, badgeLabel, linkURL, isFeatured, isActive, sortOrder } = req.body || {};
+    if (!title) {
+      return res.status(400).json({ success: false, message: 'Thiếu tiêu đề (title).' });
+    }
+    const imageURL = req.file ? 'images/' + req.file.filename : (req.body.imageURL || null);
+    const promo = await AdminModel.createPromotion({
+      title, description, badgeLabel, imageURL, linkURL,
+      isFeatured: isFeatured === 'true' || isFeatured === true || isFeatured === 1,
+      isActive: isActive !== 'false' && isActive !== false && isActive !== 0,
+      sortOrder
+    });
+    res.status(201).json({ success: true, message: 'Thêm khuyến mãi thành công!', data: promo });
+  } catch (err) {
+    console.error('[adminController] createPromotion:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.updatePromotion = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { title, description, badgeLabel, linkURL, isFeatured, isActive, sortOrder } = req.body || {};
+    const imageURL = req.file ? 'images/' + req.file.filename : (req.body.imageURL || null);
+    const promo = await AdminModel.updatePromotion(id, {
+      title, description, badgeLabel, imageURL, linkURL,
+      isFeatured: isFeatured === 'true' || isFeatured === true || isFeatured === 1,
+      isActive: isActive !== 'false' && isActive !== false && isActive !== 0,
+      sortOrder
+    });
+    if (!promo) return res.status(404).json({ success: false, message: 'Không tìm thấy khuyến mãi.' });
+    res.json({ success: true, message: 'Cập nhật khuyến mãi thành công!', data: promo });
+  } catch (err) {
+    console.error('[adminController] updatePromotion:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.deletePromotion = async (req, res) => {
+  try {
+    await AdminModel.deletePromotion(parseInt(req.params.id));
+    res.json({ success: true, message: 'Xóa khuyến mãi thành công!' });
+  } catch (err) {
+    console.error('[adminController] deletePromotion:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.togglePromotionActive = async (req, res) => {
+  try {
+    const promo = await AdminModel.togglePromotionActive(parseInt(req.params.id));
+    if (!promo) return res.status(404).json({ success: false, message: 'Không tìm thấy khuyến mãi.' });
+    res.json({ success: true, message: 'Đã thay đổi trạng thái khuyến mãi.', data: promo });
+  } catch (err) {
+    console.error('[adminController] togglePromotionActive:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+=======
+>>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a

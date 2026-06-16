@@ -734,6 +734,10 @@ function navigate(page, btn) {
         if (dateInput) dateInput.value = scheduleDate;
         loadShowtimes();
     }
+
+    if (page === 'promotions') {
+        loadPromotions();
+    }
 }
 
 function switchTab(tab, btn) {
@@ -2151,6 +2155,10 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
 });
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
 /* ══════════════════════════════════════
    NOTIFICATIONS (Socket.io)
 ══════════════════════════════════════ */
@@ -2581,3 +2589,189 @@ async function submitQuickSell() {
     btn.disabled = false;
 }
 
+<<<<<<< HEAD
+
+/* ════════════════════════════════════════════════
+   PROMOTIONS MANAGEMENT
+════════════════════════════════════════════════ */
+let PROMO_DATA = [];
+
+async function loadPromotions() {
+    try {
+        const res = await apiFetch('/api/admin/promotions');
+        if (res.success) {
+            PROMO_DATA = res.data;
+            renderPromoTable();
+        } else {
+            console.error('[Admin] loadPromotions:', res.message);
+        }
+    } catch (err) {
+        console.error('[Admin] loadPromotions error:', err);
+    }
+}
+
+function renderPromoTable() {
+    const body = document.getElementById('promoBody');
+    if (!body) return;
+
+    if (PROMO_DATA.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có khuyến mãi nào. Nhấn <b>Thêm mới</b> để bắt đầu.</td></tr>';
+        return;
+    }
+
+    // Update KPI counters
+    const totalEl = document.getElementById('promoKpiTotal');
+    const activeEl = document.getElementById('promoKpiActive');
+    const featuredEl = document.getElementById('promoKpiFeatured');
+    if (totalEl) totalEl.textContent = PROMO_DATA.length;
+    if (activeEl) activeEl.textContent = PROMO_DATA.filter(p => p.IsActive).length;
+    if (featuredEl) featuredEl.textContent = PROMO_DATA.filter(p => p.IsFeatured).length;
+
+    body.innerHTML = PROMO_DATA.map(p => `
+        <tr class="txn-row">
+            <td>
+                <img src="${p.ImageURL || 'images/default_poster.svg'}"
+                     alt="${p.Title}"
+                     onerror="this.onerror=null;this.src='images/default_poster.svg'"
+                     style="width:70px;height:48px;object-fit:cover;border-radius:6px;box-shadow:var(--shadow-xs);border:1px solid var(--border);">
+            </td>
+            <td>
+                <div style="font-weight:700;color:var(--text);font-size:0.88rem;">${p.Title}</div>
+                <div style="font-size:0.78rem;color:var(--text2);margin-top:4px;line-height:1.4;">${(p.Description || '').substring(0, 75)}${p.Description && p.Description.length > 75 ? '…' : ''}</div>
+            </td>
+            <td>${p.BadgeLabel ? `<span class="status-badge" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.18);font-weight:700;font-size:0.68rem;padding:3px 9px;">${p.BadgeLabel}</span>` : '<span style="color:var(--text3); font-style:italic;">—</span>'}</td>
+            <td>
+                ${p.IsFeatured
+                    ? '<span class="status-badge active" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.22);color:#d97706;font-weight:700;">★ Nổi bật</span>'
+                    : '<span class="status-badge finished" style="background:rgba(107,114,128,0.06);border:1px solid rgba(107,114,128,0.12);color:#6b7280;">Thường</span>'}
+            </td>
+            <td>
+                ${p.IsActive 
+                    ? '<span class="status-badge active">Đang hiện</span>' 
+                    : '<span class="status-badge finished">Đã ẩn</span>'}
+            </td>
+            <td style="color:var(--text);font-weight:700;font-size:0.88rem;text-align:center;">${p.SortOrder}</td>
+            <td>
+                <div class="table-actions">
+                    <button class="tb-icon-sm" title="Sửa" onclick="openPromoModal(${p.PromotionID})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="tb-icon-sm" title="${p.IsActive ? 'Ẩn' : 'Hiện'}" onclick="togglePromo(${p.PromotionID})" style="color:${p.IsActive ? '#6b7280' : '#10b981'}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button class="tb-icon-sm danger" title="Xóa" onclick="deletePromo(${p.PromotionID})" style="color:var(--danger)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openPromoModal(id) {
+    document.getElementById('promoForm').reset();
+    document.getElementById('promoCurrentImg').innerHTML = '';
+
+    if (id) {
+        const p = PROMO_DATA.find(x => x.PromotionID === id);
+        if (!p) return;
+        document.getElementById('promoModalTitle').textContent = 'SỬA KHUYẾN MÃI';
+        document.getElementById('promoId').value = p.PromotionID;
+        document.getElementById('promoTitle').value = p.Title || '';
+        document.getElementById('promoDesc').value = p.Description || '';
+        document.getElementById('promoBadge').value = p.BadgeLabel || '';
+        document.getElementById('promoLink').value = p.LinkURL || '';
+        document.getElementById('promoSort').value = p.SortOrder || 0;
+        document.getElementById('promoFeatured').checked = !!p.IsFeatured;
+        document.getElementById('promoActive').checked = !!p.IsActive;
+        if (p.ImageURL) {
+            document.getElementById('promoCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${p.ImageURL}" target="_blank" style="color:var(--accent);">${p.ImageURL}</a>`;
+        }
+    } else {
+        document.getElementById('promoModalTitle').textContent = 'THÊM KHUYẾN MÃI';
+        document.getElementById('promoId').value = '';
+        document.getElementById('promoActive').checked = true;
+    }
+
+    document.getElementById('promoModalOverlay').style.display = 'block';
+    document.getElementById('promoModal').style.display = 'block';
+}
+
+function closePromoModal() {
+    document.getElementById('promoModalOverlay').style.display = 'none';
+    document.getElementById('promoModal').style.display = 'none';
+}
+
+async function savePromo(event) {
+    event.preventDefault();
+    const id = document.getElementById('promoId').value;
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+
+    const formData = new FormData();
+    formData.append('title',       document.getElementById('promoTitle').value);
+    formData.append('description', document.getElementById('promoDesc').value);
+    formData.append('badgeLabel',  document.getElementById('promoBadge').value);
+    formData.append('linkURL',     document.getElementById('promoLink').value);
+    formData.append('sortOrder',   document.getElementById('promoSort').value);
+    formData.append('isFeatured',  document.getElementById('promoFeatured').checked ? 'true' : 'false');
+    formData.append('isActive',    document.getElementById('promoActive').checked ? 'true' : 'false');
+
+    const imageFile = document.getElementById('promoImage').files[0];
+    if (imageFile) formData.append('image', imageFile);
+
+    const url    = id ? `/api/admin/promotions/${id}` : '/api/admin/promotions';
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAdminToast(data.message, 'success');
+            closePromoModal();
+            loadPromotions();
+        } else {
+            showAdminToast('Lỗi: ' + data.message, 'error');
+        }
+    } catch (err) {
+        console.error('[Admin] savePromo:', err);
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+async function deletePromo(id) {
+    if (!confirm('Bạn có chắc muốn xóa khuyến mãi này không?')) return;
+    try {
+        const res = await apiFetch(`/api/admin/promotions/${id}`, { method: 'DELETE' });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadPromotions();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+async function togglePromo(id) {
+    try {
+        const res = await apiFetch(`/api/admin/promotions/${id}/toggle`, { method: 'PATCH' });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadPromotions();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+
+
+=======
+>>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a

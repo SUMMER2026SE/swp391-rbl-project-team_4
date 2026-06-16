@@ -128,4 +128,27 @@ router.get('/stats/revenue-chart', adminCtrl.getRevenueChartData);
 // GET    /api/admin/stats/live-rooms      — Trạng thái phòng chiếu live
 router.get('/stats/live-rooms', adminCtrl.getLiveRooms);
 
+<<<<<<< HEAD
+// ─── Promotions Management ──────────────────────────────────
+// GET    /api/admin/promotions             — Danh sách tất cả khuyến mãi (admin)
+router.get('/promotions', adminCtrl.getAllPromotions);
+
+// GET    /api/admin/promotions/public      — Danh sách khuyến mãi đang hoạt động (public)
+router.get('/promotions/public', adminCtrl.getActivePromotions);
+
+// POST   /api/admin/promotions             — Tạo khuyến mãi mới (kèm upload ảnh)
+router.post('/promotions', upload.single('image'), adminCtrl.createPromotion);
+
+// PUT    /api/admin/promotions/:id         — Sửa khuyến mãi (kèm upload ảnh)
+router.put('/promotions/:id', upload.single('image'), adminCtrl.updatePromotion);
+
+// DELETE /api/admin/promotions/:id         — Xóa khuyến mãi
+router.delete('/promotions/:id', adminCtrl.deletePromotion);
+
+// PATCH  /api/admin/promotions/:id/toggle  — Bật/tắt trạng thái
+router.patch('/promotions/:id/toggle', adminCtrl.togglePromotionActive);
+
+=======
+>>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
 module.exports = router;
+

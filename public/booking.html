@@ -687,6 +687,8 @@
                 </div>
                 <a href="booking.html" class="active" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Khuyến mãi</a>
+                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="nav-search" id="navSearch">
@@ -784,6 +786,12 @@
                     <div class="genre-chip" data-genre="comedy">Hài</div>
                     <div class="genre-chip" data-genre="scifi">Sci-Fi</div>
                     <div class="genre-chip" data-genre="animation">Hoạt hình</div>
+                    <div class="genre-chip" data-genre="drama">Tâm lý</div>
+                    <div class="genre-chip" data-genre="adventure">Phiêu lưu</div>
+                    <div class="genre-chip" data-genre="music">Ca Nhạc</div>
+                    <div class="genre-chip" data-genre="mystery">Ly Kì</div>
+                    <div class="genre-chip" data-genre="family">Gia đình</div>
+                    <div class="genre-chip" data-genre="thriller">Giật Gân</div>
                 </div>
             </div>
 
@@ -1203,6 +1211,12 @@
                     comedy:    ['hài','comedy'],
                     scifi:     ['sci-fi','khoa học','viễn tưởng','science'],
                     animation: ['hoạt hình','animation'],
+                    drama:     ['tâm lý','drama'],
+                    adventure: ['phiêu lưu','adventure'],
+                    music:     ['ca nhạc','music'],
+                    mystery:   ['ly kì','mystery'],
+                    family:    ['gia đình','family'],
+                    thriller:  ['giật gân','thriller'],
                 };
                 const kws = genreKeywords[selectedGenre] || [];
                 if (kws.length) {
@@ -1328,7 +1342,7 @@
                             <span class="tag tag-pg">${movie.AgeRating || 'ALL'}</span>
                             <span class="tag tag-now">Đang chiếu</span>
                             ${movie.Duration ? `<span class="tag tag-dur">⏱ ${movie.Duration} phút</span>` : ''}
-                            ${movie.MainCast ? `<span class="tag tag-genre">${movie.MainCast.split(',')[0].trim()}</span>` : ''}
+                            ${movie.Genre ? `<span class="tag tag-genre">${movie.Genre.split(',')[0].trim()}</span>` : ''}
                         </div>
                         <div class="movie-title" onclick="openMovieModal(${movie.MovieID})">${movie.Title}</div>
                         ${movie.MainCast ? `<div class="movie-cast">Diễn viên: ${movie.MainCast}</div>` : ''}
@@ -1370,7 +1384,8 @@
             document.getElementById('modalMeta').innerHTML = `
                 <span class="tag tag-pg">${movie.AgeRating || 'ALL'}</span>
                 ${movie.Duration ? `<span class="tag tag-dur">⏱ ${movie.Duration} phút</span>` : ''}
-                <span class="tag tag-now">Đang chiếu</span>`;
+                <span class="tag tag-now">Đang chiếu</span>
+                ${movie.Genre ? `<span class="tag tag-genre">${movie.Genre}</span>` : ''}`;
 
             // Slots
             const slots = rawData.filter(r => r.MovieID === movieId);
