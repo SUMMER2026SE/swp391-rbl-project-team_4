@@ -21,29 +21,8 @@ function assignDynamicPoster(movie) {
 class MovieModel {
   static async getNowShowing(city) {
     const pool = await getPool();
-<<<<<<< HEAD
     const request = pool.request();
     let query = `
-      SELECT DISTINCT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
-             m.TrailerURL, m.PosterURL, m.Status, m.MainCast
-      FROM   Movies m
-    `;
-    if (city && city !== 'Toàn quốc') {
-      request.input('city', sql.NVarChar, city);
-      query += `
-        JOIN Showtimes st ON m.MovieID = st.MovieID
-        JOIN Rooms r ON st.RoomID = r.RoomID
-        JOIN Cinemas c ON r.CinemaID = c.CinemaID
-        WHERE m.Status = 'Now Showing' AND c.City = @city AND st.StartTime > GETDATE()
-      `;
-    } else {
-      query += ` WHERE m.Status = 'Now Showing' `;
-    }
-    query += ` ORDER BY m.MovieID DESC `;
-
-    const result = await request.query(query);
-=======
-    const result = await pool.request().query(`
       SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
              m.TrailerURL, m.PosterURL, m.Status, m.MainCast,
              (SELECT STRING_AGG(g.GenreName, ', ') 
@@ -60,10 +39,24 @@ class MovieModel {
                              JOIN Rooms r ON st.RoomID = r.RoomID 
                              WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
       FROM   Movies m
-      WHERE  m.Status = 'Now Showing'
-      ORDER BY m.MovieID DESC
-    `);
->>>>>>> 232b1fb93c84966cafe2e0cadb7d0afd71f76a82
+    `;
+    if (city && city !== 'Toàn quốc') {
+      request.input('city', sql.NVarChar, city);
+      query += `
+        WHERE m.Status = 'Now Showing'
+          AND EXISTS (
+            SELECT 1 FROM Showtimes st
+            JOIN Rooms r ON st.RoomID = r.RoomID
+            JOIN Cinemas c ON r.CinemaID = c.CinemaID
+            WHERE st.MovieID = m.MovieID AND c.City = @city AND st.StartTime > GETDATE() AND st.Status = 'active'
+          )
+      `;
+    } else {
+      query += ` WHERE m.Status = 'Now Showing' `;
+    }
+    query += ` ORDER BY m.MovieID DESC `;
+
+    const result = await request.query(query);
     result.recordset.forEach(assignDynamicPoster);
     return result.recordset;
   }

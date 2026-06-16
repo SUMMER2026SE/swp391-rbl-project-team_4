@@ -661,9 +661,6 @@ class AdminModel {
       `);
     return result.recordset;
   }
-<<<<<<< Updated upstream
-=======
-
   static async getLiveRoomsStatus(cinemaId) {
     const pool = await getPool();
     let query = `
@@ -791,7 +788,6 @@ class AdminModel {
       `);
     return result.recordset.length > 0 ? result.recordset[0] : null;
   }
->>>>>>> Stashed changes
 }
 
 module.exports = AdminModel;

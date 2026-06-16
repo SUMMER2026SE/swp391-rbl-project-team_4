@@ -116,8 +116,6 @@ router.get('/stats/top-movies', adminCtrl.getTopMovies);
 // GET    /api/admin/stats/monthly-revenue — Doanh thu hàng tháng cho chart
 router.get('/stats/monthly-revenue', adminCtrl.getMonthlyRevenue);
 
-<<<<<<< Updated upstream
-=======
 // GET    /api/admin/stats/revenue-chart — Doanh thu cho biểu đồ động
 router.get('/stats/revenue-chart', adminCtrl.getRevenueChartData);
 
@@ -143,6 +141,5 @@ router.delete('/promotions/:id', adminCtrl.deletePromotion);
 // PATCH  /api/admin/promotions/:id/toggle  — Bật/tắt trạng thái
 router.patch('/promotions/:id/toggle', adminCtrl.togglePromotionActive);
 
->>>>>>> Stashed changes
 module.exports = router;
 

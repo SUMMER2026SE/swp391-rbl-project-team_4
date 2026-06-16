@@ -386,6 +386,8 @@ SELECT CinemaID, RoomID,
        ROW_NUMBER() OVER (PARTITION BY CinemaID ORDER BY RoomID) - 1
 FROM Rooms;
 
+DECLARE @BasePrice DECIMAL(10,2);
+
 -- Generate showtimes for the next 7 days (day 0 to day 6)
 SET @DayOffset = 0;
 WHILE @DayOffset <= 6
@@ -414,20 +416,35 @@ BEGIN
                 -- Slot 1: 10:00 AM
                 SET @StartTime = DATEADD(minute, 600, DATEADD(day, @DayOffset, @Today));
                 SET @EndTime = DATEADD(minute, COALESCE(NULLIF(@Duration, 0), 120), @StartTime);
+                SET @BasePrice = CASE 
+                    WHEN (DATEPART(dw, @StartTime) + @@DATEFIRST - 1) % 7 IN (0, 6) THEN 110000
+                    WHEN FORMAT(@StartTime, 'MM-dd') IN ('01-01', '04-30', '05-01', '09-02', '09-03') THEN 110000
+                    ELSE 85000
+                END;
                 INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, BasePrice, Status)
-                VALUES (@MovieID, @RoomID, @StartTime, @EndTime, 90000, 'active');
+                VALUES (@MovieID, @RoomID, @StartTime, @EndTime, @BasePrice, 'active');
                 
                 -- Slot 2: 3:00 PM
                 SET @StartTime = DATEADD(minute, 900, DATEADD(day, @DayOffset, @Today));
                 SET @EndTime = DATEADD(minute, COALESCE(NULLIF(@Duration, 0), 120), @StartTime);
+                SET @BasePrice = CASE 
+                    WHEN (DATEPART(dw, @StartTime) + @@DATEFIRST - 1) % 7 IN (0, 6) THEN 110000
+                    WHEN FORMAT(@StartTime, 'MM-dd') IN ('01-01', '04-30', '05-01', '09-02', '09-03') THEN 110000
+                    ELSE 85000
+                END;
                 INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, BasePrice, Status)
-                VALUES (@MovieID, @RoomID, @StartTime, @EndTime, 90000, 'active');
+                VALUES (@MovieID, @RoomID, @StartTime, @EndTime, @BasePrice, 'active');
                 
                 -- Slot 3: 8:00 PM
                 SET @StartTime = DATEADD(minute, 1200, DATEADD(day, @DayOffset, @Today));
                 SET @EndTime = DATEADD(minute, COALESCE(NULLIF(@Duration, 0), 120), @StartTime);
+                SET @BasePrice = CASE 
+                    WHEN (DATEPART(dw, @StartTime) + @@DATEFIRST - 1) % 7 IN (0, 6) THEN 110000
+                    WHEN FORMAT(@StartTime, 'MM-dd') IN ('01-01', '04-30', '05-01', '09-02', '09-03') THEN 110000
+                    ELSE 85000
+                END;
                 INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, BasePrice, Status)
-                VALUES (@MovieID, @RoomID, @StartTime, @EndTime, 110000, 'active');
+                VALUES (@MovieID, @RoomID, @StartTime, @EndTime, @BasePrice, 'active');
             END
             
             FETCH NEXT FROM movie_cursor INTO @MovieID, @Duration;
@@ -526,4 +543,107 @@ INSERT INTO Reviews (UserID, MovieID, Rating, Comment) VALUES
 (@R1, 1, 9,  N'Phim rất đẹp, hiệu ứng hình ảnh tuyệt vời!'),
 (@R1, 2, 8,  N'Cốt truyện hấp dẫn, diễn viên diễn xuất tốt.'),
 (@R1, 3, 7,  N'Phim hài nhẹ nhàng, phù hợp gia đình.');
+GO
+-- ============================================================
+--  payment_qr_migration.sql
+--  Tạo / cập nhật bảng PaymentQRImages với thông tin tài khoản thật
+--  Chạy file này trên SQL Server (CinemaManagement database)
+--  Tài khoản: NGUYEN MINH HUY | MB Bank & MoMo: 0949391487
+-- ============================================================
+
+USE CinemaManagement;
+GO
+
+-- ─── Xóa bảng nếu đã tồn tại và tạo lại mới ─────────────────────
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PaymentQRImages')
+BEGIN
+    DROP TABLE PaymentQRImages;
+    PRINT N'Đã xóa bảng cũ PaymentQRImages.';
+END
+GO
+
+CREATE TABLE PaymentQRImages (
+    QRImageID     INT            IDENTITY(1,1) PRIMARY KEY,
+    PaymentMethod NVARCHAR(50)   NOT NULL UNIQUE,
+    ImagePath     NVARCHAR(500)  NOT NULL,           -- Đường dẫn file ảnh static (fallback)
+    DisplayName   NVARCHAR(200)  NOT NULL,
+    Description   NVARCHAR(1000),
+    AccountName   NVARCHAR(200),                     -- Tên chủ tài khoản
+    AccountNumber NVARCHAR(100),                     -- Số tài khoản / SĐT
+    BankName      NVARCHAR(200),                     -- Tên ngân hàng / ví
+    BankCode      NVARCHAR(20),                      -- Mã ngân hàng theo chuẩn VietQR (VD: MB, VCB, TCB)
+    IsActive      BIT            DEFAULT 1,
+    CreatedAt     DATETIME       DEFAULT GETDATE(),
+    UpdatedAt     DATETIME       DEFAULT GETDATE()
+);
+PRINT N'Đã tạo mới bảng PaymentQRImages.';
+GO
+
+-- ─── Xoá dữ liệu cũ để seed lại sạch ─────────────────────────
+DELETE FROM PaymentQRImages WHERE PaymentMethod IN ('qrpay', 'momo');
+GO
+
+-- ─── Seed 2 phương thức thanh toán với thông tin tài khoản thật ───
+INSERT INTO PaymentQRImages (PaymentMethod, ImagePath, DisplayName, Description, AccountName, AccountNumber, BankName, BankCode)
+VALUES
+(
+    'qrpay',
+    '/images/qr_vietqr_mb.png',
+    N'QR Pay (VietQR / MB Bank)',
+    N'Thanh toán nhanh qua VietQR – hỗ trợ 40+ ngân hàng qua Napas 247. Số tiền được điền tự động khi quét.',
+    N'NGUYEN MINH HUY',
+    N'0949391487',
+    N'MB Bank',
+    N'MB'
+),
+(
+    'momo',
+    '/images/qr_momo.png',
+    N'Ví điện tử MoMo',
+    N'Quét mã QR bằng ứng dụng MoMo hoặc ứng dụng Ngân hàng. Số tiền và nội dung chuyển khoản được điền tự động.',
+    N'NGUYEN MINH HUY',
+    N'PSP2605012400000587',
+    N'MoMo',
+    N'MOMO'
+);
+GO
+
+PRINT N'Seed PaymentQRImages hoàn tất.';
+PRINT N'';
+PRINT N'Thông tin tài khoản:';
+PRINT N'  MB Bank  | STK: 0949391487 | Chủ TK: NGUYEN MINH HUY | BankCode: MB';
+PRINT N'  MoMo     | SĐT: 0949391487 | Chủ TK: NGUYEN MINH HUY';
+PRINT N'';
+PRINT N'VietQR URL mẫu (MB Bank):';
+PRINT N'  https://img.vietqr.io/image/MB-0949391487-qr_only.png?amount=90000&addInfo=DCVIP123456&accountName=NGUYEN+MINH+HUY';
+GO
+-- ============================================================
+--  payment_transaction_migration.sql
+--  Tạo bảng PaymentTransactions để lưu lịch sử giao dịch thanh toán
+--  Chạy file này trên SQL Server (CinemaManagement database)
+-- ============================================================
+
+USE CinemaManagement;
+GO
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PaymentTransactions')
+BEGIN
+    CREATE TABLE PaymentTransactions (
+        TransactionID     INT            IDENTITY(1,1) PRIMARY KEY,
+        Gateway           NVARCHAR(100)  NOT NULL,           -- Cổng thanh toán (SePay, PayOS, MBBank, MoMo, etc.)
+        TransactionDate   DATETIME       NOT NULL,           -- Thời gian giao dịch phía ngân hàng
+        AccountNumber     NVARCHAR(100)  NOT NULL,           -- Số tài khoản nhận tiền
+        AmountIn          DECIMAL(18,2)  NOT NULL,           -- Số tiền nhận vào
+        ReferenceNumber   NVARCHAR(200)  NOT NULL UNIQUE,    -- Mã tham chiếu duy nhất của ngân hàng (mã giao dịch FT...)
+        TransactionContent NVARCHAR(1000) NOT NULL,          -- Nội dung chuyển khoản để đối soát
+        PaymentMethod     NVARCHAR(50)   NOT NULL,           -- 'qrpay' hoặc 'momo'
+        RawData           NVARCHAR(MAX),                     -- JSON dữ liệu gốc từ webhook
+        CreatedAt         DATETIME       DEFAULT GETDATE()
+    );
+    PRINT N'Đã tạo bảng PaymentTransactions.';
+END
+ELSE
+BEGIN
+    PRINT N'Bảng PaymentTransactions đã tồn tại.';
+END
 GO

@@ -1873,8 +1873,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch live dashboard data
     loadDashboardData();
 });
-<<<<<<< Updated upstream
-=======
+
 
 /* ══════════════════════════════════════
    NOTIFICATIONS (Socket.io)
@@ -2482,4 +2481,4 @@ async function togglePromo(id) {
 }
 
 
->>>>>>> Stashed changes
+

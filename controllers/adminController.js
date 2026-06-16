@@ -411,9 +411,6 @@ exports.getTopMovies = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
-<<<<<<< Updated upstream
-=======
-
 exports.getLiveRooms = async (req, res) => {
   try {
     const cinemaId = req.query.cinemaId || null;
@@ -726,5 +723,3 @@ exports.togglePromotionActive = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
-
->>>>>>> Stashed changes
