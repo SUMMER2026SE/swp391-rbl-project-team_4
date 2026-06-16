@@ -1,127 +1,353 @@
 /* chatbot.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 #moviebot-container {
     position: fixed;
     bottom: 20px;
     right: 20px;
     z-index: 9999;
-    font-family: sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 
 #moviebot-btn {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #ff0055, #00d2ff);
-    border: none;
+    background: #111;
+    border: 1px solid rgba(229, 9, 20, 0.5);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    transition: transform 0.3s;
+    box-shadow: 0 0 15px rgba(229, 9, 20, 0.4);
+    transition: all 0.3s;
 }
 
 #moviebot-btn:hover {
     transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(229, 9, 20, 0.6);
+    background: #1a1a1a;
 }
 
 #moviebot-btn svg {
-    width: 30px;
-    height: 30px;
-    fill: white;
+    width: 45px;
+    height: 45px;
 }
 
 #moviebot-window {
     display: none;
-    width: 350px;
-    height: 500px;
-    background: #1a1a1a;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 380px;
+    height: 550px;
+    background: rgba(12, 12, 12, 0.95);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(229, 9, 20, 0.2);
+    border: 1px solid rgba(229, 9, 20, 0.4);
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid #333;
     position: absolute;
     bottom: 80px;
     right: 0;
+    color: #fff;
+    transform-origin: bottom right;
+    animation: botIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes botIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 #moviebot-header {
-    background: #E50914;
-    color: white;
-    padding: 15px;
-    font-weight: bold;
+    padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bot-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #111;
+    border: 1px solid rgba(229, 9, 20, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(229, 9, 20, 0.3);
+    flex-shrink: 0;
+}
+
+.bot-avatar svg {
+    width: 22px;
+    height: 22px;
+}
+
+.bot-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.bot-name {
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+}
+
+.bot-status {
+    font-size: 12px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: #00ff00;
+    border-radius: 50%;
+    box-shadow: 0 0 5px #00ff00;
 }
 
 #moviebot-close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-#moviebot-messages {
-    flex: 1;
-    padding: 15px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.msg {
-    max-width: 80%;
-    padding: 10px 15px;
-    border-radius: 15px;
-    line-height: 1.4;
-    font-size: 14px;
-}
-
-.msg.bot {
-    background: #333;
-    color: white;
-    align-self: flex-start;
-    border-bottom-left-radius: 5px;
-}
-
-.msg.user {
-    background: #E50914;
-    color: white;
-    align-self: flex-end;
-    border-bottom-right-radius: 5px;
-}
-
-#moviebot-input-area {
-    display: flex;
-    padding: 10px;
-    background: #222;
-    border-top: 1px solid #333;
-}
-
-#moviebot-input {
-    flex: 1;
-    padding: 10px;
-    border-radius: 20px;
-    border: 1px solid #444;
-    background: #111;
-    color: white;
-    outline: none;
-}
-
-#moviebot-send {
-    background: #E50914;
-    color: white;
-    border: none;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    margin-left: 10px;
+    background: transparent;
+    border: 1px solid rgba(229, 9, 20, 0.5);
+    color: #fff;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s;
+}
+
+#moviebot-close:hover {
+    background: rgba(229, 9, 20, 0.2);
+}
+
+#moviebot-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Scrollbar */
+#moviebot-messages::-webkit-scrollbar {
+    width: 6px;
+}
+#moviebot-messages::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.msg-wrapper {
+    display: flex;
+    gap: 12px;
+    max-width: 90%;
+}
+
+.msg-wrapper.bot {
+    align-self: flex-start;
+}
+
+.msg-wrapper.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.msg-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.msg {
+    padding: 12px 16px;
+    border-radius: 16px;
+    line-height: 1.5;
+    font-size: 14.5px;
+    color: #e5e5e5;
+}
+
+.msg-wrapper.bot .msg {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-top-left-radius: 4px;
+}
+
+.msg-wrapper.user .msg {
+    background: linear-gradient(135deg, #cc0000, #800000);
+    color: #fff;
+    border-top-right-radius: 4px;
+    box-shadow: 0 4px 10px rgba(229, 9, 20, 0.2);
+}
+
+.msg-time {
+    font-size: 11px;
+    color: #777;
+    align-self: flex-end;
+}
+
+.msg-wrapper.bot .msg-time {
+    align-self: flex-start;
+}
+
+/* Suggestions Panel */
+#moviebot-suggestions {
+    margin: 0 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+}
+
+.sugg-header {
+    font-size: 10px;
+    color: #ccc;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sugg-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+}
+
+.sugg-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(229, 9, 20, 0.2);
+    border-radius: 12px;
+    padding: 4px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: auto;
+}
+
+.sugg-card:hover {
+    background: rgba(229, 9, 20, 0.1);
+    border-color: rgba(229, 9, 20, 0.5);
+    transform: translateY(-2px);
+}
+
+.sugg-icon {
+    font-size: 11px;
+}
+
+.sugg-title {
+    font-size: 9px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.sugg-desc {
+    display: none;
+}
+
+/* Input Area */
+#moviebot-input-area {
+    padding: 10px 20px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #111;
+    border: 1px solid rgba(229, 9, 20, 0.4);
+    border-radius: 30px;
+    padding: 0 16px;
+    height: 44px;
+}
+
+.input-icon {
+    color: #888;
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+.input-icon svg { width: 20px; height: 20px; }
+
+#moviebot-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+}
+
+#moviebot-input::placeholder {
+    color: #666;
+}
+
+.input-emoji {
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+.input-emoji:hover { color: #fff; }
+
+#moviebot-send {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #E50914;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(229, 9, 20, 0.3);
+    transition: transform 0.2s, background 0.2s;
+}
+
+#moviebot-send:hover {
+    transform: scale(1.05);
+    background: #ff0f1a;
+}
+
+/* Footer */
+.bot-footer {
+    text-align: center;
+    font-size: 11px;
+    color: #666;
+    padding-bottom: 12px;
+}
+
+.bot-footer .highlight {
+    color: #E50914;
+    font-weight: 600;
 }

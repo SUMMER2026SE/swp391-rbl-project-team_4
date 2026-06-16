@@ -50,9 +50,40 @@ const chatController = {
       }).join('\n');
       const model = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
 
+      // Check if user is Admin
+      let isAdmin = false;
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const jwt = require('jsonwebtoken');
+          const token = authHeader.split(' ')[1];
+          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key');
+          if (decoded.roleName === 'Admin' || decoded.roleId === 1) {
+            isAdmin = true;
+          }
+        } catch (e) {
+          // ignore token error
+        }
+      }
+
+      let adminContext = '';
+      if (isAdmin) {
+        adminContext = `
+[CHẾ ĐỘ DÀNH CHO QUẢN TRỊ VIÊN - ADMIN MODE]
+CẢNH BÁO: NGƯỜI ĐANG TRÒ CHUYỆN VỚI BẠN LÀ ADMIN (QUẢN TRỊ VIÊN) CỦA HỆ THỐNG D-CINEMA.
+1. Xưng hô: Gọi người này là "Sếp" hoặc "Quản trị viên", xưng "mình" hoặc "trợ lý AI". Phải thể hiện thái độ báo cáo chuyên nghiệp.
+2. Tư vấn lịch chiếu ngày mai: Nếu Sếp hỏi nên xếp lịch chiếu ngày mai như thế nào, hãy phân tích dựa vào danh sách Phim Đang Chiếu:
+   - Các phim Hoạt hình (như Doraemon): Đề xuất xếp nhiều suất vào ban ngày (08:00 - 16:00).
+   - Các phim Hành động / Kinh dị (như Ma Xó, John Wick): Đề xuất xếp vào KHUNG GIỜ VÀNG (18:00 - 22:00) để tối ưu doanh thu.
+3. Hỗ trợ dữ liệu nội bộ: Sếp có quyền hỏi các thông tin về doanh thu, nhân sự, lịch chiếu... Hãy trả lời một cách logic, chuyên nghiệp và đưa ra các lời khuyên mang tính chiến lược kinh doanh cho D-CINEMA.
+`;
+      }
+
       const prompt = `Bạn là MovieBot, trợ lý ảo thông minh và thân thiện của hệ thống rạp chiếu phim D-CINEMA.
 Nhiệm vụ của bạn là hỗ trợ khách hàng giải đáp thắc mắc, hướng dẫn đặt vé, tra cứu lịch chiếu, và tư vấn dịch vụ.
-LUÔN xưng hô là "mình" và gọi khách hàng là "bạn". Trả lời ngắn gọn, súc tích, chuyên nghiệp và nhiệt tình.
+LUÔN xưng hô là "mình" và gọi khách hàng là "bạn" (Trừ khi ở chế độ Admin). Trả lời ngắn gọn, súc tích, chuyên nghiệp và nhiệt tình.
+
+${adminContext}
 
 [KIẾN THỨC HỆ THỐNG D-CINEMA]
 1. Phim đang chiếu hiện tại:
@@ -108,7 +139,8 @@ LƯU Ý QUAN TRỌNG KHI TRẢ LỜI:
 - Nếu khách hỏi phim X chiếu lúc mấy giờ, hãy bảo khách vào trực tiếp mục "ĐẶT VÉ" trên web để xem suất chiếu chính xác nhất theo từng rạp.
 - Từ chối lịch sự mọi câu hỏi không liên quan đến điện ảnh, rạp chiếu phim (như code, chính trị, y tế, v.v.).
 
-Khách hàng hỏi: "${message}"`;
+Ngôn ngữ của người dùng: Tiếng Việt.
+Câu hỏi của người dùng: "${message}"`;
 
       const result = await model.generateContent(prompt);
       const responseText = result.response.text();
