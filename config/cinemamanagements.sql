@@ -338,7 +338,7 @@ GO
 -- ═══════════════════ THỂ LOẠI PHIM ═══════════════════
 INSERT INTO Genres (GenreName) VALUES
 (N'Hành động'), (N'Hài'), (N'Kinh dị'), (N'Tình cảm'),
-(N'Viễn tưởng'), (N'Hoạt hình'), (N'Tâm lý'), (N'Phiêu lưu'), (N'Ca Nhạc'), (N'Ly Kì'), (N'Gia đình');
+(N'Viễn tưởng'), (N'Hoạt hình'), (N'Tâm lý'), (N'Phiêu lưu'), (N'Ca Nhạc'), (N'Ly Kì'), (N'Gia đình'), (N'Giật Gân');
 GO
 -- ═══════════════════ PHIM ═══════════════════
 INSERT INTO Movies (Title, Description, Director, Duration, AgeRating, TrailerURL, PosterURL, Status, MainCast) VALUES
@@ -352,7 +352,8 @@ INSERT INTO Movies (Title, Description, Director, Duration, AgeRating, TrailerUR
 (N'Lầu Chú Hỏa', N'Để câu view, một nhóm streamer livestream khám phá Lầu Chú Hỏa, dinh thự bỏ hoang gắn với truyền thuyết về con ma nhà họ Hứa. Nhưng ngay từ những phút đầu, mọi thứ đã vượt khỏi tầm kiểm soát. Hiện tượng siêu nhiên liên tiếp xảy ra, kéo cả nhóm vào vòng xoáy ám ảnh không lối thoát. Buổi livestream nhanh chóng biến thành nơi “tạo nghiệp – trả nghiệp”, khi từng người phải trả giá cho lòng tham và sự báng bổ trước linh hồn oan khuất của cô tiểu thư họ Hứa.', N'Hùng Trấn', 94, 'T18', 'https://www.youtube.com/watch?v=iYH9lUytbmA', 'images/movie_lau_chu_hoa.png', 'Now Showing', N'Trần Kỳ Anh, Nguyễn Minh Thời, Ngọc Chí Bảo'),
 (N'Cơn Thịnh Nộ', N'Phim xoay quanh Wang Wei (Xie Miao), một người bán hàng bị câm, đang sinh sống ở Hồng Kông cùng con gái Rainy (Yang Enyou). Một ngày nọ, Rainy bị một đường dây buôn bán trẻ em bắt cóc. Wei tìm đến cảnh sát giúp đỡ nhưng bị từ chối vì cảnh sát ở đây đều đã bị tha hóa. Wei bắt đầu một cuộc trả thù không ngừng nghỉ để giải cứu con gái. Anh liên minh với Navin (Joe Taslim), một nhà báo có vợ mất tích khi đang điều tra cùng một đường dây buôn người.', N'Tanigaki Kenji', 110, 'T18', 'https://www.youtube.com/watch?v=F3PxYKjTVTA', 'images/movie_con_thinh_no.png', 'Now Showing', N'Tạ Miêu, Joe Taslim, Yang Enyou'),
 (N'Câu Chuyện Đồ Chơi 5', N'Các món đồ chơi đã trở lại trong Toy Story 5 của Disney và Pixar, và lần này sẽ là cuộc đối đầu giữa đồ chơi và công nghệ. Buzz, Woody, Jessie cùng cả nhóm đồ chơi quen thuộc sẽ phải đối mặt với thử thách khó khăn hơn gấp bội khi chạm trán một mối đe dọa ảnh hưởng đến toàn bộ thế giới đồ chơi.', N'Andrew Stanton', 102, 'P', 'https://www.youtube.com/watch?v=BXN2fTDtak8', 'images/movie_toy_story_5.png', 'Coming Soon', N'Tom Hanks, Keanu Reeves, Bonnie Hunt'),
-(N'Trường Hè, 2001', N'Lấy bối cảnh mùa hè năm 2001, phim theo chân Kiên - cậu thanh niên 17 tuổi từ Việt Nam trở về đoàn tụ với gia đình tại khu chợ nhộn nhịp ở thị trấn Cheb sau 10 năm xa cách. Chuyến trở về mở ra nhiều mâu thuẫn liên thế hệ, cảm giác lạc lõng và nỗi khao khát được thấu hiểu trong gia đình nhập cư.', N'Dužan Duong', 0, 'P', 'https://www.youtube.com/watch?v=j4cUB08ASNE', 'images/movie_truong_he_2001.png', 'Coming Soon', N'Doãn Hoàng Anh, Tiến Tài, Bùi Thế Dương, Lê Quỳnh Lan, Ngô Xuân Thắng');
+(N'Trường Hè, 2001', N'Lấy bối cảnh mùa hè năm 2001, phim theo chân Kiên - cậu thanh niên 17 tuổi từ Việt Nam trở về đoàn tụ với gia đình tại khu chợ nhộn nhịp ở thị trấn Cheb sau 10 năm xa cách. Chuyến trở về mở ra nhiều mâu thuẫn liên thế hệ, cảm giác lạc lõng và nỗi khao khát được thấu hiểu trong gia đình nhập cư.', N'Dužan Duong', 0, 'P', 'https://www.youtube.com/watch?v=j4cUB08ASNE', 'images/movie_truong_he_2001.png', 'Coming Soon', N'Doãn Hoàng Anh, Tiến Tài, Bùi Thế Dương, Lê Quỳnh Lan, Ngô Xuân Thắng'),
+(N'Ám Ảnh', N'Bear, một chàng trai si tình, đã bẻ gãy món đồ chơi bí ẩn mang tên "Liễu Ước Nguyện" để đổi lấy tình yêu của cô gái mình thầm thương. Điều ước nhanh chóng trở thành hiện thực, nhưng hạnh phúc mà anh hằng mong đợi lại dần biến thành cơn ác mộng. Bear dần nhận ra một sự thật rùng rợn: cái giá phải trả cho món quà kỳ diệu đó kinh hoàng và đen tối hơn bất cứ điều gì anh có thể tưởng tượng.', N'Curry Barker', 109, 'T18', 'https://www.youtube.com/watch?v=rZF4vNv36Dw', 'images/movie_amanh.png', 'Coming Soon', N'Michael Johnston, Inde Navarrete, Cooper Tomlinson');
 GO
 -- Gắn thể loại cho phim
 INSERT INTO Movie_Genres (MovieID, GenreID) VALUES
@@ -366,7 +367,8 @@ INSERT INTO Movie_Genres (MovieID, GenreID) VALUES
 (8, 3), (8, 10), -- Lầu Chú Hỏa: Kinh dị, Ly Kì
 (9, 1), -- Cơn Thịnh Nộ: Hành động
 (10, 6), (10, 8), (10, 2), -- Câu Chuyện Đồ Chơi 5: Hoạt hình, Phiêu lưu, Hài
-(11, 7), (11, 11); -- Trường Hè, 2001: Tâm lý, Gia đình
+(11, 7), (11, 11), -- Trường Hè, 2001: Tâm lý, Gia đình
+(12, 3), (12, 12); -- Ám Ảnh: Kinh dị, Giật Gân
 GO
 -- ═══════════════════ LỊCH CHIẾU ═══════════════════
 DECLARE @Today DATETIME = CAST(CAST(GETDATE() AS DATE) AS DATETIME);
