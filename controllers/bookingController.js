@@ -6,6 +6,7 @@ const BookingModel = require('../models/bookingModel');
 const { getPool }  = require('../config/db');
 // Socket.IO helper: push real-time payment_confirmed về đúng checkout tab của khách
 const { emitPaymentConfirmed } = require('../sockets/socketManager');
+const os = require('os');
 
 // ─────────────────────────────────────────────────────────────
 //  GET /api/bookings/food-beverages
@@ -98,12 +99,20 @@ exports.validateVoucher = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Vui lòng cung cấp mã voucher.' });
     }
 
-    const voucher = await BookingModel.validateVoucher(voucherCode.trim().toUpperCase());
+    const userId = req.user ? req.user.userId : null;
+    const voucher = await BookingModel.validateVoucher(voucherCode.trim().toUpperCase(), userId);
 
     if (!voucher) {
       return res.status(404).json({
         success: false,
         message: 'Mã voucher không hợp lệ, đã hết hạn hoặc đã dùng hết.',
+      });
+    }
+
+    if (voucher.alreadyUsed) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bạn đã sử dụng voucher này rồi. Mỗi khách hàng chỉ được sử dụng mã này 1 lần.',
       });
     }
 
@@ -568,5 +577,117 @@ exports.cancelBooking = async (req, res) => {
   } catch (err) {
     console.error('[bookingController] cancelBooking:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server khi hủy giữ chỗ.' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+//  GET /api/bookings/public/:ticketIds
+// ─────────────────────────────────────────────────────────────
+exports.getPublicBookingDetails = async (req, res) => {
+  try {
+    const { ticketIds } = req.params;
+    if (!ticketIds) {
+      return res.status(400).json({ success: false, message: 'Thiếu mã vé.' });
+    }
+
+    const ids = ticketIds.split(/[- ,]+/).map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+    if (ids.length === 0) {
+      return res.status(400).json({ success: false, message: 'Mã vé không hợp lệ.' });
+    }
+
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT t.TicketID, t.Status, t.TicketPrice, t.TotalAmount, t.PaymentMethod,
+             m.Title AS MovieTitle, m.PosterURL, m.Duration,
+             st.StartTime, st.EndTime,
+             r.RoomName,
+             c.CinemaName, c.Address,
+             s.SeatRow, s.SeatNumber, s.SeatType,
+             u.FullName AS CustomerName, u.Email AS CustomerEmail, u.Phone AS CustomerPhone
+      FROM   Tickets t
+      JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
+      JOIN   Movies    m  ON st.MovieID   = m.MovieID
+      JOIN   Rooms     r  ON st.RoomID    = r.RoomID
+      JOIN   Cinemas   c  ON r.CinemaID   = c.CinemaID
+      JOIN   Seats     s  ON t.SeatID     = s.SeatID
+      JOIN   Users     u  ON t.UserID     = u.UserID
+      WHERE  t.TicketID IN (${ids.join(',')})
+    `);
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy vé trong hệ thống.' });
+    }
+
+    const recordset = result.recordset;
+    const first = recordset[0];
+    const seatsList = recordset.map(r => `${r.SeatRow}${r.SeatNumber}`).sort();
+
+    const ticketSum = recordset.reduce((sum, item) => sum + parseFloat(item.TotalAmount || 0), 0);
+
+    // Lấy thông tin F&B
+    const fnbResult = await pool.request().query(`
+      SELECT fb.Name, tf.Quantity, fb.Price
+      FROM   Ticket_FnB tf
+      JOIN   FoodBeverages fb ON tf.FnBID = fb.FnBID
+      WHERE  tf.TicketID IN (${ids.join(',')})
+    `);
+
+    const foodDisplayItems = fnbResult.recordset.map(item => `${item.Quantity}x ${item.Name}`);
+    const fnbSum = fnbResult.recordset.reduce((sum, item) => sum + (item.Quantity * parseFloat(item.Price || 0)), 0);
+
+    const totalAmount = ticketSum + fnbSum;
+
+    res.json({
+      success: true,
+      data: {
+        bookingId: 'DC-' + ids.sort((a, b) => a - b).join('-'),
+        customerName: first.CustomerName,
+        customerEmail: first.CustomerEmail,
+        customerPhone: first.CustomerPhone || 'Chưa cung cấp',
+        movieTitle: first.MovieTitle,
+        poster: first.PosterURL,
+        duration: first.Duration,
+        startTime: first.StartTime,
+        endTime: first.EndTime,
+        roomName: first.RoomName,
+        cinemaName: first.CinemaName,
+        cinemaAddress: first.Address,
+        seats: seatsList.join(', '),
+        paymentMethod: first.PaymentMethod,
+        status: first.Status,
+        totalAmount: totalAmount,
+        foodItems: foodDisplayItems.join(', ') || 'Không có'
+      }
+    });
+  } catch (err) {
+    console.error('[bookingController] getPublicBookingDetails:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server khi tìm kiếm thông tin vé.' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+//  GET /api/bookings/server-ip
+// ─────────────────────────────────────────────────────────────
+exports.getServerIP = (req, res) => {
+  try {
+    const interfaces = os.networkInterfaces();
+    let ipAddress = 'localhost';
+    
+    for (const devName in interfaces) {
+      const iface = interfaces[devName];
+      for (let i = 0; i < iface.length; i++) {
+        const alias = iface[i];
+        if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+          ipAddress = alias.address;
+          break;
+        }
+      }
+      if (ipAddress !== 'localhost') break;
+    }
+    
+    res.json({ success: true, ip: ipAddress });
+  } catch (err) {
+    console.error('[bookingController] getServerIP:', err.message);
+    res.json({ success: false, ip: 'localhost' });
   }
 };

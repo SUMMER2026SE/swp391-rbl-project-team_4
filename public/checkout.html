@@ -1,17 +1,51 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thanh Toán | D-CINEMA+</title>
-    <meta name="description" content="Hoàn tất đặt vé xem phim – Chọn ưu đãi và thanh toán an toàn qua MoMo, ZaloPay, VNPAY, thẻ ATM hoặc thẻ quốc tế.">
+    <meta name="description" content="Hoàn tất đặt vé xem phim – Chọn ưu đãi và thanh toán an toàn qua VietQR, thẻ ATM hoặc thẻ quốc tế.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/checkout.css">
     <link rel="stylesheet" href="css/shared-layout.css">
     <style>
+        /* Promo hint banner */
+        .promo-hint-banner code {
+            display: inline-block;
+            font-family: monospace;
+            font-size: 0.85rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .promo-hint-banner code.welcome {
+            background: rgba(240, 165, 0, 0.12);
+            color: #f0a500;
+            border: 1px solid rgba(240, 165, 0, 0.25);
+        }
+        .promo-hint-banner code.welcome:hover {
+            background: rgba(240, 165, 0, 0.22);
+            border-color: rgba(240, 165, 0, 0.45);
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(240, 165, 0, 0.15);
+        }
+        .promo-hint-banner code.summer {
+            background: rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .promo-hint-banner code.summer:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+        }
+
         /* ─── CHECKOUT STEP STYLES ─── */
         .step-block {
             background: #1a1c1f;
@@ -214,7 +248,6 @@
             line-height: 1.1;
         }
         .logo-vietqr { background: linear-gradient(135deg, #0057a8, #00a8e0); color: #fff; }
-        .logo-momo   { background: linear-gradient(135deg, #ae2070, #d43b85); color: #fff; }
 
         .payment-info { flex: 1; }
         .payment-info strong {
@@ -868,6 +901,20 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Promo banner gợi ý -->
+                <div class="promo-hint-banner" style="margin: 0 22px 18px; padding: 14px 18px; background: linear-gradient(95deg, rgba(229, 9, 20, 0.07) 0%, rgba(229, 9, 20, 0.02) 100%); border: 1px dashed rgba(229, 9, 20, 0.22); border-radius: 10px; display: flex; align-items: flex-start; gap: 12px; font-size: 0.82rem; line-height: 1.5; color: #8a8f9a; box-shadow: inset 0 0 10px rgba(0,0,0,0.2);">
+                    <span style="font-size: 1.25rem; line-height: 1; filter: drop-shadow(0 0 4px rgba(240,165,0,0.5));">💡</span>
+                    <div>
+                        <strong style="color: #cbd5e1; display: block; margin-bottom: 4px; font-weight: 700;">Gợi ý Ưu đãi dành cho bạn:</strong>
+                        <div style="margin-bottom: 6px;">
+                            • Thành viên mới? Áp dụng mã <code class="welcome" onclick="quickApplyVoucher('WELCOME50')" title="Nhấp để áp dụng ngay">WELCOME50</code> để **giảm 50%** (tối đa 100K) cho đơn từ 200K.
+                        </div>
+                        <div>
+                            • Hoặc nhập mã <code class="summer" onclick="quickApplyVoucher('HEQUA2025')" title="Nhấp để áp dụng ngay">HEQUA2025</code> để **giảm 30K** cho đơn hàng từ 80K.
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- ═══ BƯỚC 2: THẺ QUÀ TẶNG ═══ -->
@@ -918,19 +965,7 @@
                         </div>
                     </div>
 
-                    <!-- MoMo QR -->
-                    <div class="payment-option" id="pm-momo" onclick="selectPayment('momo')">
-                        <div class="radio-circle"><div class="radio-inner"></div></div>
-                        <div class="payment-logo-icon logo-momo" style="font-size:1rem; gap:0; line-height:1.0;">
-                            <span>mo</span>
-                            <span>mo</span>
-                        </div>
-                        <div class="payment-info">
-                            <strong>Ví MoMo</strong>
-                            <span>Quét mã QR bằng ứng dụng MoMo</span>
-                            <div class="payment-badge">✓ Thanh toán nhanh chóng &amp; an toàn</div>
-                        </div>
-                    </div>
+
 
                 </div>
             </div>
@@ -1110,7 +1145,7 @@
                     </div>
                 </div>
                 <ol class="qr-steps">
-                    <li class="qr-step-item"><div class="qr-step-num">1</div><span>Mở app ngân hàng hoặc MoMo trên điện thoại</span></li>
+                    <li class="qr-step-item"><div class="qr-step-num">1</div><span>Mở ứng dụng ngân hàng trên điện thoại</span></li>
                     <li class="qr-step-item"><div class="qr-step-num">2</div><span>Chọn <strong>Quét QR</strong> và scan mã trên màn hình</span></li>
                     <li class="qr-step-item"><div class="qr-step-num">3</div><span>Kiểm tra số tiền và xác nhận thanh toán trong app</span></li>
                     <li class="qr-step-item"><div class="qr-step-num">4</div><span>Hệ thống sẽ tự động xác nhận và chuyển hướng khi nhận được tiền.</span></li>
@@ -1150,7 +1185,7 @@
     let appliedVoucherCode = null;
     let qrImagesData = {};
     let pendingPayload = null;
-    const allPaymentMethods = ['qrpay', 'momo'];
+    const allPaymentMethods = ['qrpay'];
     let createdTicketIds = [];
     let checkPaymentInterval = null;
     let paymentHandled = false;  // cờ idempotent: tránh xử lý 2 lần
@@ -1185,15 +1220,7 @@
                 BankName:      'MB Bank',
                 BankCode:      'MB'
             };
-            qrImagesData['momo'] = {
-                PaymentMethod: 'momo',
-                ImagePath:     '/images/qr_momo.png',
-                DisplayName:   'Ví điện tử MoMo',
-                AccountName:   'NGUYEN MINH HUY',
-                AccountNumber: '0949391487',
-                BankName:      'MoMo',
-                BankCode:      'MOMO'
-            };
+
         }
     }
 
@@ -1227,7 +1254,7 @@
 
         // ─── Tạo QR URL ───
         let qrSrc;
-        if ((method === 'qrpay' || method === 'momo') && info.BankCode && info.AccountNumber) {
+        if (method === 'qrpay' && info.BankCode && info.AccountNumber) {
             const qrBankCode = info.BankCode === 'MOMO' ? '971025' : info.BankCode;
             qrSrc = `https://img.vietqr.io/image/${qrBankCode}-${info.AccountNumber}-qr_only.png` +
                     `?amount=${Math.round(amount)}` +
@@ -1396,6 +1423,20 @@
             }
         }, 1000);
     }
+
+    /* ─── QUICK APPLY VOUCHER ─── */
+    window.quickApplyVoucher = function(code, type = 'voucher') {
+        const wrap = document.getElementById('input-' + type);
+        if (wrap) {
+            document.querySelectorAll('.discount-input-wrap').forEach(w => w.classList.remove('open'));
+            wrap.classList.add('open');
+        }
+        const input = document.getElementById('val-' + type);
+        if (input) {
+            input.value = code;
+            applyDiscount(type);
+        }
+    };
 
     /* ─── DISCOUNT TOGGLE ─── */
     function toggleDiscount(key, row) {
@@ -1584,7 +1625,7 @@
 
         // ── 1. Kiểm tra phương thức thanh toán ──
         if (!currentPayment) {
-            showPayError('Chưa chọn phương thức', 'Vui lòng chọn phương thức thanh toán bên dưới (QR Pay hoặc MoMo).');
+            showPayError('Chưa chọn phương thức', 'Vui lòng chọn phương thức thanh toán bên dưới (QR Pay).');
             document.getElementById('paymentList')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
