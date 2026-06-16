@@ -460,7 +460,8 @@ INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxDisco
 ('GIAM20K',    'fixed',   20000, 100000, NULL,   100, GETDATE(), DATEADD(day, 30, GETDATE()), 1),
 ('GIAM10PT',   'percent', 10,    150000, 50000,  50,  GETDATE(), DATEADD(day, 30, GETDATE()), 1),
 ('WELCOME50',  'percent', 50,    200000, 100000, 200, GETDATE(), DATEADD(day, 60, GETDATE()), 1),
-('HEQUA2025',  'fixed',   30000, 80000,  NULL,   500, GETDATE(), DATEADD(day, 90, GETDATE()), 1);
+('HEQUA2025',  'fixed',   30000, 80000,  NULL,   500, GETDATE(), DATEADD(day, 90, GETDATE()), 1),
+('GIAM50K',    'fixed',   50,    1,      NULL,   50,  '2026-06-15', '2026-06-20', 1);
 GO
 -- ═══════════════════ GIAO DỊCH MẪU (BOOKINGS) ═══════════════════
 -- Tìm CustomerRoleID theo tên để tránh hardcode số
