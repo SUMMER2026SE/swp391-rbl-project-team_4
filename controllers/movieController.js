@@ -145,3 +145,20 @@ exports.getShowtimes = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+
+// ─────────────────────────────────────────────────────────────
+//  GET /api/movies/promotions
+//  Lấy danh sách khuyến mãi đang hoạt động (public, không cần auth)
+// ─────────────────────────────────────────────────────────────
+const AdminModel = require('../models/adminModel');
+
+exports.getPublicPromotions = async (req, res) => {
+  try {
+    const data = await AdminModel.getActivePromotions();
+    res.json({ success: true, count: data.length, data });
+  } catch (err) {
+    console.error('[movieController] getPublicPromotions:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+

@@ -411,3 +411,320 @@ exports.getTopMovies = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+<<<<<<< Updated upstream
+=======
+
+exports.getLiveRooms = async (req, res) => {
+  try {
+    const cinemaId = req.query.cinemaId || null;
+    const data = await AdminModel.getLiveRoomsStatus(cinemaId);
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[adminController] getLiveRooms:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.exportPdf = async (req, res) => {
+  try {
+    const period = req.query.period || 'all';
+    const cinemaId = req.query.cinemaId || null;
+
+    // Fetch stats
+    const stats = await AdminModel.getDashboardStats({ cinemaId, period });
+    const topMovies = await AdminModel.getTopMovies(5);
+    const recentTxns = await AdminModel.getRecentTransactions(5);
+
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=D-Cinema-Report.pdf');
+    doc.pipe(res);
+
+    // Remove accents function if not globally available, just copy logic or use simple replace
+    const normalizeStr = str => {
+        if (!str) return '';
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
+    };
+
+    // Header
+    doc.fillColor('#1f2937').fontSize(22).text('D-CINEMA DASHBOARD REPORT', { align: 'center', underline: true });
+    doc.moveDown(0.5);
+    doc.fillColor('#6b7280').fontSize(10).text(`Generated at: ${new Date().toLocaleString('en-US')}`, { align: 'center' });
+    doc.text(`Period: ${period.toUpperCase()}`, { align: 'center' });
+    doc.moveDown(2);
+
+    // 1. KPI Section (4 boxes)
+    doc.fillColor('#111827').fontSize(14).text('1. OVERVIEW STATISTICS');
+    doc.moveDown(0.5);
+    
+    // Draw KPI table
+    const startY = doc.y;
+    doc.rect(50, startY, 500, 60).stroke('#d1d5db');
+    doc.moveTo(175, startY).lineTo(175, startY + 60).stroke('#d1d5db');
+    doc.moveTo(300, startY).lineTo(300, startY + 60).stroke('#d1d5db');
+    doc.moveTo(425, startY).lineTo(425, startY + 60).stroke('#d1d5db');
+    
+    doc.fontSize(10).fillColor('#6b7280');
+    doc.text('Total Revenue', 60, startY + 10, { width: 105, align: 'center' });
+    doc.text('Tickets Sold', 185, startY + 10, { width: 105, align: 'center' });
+    doc.text('F&B Revenue', 310, startY + 10, { width: 105, align: 'center' });
+    doc.text('Occupancy', 435, startY + 10, { width: 105, align: 'center' });
+    
+    doc.fontSize(12).fillColor('#111827');
+    doc.text(`${new Intl.NumberFormat('en-US').format(stats.TotalRevenue || 0)} VND`, 60, startY + 30, { width: 105, align: 'center' });
+    doc.text(`${new Intl.NumberFormat('en-US').format(stats.TicketSales || 0)}`, 185, startY + 30, { width: 105, align: 'center' });
+    doc.text(`${new Intl.NumberFormat('en-US').format(stats.FnBSales || 0)} VND`, 310, startY + 30, { width: 105, align: 'center' });
+    doc.text(`${stats.OccupancyRate || 0}%`, 435, startY + 30, { width: 105, align: 'center' });
+    
+    doc.y = startY + 80;
+
+    // 2. Top Movies Section
+    doc.fontSize(14).fillColor('#111827').text('2. TOP MOVIES RANKING');
+    doc.moveDown(0.5);
+    
+    // Table Header
+    let tableY = doc.y;
+    doc.rect(50, tableY, 500, 20).fillAndStroke('#f3f4f6', '#d1d5db');
+    doc.fillColor('#4b5563').fontSize(10);
+    doc.text('#', 60, tableY + 5);
+    doc.text('Movie Title', 90, tableY + 5);
+    doc.text('Tickets', 350, tableY + 5);
+    doc.text('Revenue (VND)', 430, tableY + 5);
+    
+    tableY += 20;
+    doc.fillColor('#111827');
+    
+    if (topMovies && topMovies.length > 0) {
+      topMovies.forEach((m, idx) => {
+        doc.rect(50, tableY, 500, 25).stroke('#e5e7eb');
+        doc.text(`${idx + 1}`, 60, tableY + 7);
+        doc.text(normalizeStr(m.Title).substring(0, 45), 90, tableY + 7);
+        doc.text(`${new Intl.NumberFormat('en-US').format(m.TotalTickets)}`, 350, tableY + 7);
+        doc.text(`${new Intl.NumberFormat('en-US').format(m.TodayRevenue)}`, 430, tableY + 7);
+        tableY += 25;
+      });
+    } else {
+      doc.rect(50, tableY, 500, 25).stroke('#e5e7eb');
+      doc.text('No movie data available.', 60, tableY + 7);
+      tableY += 25;
+    }
+    
+    doc.y = tableY + 30;
+
+    // 3. Recent Transactions
+    doc.fontSize(14).fillColor('#111827').text('3. RECENT TRANSACTIONS');
+    doc.moveDown(0.5);
+    
+    tableY = doc.y;
+    doc.rect(50, tableY, 500, 20).fillAndStroke('#f3f4f6', '#d1d5db');
+    doc.fillColor('#4b5563').fontSize(10);
+    doc.text('Txn ID', 60, tableY + 5);
+    doc.text('Branch', 120, tableY + 5);
+    doc.text('Date', 250, tableY + 5);
+    doc.text('Amount', 370, tableY + 5);
+    doc.text('Status', 470, tableY + 5);
+    
+    tableY += 20;
+    doc.fillColor('#111827');
+    
+    if (recentTxns && recentTxns.length > 0) {
+      recentTxns.forEach(t => {
+        doc.rect(50, tableY, 500, 25).stroke('#e5e7eb');
+        doc.text(normalizeStr(t.id), 60, tableY + 7);
+        doc.text(normalizeStr(t.branch).substring(0, 20), 120, tableY + 7);
+        doc.text(normalizeStr(t.date), 250, tableY + 7);
+        doc.text(normalizeStr(t.amount), 370, tableY + 7);
+        
+        // Status color
+        if (t.status === 'COMPLETED') doc.fillColor('#10b981');
+        else if (t.status === 'CANCELLED') doc.fillColor('#ef4444');
+        else doc.fillColor('#f59e0b');
+        
+        doc.text(t.status, 470, tableY + 7);
+        doc.fillColor('#111827'); // reset
+        tableY += 25;
+      });
+    } else {
+      doc.rect(50, tableY, 500, 25).stroke('#e5e7eb');
+      doc.text('No recent transactions.', 60, tableY + 7);
+      tableY += 25;
+    }
+
+    // Footer
+    doc.y = 750;
+    doc.fontSize(8).fillColor('#9ca3af').text('This document is automatically generated by D-Cinema System.', { align: 'center' });
+
+    doc.end();
+
+  } catch (err) {
+    console.error('[adminController] exportPdf:', err.message);
+    res.status(500).json({ success: false, message: 'Server error generating PDF.' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+//  GET /api/admin/stats/revenue-chart
+// ─────────────────────────────────────────────────────────────
+exports.getRevenueChartData = async (req, res) => {
+  try {
+    const period = req.query.period || 'all'; // today, week, month, all
+    const cinemaId = req.query.cinemaId || null;
+
+    const data = await AdminModel.getRevenueChartData({ period, cinemaId });
+
+    let labels = [];
+    let ticketData = [];
+    let fnbData = [];
+
+    if (period === 'today') {
+      labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+      ticketData = new Array(24).fill(0);
+      fnbData = new Array(24).fill(0);
+
+      data.forEach(t => {
+        const hr = new Date(t.BookedAt).getHours();
+        ticketData[hr] += t.TotalAmount || 0;
+        fnbData[hr] += t.FnBRevenue || 0;
+      });
+
+    } else if (period === 'week') {
+      labels = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+      ticketData = new Array(7).fill(0);
+      fnbData = new Array(7).fill(0);
+
+      data.forEach(t => {
+        const day = new Date(t.BookedAt).getDay(); // 0 is Sunday
+        ticketData[day] += t.TotalAmount || 0;
+        fnbData[day] += t.FnBRevenue || 0;
+      });
+      
+      // Shift so Monday is first
+      labels.push(labels.shift());
+      ticketData.push(ticketData.shift());
+      fnbData.push(fnbData.shift());
+
+    } else if (period === 'month') {
+      const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+      labels = Array.from({length: daysInMonth}, (_, i) => `Ngày ${i + 1}`);
+      ticketData = new Array(daysInMonth).fill(0);
+      fnbData = new Array(daysInMonth).fill(0);
+
+      data.forEach(t => {
+        const d = new Date(t.BookedAt).getDate() - 1;
+        ticketData[d] += t.TotalAmount || 0;
+        fnbData[d] += t.FnBRevenue || 0;
+      });
+
+    } else {
+      // all -> 12 months
+      labels = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+      ticketData = new Array(12).fill(0);
+      fnbData = new Array(12).fill(0);
+
+      data.forEach(t => {
+        const m = new Date(t.BookedAt).getMonth();
+        ticketData[m] += t.TotalAmount || 0;
+        fnbData[m] += t.FnBRevenue || 0;
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        labels,
+        ticketData,
+        fnbData
+      }
+    });
+
+  } catch (err) {
+    console.error('[adminController] getRevenueChartData:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+// ════════════════════════════════════════════════════════════
+//  PROMOTIONS MANAGEMENT
+// ════════════════════════════════════════════════════════════
+
+exports.getAllPromotions = async (req, res) => {
+  try {
+    const data = await AdminModel.getAllPromotions();
+    res.json({ success: true, count: data.length, data });
+  } catch (err) {
+    console.error('[adminController] getAllPromotions:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getActivePromotions = async (req, res) => {
+  try {
+    const data = await AdminModel.getActivePromotions();
+    res.json({ success: true, count: data.length, data });
+  } catch (err) {
+    console.error('[adminController] getActivePromotions:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.createPromotion = async (req, res) => {
+  try {
+    const { title, description, badgeLabel, linkURL, isFeatured, isActive, sortOrder } = req.body || {};
+    if (!title) {
+      return res.status(400).json({ success: false, message: 'Thiếu tiêu đề (title).' });
+    }
+    const imageURL = req.file ? 'images/' + req.file.filename : (req.body.imageURL || null);
+    const promo = await AdminModel.createPromotion({
+      title, description, badgeLabel, imageURL, linkURL,
+      isFeatured: isFeatured === 'true' || isFeatured === true || isFeatured === 1,
+      isActive: isActive !== 'false' && isActive !== false && isActive !== 0,
+      sortOrder
+    });
+    res.status(201).json({ success: true, message: 'Thêm khuyến mãi thành công!', data: promo });
+  } catch (err) {
+    console.error('[adminController] createPromotion:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.updatePromotion = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { title, description, badgeLabel, linkURL, isFeatured, isActive, sortOrder } = req.body || {};
+    const imageURL = req.file ? 'images/' + req.file.filename : (req.body.imageURL || null);
+    const promo = await AdminModel.updatePromotion(id, {
+      title, description, badgeLabel, imageURL, linkURL,
+      isFeatured: isFeatured === 'true' || isFeatured === true || isFeatured === 1,
+      isActive: isActive !== 'false' && isActive !== false && isActive !== 0,
+      sortOrder
+    });
+    if (!promo) return res.status(404).json({ success: false, message: 'Không tìm thấy khuyến mãi.' });
+    res.json({ success: true, message: 'Cập nhật khuyến mãi thành công!', data: promo });
+  } catch (err) {
+    console.error('[adminController] updatePromotion:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.deletePromotion = async (req, res) => {
+  try {
+    await AdminModel.deletePromotion(parseInt(req.params.id));
+    res.json({ success: true, message: 'Xóa khuyến mãi thành công!' });
+  } catch (err) {
+    console.error('[adminController] deletePromotion:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.togglePromotionActive = async (req, res) => {
+  try {
+    const promo = await AdminModel.togglePromotionActive(parseInt(req.params.id));
+    if (!promo) return res.status(404).json({ success: false, message: 'Không tìm thấy khuyến mãi.' });
+    res.json({ success: true, message: 'Đã thay đổi trạng thái khuyến mãi.', data: promo });
+  } catch (err) {
+    console.error('[adminController] togglePromotionActive:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+>>>>>>> Stashed changes

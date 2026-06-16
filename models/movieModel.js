@@ -258,6 +258,10 @@ class MovieModel {
              COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
              r.RoomID, r.RoomName, r.TotalSeats,
              m.MovieID, m.Title, m.Duration, m.AgeRating, m.PosterURL, m.MainCast,
+             (SELECT STRING_AGG(g.GenreName, ', ') 
+              FROM Movie_Genres mg 
+              JOIN Genres g ON mg.GenreID = g.GenreID 
+              WHERE mg.MovieID = m.MovieID) AS Genre,
              (SELECT COUNT(*)
               FROM Seats s
               WHERE s.RoomID = r.RoomID AND s.SeatType != 'None'

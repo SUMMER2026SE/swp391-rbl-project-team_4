@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -60,6 +60,10 @@
             <button class="sn" data-page="pricing" onclick="navigate('pricing',this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 Giá vé
+            </button>
+            <button class="sn" data-page="promotions" onclick="navigate('promotions',this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+                Tin tức &amp; KM
             </button>
         </div>
     </nav>
@@ -1108,6 +1112,106 @@
 </div>
 
 <script src="js/admin.js"></script>
+
+<!-- ══ PROMOTIONS PAGE ══ -->
+<div class="page" id="page-promotions">
+  <div class="content-scroll" style="padding: 30px 40px; display: flex; flex-direction: column; gap: 24px;">
+    <div class="dash-heading">
+      <div>
+        <h1>QUẢN LÝ TIN TỨC &amp; KHUYẾN MÃI</h1>
+        <p>Thêm, sửa, xóa các chương trình khuyến mãi hiển thị trên trang chủ.</p>
+      </div>
+      <div class="heading-actions">
+        <button class="btn-add-main" onclick="openPromoModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Thêm mới
+        </button>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-wrap">
+        <table class="data-table" id="promoTable">
+          <thead>
+            <tr>
+              <th style="width:80px">ẢNH</th>
+              <th>TIÊU ĐỀ</th>
+              <th>BADGE</th>
+              <th>NỔI BẬT</th>
+              <th>TRẠNG THÁI</th>
+              <th>THỨ TỰ</th>
+              <th>THAO TÁC</th>
+            </tr>
+          </thead>
+          <tbody id="promoBody">
+            <tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Promotions Modal -->
+<div id="promoModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;" onclick="closePromoModal()"></div>
+<div id="promoModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:401;background:var(--surface);border-radius:12px;padding:32px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+    <h2 id="promoModalTitle" style="font-size:1.2rem;font-weight:800;color:var(--text);text-transform:uppercase;">THÊM KHUYẾN MÃI</h2>
+    <button onclick="closePromoModal()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.4rem;line-height:1;">×</button>
+  </div>
+  <form id="promoForm" onsubmit="savePromo(event)" style="display:flex;flex-direction:column;gap:16px;">
+    <input type="hidden" id="promoId">
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">TIÊU ĐỀ *</label>
+      <input type="text" id="promoTitle" placeholder="VD: Unlimited Popcorn Thursdays" required
+        style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+    </div>
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">MÔ TẢ</label>
+      <textarea id="promoDesc" rows="3" placeholder="Mô tả ngắn về chương trình..."
+        style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;resize:vertical;"></textarea>
+    </div>
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">NHÃN BADGE</label>
+      <input type="text" id="promoBadge" placeholder="VD: MEMBER EXCLUSIVE"
+        style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+    </div>
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">LINK URL</label>
+      <input type="text" id="promoLink" placeholder="VD: promotions.html"
+        style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+    </div>
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">UPLOAD ẢNH</label>
+      <input type="file" id="promoImage" accept="image/*"
+        style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.85rem;">
+      <div id="promoCurrentImg" style="margin-top:8px;font-size:0.8rem;color:var(--text2);"></div>
+    </div>
+    <div style="display:flex;gap:24px;">
+      <div class="ff-group" style="flex:1;">
+        <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">THỨ TỰ HIỂN THỊ</label>
+        <input type="number" id="promoSort" value="0" min="0"
+          style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+      </div>
+      <div class="ff-group" style="flex:1;">
+        <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">&nbsp;</label>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:0.9rem;">
+            <input type="checkbox" id="promoFeatured" style="width:16px;height:16px;accent-color:var(--accent);"> Nổi bật (Featured)
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:0.9rem;">
+            <input type="checkbox" id="promoActive" checked style="width:16px;height:16px;accent-color:var(--accent);"> Đang hoạt động
+          </label>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
+      <button type="button" onclick="closePromoModal()" style="padding:10px 20px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-weight:600;">Hủy</button>
+      <button type="submit" style="padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Lưu</button>
+    </div>
+  </form>
+</div>
+
 
 <style>
 .btn-solid-green { padding: 9px 18px; background: #10b981; color: #fff; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 700; transition: all var(--tr); border: none; cursor: pointer; }

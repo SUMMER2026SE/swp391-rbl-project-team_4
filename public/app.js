@@ -595,12 +595,100 @@ const app = {
                 </div>
             </div>
         `).join('');
+    },
+
+    // --- Promotions (Tin tức & Khuyến mãi) ---
+    async loadPromotions() {
+        const grid = document.getElementById('promotionsGrid');
+        if (!grid) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/movies/promotions`);
+            const json = await res.json();
+
+            if (!json.success || !json.data || json.data.length === 0) {
+                grid.innerHTML = '<p style="color:#999;padding:20px;text-align:center;">Chưa có khuyến mãi nào.</p>';
+                return;
+            }
+
+            const promos = json.data;
+            const featured = promos.find(p => p.IsFeatured) || promos[0];
+            const normals  = promos.filter(p => p.PromotionID !== featured.PromotionID);
+
+            let html = '';
+
+            // Featured card
+            html += `
+                <div class="promo-card promo-featured">
+                    <div class="promo-image">
+                        ${featured.BadgeLabel ? `<div class="promo-badge">${featured.BadgeLabel}</div>` : ''}
+                        <img src="${featured.ImageURL || 'images/default_poster.svg'}"
+                             alt="${featured.Title}"
+                             onerror="this.onerror=null;this.src='images/default_poster.svg'">
+                    </div>
+                    <div class="promo-content">
+                        <h3>${featured.Title}</h3>
+                        <p>${featured.Description || ''}</p>
+                        <a href="${featured.LinkURL || '#'}" class="btn-promo">Tìm Hiểu Thêm</a>
+                    </div>
+                </div>`;
+
+            // Normal cards
+            normals.forEach(p => {
+                html += `
+                <div class="promo-card promo-normal">
+                    ${p.BadgeLabel ? `<div class="promo-badge-overlay">${p.BadgeLabel}</div>` : ''}
+                    <img src="${p.ImageURL || 'images/default_poster.svg'}"
+                         alt="${p.Title}"
+                         onerror="this.onerror=null;this.src='images/default_poster.svg'">
+                    <div class="promo-overlay-content">
+                        <h3>${p.Title}</h3>
+                        <p>${p.Description || ''}</p>
+                    </div>
+                </div>`;
+            });
+
+            grid.innerHTML = html;
+        } catch (err) {
+            console.warn('[app] loadPromotions failed, showing fallback:', err.message);
+            // Fallback to static cards if API not available
+            grid.innerHTML = `
+                <div class="promo-card promo-featured">
+                    <div class="promo-image">
+                        <div class="promo-badge">MEMBER EXCLUSIVE</div>
+                        <img src="images/combo_popcorn.png" alt="Unlimited Popcorn Thursdays">
+                    </div>
+                    <div class="promo-content">
+                        <h3>Unlimited Popcorn Thursdays</h3>
+                        <p>Tham gia chương trình Star Rewards ngay hôm nay và nhận bỏng ngô không giới hạn mỗi thứ năm với mọi lần mua vé.</p>
+                        <a href="#" class="btn-promo">Tìm Hiểu Thêm</a>
+                    </div>
+                </div>
+                <div class="promo-card promo-normal">
+                    <div class="promo-badge-overlay">GROUP DISCOUNTS</div>
+                    <img src="images/promo_student.png" alt="Group Discounts">
+                    <div class="promo-overlay-content">
+                        <h3>Group Discounts</h3>
+                        <p>Tiết kiệm 20% cho đặt chỗ 10 vé trở lên</p>
+                    </div>
+                </div>
+                <div class="promo-card promo-normal">
+                    <div class="promo-badge-overlay">EXPERIENCE</div>
+                    <img src="images/promo_imax_weekend.png" alt="IMAX Weekend">
+                    <div class="promo-overlay-content">
+                        <h3>IMAX Weekend</h3>
+                        <p>Trải nghiệm phim ở định dạng lớn nhất có thể</p>
+                    </div>
+                </div>`;
+        }
     }
 };
+
 
 document.addEventListener('DOMContentLoaded', () => {
     app.initSocket();
     app.loadDynamicMovies();
+    app.loadPromotions();
 
     const searchInput = document.getElementById('searchInput');
     const isMoviesPage = !!document.querySelector('.movies-grid');
@@ -624,3 +712,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+

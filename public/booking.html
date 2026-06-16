@@ -1330,7 +1330,7 @@
                             <span class="tag tag-pg">${movie.AgeRating || 'ALL'}</span>
                             <span class="tag tag-now">Đang chiếu</span>
                             ${movie.Duration ? `<span class="tag tag-dur">⏱ ${movie.Duration} phút</span>` : ''}
-                            ${movie.MainCast ? `<span class="tag tag-genre">${movie.MainCast.split(',')[0].trim()}</span>` : ''}
+                            ${movie.Genre ? `<span class="tag tag-genre">${movie.Genre.split(',')[0].trim()}</span>` : ''}
                         </div>
                         <div class="movie-title" onclick="openMovieModal(${movie.MovieID})">${movie.Title}</div>
                         ${movie.MainCast ? `<div class="movie-cast">Diễn viên: ${movie.MainCast}</div>` : ''}
@@ -1372,7 +1372,8 @@
             document.getElementById('modalMeta').innerHTML = `
                 <span class="tag tag-pg">${movie.AgeRating || 'ALL'}</span>
                 ${movie.Duration ? `<span class="tag tag-dur">⏱ ${movie.Duration} phút</span>` : ''}
-                <span class="tag tag-now">Đang chiếu</span>`;
+                <span class="tag tag-now">Đang chiếu</span>
+                ${movie.Genre ? `<span class="tag tag-genre">${movie.Genre}</span>` : ''}`;
 
             // Slots
             const slots = rawData.filter(r => r.MovieID === movieId);

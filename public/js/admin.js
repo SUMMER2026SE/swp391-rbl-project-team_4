@@ -469,6 +469,10 @@ function navigate(page, btn) {
         if (dateInput) dateInput.value = scheduleDate;
         loadShowtimes();
     }
+
+    if (page === 'promotions') {
+        loadPromotions();
+    }
 }
 
 function switchTab(tab, btn) {
@@ -1869,3 +1873,613 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch live dashboard data
     loadDashboardData();
 });
+<<<<<<< Updated upstream
+=======
+
+/* ══════════════════════════════════════
+   NOTIFICATIONS (Socket.io)
+══════════════════════════════════════ */
+let notifs = [];
+
+function toggleNotifDropdown() {
+    const el = document.getElementById('notifDropdown');
+    el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+    if (el.style.display === 'flex') {
+        document.getElementById('notifDot').style.display = 'none';
+    }
+}
+
+function clearNotifs() {
+    notifs = [];
+    renderNotifs();
+}
+
+function renderNotifs() {
+    const listEl = document.getElementById('notifList');
+    if (notifs.length === 0) {
+        listEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #9ca3af; font-size: 0.9rem;">Không có thông báo mới</div>';
+        return;
+    }
+    
+    let html = '';
+    notifs.forEach(n => {
+        const time = new Date(n.time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+        html += `
+            <div style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; background: #fff;">
+                <div style="font-weight: 600; font-size: 0.9rem; color: #1f2937;">${n.title}</div>
+                <div style="font-size: 0.8rem; color: #4b5563; margin-top: 4px;">${n.message}</div>
+                <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 6px;">${time}</div>
+            </div>
+        `;
+    });
+    listEl.innerHTML = html;
+}
+
+function showToast(title, message) {
+    const container = document.getElementById('adminToastContainer');
+    const toast = document.createElement('div');
+    toast.style.background = '#1f2937';
+    toast.style.color = '#fff';
+    toast.style.padding = '12px 20px';
+    toast.style.borderRadius = '8px';
+    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    toast.style.fontSize = '0.9rem';
+    toast.style.minWidth = '250px';
+    toast.style.transform = 'translateX(100%)';
+    toast.style.opacity = '0';
+    toast.style.transition = 'all 0.3s ease';
+    
+    toast.innerHTML = `
+        <div style="font-weight: bold; color: #10b981; margin-bottom: 4px;">${title}</div>
+        <div>${message}</div>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+        toast.style.opacity = '1';
+    }, 10);
+    
+    // Auto remove
+    setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+
+// Initialize Socket.io connection for admin
+if (typeof io !== 'undefined') {
+    const socket = io();
+    socket.on('adminNotification', (data) => {
+        // Add to list
+        notifs.unshift(data);
+        if (notifs.length > 50) notifs.pop(); // Keep max 50
+        
+        // Show red dot if dropdown is closed
+        const dropdown = document.getElementById('notifDropdown');
+        if (dropdown && dropdown.style.display !== 'flex') {
+            document.getElementById('notifDot').style.display = 'block';
+        }
+        
+        renderNotifs();
+        showToast(data.title, data.message);
+        
+        // Optionally refresh dashboard if we are on dashboard page
+        if (document.getElementById('page-dashboard').classList.contains('active')) {
+            loadDashboardData();
+        }
+    });
+}
+
+
+/* ══════════════════════════════════════
+   QUICK SELL MODAL (POS) LOGIC
+══════════════════════════════════════ */
+
+let qsState = {
+    showtimes: [],
+    selectedShowtimeId: null,
+    seats: [],
+    selectedSeatIds: [],
+    fnbItems: [],
+    selectedFnb: {}, // { fnbId: qty }
+    voucher: null,   // { id, discountType, discountValue, maxDiscount }
+    ticketPrice: 0
+};
+
+function openQuickSellModal() {
+    document.getElementById('quickSellModal').classList.add('active');
+    document.getElementById('quickSellModalOverlay').classList.add('active');
+    resetQsState();
+    loadQsShowtimes();
+    loadQsFnb();
+}
+
+function closeQuickSellModal() {
+    document.getElementById('quickSellModal').classList.remove('active');
+    document.getElementById('quickSellModalOverlay').classList.remove('active');
+}
+
+function resetQsState() {
+    qsState.selectedShowtimeId = null;
+    qsState.seats = [];
+    qsState.selectedSeatIds = [];
+    qsState.selectedFnb = {};
+    qsState.voucher = null;
+    qsState.ticketPrice = 0;
+    
+    document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: #9ca3af;">Vui lòng chọn suất chiếu trước</p>';
+    document.getElementById('qsSelectedSeats').textContent = 'Chưa chọn ghế';
+    document.getElementById('qsCustomerPhone').value = '';
+    document.getElementById('qsVoucherCode').value = '';
+    document.getElementById('qsVoucherMessage').textContent = '';
+    document.getElementById('btnSubmitQuickSell').disabled = true;
+    updateQsTotals();
+}
+
+async function loadQsShowtimes() {
+    const listEl = document.getElementById('qsShowtimesList');
+    listEl.innerHTML = '<p style="color: #6b7280; font-size: 0.9rem;">Đang tải suất chiếu...</p>';
+    try {
+        const res = await apiFetch('/api/staff/showtimes/today');
+        if (res.success) {
+            qsState.showtimes = res.data;
+            if (res.data.length === 0) {
+                listEl.innerHTML = '<p style="color: #6b7280; font-size: 0.9rem;">Không có suất chiếu nào trong ngày hôm nay.</p>';
+                return;
+            }
+            let html = '';
+            res.data.forEach(st => {
+                const start = new Date(st.StartTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                const end = new Date(st.EndTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                html += `
+                    <div class="qs-showtime-card" id="qs-st-${st.ShowtimeID}" onclick="selectQsShowtime(${st.ShowtimeID}, ${st.Price})">
+                        <div class="qs-movie-title">${st.MovieTitle}</div>
+                        <div class="qs-room-time">${st.CinemaName} - ${st.RoomName}</div>
+                        <div class="qs-room-time" style="color: var(--accent); margin-top: 5px; font-weight: bold;">
+                            🕒 ${start} - ${end} &nbsp;|&nbsp; 💰 ${formatCurrency(st.Price)}đ
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+        }
+    } catch (err) {
+        listEl.innerHTML = '<p style="color: red;">Lỗi tải suất chiếu</p>';
+    }
+}
+
+async function selectQsShowtime(showtimeId, price) {
+    qsState.selectedShowtimeId = showtimeId;
+    qsState.ticketPrice = price;
+    qsState.selectedSeatIds = [];
+    qsState.voucher = null;
+    
+    // UI selection
+    document.querySelectorAll('.qs-showtime-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById(`qs-st-${showtimeId}`).classList.add('selected');
+    
+    document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: #9ca3af;">Đang tải sơ đồ ghế...</p>';
+    
+    try {
+        const res = await apiFetch(`/api/staff/showtimes/${showtimeId}/seats`);
+        if (res.success) {
+            qsState.seats = res.data;
+            renderQsSeatMap();
+        }
+    } catch (err) {
+        document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: red;">Lỗi tải sơ đồ ghế</p>';
+    }
+    updateQsTotals();
+}
+
+function renderQsSeatMap() {
+    const container = document.getElementById('qsSeatMapContainer');
+    if (!qsState.seats || qsState.seats.length === 0) {
+        container.innerHTML = '<p style="color: #9ca3af;">Không có dữ liệu ghế.</p>';
+        return;
+    }
+
+    // Nhóm ghế theo dòng (A, B, C...)
+    const rows = {};
+    qsState.seats.forEach(s => {
+        if (!rows[s.SeatRow]) rows[s.SeatRow] = [];
+        rows[s.SeatRow].push(s);
+    });
+
+    let html = '<div style="margin-bottom:20px; font-weight:bold; color:#6b7280; letter-spacing:5px;">MÀN HÌNH</div>';
+    
+    const rowKeys = Object.keys(rows).sort();
+    rowKeys.forEach(rk => {
+        rows[rk].sort((a,b) => a.SeatNumber - b.SeatNumber);
+        html += `<div class="qs-seat-row">`;
+        html += `<div style="width: 20px; text-align: center; font-weight: bold; color: #9ca3af; line-height: 28px;">${rk}</div>`;
+        rows[rk].forEach(seat => {
+            let sClass = 'qs-seat';
+            if (seat.Status !== 'available') sClass += ' sold';
+            if (seat.SeatType === 'VIP') sClass += ' vip';
+            if (qsState.selectedSeatIds.includes(seat.SeatID)) sClass += ' selected';
+            
+            const onclick = seat.Status === 'available' ? `onclick="toggleQsSeat(${seat.SeatID}, '${seat.SeatRow}${seat.SeatNumber}')"` : '';
+            html += `<div class="${sClass}" ${onclick}>${seat.SeatNumber}</div>`;
+        });
+        html += `<div style="width: 20px;"></div>`;
+        html += `</div>`;
+    });
+    
+    container.innerHTML = html;
+}
+
+function toggleQsSeat(seatId, seatName) {
+    const idx = qsState.selectedSeatIds.indexOf(seatId);
+    if (idx > -1) {
+        qsState.selectedSeatIds.splice(idx, 1);
+    } else {
+        if (qsState.selectedSeatIds.length >= 8) {
+            return alert('Chỉ được đặt tối đa 8 ghế một lần!');
+        }
+        qsState.selectedSeatIds.push(seatId);
+    }
+    renderQsSeatMap();
+    updateQsTotals();
+}
+
+async function loadQsFnb() {
+    try {
+        const res = await apiFetch('/api/admin/fnb'); // Hoặc dùng public route /api/bookings/food-beverages
+        if (res.success) {
+            qsState.fnbItems = res.data.filter(f => f.IsAvailable);
+            renderQsFnb();
+        }
+    } catch (e) {}
+}
+
+function renderQsFnb() {
+    const listEl = document.getElementById('qsFnbList');
+    let html = '';
+    qsState.fnbItems.forEach(f => {
+        const qty = qsState.selectedFnb[f.FnBID] || 0;
+        html += `
+            <div class="qs-fnb-item">
+                <div class="qs-fnb-info">
+                    <div class="qs-fnb-name">${f.Name} <span style="font-size:0.75rem;color:#6b7280;">(Còn ${f.Stock})</span></div>
+                    <div class="qs-fnb-price">${formatCurrency(f.Price)}đ</div>
+                </div>
+                <div class="qs-fnb-qty">
+                    <button class="qs-btn-qty" onclick="updateQsFnb(${f.FnBID}, -1, ${f.Stock})">-</button>
+                    <span style="width:20px;text-align:center;font-weight:600;">${qty}</span>
+                    <button class="qs-btn-qty" onclick="updateQsFnb(${f.FnBID}, 1, ${f.Stock})">+</button>
+                </div>
+            </div>
+        `;
+    });
+    listEl.innerHTML = html;
+}
+
+function updateQsFnb(fnbId, delta, stock) {
+    let curr = qsState.selectedFnb[fnbId] || 0;
+    curr += delta;
+    if (curr < 0) curr = 0;
+    if (curr > 10) curr = 10;
+    if (curr > stock) curr = stock;
+    
+    if (curr === 0) delete qsState.selectedFnb[fnbId];
+    else qsState.selectedFnb[fnbId] = curr;
+    
+    renderQsFnb();
+    updateQsTotals();
+}
+
+function getSelectedSeatNames() {
+    return qsState.selectedSeatIds.map(id => {
+        const s = qsState.seats.find(x => x.SeatID === id);
+        return s ? `${s.SeatRow}${s.SeatNumber}` : '';
+    }).join(', ');
+}
+
+function updateQsTotals() {
+    const seatNames = getSelectedSeatNames();
+    document.getElementById('qsSelectedSeats').textContent = seatNames || 'Chưa chọn ghế';
+    
+    let ticketTotal = 0;
+    qsState.selectedSeatIds.forEach(id => {
+        const s = qsState.seats.find(x => x.SeatID === id);
+        const mult = s && s.PriceMultiplier ? s.PriceMultiplier : 1;
+        ticketTotal += qsState.ticketPrice * mult;
+    });
+    
+    let fnbTotal = 0;
+    Object.keys(qsState.selectedFnb).forEach(id => {
+        const item = qsState.fnbItems.find(x => x.FnBID == id);
+        if (item) fnbTotal += item.Price * qsState.selectedFnb[id];
+    });
+    
+    let subTotal = ticketTotal + fnbTotal;
+    let discount = 0;
+    
+    if (qsState.voucher) {
+        if (subTotal >= qsState.voucher.MinOrderValue) {
+            if (qsState.voucher.DiscountType === 'percent') {
+                discount = subTotal * qsState.voucher.DiscountValue / 100;
+                if (qsState.voucher.MaxDiscount) discount = Math.min(discount, qsState.voucher.MaxDiscount);
+            } else {
+                discount = Math.min(subTotal, qsState.voucher.DiscountValue);
+            }
+        }
+    }
+    
+    let finalTotal = subTotal - discount;
+    if (finalTotal < 0) finalTotal = 0;
+    
+    document.getElementById('qsTicketTotal').textContent = formatCurrency(ticketTotal) + ' đ';
+    document.getElementById('qsFnbTotal').textContent = formatCurrency(fnbTotal) + ' đ';
+    document.getElementById('qsDiscountTotal').textContent = '- ' + formatCurrency(discount) + ' đ';
+    document.getElementById('qsFinalTotal').textContent = formatCurrency(finalTotal) + ' đ';
+    
+    document.getElementById('btnSubmitQuickSell').disabled = qsState.selectedSeatIds.length === 0;
+}
+
+async function applyQsVoucher() {
+    const code = document.getElementById('qsVoucherCode').value.trim();
+    const msgEl = document.getElementById('qsVoucherMessage');
+    
+    if (!code) {
+        qsState.voucher = null;
+        msgEl.textContent = '';
+        updateQsTotals();
+        return;
+    }
+    
+    msgEl.textContent = 'Đang kiểm tra...';
+    msgEl.style.color = '#6b7280';
+    
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const res = await fetch('/api/bookings/validate-voucher', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ code })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            qsState.voucher = data.data;
+            msgEl.textContent = 'Mã hợp lệ!';
+            msgEl.style.color = '#10b981';
+            updateQsTotals();
+        } else {
+            qsState.voucher = null;
+            msgEl.textContent = data.message || 'Mã không hợp lệ';
+            msgEl.style.color = '#e8192c';
+            updateQsTotals();
+        }
+    } catch (e) {
+        msgEl.textContent = 'Lỗi kết nối';
+    }
+}
+
+async function submitQuickSell() {
+    if (qsState.selectedSeatIds.length === 0) return alert('Vui lòng chọn ghế!');
+    
+    const btn = document.getElementById('btnSubmitQuickSell');
+    btn.disabled = true;
+    btn.textContent = 'Đang xử lý...';
+    
+    const foodItems = Object.keys(qsState.selectedFnb).map(id => ({
+        fnbId: id,
+        quantity: qsState.selectedFnb[id]
+    }));
+    
+    const payload = {
+        showtimeId: qsState.selectedShowtimeId,
+        seatIds: qsState.selectedSeatIds,
+        foodItems: foodItems,
+        customerPhone: document.getElementById('qsCustomerPhone').value.trim(),
+        voucherCode: qsState.voucher ? document.getElementById('qsVoucherCode').value.trim() : null,
+        paymentMethod: 'cash'
+    };
+    
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const res = await fetch('/api/staff/sell-ticket', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            alert('Thanh toán thành công!\nMã vé: ' + data.data.ticketIds.map(t => 'TKT-'+t).join(', '));
+            closeQuickSellModal();
+            loadDashboardData(); // Cập nhật lại biểu đồ/KPIs
+        } else {
+            alert('Lỗi: ' + data.message);
+        }
+    } catch (e) {
+        alert('Lỗi kết nối');
+    }
+    
+    btn.textContent = 'Thanh Toán & In Vé';
+    btn.disabled = false;
+}
+
+
+/* ════════════════════════════════════════════════
+   PROMOTIONS MANAGEMENT
+════════════════════════════════════════════════ */
+let PROMO_DATA = [];
+
+async function loadPromotions() {
+    try {
+        const res = await apiFetch('/api/admin/promotions');
+        if (res.success) {
+            PROMO_DATA = res.data;
+            renderPromoTable();
+        } else {
+            console.error('[Admin] loadPromotions:', res.message);
+        }
+    } catch (err) {
+        console.error('[Admin] loadPromotions error:', err);
+    }
+}
+
+function renderPromoTable() {
+    const body = document.getElementById('promoBody');
+    if (!body) return;
+
+    if (PROMO_DATA.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có khuyến mãi nào. Nhấn <b>Thêm mới</b> để bắt đầu.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = PROMO_DATA.map(p => `
+        <tr class="txn-row">
+            <td>
+                <img src="${p.ImageURL || 'images/default_poster.svg'}"
+                     alt="${p.Title}"
+                     onerror="this.onerror=null;this.src='images/default_poster.svg'"
+                     style="width:60px;height:44px;object-fit:cover;border-radius:6px;">
+            </td>
+            <td>
+                <div style="font-weight:600;color:var(--text);">${p.Title}</div>
+                <div style="font-size:0.8rem;color:var(--text2);margin-top:2px;">${(p.Description || '').substring(0, 50)}${p.Description && p.Description.length > 50 ? '…' : ''}</div>
+            </td>
+            <td>${p.BadgeLabel ? `<span style="background:rgba(232,25,44,0.12);color:#e8192c;font-size:0.72rem;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:0.04em;">${p.BadgeLabel}</span>` : '<span style="color:#9ca3af;">—</span>'}</td>
+            <td>
+                ${p.IsFeatured
+                    ? '<span style="color:#10b981;font-weight:700;font-size:0.82rem;">★ Nổi bật</span>'
+                    : '<span style="color:#9ca3af;font-size:0.82rem;">Thường</span>'}
+            </td>
+            <td>
+                <span style="padding:4px 10px;border-radius:20px;font-size:0.78rem;font-weight:600;
+                    background:${p.IsActive ? 'rgba(16,185,129,0.12)' : 'rgba(107,114,128,0.12)'};
+                    color:${p.IsActive ? '#10b981' : '#9ca3af'};">
+                    ${p.IsActive ? 'Đang hiện' : 'Đã ẩn'}
+                </span>
+            </td>
+            <td style="color:var(--text2);font-weight:600;">${p.SortOrder}</td>
+            <td>
+                <div class="table-actions">
+                    <button class="tb-icon-sm" title="Sửa" onclick="openPromoModal(${p.PromotionID})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="tb-icon-sm" title="${p.IsActive ? 'Ẩn' : 'Hiện'}" onclick="togglePromo(${p.PromotionID})" style="color:${p.IsActive ? '#10b981' : '#9ca3af'}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button class="tb-icon-sm danger" title="Xóa" onclick="deletePromo(${p.PromotionID})" style="color:var(--danger)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openPromoModal(id) {
+    document.getElementById('promoForm').reset();
+    document.getElementById('promoCurrentImg').innerHTML = '';
+
+    if (id) {
+        const p = PROMO_DATA.find(x => x.PromotionID === id);
+        if (!p) return;
+        document.getElementById('promoModalTitle').textContent = 'SỬA KHUYẾN MÃI';
+        document.getElementById('promoId').value = p.PromotionID;
+        document.getElementById('promoTitle').value = p.Title || '';
+        document.getElementById('promoDesc').value = p.Description || '';
+        document.getElementById('promoBadge').value = p.BadgeLabel || '';
+        document.getElementById('promoLink').value = p.LinkURL || '';
+        document.getElementById('promoSort').value = p.SortOrder || 0;
+        document.getElementById('promoFeatured').checked = !!p.IsFeatured;
+        document.getElementById('promoActive').checked = !!p.IsActive;
+        if (p.ImageURL) {
+            document.getElementById('promoCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${p.ImageURL}" target="_blank" style="color:var(--accent);">${p.ImageURL}</a>`;
+        }
+    } else {
+        document.getElementById('promoModalTitle').textContent = 'THÊM KHUYẾN MÃI';
+        document.getElementById('promoId').value = '';
+        document.getElementById('promoActive').checked = true;
+    }
+
+    document.getElementById('promoModalOverlay').style.display = 'block';
+    document.getElementById('promoModal').style.display = 'block';
+}
+
+function closePromoModal() {
+    document.getElementById('promoModalOverlay').style.display = 'none';
+    document.getElementById('promoModal').style.display = 'none';
+}
+
+async function savePromo(event) {
+    event.preventDefault();
+    const id = document.getElementById('promoId').value;
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+
+    const formData = new FormData();
+    formData.append('title',       document.getElementById('promoTitle').value);
+    formData.append('description', document.getElementById('promoDesc').value);
+    formData.append('badgeLabel',  document.getElementById('promoBadge').value);
+    formData.append('linkURL',     document.getElementById('promoLink').value);
+    formData.append('sortOrder',   document.getElementById('promoSort').value);
+    formData.append('isFeatured',  document.getElementById('promoFeatured').checked ? 'true' : 'false');
+    formData.append('isActive',    document.getElementById('promoActive').checked ? 'true' : 'false');
+
+    const imageFile = document.getElementById('promoImage').files[0];
+    if (imageFile) formData.append('image', imageFile);
+
+    const url    = id ? `/api/admin/promotions/${id}` : '/api/admin/promotions';
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAdminToast(data.message, 'success');
+            closePromoModal();
+            loadPromotions();
+        } else {
+            showAdminToast('Lỗi: ' + data.message, 'error');
+        }
+    } catch (err) {
+        console.error('[Admin] savePromo:', err);
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+async function deletePromo(id) {
+    if (!confirm('Bạn có chắc muốn xóa khuyến mãi này không?')) return;
+    try {
+        const res = await apiFetch(`/api/admin/promotions/${id}`, { method: 'DELETE' });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadPromotions();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+async function togglePromo(id) {
+    try {
+        const res = await apiFetch(`/api/admin/promotions/${id}/toggle`, { method: 'PATCH' });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadPromotions();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+
+>>>>>>> Stashed changes

@@ -661,6 +661,138 @@ class AdminModel {
       `);
     return result.recordset;
   }
+<<<<<<< Updated upstream
+=======
+
+  static async getLiveRoomsStatus(cinemaId) {
+    const pool = await getPool();
+    let query = `
+      SELECT 
+          r.RoomID,
+          r.RoomName,
+          r.TotalSeats,
+          c.CinemaName,
+          st.ShowtimeID,
+          st.StartTime,
+          st.EndTime,
+          m.Title AS MovieTitle,
+          (
+              SELECT COUNT(t.TicketID) 
+              FROM Tickets t 
+              WHERE t.ShowtimeID = st.ShowtimeID AND t.Status IN ('confirmed', 'used')
+          ) AS TicketsSold
+      FROM Rooms r
+      JOIN Cinemas c ON r.CinemaID = c.CinemaID
+      LEFT JOIN Showtimes st ON r.RoomID = st.RoomID 
+          AND st.Status = 'active'
+          AND GETUTCDATE() >= DATEADD(minute, -15, st.StartTime) 
+          AND GETUTCDATE() <= DATEADD(minute, 15, st.EndTime)
+      LEFT JOIN Movies m ON st.MovieID = m.MovieID
+      WHERE 1=1
+    `;
+    const request = pool.request();
+    if (cinemaId) {
+      query += ` AND r.CinemaID = @cinemaId`;
+      request.input('cinemaId', sql.Int, parseInt(cinemaId));
+    }
+    query += ` ORDER BY c.CinemaName, r.RoomName`;
+    const result = await request.query(query);
+    return result.recordset;
+  }
+  // --- PROMOTIONS MANAGEMENT ---
+  static async getAllPromotions() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT PromotionID, Title, Description, BadgeLabel, ImageURL, LinkURL,
+             IsFeatured, IsActive, SortOrder, CreatedAt, UpdatedAt
+      FROM   Promotions
+      ORDER BY SortOrder ASC, CreatedAt DESC
+    `);
+    return result.recordset;
+  }
+
+  static async getActivePromotions() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT PromotionID, Title, Description, BadgeLabel, ImageURL, LinkURL,
+             IsFeatured, IsActive, SortOrder
+      FROM   Promotions
+      WHERE  IsActive = 1
+      ORDER BY SortOrder ASC, CreatedAt DESC
+    `);
+    return result.recordset;
+  }
+
+  static async createPromotion(data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('title',       sql.NVarChar, data.title)
+      .input('description', sql.NVarChar, data.description || null)
+      .input('badgeLabel',  sql.NVarChar, data.badgeLabel  || null)
+      .input('imageURL',    sql.VarChar,  data.imageURL    || null)
+      .input('linkURL',     sql.VarChar,  data.linkURL     || null)
+      .input('isFeatured',  sql.Bit,      data.isFeatured  ? 1 : 0)
+      .input('isActive',    sql.Bit,      data.isActive !== false ? 1 : 0)
+      .input('sortOrder',   sql.Int,      parseInt(data.sortOrder) || 0)
+      .query(`
+        INSERT INTO Promotions (Title, Description, BadgeLabel, ImageURL, LinkURL, IsFeatured, IsActive, SortOrder)
+        OUTPUT INSERTED.*
+        VALUES (@title, @description, @badgeLabel, @imageURL, @linkURL, @isFeatured, @isActive, @sortOrder)
+      `);
+    return result.recordset[0];
+  }
+
+  static async updatePromotion(id, data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id',          sql.Int,      id)
+      .input('title',       sql.NVarChar, data.title       || null)
+      .input('description', sql.NVarChar, data.description || null)
+      .input('badgeLabel',  sql.NVarChar, data.badgeLabel  || null)
+      .input('imageURL',    sql.VarChar,  data.imageURL    || null)
+      .input('linkURL',     sql.VarChar,  data.linkURL     || null)
+      .input('isFeatured',  sql.Bit,      data.isFeatured  ? 1 : 0)
+      .input('isActive',    sql.Bit,      data.isActive !== false ? 1 : 0)
+      .input('sortOrder',   sql.Int,      parseInt(data.sortOrder) || 0)
+      .query(`
+        UPDATE Promotions
+        SET Title       = COALESCE(@title,       Title),
+            Description = COALESCE(@description, Description),
+            BadgeLabel  = COALESCE(@badgeLabel,  BadgeLabel),
+            ImageURL    = COALESCE(@imageURL,    ImageURL),
+            LinkURL     = COALESCE(@linkURL,     LinkURL),
+            IsFeatured  = @isFeatured,
+            IsActive    = @isActive,
+            SortOrder   = @sortOrder,
+            UpdatedAt   = GETDATE()
+        OUTPUT INSERTED.*
+        WHERE PromotionID = @id
+      `);
+    return result.recordset.length > 0 ? result.recordset[0] : null;
+  }
+
+  static async deletePromotion(id) {
+    const pool = await getPool();
+    await pool.request()
+      .input('id', sql.Int, id)
+      .query(`DELETE FROM Promotions WHERE PromotionID = @id`);
+  }
+
+  static async togglePromotionActive(id) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, id)
+      .query(`
+        UPDATE Promotions
+        SET IsActive  = CASE WHEN IsActive = 1 THEN 0 ELSE 1 END,
+            UpdatedAt = GETDATE()
+        OUTPUT INSERTED.*
+        WHERE PromotionID = @id
+      `);
+    return result.recordset.length > 0 ? result.recordset[0] : null;
+  }
+>>>>>>> Stashed changes
 }
 
 module.exports = AdminModel;
+
