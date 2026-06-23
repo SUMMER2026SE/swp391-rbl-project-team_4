@@ -617,7 +617,7 @@ function filterMovies(filter, btn) {
     document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
     
-    if (filter === 'All') {
+    if (filter === 'Tất cả') {
         filteredMovies = [...MOVIE_DATA];
     } else {
         filteredMovies = MOVIE_DATA.filter(m => m.Status.toUpperCase() === filter.toUpperCase());
@@ -2195,6 +2195,12 @@ function renderNotifs() {
     listEl.innerHTML = html;
 }
 
+/* Bridge function: showAdminToast → showToast */
+function showAdminToast(message, type = 'success') {
+    const title = type === 'error' ? '❌ Lỗi' : '✅ Thành công';
+    showToast(title, message);
+}
+
 function showToast(title, message) {
     const container = document.getElementById('adminToastContainer');
     const toast = document.createElement('div');
@@ -2271,16 +2277,16 @@ let qsState = {
 };
 
 function openQuickSellModal() {
-    document.getElementById('quickSellModal').classList.add('active');
-    document.getElementById('quickSellModalOverlay').classList.add('active');
+    document.getElementById('quickSellModal').classList.add('show');
+    document.getElementById('quickSellModalOverlay').classList.add('show');
     resetQsState();
     loadQsShowtimes();
     loadQsFnb();
 }
 
 function closeQuickSellModal() {
-    document.getElementById('quickSellModal').classList.remove('active');
-    document.getElementById('quickSellModalOverlay').classList.remove('active');
+    document.getElementById('quickSellModal').classList.remove('show');
+    document.getElementById('quickSellModalOverlay').classList.remove('show');
 }
 
 function resetQsState() {
