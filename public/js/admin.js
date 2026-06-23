@@ -1242,29 +1242,89 @@ async function saveVoucher() {
    STAFF MANAGEMENT
 ══════════════════════════ */
 let STAFF_DATA = [];
+let FILTERED_STAFF = [];
+let currentStaffRoleFilter = 'Tất cả';
+let currentStaffStatusFilter = 'Tất cả';
 
 async function loadStaff() {
     try {
         const res = await apiFetch('/api/admin/users');
         if (res.success) {
-            STAFF_DATA = res.data;
-            renderStaffTable();
+            STAFF_DATA = res.data || [];
+            updateStaffKPIs();
+            applyStaffFilters();
         }
     } catch (err) {
         console.error('Failed to load staff:', err);
     }
 }
 
+function updateStaffKPIs() {
+    const totalCount = STAFF_DATA.length;
+    const activeCount = STAFF_DATA.filter(u => u.IsActive).length;
+    const adminCount = STAFF_DATA.filter(u => u.RoleName === 'Admin').length;
+    const managerCount = STAFF_DATA.filter(u => u.RoleName === 'Manager').length;
+    const customerCount = STAFF_DATA.filter(u => u.RoleName === 'Customer').length;
+
+    const valNodes = document.querySelectorAll('.sh-stat .shs-val');
+    if (valNodes.length >= 2) {
+        valNodes[0].textContent = totalCount;
+        valNodes[1].textContent = activeCount;
+    }
+
+    const kpiCards = document.querySelectorAll('.staff-kpis .skpi-desc');
+    if (kpiCards.length >= 4) {
+        kpiCards[0].textContent = `${adminCount} người được ủy quyền`;
+        kpiCards[1].textContent = `${managerCount} người được ủy quyền`;
+        kpiCards[2].textContent = `0 người được ủy quyền`; 
+        kpiCards[3].textContent = `${customerCount} khách hàng`; 
+    }
+}
+
+function filterStaffByRole(role, btn) {
+    if (btn) {
+        document.querySelectorAll('.sf-pills .sf-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    currentStaffRoleFilter = role;
+    applyStaffFilters();
+}
+
+function filterStaffByStatus(status) {
+    currentStaffStatusFilter = status;
+    applyStaffFilters();
+}
+
+function applyStaffFilters() {
+    FILTERED_STAFF = STAFF_DATA.filter(u => {
+        let roleMatch = true;
+        if (currentStaffRoleFilter !== 'Tất cả') {
+            if (currentStaffRoleFilter === 'Admin') roleMatch = (u.RoleName === 'Admin');
+            if (currentStaffRoleFilter === 'Quản lý') roleMatch = (u.RoleName === 'Manager');
+            if (currentStaffRoleFilter === 'Khách hàng') roleMatch = (u.RoleName === 'Customer');
+            if (currentStaffRoleFilter === 'Nhân viên') roleMatch = (u.RoleName === 'Staff');
+        }
+        
+        let statusMatch = true;
+        if (currentStaffStatusFilter !== 'Tất cả') {
+            if (currentStaffStatusFilter === 'Active') statusMatch = u.IsActive === 1;
+            if (currentStaffStatusFilter === 'Banned' || currentStaffStatusFilter === 'Inactive') statusMatch = u.IsActive === 0;
+        }
+        return roleMatch && statusMatch;
+    });
+    renderStaffTable();
+}
+
 function renderStaffTable() {
     const body = document.getElementById('staffTableBody');
     if (!body) return;
     
-    if (STAFF_DATA.length === 0) {
+    if (FILTERED_STAFF.length === 0) {
         body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px;">Không có dữ liệu nhân sự</td></tr>';
         return;
     }
 
-    body.innerHTML = STAFF_DATA.map(user => {
+    body.innerHTML = FILTERED_STAFF.map(user => {
         let roleClass = user.RoleName.toLowerCase() === 'admin' ? 'admin' : (user.RoleName.toLowerCase() === 'manager' ? 'manager' : 'staff');
         
         return `
@@ -1300,7 +1360,7 @@ function renderStaffTable() {
     `}).join('');
 
     const pgInfo = document.getElementById('staffPgInfo');
-    if (pgInfo) pgInfo.innerHTML = `Hiển thị <strong>${STAFF_DATA.length}</strong> nhân viên`;
+    if (pgInfo) pgInfo.innerHTML = `Hiển thị <strong>${FILTERED_STAFF.length}</strong> nhân viên`;
 }
 
 async function changeStaffRole(userId, newRole) {
