@@ -106,6 +106,9 @@ function initChatbotWidget() {
     const messages = document.getElementById('moviebot-messages');
     const suggCards = document.querySelectorAll('.sugg-card');
 
+    let chatHistory = [];
+    let isSending = false;
+
     btn.addEventListener('click', () => { win.style.display = win.style.display === 'flex' ? 'none' : 'flex'; });
     close.addEventListener('click', () => { win.style.display = 'none'; });
 
@@ -143,9 +146,12 @@ function initChatbotWidget() {
     }, 500);
 
     const sendMessage = async (text) => {
-        if (!text) return;
+        if (!text || isSending) return;
+        isSending = true;
         input.value = '';
         appendMessage(text, 'user');
+        
+        chatHistory.push({ role: 'user', parts: [{ text }] });
 
         // Typing indicator
         const typingId = 'typing-' + Date.now();
@@ -169,25 +175,22 @@ function initChatbotWidget() {
                     'Content-Type': 'application/json',
                     ...(token && { 'Authorization': `Bearer ${token}` })
                 },
-                body: JSON.stringify({ message: text })
+                body: JSON.stringify({ message: text, history: chatHistory.slice(0, -1) })
             });
             const data = await res.json();
-
-            // Artificial delay of 10 seconds
-            await new Promise(resolve => setTimeout(resolve, 10000));
 
             document.getElementById(typingId).remove();
             if (data.reply) {
                 appendMessage(data.reply, 'bot');
+                chatHistory.push({ role: 'model', parts: [{ text: data.reply }] });
             } else {
                 appendMessage('Xin lỗi, mình gặp lỗi xử lý. Bạn thử lại nhé.', 'bot');
             }
         } catch (e) {
-            // Delay error response as well
-            await new Promise(resolve => setTimeout(resolve, 10000));
-
             document.getElementById(typingId).remove();
             appendMessage('Mất kết nối với máy chủ AI.', 'bot');
+        } finally {
+            isSending = false;
         }
     };
 

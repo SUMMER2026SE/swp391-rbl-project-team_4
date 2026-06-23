@@ -2,3 +2,4 @@ node_modules/
 .env
 config/db.js
 config/cinemamanagements.sql
+payment_qr_migration.sql
