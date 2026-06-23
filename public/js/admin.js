@@ -738,6 +738,10 @@ function navigate(page, btn) {
     if (page === 'promotions') {
         loadPromotions();
     }
+    
+    if (page === 'pricing' || page === 'settings') {
+        loadSettings();
+    }
 }
 
 function switchTab(tab, btn) {
@@ -2836,3 +2840,71 @@ async function togglePromo(id) {
 
 
 
+/* ══════════════════════════
+   SETTINGS & PRICING
+══════════════════════════ */
+async function loadSettings() {
+    try {
+        const res = await apiFetch('/api/admin/settings');
+        if (res.success) {
+            const data = res.data;
+            if(document.getElementById('cfg_BASE_TICKET_PRICE')) document.getElementById('cfg_BASE_TICKET_PRICE').value = data.BASE_TICKET_PRICE || '';
+            if(document.getElementById('cfg_VIP_MULTIPLIER')) document.getElementById('cfg_VIP_MULTIPLIER').value = data.VIP_MULTIPLIER || '';
+            if(document.getElementById('cfg_COUPLE_MULTIPLIER')) document.getElementById('cfg_COUPLE_MULTIPLIER').value = data.COUPLE_MULTIPLIER || '';
+            
+            if(document.getElementById('cfg_HOTLINE')) document.getElementById('cfg_HOTLINE').value = data.HOTLINE || '';
+            if(document.getElementById('cfg_SUPPORT_EMAIL')) document.getElementById('cfg_SUPPORT_EMAIL').value = data.SUPPORT_EMAIL || '';
+            if(document.getElementById('cfg_MAINTENANCE_MODE')) document.getElementById('cfg_MAINTENANCE_MODE').checked = (data.MAINTENANCE_MODE === 'true');
+        }
+    } catch (e) {
+        console.error('Failed to load settings', e);
+    }
+}
+
+async function savePricingSettings() {
+    const basePrice = document.getElementById('cfg_BASE_TICKET_PRICE').value;
+    const vipM = document.getElementById('cfg_VIP_MULTIPLIER').value;
+    const coupleM = document.getElementById('cfg_COUPLE_MULTIPLIER').value;
+    
+    if(!basePrice || !vipM || !coupleM) return showToast('Lỗi', 'Vui lòng điền đủ thông tin');
+    
+    const payload = [
+        { key: 'BASE_TICKET_PRICE', value: basePrice },
+        { key: 'VIP_MULTIPLIER', value: vipM },
+        { key: 'COUPLE_MULTIPLIER', value: coupleM }
+    ];
+    
+    await updateSettingsApi(payload);
+}
+
+async function saveSystemSettings() {
+    const hotline = document.getElementById('cfg_HOTLINE').value;
+    const email = document.getElementById('cfg_SUPPORT_EMAIL').value;
+    const maint = document.getElementById('cfg_MAINTENANCE_MODE').checked;
+    
+    const payload = [
+        { key: 'HOTLINE', value: hotline },
+        { key: 'SUPPORT_EMAIL', value: email },
+        { key: 'MAINTENANCE_MODE', value: maint ? 'true' : 'false' }
+    ];
+    
+    await updateSettingsApi(payload);
+}
+
+async function updateSettingsApi(settingsArray) {
+    try {
+        const res = await apiFetch('/api/admin/settings', {
+            method: 'PUT',
+            body: JSON.stringify({ settings: settingsArray })
+        });
+        if (res.success) {
+            showToast('Thành công', res.message);
+            loadSettings();
+        } else {
+            showToast('Lỗi', res.message);
+        }
+    } catch (e) {
+        console.error('Failed to save settings', e);
+        showToast('Lỗi', 'Lỗi kết nối server');
+    }
+}

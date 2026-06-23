@@ -149,5 +149,12 @@ router.delete('/promotions/:id', adminCtrl.deletePromotion);
 router.patch('/promotions/:id/toggle', adminCtrl.togglePromotionActive);
 
 
+// ==========================================
+// SYSTEM SETTINGS
+// ==========================================
+const settingsController = require('../controllers/settingsController');
+router.get('/settings', settingsController.getAllSettings);
+router.put('/settings', settingsController.updateSettings);
+
 module.exports = router;
 

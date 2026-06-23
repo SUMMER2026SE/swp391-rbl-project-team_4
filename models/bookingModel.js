@@ -1,12 +1,14 @@
 const { sql, getPool } = require('../config/db');
 
+const SettingsModel = require('./settingsModel');
+
 function isCoupleSeat(seat) {
   return (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) || seat.SeatRow === 'F';
 }
 
 function getSeatMultiplier(seat) {
-  if (isCoupleSeat(seat)) return 0.75;
-  if (seat.SeatType === 'VIP') return 1.2;
+  if (isCoupleSeat(seat)) return parseFloat(SettingsModel.cache['COUPLE_MULTIPLIER']) || 1.5;
+  if (seat.SeatType === 'VIP') return parseFloat(SettingsModel.cache['VIP_MULTIPLIER']) || 1.2;
   return parseFloat(seat.PriceMultiplier || 1.0);
 }
 
