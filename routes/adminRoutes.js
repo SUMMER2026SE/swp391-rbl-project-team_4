@@ -100,9 +100,28 @@ router.patch('/fnb/:id/toggle', adminCtrl.toggleFnBAvailability);
 // GET    /api/admin/fnb/stats          — Số liệu thống kê FnB
 router.get('/fnb/stats', adminCtrl.getFnBStats);
 
-// ─── Statistics ──────────────────────────────────────────────
+// ─── Cinema Management ──────────────────────────────────────
 // GET    /api/admin/cinemas           — Danh sách rạp chiếu
 router.get('/cinemas', adminCtrl.getCinemas);
+
+// POST   /api/admin/cinemas           — Thêm rạp mới
+router.post('/cinemas', adminCtrl.createCinema);
+
+// PUT    /api/admin/cinemas/:id       — Sửa rạp
+router.put('/cinemas/:id', adminCtrl.updateCinema);
+
+// DELETE /api/admin/cinemas/:id       — Xóa rạp
+router.delete('/cinemas/:id', adminCtrl.deleteCinema);
+
+// ─── Room Management ────────────────────────────────────────
+// POST   /api/admin/rooms             — Thêm phòng chiếu
+router.post('/rooms', adminCtrl.createRoom);
+
+// PUT    /api/admin/rooms/:id         — Sửa phòng chiếu
+router.put('/rooms/:id', adminCtrl.updateRoom);
+
+// DELETE /api/admin/rooms/:id         — Xóa phòng chiếu
+router.delete('/rooms/:id', adminCtrl.deleteRoom);
 
 // GET    /api/admin/stats/dashboard    — Tổng quan dashboard (hỗ trợ ?cinemaId=&period=)
 router.get('/stats/dashboard', adminCtrl.getDashboardStats);
