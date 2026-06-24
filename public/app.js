@@ -493,6 +493,9 @@ const app = {
                 const res = await fetch(`${API_BASE}/api/movies`);
                 const json = await res.json();
                 if (json.success && json.data) {
+                    window.allMoviesData = json.data;
+                    app.renderMoviesGrid(json.data);
+                    app.initMovieFilters();
                     this.allMovies = json.data;
                     
                     // Parse query parameters to pre-fill filters
@@ -523,6 +526,16 @@ const app = {
         }
     },
 
+    renderMoviesGrid(movies) {
+        const allMoviesGrid = document.querySelector('.movies-grid');
+        if (!allMoviesGrid) return;
+        
+        if (!movies || movies.length === 0) {
+            allMoviesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">Không tìm thấy phim phù hợp.</div>';
+            return;
+        }
+
+        allMoviesGrid.innerHTML = movies.map(movie => `
     switchMovieStatusTab(status) {
         this.filterState.status = status;
         this.updateTabUI();
@@ -605,6 +618,14 @@ const app = {
                     <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
                     <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                     <div class="movie-overlay">
+                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Get Tickets</button>
+                    </div>
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title">${movie.Title}</h3>
+                    <div class="movie-rating">
+                        <span class="stars">★ 4.9</span>
+                        <span class="genres">${movie.Duration} phút | ${movie.Formats || '2D'}</span>
                         <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
                     </div>
                 </div>
@@ -619,6 +640,72 @@ const app = {
         `).join('');
     },
 
+    initMovieFilters() {
+        const checkboxes = document.querySelectorAll('.filter-item input[type="checkbox"]');
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+
+        const applyFilters = () => {
+            if (!window.allMoviesData) return;
+            
+            let filtered = [...window.allMoviesData];
+
+            // 1. Filter by Search
+            if (searchInput && searchInput.value) {
+                const q = searchInput.value.toLowerCase();
+                filtered = filtered.filter(m => m.Title.toLowerCase().includes(q));
+            }
+
+            // 2. Filter by Genres
+            const selectedGenres = Array.from(document.querySelectorAll('input[name="genre"]:checked')).map(cb => cb.value);
+            if (selectedGenres.length > 0) {
+                filtered = filtered.filter(m => {
+                    const genreStr = m.Genres || m.MainCast || "";
+                    if (!genreStr) return false;
+                    
+                    const mGenres = genreStr.split(',').map(g => g.trim().toLowerCase());
+                    
+                    return selectedGenres.some(selected => {
+                        const s = selected.toLowerCase();
+                        // Either exact match in array, or substring match in the full string
+                        return mGenres.includes(s) || genreStr.toLowerCase().includes(s);
+                    });
+                });
+            }
+
+            // 3. Filter by Formats
+            const selectedFormats = Array.from(document.querySelectorAll('input[name="format"]:checked')).map(cb => cb.value);
+            if (selectedFormats.length > 0) {
+                filtered = filtered.filter(m => {
+                    if (!m.Formats) return false;
+                    const mFormats = m.Formats.split(',').map(f => f.trim());
+                    return selectedFormats.some(f => mFormats.includes(f));
+                });
+            }
+
+            // 4. Sort
+            if (sortSelect) {
+                const sortMode = sortSelect.value;
+                if (sortMode === 'title') {
+                    filtered.sort((a, b) => a.Title.localeCompare(b.Title));
+                } else if (sortMode === 'newest') {
+                    filtered.sort((a, b) => b.MovieID - a.MovieID);
+                }
+                // popular, rating could be added if data supports it
+            }
+
+            app.renderMoviesGrid(filtered);
+        };
+
+        checkboxes.forEach(cb => cb.addEventListener('change', applyFilters));
+        if (searchInput) searchInput.addEventListener('input', applyFilters);
+        if (sortSelect) sortSelect.addEventListener('change', applyFilters);
+    },
+
+    // --- Load Cinemas for Navbar ---
+    async loadCinemasNavbar() {
+        const dropdown = document.getElementById('cinemaDropdown');
+        if (!dropdown) return;
     // --- Promotions (Tin tức & Khuyến mãi) ---
     async loadPromotions() {
         const grid = document.getElementById('promotionsGrid');
