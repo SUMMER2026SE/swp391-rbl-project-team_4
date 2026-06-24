@@ -23,7 +23,6 @@ class MovieModel {
     const pool = await getPool();
     const request = pool.request();
     let query = `
-      SELECT DISTINCT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
       SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
              m.TrailerURL, m.PosterURL, m.Status, m.MainCast,
              (SELECT STRING_AGG(g.GenreName, ', ') 
@@ -39,22 +38,11 @@ class MovieModel {
                              FROM Showtimes st2 
                              JOIN Rooms r2 ON st2.RoomID = r2.RoomID 
                              WHERE st2.MovieID = m.MovieID AND st2.Status = 'active') AS Formats), '2D') AS Formats
-                               WHEN r.RoomName LIKE '%3D%' THEN '3D'
-                               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
-                               ELSE '2D'
-                             END AS Format 
-                             FROM Showtimes st 
-                             JOIN Rooms r ON st.RoomID = r.RoomID 
-                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
       FROM   Movies m
     `;
     if (city && city !== 'Toàn quốc') {
       request.input('city', sql.NVarChar, city);
       query += `
-        JOIN Showtimes st ON m.MovieID = st.MovieID
-        JOIN Rooms r ON st.RoomID = r.RoomID
-        JOIN Cinemas c ON r.CinemaID = c.CinemaID
-        WHERE m.Status = 'Now Showing' AND c.City = @city
         WHERE m.Status = 'Now Showing'
           AND EXISTS (
             SELECT 1 FROM Showtimes st
