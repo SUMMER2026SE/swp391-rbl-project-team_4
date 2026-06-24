@@ -586,6 +586,7 @@ function editMovie(id) {
     document.getElementById('movieDuration').value = movie.Duration || '';
     document.getElementById('movieAgeRating').value = movie.AgeRating || '';
     document.getElementById('movieMainCast').value = movie.MainCast || '';
+    document.getElementById('movieTrailerURL').value = movie.TrailerURL || '';
     const preview = document.getElementById('posterPreview');
     if (movie.PosterURL) {
         preview.src = movie.PosterURL;
@@ -658,6 +659,7 @@ async function saveMovie() {
         formData.append('duration', document.getElementById('movieDuration').value);
         formData.append('ageRating', document.getElementById('movieAgeRating').value);
         formData.append('mainCast', document.getElementById('movieMainCast').value);
+        formData.append('trailerURL', document.getElementById('movieTrailerURL').value);
 
         const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         const url = editingMovieId ? `/api/admin/movies/${editingMovieId}` : '/api/admin/movies';
@@ -1459,10 +1461,9 @@ let selectedCinemaId = null;
 
 async function loadCinemas() {
     try {
-        const res = await fetch('/api/movies/cinemas');
-        const json = await res.json();
-        if (json.success && json.data) {
-            allCinemas = json.data;
+        const res = await apiFetch('/api/admin/cinemas');
+        if (res.success && res.data) {
+            allCinemas = res.data;
             buildScheduleCityDropdown();
             populateMovieSelect();
         }
@@ -1975,7 +1976,14 @@ function renderCinemaSidebar() {
             <div class="cs-item" onclick="selectCinemaForBuilder(${c.CinemaID}, this)">
                 <div class="cs-item-top">
                     <span class="cs-district">${c.City}</span>
-                    <span class="cs-badge">HOẠT ĐỘNG</span>
+                    <div style="display: flex; gap: 4px;">
+                        <button class="btn-icon-xs" title="Sửa rạp" onclick="event.stopPropagation(); openEditCinemaModal(${c.CinemaID})">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        </button>
+                        <button class="btn-icon-xs" title="Xóa rạp" onclick="event.stopPropagation(); deleteCinema(${c.CinemaID})">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="cs-name">${c.CinemaName}</div>
                 <div class="cs-meta">${roomsInCinema.length} Phòng | ${totalSeats} Ghế</div>
@@ -1993,22 +2001,127 @@ window.selectCinemaForBuilder = function (cinemaId, el) {
     if (!grid) return;
 
     if (rooms.length === 0) {
-        grid.innerHTML = '<p style="color:#9ca3af;font-size:0.85rem;">Không có phòng</p>';
-        return;
+        grid.innerHTML = '<p style="color:#9ca3af;font-size:0.85rem;">Không có phòng</p>' +
+            `<button class="room-btn add-btn" onclick="openAddRoomModal(${cinemaId})">+</button>`;
+    } else {
+        grid.innerHTML = rooms.map(r =>
+            `<button class="room-btn" onclick="selectRoomForBuilder(${r.RoomID}, this)">
+                ${r.RoomName}
+                <div class="room-actions">
+                    <span class="room-act-edit" onclick="event.stopPropagation(); openEditRoomModal(${r.RoomID}, '${r.RoomName}')">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </span>
+                    <span class="room-act-del" onclick="event.stopPropagation(); deleteRoom(${r.RoomID})">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </span>
+                </div>
+             </button>`
+        ).join('') + `<button class="room-btn add-btn" onclick="openAddRoomModal(${cinemaId})">+</button>`;
     }
 
-    grid.innerHTML = rooms.map(r =>
-        `<button class="room-btn" onclick="selectRoomForBuilder(${r.RoomID}, this)">${r.RoomName}</button>`
-    ).join('') + `<button class="room-btn add-btn">+</button>`;
+    // Toggle Workspace visibility vs Detail visibility
+    const ws = document.getElementById('cinemaWorkspace');
+    const detail = document.getElementById('cinemaDetail');
+    if (ws) ws.style.display = 'none';
+    if (detail) {
+        detail.style.display = 'flex';
+        
+        // Find cinema object
+        const c = allCinemas.find(x => x.CinemaID === cinemaId);
+        if (c) {
+            const totalSeats = rooms.reduce((sum, r) => sum + r.TotalSeats, 0);
+            detail.innerHTML = `
+                <div class="cinema-detail-header" style="border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <span class="badge" style="background: var(--yellow); color: #fff; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 4px; text-transform: uppercase;">Cụm rạp chi nhánh</span>
+                        <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text); margin: 8px 0 4px 0;">${c.CinemaName}</h1>
+                        <p style="color: var(--text2); display: flex; align-items: center; gap: 6px; font-size: 0.9rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            ${c.Address}, ${c.City}
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-outline-red" style="padding: 10px 20px; font-size: 0.85rem;" onclick="openEditCinemaModal(${c.CinemaID})">
+                            Sửa cụm rạp
+                        </button>
+                        <button class="btn-solid-red" style="padding: 10px 20px; font-size: 0.85rem;" onclick="deleteCinema(${c.CinemaID})">
+                            Xóa cụm rạp
+                        </button>
+                    </div>
+                </div>
+
+                <div class="cinema-detail-body" style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--text);">DANH SÁCH PHÒNG CHIẾU (${rooms.length})</h2>
+                            <button class="btn-solid-red" style="padding: 6px 14px; font-size: 0.75rem;" onclick="openAddRoomModal(${c.CinemaID})">
+                                + Thêm phòng
+                            </button>
+                        </div>
+                        <div class="rooms-detail-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                            ${rooms.map(r => `
+                                <div style="padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); transition: all 0.2s; cursor: pointer; position: relative;" onclick="document.querySelector('[onclick*=\\'selectRoomForBuilder(${r.RoomID}\\')').click()">
+                                    <div style="font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 6px;">${r.RoomName}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text2); display: flex; align-items: center; gap: 6px; margin-bottom: 12px;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21v-4a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v4"/><path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
+                                        Sức chứa: <strong>${r.TotalSeats}</strong> ghế
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn-outline-red" style="padding: 4px 10px; font-size: 0.7rem; border-radius: 4px;" onclick="event.stopPropagation(); openEditRoomModal(${r.RoomID}, '${r.RoomName}')">Sửa tên</button>
+                                        <button class="btn-outline-red" style="padding: 4px 10px; font-size: 0.7rem; border-radius: 4px;" onclick="event.stopPropagation(); deleteRoom(${r.RoomID})">Xóa</button>
+                                    </div>
+                                </div>
+                            `).join('') || '<p style="color: var(--text3); font-style: italic;">Chưa có phòng chiếu nào được tạo.</p>'}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--text); margin-bottom: 16px;">THÔNG TIN THỐNG KÊ</h2>
+                        <div style="border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg-white);">
+                            <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text2);">Tổng số phòng</span>
+                                <strong style="font-size: 1.1rem; color: var(--text);">${rooms.length}</strong>
+                            </div>
+                            <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text2);">Tổng số ghế</span>
+                                <strong style="font-size: 1.1rem; color: var(--text);">${totalSeats}</strong>
+                            </div>
+                            <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text2);">Thành phố</span>
+                                <strong style="font-size: 1.1rem; color: var(--text);">${c.City}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
 };
 
 window.selectRoomForBuilder = async function (roomId, el) {
+    // If element is not passed, find it
+    if (!el) {
+        const buttons = document.querySelectorAll('#csRoomsGrid .room-btn');
+        for (let btn of buttons) {
+            if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`selectRoomForBuilder(${roomId}`)) {
+                el = btn;
+                break;
+            }
+        }
+    }
     document.querySelectorAll('#csRoomsGrid .room-btn').forEach(b => b.classList.remove('active'));
     if (el) el.classList.add('active');
 
     currentBuilderRoomId = roomId;
+    
+    // Toggle Workspace visibility vs Detail visibility
+    const ws = document.getElementById('cinemaWorkspace');
+    const detail = document.getElementById('cinemaDetail');
+    if (ws) ws.style.display = 'flex';
+    if (detail) detail.style.display = 'none';
+
     const matrix = document.getElementById('seatMatrix');
-    matrix.innerHTML = '<p style="color:#9ca3af;padding:20px;">Đang tải sơ đồ ghế...</p>';
+    if (matrix) matrix.innerHTML = '<p style="color:#9ca3af;padding:20px;">Đang tải sơ đồ ghế...</p>';
 
     try {
         const res = await apiFetch(`/api/admin/rooms/${roomId}/seats`);
@@ -2028,6 +2141,223 @@ window.selectRoomForBuilder = async function (roomId, el) {
         }
     } catch (err) {
         console.error('Failed to load room seats:', err);
+    }
+};
+
+// --- Cinema CRUD ---
+window.openAddCinemaModal = function() {
+    document.getElementById('cinemaModalTitle').innerText = 'Thêm cụm rạp mới';
+    document.getElementById('cinemaId').value = '';
+    document.getElementById('cinemaForm').reset();
+    document.getElementById('cinemaModalOverlay').style.display = 'block';
+    document.getElementById('cinemaModal').style.display = 'block';
+};
+
+window.openEditCinemaModal = function(id) {
+    const c = allCinemas.find(x => x.CinemaID === id);
+    if (!c) return;
+    document.getElementById('cinemaModalTitle').innerText = 'Sửa thông tin cụm rạp';
+    document.getElementById('cinemaId').value = c.CinemaID;
+    document.getElementById('cinemaNameInput').value = c.CinemaName;
+    document.getElementById('cinemaAddressInput').value = c.Address;
+    document.getElementById('cinemaCityInput').value = c.City;
+    document.getElementById('cinemaModalOverlay').style.display = 'block';
+    document.getElementById('cinemaModal').style.display = 'block';
+};
+
+window.closeCinemaModal = function() {
+    document.getElementById('cinemaModalOverlay').style.display = 'none';
+    document.getElementById('cinemaModal').style.display = 'none';
+};
+
+window.saveCinema = async function(e) {
+    if (e) e.preventDefault();
+    const id = document.getElementById('cinemaId').value;
+    const name = document.getElementById('cinemaNameInput').value.trim();
+    const address = document.getElementById('cinemaAddressInput').value.trim();
+    const city = document.getElementById('cinemaCityInput').value;
+
+    if (!name || !address || !city) {
+        showToast('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
+        return;
+    }
+
+    try {
+        let res;
+        if (id) {
+            res = await apiFetch(`/api/admin/cinemas/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ name, address, city })
+            });
+        } else {
+            res = await apiFetch('/api/admin/cinemas', {
+                method: 'POST',
+                body: JSON.stringify({ name, address, city })
+            });
+        }
+
+        if (res.success) {
+            showToast(id ? 'Cập nhật cụm rạp thành công' : 'Thêm cụm rạp mới thành công');
+            closeCinemaModal();
+            // Reload cinemas
+            await loadCinemas();
+            // If we are editing, we can re-render detail panel
+            if (id) {
+                selectCinemaForBuilder(parseInt(id));
+            } else {
+                // If it's a new cinema, clear selection/render empty state
+                const list = document.getElementById('csList');
+                if (list) {
+                    list.innerHTML = '<p style="padding: 16px; color: #9ca3af; text-align: center;">Đang tải danh sách rạp...</p>';
+                }
+                renderCinemaSidebar();
+                // Select the new cinema if we can find it
+                if (res.data && res.data.CinemaID) {
+                    selectCinemaForBuilder(res.data.CinemaID);
+                }
+            }
+        } else {
+            showToast(res.message || 'Lỗi khi lưu cụm rạp', 'error');
+        }
+    } catch (err) {
+        console.error('saveCinema error:', err);
+        showToast('Có lỗi xảy ra', 'error');
+    }
+};
+
+window.deleteCinema = async function(id) {
+    const c = allCinemas.find(x => x.CinemaID === id);
+    if (!c) return;
+    if (!confirm(`Bạn có chắc chắn muốn xóa cụm rạp "${c.CinemaName}"? Hành động này không thể hoàn tác.`)) {
+        return;
+    }
+
+    try {
+        const res = await apiFetch(`/api/admin/cinemas/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (res.success) {
+            showToast('Xóa cụm rạp thành công');
+            // Hide workspaces
+            const ws = document.getElementById('cinemaWorkspace');
+            const detail = document.getElementById('cinemaDetail');
+            if (ws) ws.style.display = 'none';
+            if (detail) {
+                detail.innerHTML = `
+                    <div class="cd-empty-state" style="margin: auto; text-align: center; color: var(--text3);">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 16px; color: var(--border2);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                        <h3>Chọn một cụm rạp hoặc phòng để bắt đầu thiết lập</h3>
+                        <p style="margin-top: 8px; font-size: 0.85rem;">Chọn rạp từ danh sách bên trái hoặc nhấn nút "+" để thêm cụm rạp mới.</p>
+                    </div>
+                `;
+            }
+            await loadCinemas();
+            renderCinemaSidebar();
+        } else {
+            showToast(res.message || 'Lỗi khi xóa cụm rạp', 'error');
+        }
+    } catch (err) {
+        console.error('deleteCinema error:', err);
+        showToast('Có lỗi xảy ra', 'error');
+    }
+};
+
+// --- Room CRUD ---
+window.openAddRoomModal = function(cinemaId) {
+    document.getElementById('roomModalTitle').innerText = 'Thêm phòng chiếu mới';
+    document.getElementById('roomId').value = '';
+    document.getElementById('roomCinemaId').value = cinemaId;
+    document.getElementById('roomForm').reset();
+    document.getElementById('roomModalOverlay').style.display = 'block';
+    document.getElementById('roomModal').style.display = 'block';
+};
+
+window.openEditRoomModal = function(id, currentName) {
+    document.getElementById('roomModalTitle').innerText = 'Sửa tên phòng chiếu';
+    document.getElementById('roomId').value = id;
+    document.getElementById('roomNameInput').value = currentName;
+    document.getElementById('roomModalOverlay').style.display = 'block';
+    document.getElementById('roomModal').style.display = 'block';
+};
+
+window.closeRoomModal = function() {
+    document.getElementById('roomModalOverlay').style.display = 'none';
+    document.getElementById('roomModal').style.display = 'none';
+};
+
+window.saveRoom = async function(e) {
+    if (e) e.preventDefault();
+    const id = document.getElementById('roomId').value;
+    const cinemaId = document.getElementById('roomCinemaId').value;
+    const name = document.getElementById('roomNameInput').value.trim();
+
+    if (!name) {
+        showToast('Vui lòng nhập tên phòng chiếu', 'error');
+        return;
+    }
+
+    try {
+        let res;
+        if (id) {
+            res = await apiFetch(`/api/admin/rooms/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ name })
+            });
+        } else {
+            res = await apiFetch('/api/admin/rooms', {
+                method: 'POST',
+                body: JSON.stringify({ cinemaId: parseInt(cinemaId), name })
+            });
+        }
+
+        if (res.success) {
+            showToast(id ? 'Cập nhật phòng thành công' : 'Thêm phòng chiếu mới thành công');
+            closeRoomModal();
+            // Reload rooms
+            await loadRooms();
+            // Re-render sidebar/details
+            const activeCinemaId = cinemaId ? parseInt(cinemaId) : (ROOM_DATA.find(x => x.RoomID === parseInt(id))?.CinemaID);
+            if (activeCinemaId) {
+                selectCinemaForBuilder(activeCinemaId);
+            }
+        } else {
+            showToast(res.message || 'Lỗi khi lưu phòng chiếu', 'error');
+        }
+    } catch (err) {
+        console.error('saveRoom error:', err);
+        showToast('Có lỗi xảy ra', 'error');
+    }
+};
+
+window.deleteRoom = async function(id) {
+    const r = ROOM_DATA.find(x => x.RoomID === id);
+    if (!r) return;
+    if (!confirm(`Bạn có chắc chắn muốn xóa phòng "${r.RoomName}"? Hành động này sẽ xóa tất cả ghế trong phòng.`)) {
+        return;
+    }
+
+    try {
+        const res = await apiFetch(`/api/admin/rooms/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (res.success) {
+            showToast('Xóa phòng chiếu thành công');
+            // Hide workspace if deleted room was current active
+            if (currentBuilderRoomId === id) {
+                currentBuilderRoomId = null;
+                const ws = document.getElementById('cinemaWorkspace');
+                if (ws) ws.style.display = 'none';
+            }
+            await loadRooms();
+            selectCinemaForBuilder(r.CinemaID);
+        } else {
+            showToast(res.message || 'Lỗi khi xóa phòng chiếu', 'error');
+        }
+    } catch (err) {
+        console.error('deleteRoom error:', err);
+        showToast('Có lỗi xảy ra', 'error');
     }
 };
 
