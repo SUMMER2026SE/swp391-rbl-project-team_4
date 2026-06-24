@@ -428,10 +428,6 @@ exports.getTopMovies = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
-<<<<<<< HEAD
-=======
-
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
 exports.getLiveRooms = async (req, res) => {
   try {
     const cinemaId = req.query.cinemaId || null;
@@ -660,8 +656,6 @@ exports.getRevenueChartData = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
-<<<<<<< HEAD
-
 // ════════════════════════════════════════════════════════════
 //  PROMOTIONS MANAGEMENT
 // ════════════════════════════════════════════════════════════
@@ -745,5 +739,3 @@ exports.togglePromotionActive = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
-=======
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a

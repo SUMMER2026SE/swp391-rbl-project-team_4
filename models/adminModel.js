@@ -794,10 +794,6 @@ class AdminModel {
       `);
     return result.recordset;
   }
-<<<<<<< HEAD
-=======
-
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
   static async getLiveRoomsStatus(cinemaId) {
     const pool = await getPool();
     let query = `
@@ -833,7 +829,6 @@ class AdminModel {
     const result = await request.query(query);
     return result.recordset;
   }
-<<<<<<< HEAD
   // --- PROMOTIONS MANAGEMENT ---
   static async getAllPromotions() {
     const pool = await getPool();
@@ -892,14 +887,14 @@ class AdminModel {
       .query(`
         UPDATE Promotions
         SET Title       = COALESCE(@title,       Title),
-            Description = COALESCE(@description, Description),
-            BadgeLabel  = COALESCE(@badgeLabel,  BadgeLabel),
-            ImageURL    = COALESCE(@imageURL,    ImageURL),
-            LinkURL     = COALESCE(@linkURL,     LinkURL),
-            IsFeatured  = @isFeatured,
-            IsActive    = @isActive,
-            SortOrder   = @sortOrder,
-            UpdatedAt   = GETDATE()
+             Description = COALESCE(@description, Description),
+             BadgeLabel  = COALESCE(@badgeLabel,  BadgeLabel),
+             ImageURL    = COALESCE(@imageURL,    ImageURL),
+             LinkURL     = COALESCE(@linkURL,     LinkURL),
+             IsFeatured  = @isFeatured,
+             IsActive    = @isActive,
+             SortOrder   = @sortOrder,
+             UpdatedAt   = GETDATE()
         OUTPUT INSERTED.*
         WHERE PromotionID = @id
       `);
@@ -926,8 +921,6 @@ class AdminModel {
       `);
     return result.recordset.length > 0 ? result.recordset[0] : null;
   }
-=======
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
 }
 
 module.exports = AdminModel;

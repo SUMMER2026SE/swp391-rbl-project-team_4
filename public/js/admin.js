@@ -18,7 +18,7 @@ async function apiFetch(url, options = {}) {
     const text = await res.text();
     try {
         return JSON.parse(text);
-    } catch(e) {
+    } catch (e) {
         console.error('[apiFetch] Non-JSON response for', url, ':', text.substring(0, 200));
         return { success: false, message: 'Invalid response' };
     }
@@ -83,12 +83,12 @@ async function exportPdf() {
                 'Authorization': `Bearer ${token}`
             }
         });
-        
+
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
             return alert(errData.message || 'Không thể xuất file PDF (Lỗi xác thực hoặc server).');
         }
-        
+
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -141,7 +141,7 @@ function renderLiveRooms(rooms) {
             const now = new Date();
             const start = new Date(r.StartTime);
             const end = new Date(r.EndTime);
-            
+
             // "Cleaning" happens 15 mins before end, up to 15 mins after end
             const cleaningStart = new Date(end.getTime() - 15 * 60000);
             const cleaningEnd = new Date(end.getTime() + 15 * 60000);
@@ -158,7 +158,7 @@ function renderLiveRooms(rooms) {
                 const duration = end.getTime() - start.getTime();
                 const elapsed = now.getTime() - start.getTime();
                 progressPercent = Math.max(0, Math.min(100, (elapsed / duration) * 100));
-                
+
                 const occ = r.TotalSeats > 0 ? Math.round((r.TicketsSold / r.TotalSeats) * 100) : 0;
                 occStr = occ + '%';
             }
@@ -353,7 +353,7 @@ async function loadRecentTransactions() {
 
 function renderTable() {
     const body = document.getElementById('txnBody');
-    if(!body) return;
+    if (!body) return;
     const start = (currentPage - 1) * ROWS_PER_PAGE;
     const rows = filteredData.slice(start, start + ROWS_PER_PAGE);
     const totalPages = Math.max(1, Math.ceil(filteredData.length / ROWS_PER_PAGE));
@@ -373,11 +373,11 @@ function renderTable() {
     }
 
     const pgInfo = document.getElementById('pgInfo');
-    if(pgInfo) pgInfo.textContent = `Trang ${currentPage} / ${totalPages}`;
+    if (pgInfo) pgInfo.textContent = `Trang ${currentPage} / ${totalPages}`;
     const pgPrev = document.getElementById('pgPrev');
-    if(pgPrev) pgPrev.disabled = currentPage === 1;
+    if (pgPrev) pgPrev.disabled = currentPage === 1;
     const pgNext = document.getElementById('pgNext');
-    if(pgNext) pgNext.disabled = currentPage === totalPages;
+    if (pgNext) pgNext.disabled = currentPage === totalPages;
 }
 
 function changePage(delta) {
@@ -415,8 +415,8 @@ function clearFilter() {
 ══════════════════════════ */
 function buildChart(chartData) {
     const ctx = document.getElementById('revenueChart');
-    if(!ctx) return;
-    
+    if (!ctx) return;
+
     let labels = [];
     let ticketData = [];
     let fnbData = [];
@@ -552,7 +552,7 @@ function renderMovieTable() {
             </td>
         </tr>
     `).join('');
-    
+
     const moviePgInfo = document.getElementById('moviePgInfo');
     if (moviePgInfo) moviePgInfo.textContent = `Hiển thị 1-${filteredMovies.length} của ${MOVIE_DATA.length} phim`;
 }
@@ -616,7 +616,7 @@ function closeAddMovieModal() {
 function filterMovies(filter, btn) {
     document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-    
+
     if (filter === 'All') {
         filteredMovies = [...MOVIE_DATA];
     } else {
@@ -650,7 +650,7 @@ async function saveMovie() {
         const formData = new FormData();
         const posterFile = document.getElementById('moviePoster').files[0];
         if (posterFile) formData.append('poster', posterFile);
-        
+
         formData.append('title', document.getElementById('movieTitle').value);
         formData.append('description', document.getElementById('movieDescription').value);
         formData.append('director', document.getElementById('movieDirector').value);
@@ -694,7 +694,7 @@ function navigate(page, btn) {
     if (btn) btn.classList.add('active');
     else {
         document.querySelectorAll('.sn').forEach(b => {
-            if(b.getAttribute('onclick') && b.getAttribute('onclick').includes(page)) {
+            if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(page)) {
                 b.classList.add('active');
             }
         });
@@ -720,7 +720,7 @@ function navigate(page, btn) {
         ttabs.style.display = 'flex';
         hideDashboardFilters();
     }
-    
+
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const target = document.getElementById('page-' + page);
     if (target) target.classList.add('active');
@@ -863,10 +863,10 @@ function editFnB(item) {
     document.getElementById('fnbStock').value = item.Stock;
     document.getElementById('fnbCategory').value = item.Category;
     document.getElementById('fnbImageURL').value = item.ImageURL || '';
-    
+
     document.getElementById('btnSaveFnb').querySelector('#fnbBtnText').textContent = 'Cập nhật mặt hàng';
     document.getElementById('btnCancelFnb').style.display = 'block';
-    
+
     // Cuộn lên form
     document.querySelector('.fnb-form-side').scrollIntoView({ behavior: 'smooth' });
 }
@@ -992,7 +992,7 @@ function switchFnbTab(tab, btn) {
     // 2. Toggle visibility of layouts
     const fnbSubpage = document.getElementById('fnbSubpage');
     const voucherSubpage = document.getElementById('voucherSubpage');
-    
+
     if (tab === 'fnb') {
         if (fnbSubpage) fnbSubpage.style.display = 'flex';
         if (voucherSubpage) voucherSubpage.style.display = 'none';
@@ -1008,7 +1008,7 @@ function toggleVoucherFields() {
     const type = document.getElementById('voucherDiscountType').value;
     const maxDiscountInput = document.getElementById('voucherMaxDiscount');
     const lblMaxDiscount = document.getElementById('lblMaxDiscount');
-    
+
     if (type === 'fixed') {
         maxDiscountInput.disabled = true;
         maxDiscountInput.placeholder = 'Không khả dụng';
@@ -1053,20 +1053,20 @@ function renderVouchers() {
     `;
 
     VOUCHER_DATA.forEach(item => {
-        const discountStr = item.DiscountType === 'percent' 
-            ? `${item.DiscountValue}%` 
+        const discountStr = item.DiscountType === 'percent'
+            ? `${item.DiscountValue}%`
             : `${item.DiscountValue.toLocaleString('vi-VN')} đ`;
-        
-        const minOrderStr = item.MinOrderValue > 0 
-            ? `Đơn tối thiểu ${item.MinOrderValue.toLocaleString('vi-VN')}đ` 
+
+        const minOrderStr = item.MinOrderValue > 0
+            ? `Đơn tối thiểu ${item.MinOrderValue.toLocaleString('vi-VN')}đ`
             : 'Không yêu cầu đơn tối thiểu';
 
-        const maxDiscStr = (item.DiscountType === 'percent' && item.MaxDiscount) 
-            ? `Giảm tối đa ${item.MaxDiscount.toLocaleString('vi-VN')}đ` 
+        const maxDiscStr = (item.DiscountType === 'percent' && item.MaxDiscount)
+            ? `Giảm tối đa ${item.MaxDiscount.toLocaleString('vi-VN')}đ`
             : '';
 
-        const usageLimitStr = item.UsageLimit 
-            ? `Giới hạn: ${item.UsedCount}/${item.UsageLimit}` 
+        const usageLimitStr = item.UsageLimit
+            ? `Giới hạn: ${item.UsedCount}/${item.UsageLimit}`
             : `Đã dùng: ${item.UsedCount}`;
 
         const formatDate = (isoString) => {
@@ -1118,7 +1118,7 @@ function editVoucher(item) {
     document.getElementById('voucherMinOrderValue').value = item.MinOrderValue;
     document.getElementById('voucherMaxDiscount').value = item.MaxDiscount || '';
     document.getElementById('voucherUsageLimit').value = item.UsageLimit || '';
-    
+
     const formatDateForInput = (isoString) => {
         if (!isoString) return '';
         return new Date(isoString).toISOString().split('T')[0];
@@ -1188,7 +1188,7 @@ async function saveVoucher() {
     try {
         const id = document.getElementById('voucherId').value;
         const type = document.getElementById('voucherDiscountType').value;
-        
+
         const payload = {
             code: document.getElementById('voucherCode').value.trim().toUpperCase(),
             discountType: type,
@@ -1258,7 +1258,7 @@ async function loadStaff() {
 function renderStaffTable() {
     const body = document.getElementById('staffTableBody');
     if (!body) return;
-    
+
     if (STAFF_DATA.length === 0) {
         body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px;">Không có dữ liệu nhân sự</td></tr>';
         return;
@@ -1266,7 +1266,7 @@ function renderStaffTable() {
 
     body.innerHTML = STAFF_DATA.map(user => {
         let roleClass = user.RoleName.toLowerCase() === 'admin' ? 'admin' : (user.RoleName.toLowerCase() === 'manager' ? 'manager' : 'staff');
-        
+
         return `
         <tr>
             <td>
@@ -1304,7 +1304,7 @@ function renderStaffTable() {
 }
 
 async function changeStaffRole(userId, newRole) {
-    if(!confirm(`Xác nhận đổi vai trò thành ${newRole}?`)) {
+    if (!confirm(`Xác nhận đổi vai trò thành ${newRole}?`)) {
         loadStaff(); // reset select
         return;
     }
@@ -1326,7 +1326,7 @@ async function changeStaffRole(userId, newRole) {
 }
 
 async function toggleStaffStatus(userId) {
-    if(!confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?')) return;
+    if (!confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?')) return;
     try {
         const res = await apiFetch(`/api/admin/users/${userId}/toggle-status`, { method: 'PATCH' });
         if (res.success) {
@@ -1345,9 +1345,9 @@ async function toggleStaffStatus(userId) {
 ══════════════════════════ */
 function updateClock() {
     const now = new Date();
-    const h = String(now.getHours()).padStart(2,'0');
-    const m = String(now.getMinutes()).padStart(2,'0');
-    const s = String(now.getSeconds()).padStart(2,'0');
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
     const el = document.getElementById('liveClock');
     if (el) el.textContent = `${h}:${m}:${s}`;
 }
@@ -1359,7 +1359,7 @@ function formatCurrency(val) {
     return new Intl.NumberFormat('vi-VN').format(Math.round(val));
 }
 
-function animateCounter(el, target, prefix='', suffix='', decimals=0, isCurrency=false) {
+function animateCounter(el, target, prefix = '', suffix = '', decimals = 0, isCurrency = false) {
     const duration = 1200;
     const start = performance.now();
     function update(now) {
@@ -1367,7 +1367,7 @@ function animateCounter(el, target, prefix='', suffix='', decimals=0, isCurrency
         const progress = Math.min(elapsed / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
         const val = eased * target;
-        
+
         let formattedVal;
         if (isCurrency) {
             formattedVal = formatCurrency(val);
@@ -1376,7 +1376,7 @@ function animateCounter(el, target, prefix='', suffix='', decimals=0, isCurrency
         } else {
             formattedVal = Math.round(val).toLocaleString('vi-VN');
         }
-        
+
         el.textContent = prefix + formattedVal + suffix;
         if (progress < 1) requestAnimationFrame(update);
     }
@@ -1413,7 +1413,7 @@ function buildScheduleCityDropdown() {
     const cities = [...new Set(allCinemas.map(c => c.City))].sort();
     citySel.innerHTML = '<option value="">-- Thành phố --</option>' +
         cities.map(city => `<option value="${city}">${city}</option>`).join('');
-    
+
     if (cities.length > 0) {
         citySel.value = cities[0];
         filterScheduleCity(cities[0]);
@@ -1424,11 +1424,11 @@ function filterScheduleCity(city) {
     selectedCity = city;
     const cinemaSel = document.getElementById('scheduleCinemaSelect');
     if (!cinemaSel) return;
-    
+
     const filtered = allCinemas.filter(c => c.City === city);
     cinemaSel.innerHTML = '<option value="">-- Rạp/Chi nhánh --</option>' +
         filtered.map(c => `<option value="${c.CinemaID}">${c.CinemaName}</option>`).join('');
-        
+
     if (filtered.length > 0) {
         cinemaSel.value = filtered[0].CinemaID;
         filterScheduleCinema(filtered[0].CinemaID);
@@ -1448,44 +1448,44 @@ function filterScheduleCinema(cinemaId) {
         stCitySel.innerHTML = '<option value="">-- Chọn thành phố --</option>' +
             cities.map(city => `<option value="${city}">${city}</option>`).join('');
     }
-    
+
     loadShowtimes();
-    
+
     // Update Cinema Page Builder Sidebar
     renderCinemaSidebar();
 }
 
 // ─── SHOWTIME CREATION FILTERS ───
-window.filterStCity = function(city) {
+window.filterStCity = function (city) {
     const cinemaSel = document.getElementById('stCinemaSelect');
     const roomSel = document.getElementById('stRoomSelect');
     if (!cinemaSel || !roomSel) return;
-    
+
     roomSel.innerHTML = '<option value="">-- Chọn phòng --</option>';
     roomSel.disabled = true;
-    
+
     if (!city) {
         cinemaSel.innerHTML = '<option value="">-- Chọn rạp --</option>';
         cinemaSel.disabled = true;
         return;
     }
-    
+
     const filtered = allCinemas.filter(c => c.City === city);
     cinemaSel.innerHTML = '<option value="">-- Chọn rạp --</option>' +
         filtered.map(c => `<option value="${c.CinemaID}">${c.CinemaName}</option>`).join('');
     cinemaSel.disabled = false;
 };
 
-window.filterStCinema = function(cinemaId) {
+window.filterStCinema = function (cinemaId) {
     const roomSel = document.getElementById('stRoomSelect');
     if (!roomSel) return;
-    
+
     if (!cinemaId) {
         roomSel.innerHTML = '<option value="">-- Chọn phòng --</option>';
         roomSel.disabled = true;
         return;
     }
-    
+
     const cid = parseInt(cinemaId);
     const filteredRooms = ROOM_DATA.filter(r => r.CinemaID === cid);
     roomSel.innerHTML = '<option value="">-- Chọn phòng --</option>' +
@@ -1556,12 +1556,12 @@ function renderShowtimeTable() {
             </thead>
             <tbody>
                 ${SHOWTIME_DATA.map(st => {
-                    const start = new Date(st.StartTime);
-                    const end = new Date(st.EndTime);
-                    const timeStr = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) +
-                        ' - ' + end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                    const soldPct = st.TotalSeats ? Math.round((st.TicketsSold / st.TotalSeats) * 100) : 0;
-                    return `
+        const start = new Date(st.StartTime);
+        const end = new Date(st.EndTime);
+        const timeStr = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) +
+            ' - ' + end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        const soldPct = st.TotalSeats ? Math.round((st.TicketsSold / st.TotalSeats) * 100) : 0;
+        return `
                     <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
                         <td style="padding:12px 16px;font-weight:700;">${st.MovieTitle}</td>
                         <td style="padding:12px 16px;">${st.CinemaName}<br><span style="color:#9ca3af;font-size:0.78rem;">${st.RoomName}</span></td>
@@ -1576,7 +1576,7 @@ function renderShowtimeTable() {
                             </div>
                         </td>
                     </tr>`;
-                }).join('')}
+    }).join('')}
             </tbody>
         </table>
     `;
@@ -1652,7 +1652,7 @@ function openShowtimeModal(showtimeId = null) {
         citySel.innerHTML = '<option value="">-- Chọn thành phố --</option>' +
             cities.map(city => `<option value="${city}">${city}</option>`).join('');
     }
-    
+
     // Always populate movie dropdown
     const movieSel = document.getElementById('stMovieSelect');
     if (movieSel && MOVIE_DATA.length > 0) {
@@ -1699,7 +1699,7 @@ function openShowtimeModal(showtimeId = null) {
         // Find room to get cinema and city
         const r = ROOM_DATA.find(r =>
             showtime.RoomID ? r.RoomID === showtime.RoomID
-            : (r.RoomName === showtime.RoomName)
+                : (r.RoomName === showtime.RoomName)
         );
         if (r) {
             const c = allCinemas.find(c => c.CinemaID === r.CinemaID);
@@ -1727,8 +1727,8 @@ function openShowtimeModal(showtimeId = null) {
         const stDateObj = new Date(showtime.StartTime);
         const enDateObj = new Date(showtime.EndTime);
         document.getElementById('stDate').value = stDateObj.toISOString().split('T')[0];
-        document.getElementById('stStartTime').value = String(stDateObj.getHours()).padStart(2,'0') + ':' + String(stDateObj.getMinutes()).padStart(2,'0');
-        document.getElementById('stEndTime').value = String(enDateObj.getHours()).padStart(2,'0') + ':' + String(enDateObj.getMinutes()).padStart(2,'0');
+        document.getElementById('stStartTime').value = String(stDateObj.getHours()).padStart(2, '0') + ':' + String(stDateObj.getMinutes()).padStart(2, '0');
+        document.getElementById('stEndTime').value = String(enDateObj.getHours()).padStart(2, '0') + ':' + String(enDateObj.getMinutes()).padStart(2, '0');
         document.getElementById('stDuration').value = Math.round((enDateObj - stDateObj) / 60000);
         document.getElementById('stPrice').value = showtime.Price;
         document.getElementById('stStatus').value = showtime.Status || 'active';
@@ -1772,7 +1772,7 @@ function recalcEndTime() {
     if (!timeVal || !durVal || !stEnd) return;
     const [h, m] = timeVal.split(':').map(Number);
     const d = new Date(2000, 0, 1, h, m + durVal);
-    stEnd.value = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+    stEnd.value = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
 document.addEventListener('DOMContentLoaded', attachShowtimeListeners);
@@ -1920,7 +1920,7 @@ function renderCinemaSidebar() {
     }).join('');
 }
 
-window.selectCinemaForBuilder = function(cinemaId, el) {
+window.selectCinemaForBuilder = function (cinemaId, el) {
     document.querySelectorAll('#csList .cs-item').forEach(i => i.classList.remove('active'));
     if (el) el.classList.add('active');
 
@@ -1933,12 +1933,12 @@ window.selectCinemaForBuilder = function(cinemaId, el) {
         return;
     }
 
-    grid.innerHTML = rooms.map(r => 
+    grid.innerHTML = rooms.map(r =>
         `<button class="room-btn" onclick="selectRoomForBuilder(${r.RoomID}, this)">${r.RoomName}</button>`
     ).join('') + `<button class="room-btn add-btn">+</button>`;
 };
 
-window.selectRoomForBuilder = async function(roomId, el) {
+window.selectRoomForBuilder = async function (roomId, el) {
     document.querySelectorAll('#csRoomsGrid .room-btn').forEach(b => b.classList.remove('active'));
     if (el) el.classList.add('active');
 
@@ -1976,13 +1976,13 @@ function getSeatTypeClass(type) {
     }
 }
 
-window.renderSeatMatrix = function() {
+window.renderSeatMatrix = function () {
     const matrix = document.getElementById('seatMatrix');
     if (!matrix) return;
-    
+
     let html = '';
     let totalSeats = 0;
-    
+
     for (let r = 1; r <= maxRow; r++) {
         const rowChar = String.fromCharCode(64 + r);
         html += `<div class="seat-row"><span style="width:20px;display:inline-block;color:#6b7280;font-size:0.8rem;text-align:right;margin-right:10px;">${rowChar}</span>`;
@@ -1990,13 +1990,13 @@ window.renderSeatMatrix = function() {
             const seat = builderSeats.find(s => s.SeatRow === rowChar && s.SeatNumber === c);
             let sClass = 'blocked hidden-seat';
             let bgStyle = '';
-            
+
             if (seat && seat.SeatType !== 'None') {
                 sClass = getSeatTypeClass(seat.SeatType);
                 if (seat.SeatType === 'Couple') bgStyle = 'background:#ec4899;box-shadow:0 0 8px rgba(236,72,153,0.4);';
                 totalSeats++;
             }
-            
+
             html += `<button class="seat-btn ${sClass}" style="${bgStyle}" 
                         onclick="toggleSeat('${rowChar}', ${c}, this)" 
                         data-row="${rowChar}" data-col="${c}" title="${rowChar}${c}">
@@ -2005,26 +2005,26 @@ window.renderSeatMatrix = function() {
         html += `<span style="width:20px;display:inline-block;color:#6b7280;font-size:0.8rem;text-align:left;margin-left:10px;">${rowChar}</span></div>`;
     }
     matrix.innerHTML = html;
-    
+
     // Update footer stats
     const stats = document.querySelector('.cwf-stats');
     if (stats) stats.innerHTML = `Đã thiết lập: <strong>${totalSeats}</strong> Tổng ghế`;
 };
 
-window.toggleSeat = function(rowChar, colNum, btn) {
+window.toggleSeat = function (rowChar, colNum, btn) {
     if (!currentBuilderRoomId) return;
-    
+
     const tool = document.querySelector('input[name="seat_tool"]:checked').value;
-    
+
     let seat = builderSeats.find(s => s.SeatRow === rowChar && s.SeatNumber === colNum);
     if (!seat) {
-        seat = { SeatRow: rowChar, SeatNumber: colNum, SeatType: tool, PriceMultiplier: tool==='VIP'? 1.5 : (tool==='Couple'? 2.0 : 1.0) };
+        seat = { SeatRow: rowChar, SeatNumber: colNum, SeatType: tool, PriceMultiplier: tool === 'VIP' ? 1.5 : (tool === 'Couple' ? 2.0 : 1.0) };
         builderSeats.push(seat);
     } else {
         seat.SeatType = tool;
-        seat.PriceMultiplier = tool==='VIP'? 1.5 : (tool==='Couple'? 2.0 : 1.0);
+        seat.PriceMultiplier = tool === 'VIP' ? 1.5 : (tool === 'Couple' ? 2.0 : 1.0);
     }
-    
+
     // Update visually
     btn.className = `seat-btn ${getSeatTypeClass(tool)}`;
     if (tool === 'Couple') {
@@ -2034,36 +2034,36 @@ window.toggleSeat = function(rowChar, colNum, btn) {
         btn.style.background = '';
         btn.style.boxShadow = '';
     }
-    
+
     // Update count
     const totalSeats = builderSeats.filter(s => s.SeatType !== 'None').length;
     const stats = document.querySelector('.cwf-stats');
     if (stats) stats.innerHTML = `Đã thiết lập: <strong>${totalSeats}</strong> Tổng ghế`;
 };
 
-window.addSeatRow = function() { maxRow++; renderSeatMatrix(); };
-window.addSeatCol = function() { maxCol++; renderSeatMatrix(); };
+window.addSeatRow = function () { maxRow++; renderSeatMatrix(); };
+window.addSeatCol = function () { maxCol++; renderSeatMatrix(); };
 
-window.clearSeatMap = function() {
+window.clearSeatMap = function () {
     if (!confirm('Bạn có chắc muốn làm mới toàn bộ sơ đồ (xóa trắng)?')) return;
     builderSeats = [];
     renderSeatMatrix();
 };
 
-window.saveSeatLayout = async function() {
+window.saveSeatLayout = async function () {
     if (!currentBuilderRoomId) {
         alert('Vui lòng chọn một phòng trước khi lưu.');
         return;
     }
-    
+
     // Filter out 'None' seats to save space, backend handles deletion of missing seats.
     const payload = builderSeats.filter(s => s.SeatType !== 'None');
-    
+
     const btn = document.querySelector('.btn-solid-red');
     const oldText = btn.textContent;
     btn.textContent = 'Đang lưu...';
     btn.disabled = true;
-    
+
     try {
         const res = await apiFetch(`/api/admin/rooms/${currentBuilderRoomId}/seats`, {
             method: 'PUT',
@@ -2076,10 +2076,10 @@ window.saveSeatLayout = async function() {
             renderCinemaSidebar();
             // Reselect current cinema
             const cRoom = ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId);
-            if(cRoom) {
+            if (cRoom) {
                 const el = [...document.querySelectorAll('#csList .cs-item')].find(i => i.innerHTML.includes(cRoom.CinemaName));
                 if (el) window.selectCinemaForBuilder(cRoom.CinemaID, el);
-                
+
                 // Then try to reselect room
                 setTimeout(() => {
                     const rEl = [...document.querySelectorAll('#csRoomsGrid .room-btn')].find(b => b.textContent === cRoom.RoomName);
@@ -2089,7 +2089,7 @@ window.saveSeatLayout = async function() {
         } else {
             alert('Lỗi: ' + res.message);
         }
-    } catch(err) {
+    } catch (err) {
         console.error(err);
         alert('Lỗi kết nối khi lưu sơ đồ.');
     } finally {
@@ -2110,14 +2110,14 @@ document.addEventListener('DOMContentLoaded', () => {
     loadRooms();
     loadCinemas();
     loadCinemasForFilter(); // load cinemas for topbar filter dropdown
-    
+
     // Add event listener for search bar
     const searchInput = document.getElementById('adminSearch');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
-            filteredMovies = MOVIE_DATA.filter(m => 
-                m.Title.toLowerCase().includes(val) || 
+            filteredMovies = MOVIE_DATA.filter(m =>
+                m.Title.toLowerCase().includes(val) ||
                 (m.Director && m.Director.toLowerCase().includes(val)) ||
                 (m.MainCast && m.MainCast.toLowerCase().includes(val))
             );
@@ -2127,12 +2127,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check auth
     const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
-    
+
     if (!token || !userStr) {
         window.location.href = 'auth.html';
         return;
     }
-    
+
     try {
         const user = JSON.parse(userStr);
         if (user.roleName !== 'Admin' && user.roleName !== 'Manager' && user.roleName !== 'Super Admin') {
@@ -2142,7 +2142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const initial = (user.fullName || 'A').charAt(0).toUpperCase();
         document.getElementById('adminAvatar').textContent = initial;
-    } catch(e) {}
+    } catch (e) { }
 
     renderTable();
     renderMovieTable();
@@ -2155,10 +2155,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
 });
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
 /* ══════════════════════════════════════
    NOTIFICATIONS (Socket.io)
 ══════════════════════════════════════ */
@@ -2183,10 +2179,10 @@ function renderNotifs() {
         listEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #9ca3af; font-size: 0.9rem;">Không có thông báo mới</div>';
         return;
     }
-    
+
     let html = '';
     notifs.forEach(n => {
-        const time = new Date(n.time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+        const time = new Date(n.time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         html += `
             <div style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; background: #fff;">
                 <div style="font-weight: 600; font-size: 0.9rem; color: #1f2937;">${n.title}</div>
@@ -2211,20 +2207,20 @@ function showToast(title, message) {
     toast.style.transform = 'translateX(100%)';
     toast.style.opacity = '0';
     toast.style.transition = 'all 0.3s ease';
-    
+
     toast.innerHTML = `
         <div style="font-weight: bold; color: #10b981; margin-bottom: 4px;">${title}</div>
         <div>${message}</div>
     `;
-    
+
     container.appendChild(toast);
-    
+
     // Animate in
     setTimeout(() => {
         toast.style.transform = 'translateX(0)';
         toast.style.opacity = '1';
     }, 10);
-    
+
     // Auto remove
     setTimeout(() => {
         toast.style.transform = 'translateX(100%)';
@@ -2240,16 +2236,16 @@ if (typeof io !== 'undefined') {
         // Add to list
         notifs.unshift(data);
         if (notifs.length > 50) notifs.pop(); // Keep max 50
-        
+
         // Show red dot if dropdown is closed
         const dropdown = document.getElementById('notifDropdown');
         if (dropdown && dropdown.style.display !== 'flex') {
             document.getElementById('notifDot').style.display = 'block';
         }
-        
+
         renderNotifs();
         showToast(data.title, data.message);
-        
+
         // Optionally refresh dashboard if we are on dashboard page
         if (document.getElementById('page-dashboard').classList.contains('active')) {
             loadDashboardData();
@@ -2293,7 +2289,7 @@ function resetQsState() {
     qsState.selectedFnb = {};
     qsState.voucher = null;
     qsState.ticketPrice = 0;
-    
+
     document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: #9ca3af;">Vui lòng chọn suất chiếu trước</p>';
     document.getElementById('qsSelectedSeats').textContent = 'Chưa chọn ghế';
     document.getElementById('qsCustomerPhone').value = '';
@@ -2316,8 +2312,8 @@ async function loadQsShowtimes() {
             }
             let html = '';
             res.data.forEach(st => {
-                const start = new Date(st.StartTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
-                const end = new Date(st.EndTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                const start = new Date(st.StartTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                const end = new Date(st.EndTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
                 html += `
                     <div class="qs-showtime-card" id="qs-st-${st.ShowtimeID}" onclick="selectQsShowtime(${st.ShowtimeID}, ${st.Price})">
                         <div class="qs-movie-title">${st.MovieTitle}</div>
@@ -2340,13 +2336,13 @@ async function selectQsShowtime(showtimeId, price) {
     qsState.ticketPrice = price;
     qsState.selectedSeatIds = [];
     qsState.voucher = null;
-    
+
     // UI selection
     document.querySelectorAll('.qs-showtime-card').forEach(c => c.classList.remove('selected'));
     document.getElementById(`qs-st-${showtimeId}`).classList.add('selected');
-    
+
     document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: #9ca3af;">Đang tải sơ đồ ghế...</p>';
-    
+
     try {
         const res = await apiFetch(`/api/staff/showtimes/${showtimeId}/seats`);
         if (res.success) {
@@ -2374,10 +2370,10 @@ function renderQsSeatMap() {
     });
 
     let html = '<div style="margin-bottom:20px; font-weight:bold; color:#6b7280; letter-spacing:5px;">MÀN HÌNH</div>';
-    
+
     const rowKeys = Object.keys(rows).sort();
     rowKeys.forEach(rk => {
-        rows[rk].sort((a,b) => a.SeatNumber - b.SeatNumber);
+        rows[rk].sort((a, b) => a.SeatNumber - b.SeatNumber);
         html += `<div class="qs-seat-row">`;
         html += `<div style="width: 20px; text-align: center; font-weight: bold; color: #9ca3af; line-height: 28px;">${rk}</div>`;
         rows[rk].forEach(seat => {
@@ -2385,14 +2381,14 @@ function renderQsSeatMap() {
             if (seat.Status !== 'available') sClass += ' sold';
             if (seat.SeatType === 'VIP') sClass += ' vip';
             if (qsState.selectedSeatIds.includes(seat.SeatID)) sClass += ' selected';
-            
+
             const onclick = seat.Status === 'available' ? `onclick="toggleQsSeat(${seat.SeatID}, '${seat.SeatRow}${seat.SeatNumber}')"` : '';
             html += `<div class="${sClass}" ${onclick}>${seat.SeatNumber}</div>`;
         });
         html += `<div style="width: 20px;"></div>`;
         html += `</div>`;
     });
-    
+
     container.innerHTML = html;
 }
 
@@ -2417,7 +2413,7 @@ async function loadQsFnb() {
             qsState.fnbItems = res.data.filter(f => f.IsAvailable);
             renderQsFnb();
         }
-    } catch (e) {}
+    } catch (e) { }
 }
 
 function renderQsFnb() {
@@ -2448,10 +2444,10 @@ function updateQsFnb(fnbId, delta, stock) {
     if (curr < 0) curr = 0;
     if (curr > 10) curr = 10;
     if (curr > stock) curr = stock;
-    
+
     if (curr === 0) delete qsState.selectedFnb[fnbId];
     else qsState.selectedFnb[fnbId] = curr;
-    
+
     renderQsFnb();
     updateQsTotals();
 }
@@ -2466,23 +2462,23 @@ function getSelectedSeatNames() {
 function updateQsTotals() {
     const seatNames = getSelectedSeatNames();
     document.getElementById('qsSelectedSeats').textContent = seatNames || 'Chưa chọn ghế';
-    
+
     let ticketTotal = 0;
     qsState.selectedSeatIds.forEach(id => {
         const s = qsState.seats.find(x => x.SeatID === id);
         const mult = s && s.PriceMultiplier ? s.PriceMultiplier : 1;
         ticketTotal += qsState.ticketPrice * mult;
     });
-    
+
     let fnbTotal = 0;
     Object.keys(qsState.selectedFnb).forEach(id => {
         const item = qsState.fnbItems.find(x => x.FnBID == id);
         if (item) fnbTotal += item.Price * qsState.selectedFnb[id];
     });
-    
+
     let subTotal = ticketTotal + fnbTotal;
     let discount = 0;
-    
+
     if (qsState.voucher) {
         if (subTotal >= qsState.voucher.MinOrderValue) {
             if (qsState.voucher.DiscountType === 'percent') {
@@ -2493,32 +2489,32 @@ function updateQsTotals() {
             }
         }
     }
-    
+
     let finalTotal = subTotal - discount;
     if (finalTotal < 0) finalTotal = 0;
-    
+
     document.getElementById('qsTicketTotal').textContent = formatCurrency(ticketTotal) + ' đ';
     document.getElementById('qsFnbTotal').textContent = formatCurrency(fnbTotal) + ' đ';
     document.getElementById('qsDiscountTotal').textContent = '- ' + formatCurrency(discount) + ' đ';
     document.getElementById('qsFinalTotal').textContent = formatCurrency(finalTotal) + ' đ';
-    
+
     document.getElementById('btnSubmitQuickSell').disabled = qsState.selectedSeatIds.length === 0;
 }
 
 async function applyQsVoucher() {
     const code = document.getElementById('qsVoucherCode').value.trim();
     const msgEl = document.getElementById('qsVoucherMessage');
-    
+
     if (!code) {
         qsState.voucher = null;
         msgEl.textContent = '';
         updateQsTotals();
         return;
     }
-    
+
     msgEl.textContent = 'Đang kiểm tra...';
     msgEl.style.color = '#6b7280';
-    
+
     try {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         const res = await fetch('/api/bookings/validate-voucher', {
@@ -2527,7 +2523,7 @@ async function applyQsVoucher() {
             body: JSON.stringify({ code })
         });
         const data = await res.json();
-        
+
         if (data.success) {
             qsState.voucher = data.data;
             msgEl.textContent = 'Mã hợp lệ!';
@@ -2546,16 +2542,16 @@ async function applyQsVoucher() {
 
 async function submitQuickSell() {
     if (qsState.selectedSeatIds.length === 0) return alert('Vui lòng chọn ghế!');
-    
+
     const btn = document.getElementById('btnSubmitQuickSell');
     btn.disabled = true;
     btn.textContent = 'Đang xử lý...';
-    
+
     const foodItems = Object.keys(qsState.selectedFnb).map(id => ({
         fnbId: id,
         quantity: qsState.selectedFnb[id]
     }));
-    
+
     const payload = {
         showtimeId: qsState.selectedShowtimeId,
         seatIds: qsState.selectedSeatIds,
@@ -2564,7 +2560,7 @@ async function submitQuickSell() {
         voucherCode: qsState.voucher ? document.getElementById('qsVoucherCode').value.trim() : null,
         paymentMethod: 'cash'
     };
-    
+
     try {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         const res = await fetch('/api/staff/sell-ticket', {
@@ -2573,9 +2569,9 @@ async function submitQuickSell() {
             body: JSON.stringify(payload)
         });
         const data = await res.json();
-        
+
         if (data.success) {
-            alert('Thanh toán thành công!\nMã vé: ' + data.data.ticketIds.map(t => 'TKT-'+t).join(', '));
+            alert('Thanh toán thành công!\nMã vé: ' + data.data.ticketIds.map(t => 'TKT-' + t).join(', '));
             closeQuickSellModal();
             loadDashboardData(); // Cập nhật lại biểu đồ/KPIs
         } else {
@@ -2584,12 +2580,12 @@ async function submitQuickSell() {
     } catch (e) {
         alert('Lỗi kết nối');
     }
-    
+
     btn.textContent = 'Thanh Toán & In Vé';
     btn.disabled = false;
 }
 
-<<<<<<< HEAD
+
 
 /* ════════════════════════════════════════════════
    PROMOTIONS MANAGEMENT
@@ -2642,13 +2638,13 @@ function renderPromoTable() {
             <td>${p.BadgeLabel ? `<span class="status-badge" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.18);font-weight:700;font-size:0.68rem;padding:3px 9px;">${p.BadgeLabel}</span>` : '<span style="color:var(--text3); font-style:italic;">—</span>'}</td>
             <td>
                 ${p.IsFeatured
-                    ? '<span class="status-badge active" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.22);color:#d97706;font-weight:700;">★ Nổi bật</span>'
-                    : '<span class="status-badge finished" style="background:rgba(107,114,128,0.06);border:1px solid rgba(107,114,128,0.12);color:#6b7280;">Thường</span>'}
+            ? '<span class="status-badge active" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.22);color:#d97706;font-weight:700;">★ Nổi bật</span>'
+            : '<span class="status-badge finished" style="background:rgba(107,114,128,0.06);border:1px solid rgba(107,114,128,0.12);color:#6b7280;">Thường</span>'}
             </td>
             <td>
-                ${p.IsActive 
-                    ? '<span class="status-badge active">Đang hiện</span>' 
-                    : '<span class="status-badge finished">Đã ẩn</span>'}
+                ${p.IsActive
+            ? '<span class="status-badge active">Đang hiện</span>'
+            : '<span class="status-badge finished">Đã ẩn</span>'}
             </td>
             <td style="color:var(--text);font-weight:700;font-size:0.88rem;text-align:center;">${p.SortOrder}</td>
             <td>
@@ -2708,18 +2704,18 @@ async function savePromo(event) {
     const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
 
     const formData = new FormData();
-    formData.append('title',       document.getElementById('promoTitle').value);
+    formData.append('title', document.getElementById('promoTitle').value);
     formData.append('description', document.getElementById('promoDesc').value);
-    formData.append('badgeLabel',  document.getElementById('promoBadge').value);
-    formData.append('linkURL',     document.getElementById('promoLink').value);
-    formData.append('sortOrder',   document.getElementById('promoSort').value);
-    formData.append('isFeatured',  document.getElementById('promoFeatured').checked ? 'true' : 'false');
-    formData.append('isActive',    document.getElementById('promoActive').checked ? 'true' : 'false');
+    formData.append('badgeLabel', document.getElementById('promoBadge').value);
+    formData.append('linkURL', document.getElementById('promoLink').value);
+    formData.append('sortOrder', document.getElementById('promoSort').value);
+    formData.append('isFeatured', document.getElementById('promoFeatured').checked ? 'true' : 'false');
+    formData.append('isActive', document.getElementById('promoActive').checked ? 'true' : 'false');
 
     const imageFile = document.getElementById('promoImage').files[0];
     if (imageFile) formData.append('image', imageFile);
 
-    const url    = id ? `/api/admin/promotions/${id}` : '/api/admin/promotions';
+    const url = id ? `/api/admin/promotions/${id}` : '/api/admin/promotions';
     const method = id ? 'PUT' : 'POST';
 
     try {
@@ -2770,8 +2766,3 @@ async function togglePromo(id) {
         showAdminToast('Lỗi kết nối server.', 'error');
     }
 }
-
-
-
-=======
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a

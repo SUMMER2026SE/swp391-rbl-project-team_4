@@ -401,8 +401,9 @@ const app = {
     },
 
     async loadDynamicMovies() {
-        // 1. For index.html (Now Showing) -> .movie-grid
-        const nowShowingGrid = document.querySelector('.movie-grid');
+        // 1. For index.html (Now Showing) -> #now-showing .movie-grid
+        const nowShowingGrid = document.querySelector('#now-showing .movie-grid');
+        const imaxGrid = document.querySelector('#imax .movie-grid');
         if (nowShowingGrid) {
             try {
                 const res = await fetch(`${API_BASE}/api/movies/now-showing`);
@@ -425,6 +426,31 @@ const app = {
                             </div>
                         </div>
                     `).join('');
+
+                    if (imaxGrid) {
+                        const imaxMovies = json.data.filter(movie => movie.Formats && movie.Formats.includes('IMAX'));
+                        if (imaxMovies.length > 0) {
+                            imaxGrid.innerHTML = imaxMovies.map(movie => `
+                                <div class="movie-card">
+                                    <div class="movie-poster">
+                                        <span class="age-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                                        <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                                        <div class="poster-overlay">
+                                            <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                            <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">ĐẶT VÉ</button>
+                                        </div>
+                                    </div>
+                                    <div class="movie-info">
+                                        <h3 class="movie-title">${movie.Title}</h3>
+                                        <div class="movie-genre">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                        <div class="movie-rating">★ 8.5</div>
+                                    </div>
+                                </div>
+                            `).join('');
+                        } else {
+                            imaxGrid.innerHTML = '<p style="color:#9ca3af;padding:20px;grid-column: 1/-1;text-align:center;">Hiện tại không có phim chiếu định dạng IMAX.</p>';
+                        }
+                    }
                 }
             } catch (err) {
                 console.error('Failed to load now showing movies:', err);
@@ -443,17 +469,13 @@ const app = {
                             <div class="movie-poster">
                                 <span class="coming-badge">SẮP CHIẾU</span>
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                            </div>
-                            <div class="movie-info-large">
-                                <h3 class="movie-title-large">${movie.Title}</h3>
-                                <div class="movie-meta-large">
-                                    <span>${movie.Genres ? movie.Genres : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</span>
-                                    <span class="movie-date">Sắp chiếu</span>
+                                <div class="poster-overlay">
+                                    <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
                                 </div>
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.MainCast ? movie.MainCast : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</div>
+                                <div class="movie-genre">${movie.Genres ? movie.Genres : 'Khoa học viễn tưởng'} | ${movie.Duration} phút</div>
                                 <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">Sắp chiếu</div>
                             </div>
                         </div>

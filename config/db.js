@@ -6,11 +6,7 @@ const sql = require('mssql');
 
 const dbConfig = {
   user: process.env.DB_USER || 'sa',                        // SQL Server login
-<<<<<<< HEAD
   password: process.env.DB_PASSWORD || '210605',            // Đổi thành password thật của bạn
-=======
-  password: process.env.DB_PASSWORD || '123456',            // Đổi thành password thật của bạn
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
   server: process.env.DB_SERVER || 'localhost',             // Hoặc tên server / IP Azure
   port: parseInt(process.env.DB_PORT) || 1433,
   database: process.env.DB_DATABASE || 'CinemaManagement',  // Tên database trên SQL Server

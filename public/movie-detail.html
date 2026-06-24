@@ -361,7 +361,7 @@
                 if (trailerBtn) {
                     trailerBtn.addEventListener('click', () => {
                         if (movie.TrailerURL) {
-                            window.open(movie.TrailerURL, '_blank');
+                            app.openTrailer(movie.TrailerURL);
                         } else {
                             alert('Trailer chưa có sẵn cho phim này.');
                         }
