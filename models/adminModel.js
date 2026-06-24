@@ -13,10 +13,11 @@ class AdminModel {
       .input('posterURL', sql.VarChar, data.posterURL || null)
       .input('status', sql.VarChar, data.status || 'Coming Soon')
       .input('mainCast', sql.NVarChar, data.mainCast || null)
+      .input('trailerURL', sql.NVarChar, data.trailerURL || null)
       .query(`
-        INSERT INTO Movies (Title, Description, Director, Duration, AgeRating, PosterURL, Status, MainCast)
+        INSERT INTO Movies (Title, Description, Director, Duration, AgeRating, PosterURL, Status, MainCast, TrailerURL)
         OUTPUT INSERTED.*
-        VALUES (@title, @description, @director, @duration, @ageRating, @posterURL, @status, @mainCast)
+        VALUES (@title, @description, @director, @duration, @ageRating, @posterURL, @status, @mainCast, @trailerURL)
       `);
     return result.recordset[0];
   }
@@ -33,6 +34,7 @@ class AdminModel {
       .input('posterURL', sql.VarChar, data.posterURL || null)
       .input('status', sql.VarChar, data.status || null)
       .input('mainCast', sql.NVarChar, data.mainCast || null)
+      .input('trailerURL', sql.NVarChar, data.trailerURL !== undefined ? data.trailerURL : null)
       .query(`
         UPDATE Movies
         SET Title       = COALESCE(@title, Title),
@@ -42,7 +44,8 @@ class AdminModel {
             AgeRating   = COALESCE(@ageRating, AgeRating),
             PosterURL   = COALESCE(@posterURL, PosterURL),
             Status      = COALESCE(@status, Status),
-            MainCast    = COALESCE(@mainCast, MainCast)
+            MainCast    = COALESCE(@mainCast, MainCast),
+            TrailerURL  = @trailerURL
         OUTPUT INSERTED.*
         WHERE MovieID = @movieId
       `);
@@ -514,11 +517,115 @@ class AdminModel {
   static async getCinemas() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT CinemaID, CinemaName, Address
+      SELECT CinemaID, CinemaName, Address, City
       FROM Cinemas
       ORDER BY CinemaName
     `);
     return result.recordset;
+  }
+
+  // --- CREATE CINEMA ---
+  static async createCinema(data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('name', sql.NVarChar, data.name)
+      .input('address', sql.NVarChar, data.address || null)
+      .input('city', sql.NVarChar, data.city || null)
+      .query(`
+        INSERT INTO Cinemas (CinemaName, Address, City)
+        OUTPUT INSERTED.*
+        VALUES (@name, @address, @city)
+      `);
+    return result.recordset[0];
+  }
+
+  // --- UPDATE CINEMA ---
+  static async updateCinema(cinemaId, data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, cinemaId)
+      .input('name', sql.NVarChar, data.name)
+      .input('address', sql.NVarChar, data.address || null)
+      .input('city', sql.NVarChar, data.city || null)
+      .query(`
+        UPDATE Cinemas
+        SET CinemaName = @name, Address = @address, City = @city
+        WHERE CinemaID = @id;
+        SELECT * FROM Cinemas WHERE CinemaID = @id;
+      `);
+    return result.recordset[0];
+  }
+
+  // --- DELETE CINEMA ---
+  static async deleteCinema(cinemaId) {
+    const pool = await getPool();
+    // Check for active showtimes
+    const check = await pool.request()
+      .input('id', sql.Int, cinemaId)
+      .query(`
+        SELECT COUNT(*) AS cnt FROM Showtimes st
+        JOIN Rooms r ON st.RoomID = r.RoomID
+        WHERE r.CinemaID = @id AND st.Status = 'active' AND st.EndTime > GETUTCDATE()
+      `);
+    if (check.recordset[0].cnt > 0) {
+      throw new Error('Không thể xóa rạp đang có suất chiếu hoạt động.');
+    }
+    // Delete seats, rooms, then cinema
+    await pool.request().input('id', sql.Int, cinemaId).query(`
+      DELETE FROM Seats WHERE RoomID IN (SELECT RoomID FROM Rooms WHERE CinemaID = @id);
+      DELETE FROM Rooms WHERE CinemaID = @id;
+      DELETE FROM Cinemas WHERE CinemaID = @id;
+    `);
+    return true;
+  }
+
+  // --- CREATE ROOM ---
+  static async createRoom(data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('cinemaId', sql.Int, data.cinemaId)
+      .input('name', sql.NVarChar, data.name)
+      .input('totalSeats', sql.Int, data.totalSeats || 0)
+      .query(`
+        INSERT INTO Rooms (CinemaID, RoomName, TotalSeats)
+        OUTPUT INSERTED.*
+        VALUES (@cinemaId, @name, @totalSeats)
+      `);
+    return result.recordset[0];
+  }
+
+  // --- UPDATE ROOM ---
+  static async updateRoom(roomId, data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, roomId)
+      .input('name', sql.NVarChar, data.name)
+      .query(`
+        UPDATE Rooms SET RoomName = @name WHERE RoomID = @id;
+        SELECT r.*, c.CinemaName FROM Rooms r JOIN Cinemas c ON r.CinemaID = c.CinemaID WHERE r.RoomID = @id;
+      `);
+    return result.recordset[0];
+  }
+
+  // --- DELETE ROOM ---
+  static async deleteRoom(roomId) {
+    const pool = await getPool();
+    // Check for tickets
+    const check = await pool.request()
+      .input('id', sql.Int, roomId)
+      .query(`
+        SELECT COUNT(*) AS cnt FROM Tickets t
+        JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+        WHERE st.RoomID = @id AND t.Status IN ('confirmed', 'pending')
+      `);
+    if (check.recordset[0].cnt > 0) {
+      throw new Error('Không thể xóa phòng đang có vé bán.');
+    }
+    await pool.request().input('id', sql.Int, roomId).query(`
+      DELETE FROM Seats WHERE RoomID = @id;
+      DELETE FROM Rooms WHERE RoomID = @id;
+    `);
+    return true;
   }
 
   // --- STATISTICS ---
