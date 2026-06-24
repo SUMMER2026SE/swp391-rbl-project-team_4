@@ -99,7 +99,7 @@ class AdminModel {
         WHERE s.RoomID = @roomId AND st.StartTime > GETUTCDATE()
           AND t.Status IN ('confirmed', 'pending', 'used')
       `);
-      
+
       const bookedSeatIds = bookedSeatsResult.recordset.map(r => r.SeatID);
 
       // 2. Clear existing seats that are NOT currently booked in upcoming showtimes
@@ -117,14 +117,14 @@ class AdminModel {
         // If seat has a SeatID and it's in the booked list, update its type/multiplier safely (or skip)
         // For simplicity, we just try to insert new seats (ones without an ID or ones that were deleted).
         // A robust logic would check if the seat exists.
-        
+
         const reqSeat = new sql.Request(transaction);
         reqSeat.input('roomId', sql.Int, roomId);
         reqSeat.input('seatRow', sql.VarChar, seat.SeatRow);
         reqSeat.input('seatNumber', sql.Int, seat.SeatNumber);
         reqSeat.input('seatType', sql.VarChar, seat.SeatType);
         reqSeat.input('priceMultiplier', sql.Decimal, seat.PriceMultiplier || 1.0);
-        
+
         // Use MERGE to insert or update based on Row and Number for this Room
         await reqSeat.query(`
           MERGE Seats AS target
@@ -208,7 +208,7 @@ class AdminModel {
       .input('roomId', sql.Int, data.roomId)
       .input('startTime', sql.DateTime, data.startTime)
       .input('endTime', sql.DateTime, data.endTime)
-      .input('price', sql.Decimal(18,2), data.price)
+      .input('price', sql.Decimal(18, 2), data.price)
       .query(`
         INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, BasePrice, Status)
         OUTPUT INSERTED.*
@@ -253,7 +253,7 @@ class AdminModel {
       .input('roomId', sql.Int, roomId)
       .input('startTime', sql.DateTime, startTime)
       .input('endTime', sql.DateTime, endTime)
-      .input('price', sql.Decimal(18,2), data.price)
+      .input('price', sql.Decimal(18, 2), data.price)
       .input('status', sql.NVarChar, data.status)
       .query(`
         UPDATE Showtimes
@@ -281,7 +281,7 @@ class AdminModel {
     if (ticketCheck.recordset[0].cnt > 0) {
       throw new Error('Không thể xóa suất chiếu đã có vé được bán.');
     }
-    
+
     const result = await pool.request()
       .input('showtimeId', sql.Int, showtimeId)
       .query(`
@@ -725,7 +725,7 @@ class AdminModel {
   static async getRevenueChartData({ period, cinemaId }) {
     const pool = await getPool();
     const request = pool.request();
-    
+
     let cinemaJoin = '';
     let cinemaFilter = '';
     if (cinemaId) {
@@ -794,10 +794,7 @@ class AdminModel {
       `);
     return result.recordset;
   }
-<<<<<<< HEAD
-=======
 
->>>>>>> d173bd87361c61b494e5f8013436577d9dd450e3
   static async getLiveRoomsStatus(cinemaId) {
     const pool = await getPool();
     let query = `
@@ -833,10 +830,7 @@ class AdminModel {
     const result = await request.query(query);
     return result.recordset;
   }
-<<<<<<< HEAD
-=======
 
->>>>>>> d173bd87361c61b494e5f8013436577d9dd450e3
   // --- PROMOTIONS MANAGEMENT ---
   static async getAllPromotions() {
     const pool = await getPool();
@@ -864,14 +858,14 @@ class AdminModel {
   static async createPromotion(data) {
     const pool = await getPool();
     const result = await pool.request()
-      .input('title',       sql.NVarChar, data.title)
+      .input('title', sql.NVarChar, data.title)
       .input('description', sql.NVarChar, data.description || null)
-      .input('badgeLabel',  sql.NVarChar, data.badgeLabel  || null)
-      .input('imageURL',    sql.VarChar,  data.imageURL    || null)
-      .input('linkURL',     sql.VarChar,  data.linkURL     || null)
-      .input('isFeatured',  sql.Bit,      data.isFeatured  ? 1 : 0)
-      .input('isActive',    sql.Bit,      data.isActive !== false ? 1 : 0)
-      .input('sortOrder',   sql.Int,      parseInt(data.sortOrder) || 0)
+      .input('badgeLabel', sql.NVarChar, data.badgeLabel || null)
+      .input('imageURL', sql.VarChar, data.imageURL || null)
+      .input('linkURL', sql.VarChar, data.linkURL || null)
+      .input('isFeatured', sql.Bit, data.isFeatured ? 1 : 0)
+      .input('isActive', sql.Bit, data.isActive !== false ? 1 : 0)
+      .input('sortOrder', sql.Int, parseInt(data.sortOrder) || 0)
       .query(`
         INSERT INTO Promotions (Title, Description, BadgeLabel, ImageURL, LinkURL, IsFeatured, IsActive, SortOrder)
         OUTPUT INSERTED.*
@@ -883,15 +877,15 @@ class AdminModel {
   static async updatePromotion(id, data) {
     const pool = await getPool();
     const result = await pool.request()
-      .input('id',          sql.Int,      id)
-      .input('title',       sql.NVarChar, data.title       || null)
+      .input('id', sql.Int, id)
+      .input('title', sql.NVarChar, data.title || null)
       .input('description', sql.NVarChar, data.description || null)
-      .input('badgeLabel',  sql.NVarChar, data.badgeLabel  || null)
-      .input('imageURL',    sql.VarChar,  data.imageURL    || null)
-      .input('linkURL',     sql.VarChar,  data.linkURL     || null)
-      .input('isFeatured',  sql.Bit,      data.isFeatured  ? 1 : 0)
-      .input('isActive',    sql.Bit,      data.isActive !== false ? 1 : 0)
-      .input('sortOrder',   sql.Int,      parseInt(data.sortOrder) || 0)
+      .input('badgeLabel', sql.NVarChar, data.badgeLabel || null)
+      .input('imageURL', sql.VarChar, data.imageURL || null)
+      .input('linkURL', sql.VarChar, data.linkURL || null)
+      .input('isFeatured', sql.Bit, data.isFeatured ? 1 : 0)
+      .input('isActive', sql.Bit, data.isActive !== false ? 1 : 0)
+      .input('sortOrder', sql.Int, parseInt(data.sortOrder) || 0)
       .query(`
         UPDATE Promotions
         SET Title       = COALESCE(@title,       Title),
@@ -929,10 +923,7 @@ class AdminModel {
       `);
     return result.recordset.length > 0 ? result.recordset[0] : null;
   }
-<<<<<<< HEAD
-=======
 
->>>>>>> d173bd87361c61b494e5f8013436577d9dd450e3
 }
 
 module.exports = AdminModel;
