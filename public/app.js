@@ -97,6 +97,16 @@ const app = {
         `).join('');
     },
     openTrailer(url) {
+        if (!url || url === 'null' || url === 'undefined' || url.trim() === '') {
+            alert('Trailer chưa có sẵn cho phim này.');
+            return;
+        }
+
+        let cleanUrl = url.trim();
+        if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://') && !cleanUrl.startsWith('//')) {
+            cleanUrl = 'https://' + cleanUrl;
+        }
+
         let modal = document.getElementById('trailerModal');
         if (!modal) {
             modal = document.createElement('div');
@@ -113,35 +123,33 @@ const app = {
             document.body.appendChild(modal);
         }
 
-        let embedUrl = url;
-        if (!url) {
-            embedUrl = '';
-        } else if (url.includes('youtube.com/embed/')) {
-            embedUrl = url;
+        let embedUrl = cleanUrl;
+        if (cleanUrl.includes('youtube.com/embed/')) {
+            embedUrl = cleanUrl;
         } else {
             try {
                 let videoId = '';
-                if (url.includes('youtube.com/watch')) {
-                    const urlParams = new URLSearchParams(new URL(url.search ? url : url.replace('#', '?')).search);
-                    videoId = urlParams.get('v') || new URL(url).searchParams.get('v');
+                if (cleanUrl.includes('youtube.com/watch')) {
+                    const urlObj = new URL(cleanUrl);
+                    videoId = urlObj.searchParams.get('v');
                     if (!videoId) {
-                        // Fallback regex
-                        const match = url.match(/[?&]v=([^&]+)/);
+                        const match = cleanUrl.match(/[?&]v=([^&]+)/);
                         if (match) videoId = match[1];
                     }
-                } else if (url.includes('youtu.be/')) {
-                    videoId = url.split('youtu.be/')[1].split('?')[0];
-                } else if (url.includes('youtube.com/v/')) {
-                    videoId = url.split('youtube.com/v/')[1].split('?')[0];
+                } else if (cleanUrl.includes('youtu.be/')) {
+                    videoId = cleanUrl.split('youtu.be/')[1].split('?')[0];
+                } else if (cleanUrl.includes('youtube.com/v/')) {
+                    videoId = cleanUrl.split('youtube.com/v/')[1].split('?')[0];
+                } else if (cleanUrl.includes('youtube.com/shorts/')) {
+                    videoId = cleanUrl.split('youtube.com/shorts/')[1].split('?')[0];
                 }
                 if (videoId) {
                     embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
                 }
             } catch (e) {
                 console.error("Error parsing YouTube URL:", e);
-                // Fallback to simple replace
-                if (url.includes('youtube.com/watch?v=')) {
-                    embedUrl = url.replace('watch?v=', 'embed/');
+                if (cleanUrl.includes('youtube.com/watch?v=')) {
+                    embedUrl = cleanUrl.replace('watch?v=', 'embed/');
                     const ampersandPos = embedUrl.indexOf('&');
                     if (ampersandPos !== -1) {
                         embedUrl = embedUrl.substring(0, ampersandPos);
@@ -416,6 +424,7 @@ const app = {
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                                 <div class="poster-overlay">
                                     <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                    <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
                                     <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">ĐẶT VÉ</button>
                                 </div>
                             </div>
@@ -437,6 +446,7 @@ const app = {
                                         <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                                         <div class="poster-overlay">
                                             <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                            <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
                                             <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">ĐẶT VÉ</button>
                                         </div>
                                     </div>
@@ -471,6 +481,7 @@ const app = {
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                                 <div class="poster-overlay">
                                     <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                    <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
                                 </div>
                             </div>
                             <div class="movie-info">
@@ -536,6 +547,26 @@ const app = {
         }
 
         allMoviesGrid.innerHTML = movies.map(movie => `
+            <div class="movie-card">
+                <div class="movie-poster">
+                    <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                    <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                    <div class="movie-overlay">
+                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                        <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
+                    </div>
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title" title="${movie.Title}">${movie.Title}</h3>
+                    <div class="movie-rating">
+                        <span class="stars">★ 8.5</span>
+                        <span class="genres">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    },
+
     switchMovieStatusTab(status) {
         this.filterState.status = status;
         this.updateTabUI();
@@ -618,15 +649,8 @@ const app = {
                     <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
                     <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                     <div class="movie-overlay">
-                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Get Tickets</button>
-                    </div>
-                </div>
-                <div class="movie-info">
-                    <h3 class="movie-title">${movie.Title}</h3>
-                    <div class="movie-rating">
-                        <span class="stars">★ 4.9</span>
-                        <span class="genres">${movie.Duration} phút | ${movie.Formats || '2D'}</span>
                         <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                        <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
                     </div>
                 </div>
                 <div class="movie-info">
@@ -706,6 +730,18 @@ const app = {
     async loadCinemasNavbar() {
         const dropdown = document.getElementById('cinemaDropdown');
         if (!dropdown) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/movies/cinemas`);
+            const json = await res.json();
+            if (json.success && json.data) {
+                dropdown.innerHTML = json.data.map(c => `
+                    <a href="booking.html?cinemaId=${c.CinemaID}">${c.CinemaName}</a>
+                `).join('');
+            }
+        } catch (e) {
+            console.error("Error loading cinemas navbar:", e);
+        }
+    },
     // --- Promotions (Tin tức & Khuyến mãi) ---
     async loadPromotions() {
         const grid = document.getElementById('promotionsGrid');
@@ -798,6 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.initSocket();
     app.loadDynamicMovies();
     app.loadPromotions();
+    app.loadCinemasNavbar();
 
     const searchInput = document.getElementById('searchInput');
     const isMoviesPage = !!document.querySelector('.movies-grid');
