@@ -19,14 +19,17 @@
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <a href="movies.html" id="nav-phim" class="active">Phim</a>
-                <div class="nav-dropdown">
-                    <a href="booking.html" id="nav-rap">Rạp <span style="font-size: 0.8em;">▼</span></a>
-                    <div class="nav-dropdown-content" id="cinemaDropdown">
-                        <!-- Populated by JS -->
+                <div class="dropdown">
+                    <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
+                    <div class="dropdown-menu">
+                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
                     </div>
                 </div>
+                <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
+                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -278,6 +281,11 @@
 
             if (buyBtn) {
                 buyBtn.addEventListener('click', () => {
+                    const isLogged = (localStorage.getItem('user') || sessionStorage.getItem('user'));
+                    if (!isLogged) {
+                        window.location.href = 'auth.html';
+                        return;
+                    }
                     if (movieId) {
                         window.location.href = `booking.html?movieId=${movieId}`;
                     } else {
@@ -360,7 +368,7 @@
                 if (trailerBtn) {
                     trailerBtn.addEventListener('click', () => {
                         if (movie.TrailerURL) {
-                            window.open(movie.TrailerURL, '_blank');
+                            app.openTrailer(movie.TrailerURL);
                         } else {
                             alert('Trailer chưa có sẵn cho phim này.');
                         }

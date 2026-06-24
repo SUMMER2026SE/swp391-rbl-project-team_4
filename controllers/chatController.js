@@ -1,7 +1,9 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const MovieModel = require('../models/movieModel');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// NOTE: Do NOT instantiate GoogleGenerativeAI at module load time —
+// the env loader hasn't injected GEMINI_API_KEY yet at that point.
+// Instantiate lazily inside handleChat instead.
 
 const chatController = {
   handleChat: async (req, res) => {
@@ -10,6 +12,14 @@ const chatController = {
       if (!message) {
         return res.status(400).json({ success: false, message: 'Message is required' });
       }
+
+      // Lazy init — reads key after env is fully loaded
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        console.error('[ChatController] GEMINI_API_KEY is not set!');
+        return res.status(500).json({ success: false, message: 'AI service not configured.' });
+      }
+      const genAI = new GoogleGenerativeAI(apiKey);
 
       // Lấy thông tin phim đang chiếu để làm ngữ cảnh
       const nowShowing = await MovieModel.getNowShowing();

@@ -132,6 +132,7 @@ img {
     font-size: 0.9rem;
     transition: color var(--transition);
     position: relative;
+    text-decoration: none !important;
 }
 
 .nav-links a:hover,
@@ -139,21 +140,7 @@ img {
     color: var(--primary);
 }
 
-.nav-links a::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--primary);
-    transition: width var(--transition);
-}
 
-.nav-links a:hover::after,
-.nav-links a.active::after {
-    width: 100%;
-}
 
 .nav-actions {
     margin-left: auto;
@@ -1265,159 +1252,211 @@ img {
     }
 }
 
-/* ─── City Modal ─── */
-.city-modal-content {
-    background: #2b2d31;
-    color: #fff;
-    max-width: 600px;
-    padding: 30px;
-    border-radius: 4px;
-}
-
-.city-modal-header {
-    display: flex;
-    justify-content: space-between;
+/* ─── Dropdown Menu (Light Navbar Theme) ─── */
+.dropdown {
+    position: relative;
+    display: inline-flex;
     align-items: center;
-    margin-bottom: 25px;
-    border-bottom: 1px solid #fff;
-    padding-bottom: 15px;
 }
 
-.city-modal-header h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #fff;
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(15px);
+    background: var(--bg-white);
+    min-width: 170px;
+    border-radius: 6px;
+    border: 1px solid var(--border-light);
+    padding: 8px 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    z-index: 999;
 }
 
-.city-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+.dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(5px);
 }
 
-.city-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.city-item:hover {
-    transform: translateY(-5px);
-}
-
-.city-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 1.2rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.city-item span {
-    font-size: 0.9rem;
+.nav-links .dropdown-menu a.dropdown-item {
+    display: block;
+    color: var(--text-muted-dark);
+    padding: 10px 20px;
+    font-size: 0.85rem;
     font-weight: 500;
-    text-align: center;
-    color: #ddd;
+    text-align: left;
+    width: 100%;
+    white-space: nowrap;
+    position: relative;
+    transition: all 0.2s ease;
 }
 
-@media (max-width: 480px) {
-    .city-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* ─── Modal Classes (imported from style.css) ─── */
-.hidden {
+.nav-links .dropdown-menu a.dropdown-item::after {
     display: none !important;
 }
 
+.nav-links .dropdown-menu a.dropdown-item:hover {
+    color: var(--primary) !important;
+    background: rgba(229, 9, 20, 0.05);
+}
+
+.nav-links .dropdown-menu a.dropdown-item.active {
+    color: var(--primary) !important;
+    background: rgba(229, 9, 20, 0.08);
+}
+
+.nav-arrow {
+    font-size: 0.7rem;
+    margin-left: 4px;
+    display: inline-block;
+    transition: transform 0.2s ease;
+    vertical-align: middle;
+}
+
+.dropdown:hover .nav-arrow {
+    transform: rotate(180deg);
+}
+
+/* ─── Utility ──────────────────────────────────────────────── */
+.hidden { display: none !important; }
+
+/* ─── City Selection Modal ─────────────────────────────────── */
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0,0,0,0.6);
     z-index: 1000;
     display: flex;
     justify-content: center;
     align-items: center;
+    backdrop-filter: blur(4px);
+}
+.city-modal-content {
+    background: #fff;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 420px;
+    width: 90%;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlideUp 0.3s ease;
+}
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.city-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.city-modal-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+}
+.city-modal-header .btn-close-modal {
+    position: static;
+    background: #f5f5f5;
+    color: #666;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+.city-modal-header .btn-close-modal:hover {
+    background: #e8192c;
+    color: #fff;
+}
+.city-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 20px 24px 24px;
+}
+.city-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f9f9f9;
+    border: 2px solid transparent;
+}
+.city-item:hover {
+    background: #fff;
+    border-color: #e8192c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(232,25,44,0.12);
+}
+.city-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+.city-item span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
 }
 
-.modal-content {
+/* Trailer Modal Content & Video Container */
+#trailerModal.modal-overlay {
+    background: rgba(0,0,0,0.9);
+}
+#trailerModal .modal-content {
     width: 90%;
     max-width: 900px;
     position: relative;
-    background: var(--surface-dark);
-    border-radius: var(--radius);
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
-
-.btn-close-modal {
+#trailerModal .video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
+}
+#trailerModal .video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+}
+#trailerModal .btn-close-modal {
     position: absolute;
     top: -40px;
     right: 0;
     background: transparent;
     color: #fff;
-    font-size: 2rem;
+    font-size: 2.5rem;
+    border: none;
     cursor: pointer;
-}
-
-.city-modal-header .btn-close-modal {
-    position: static;
-    color: #aaa;
-    font-size: 1.5rem;
-}
-
-/* ─── Nav Dropdown ─── */
-.nav-dropdown {
-    position: relative;
-    display: inline-block;
-}
-
-.nav-dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: var(--surface-dark);
-    min-width: 250px;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    border-radius: var(--radius-sm);
-    top: 100%;
-    left: 0;
-    padding: 10px 0;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.nav-dropdown-content a {
-    color: var(--text-light);
-    padding: 10px 16px;
-    text-decoration: none;
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: background-color var(--transition);
-}
-
-.nav-dropdown-content a:hover {
-    background-color: var(--primary);
-    color: white;
-}
-
-.nav-dropdown-content .dropdown-group {
-    padding: 5px 16px;
-    font-size: 0.75rem;
-    color: var(--primary);
-    text-transform: uppercase;
-    font-weight: 800;
-    margin-top: 5px;
-}
-
-.nav-dropdown:hover .nav-dropdown-content {
-    display: block;
+    line-height: 1;
 }

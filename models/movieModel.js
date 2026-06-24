@@ -24,6 +24,7 @@ class MovieModel {
     const request = pool.request();
     let query = `
       SELECT DISTINCT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
+      SELECT m.MovieID, m.Title, m.Description, m.Director, m.Duration, m.AgeRating,
              m.TrailerURL, m.PosterURL, m.Status, m.MainCast,
              (SELECT STRING_AGG(g.GenreName, ', ') 
               FROM Movie_Genres mg 
@@ -38,6 +39,13 @@ class MovieModel {
                              FROM Showtimes st2 
                              JOIN Rooms r2 ON st2.RoomID = r2.RoomID 
                              WHERE st2.MovieID = m.MovieID AND st2.Status = 'active') AS Formats), '2D') AS Formats
+                               WHEN r.RoomName LIKE '%3D%' THEN '3D'
+                               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
+                               ELSE '2D'
+                             END AS Format 
+                             FROM Showtimes st 
+                             JOIN Rooms r ON st.RoomID = r.RoomID 
+                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
       FROM   Movies m
     `;
     if (city && city !== 'Toàn quốc') {
@@ -47,6 +55,13 @@ class MovieModel {
         JOIN Rooms r ON st.RoomID = r.RoomID
         JOIN Cinemas c ON r.CinemaID = c.CinemaID
         WHERE m.Status = 'Now Showing' AND c.City = @city
+        WHERE m.Status = 'Now Showing'
+          AND EXISTS (
+            SELECT 1 FROM Showtimes st
+            JOIN Rooms r ON st.RoomID = r.RoomID
+            JOIN Cinemas c ON r.CinemaID = c.CinemaID
+            WHERE st.MovieID = m.MovieID AND c.City = @city AND st.StartTime > GETDATE() AND st.Status = 'active'
+          )
       `;
     } else {
       query += ` WHERE m.Status = 'Now Showing' `;
@@ -162,7 +177,7 @@ class MovieModel {
     let dateFilter = '';
     if (date) {
       request.input('date', sql.Date, date);
-      dateFilter = 'AND CAST(st.StartTime AS DATE) = @date';
+      dateFilter = 'AND CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date';
     }
 
     const result = await request.query(`
@@ -248,6 +263,10 @@ class MovieModel {
              COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
              r.RoomID, r.RoomName, r.TotalSeats,
              m.MovieID, m.Title, m.Duration, m.AgeRating, m.PosterURL, m.MainCast,
+             (SELECT STRING_AGG(g.GenreName, ', ') 
+              FROM Movie_Genres mg 
+              JOIN Genres g ON mg.GenreID = g.GenreID 
+              WHERE mg.MovieID = m.MovieID) AS Genre,
              (SELECT COUNT(*)
               FROM Seats s
               WHERE s.RoomID = r.RoomID AND s.SeatType != 'None'
@@ -266,8 +285,9 @@ class MovieModel {
       JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
       JOIN   Movies  m ON st.MovieID  = m.MovieID
       WHERE  r.CinemaID = @cinemaId
-        AND  CAST(st.StartTime AS DATE) = @date
+        AND  CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date
         AND  st.Status  = 'active'
+        AND  st.StartTime > GETUTCDATE()
         ${movieFilter}
       ORDER BY m.Title, st.StartTime ASC
     `);

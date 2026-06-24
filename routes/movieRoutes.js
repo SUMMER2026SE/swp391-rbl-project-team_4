@@ -28,8 +28,12 @@ router.get('/showtimes',                     movieCtrl.getShowtimes);
 // GET /api/movies/showtimes/:showtimeId      — Chi tiết một suất chiếu
 router.get('/showtimes/:showtimeId',         movieCtrl.getShowtimeDetails);
 
+// GET /api/movies/promotions                 — Khuyến mãi đang hoạt động (public)
+router.get('/promotions',                    movieCtrl.getPublicPromotions);
+
 // GET /api/movies/:id                        — Chi tiết phim
 router.get('/:id',                           movieCtrl.getMovieById);
+
 
 // GET /api/movies/:id/showtimes             — Lịch chiếu của phim (?date=YYYY-MM-DD)
 router.get('/:id/showtimes',                 movieCtrl.getShowtimesByMovie);

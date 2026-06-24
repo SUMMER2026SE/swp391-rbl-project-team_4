@@ -12,10 +12,15 @@ const { getPool } = require('./config/db');
 
 // ─── App & Server ────────────────────────────────────────────
 const app = express();
+const SettingsModel = require('./models/settingsModel');
+
+// Initialize settings cache on startup
+SettingsModel.initCache();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] },
 });
+app.set('io', io);
 
 const PORT = process.env.PORT || 9999;
 

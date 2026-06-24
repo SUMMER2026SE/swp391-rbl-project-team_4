@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- QR Code library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="/js/qrcode.min.js?v=1.0.4"></script>
     <link rel="stylesheet" href="css/shared-layout.css">
     <style>
         :root {
@@ -404,8 +404,24 @@
             border-radius:10px;
             flex-shrink:0;
             box-shadow:0 4px 16px rgba(0,0,0,0.3);
+            width: 130px;
+            height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        #ticketQr canvas, #ticketQr img { display:block !important; }
+        #ticketQr {
+            width: 110px;
+            height: 110px;
+        }
+        #ticketQr canvas {
+            display: none !important;
+        }
+        #ticketQr img {
+            display: block !important;
+            width: 110px !important;
+            height: 110px !important;
+        }
 
         .ticket-bottom-info {
             flex:1;
@@ -531,9 +547,17 @@
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <a href="movies.html">Phim</a>
-                <a href="booking.html" class="active">Rạp</a>
-                <a href="promotions.html">Promotions</a>
+                <div class="dropdown">
+                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
+                    <div class="dropdown-menu">
+                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                    </div>
+                </div>
+                <a href="booking.html" id="nav-rap">Rạp</a>
+                <a href="promotions.html" id="nav-promo">Promotions</a>
+                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
@@ -623,7 +647,7 @@
 
                 <!-- Ticket Bottom: QR + Info -->
                 <div class="ticket-bottom">
-                    <div class="ticket-qr-wrap">
+                    <div class="ticket-qr-wrap" style="cursor: pointer;" onclick="openVerifyPage()" title="Nhấp vào mã QR để mở trang xác thực vé (giả lập quét QR)">
                         <div id="ticketQr"></div>
                     </div>
                     <div class="ticket-bottom-info">
@@ -688,8 +712,14 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>
     <script>
+    // Tự động chuyển hướng thêm cache-buster nếu URL chưa có tham số v để chống cache cứng đầu
+    if (!window.location.search.includes('v=')) {
+        window.location.replace(window.location.pathname + '?v=' + Date.now());
+    }
+    
     let booking = {};
     let qrTimers = {};
+    let serverLanOrigin = window.location.origin;
 
     const METHOD_LABELS = {
         qrpay:     'QR Pay (VietQR/MB Bank)',
@@ -728,7 +758,71 @@
     function generateQR(containerId, data, size = 140) {
         const el = document.getElementById(containerId);
         if (!el) return;
-        el.innerHTML = `<img src="images/qr_code_payment.png" alt="QR Payment" style="width:${size}px;height:${size}px;object-fit:contain;display:block;margin:0 auto;">`;
+        el.innerHTML = ''; // Clear previous mockup
+        try {
+            if (typeof QRCode === 'undefined') {
+                throw new Error('Thư viện QRCode chưa được tải (typeof QRCode === "undefined")');
+            }
+            new QRCode(el, {
+                text: data,
+                width: size,
+                height: size,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.M
+            });
+
+            // Tối ưu hóa kích thước bằng JS để ghi đè mọi CSS bị cache hoặc lỗi flexbox
+            const applyStyles = () => {
+                // Gán cứng kích thước cho element chứa QR (#ticketQr)
+                el.style.setProperty('width', size + 'px', 'important');
+                el.style.setProperty('height', size + 'px', 'important');
+                el.style.setProperty('display', 'block', 'important');
+
+                // Gán cứng kích thước cho container bọc ngoài (.ticket-qr-wrap)
+                const parent = el.parentElement;
+                if (parent && parent.classList.contains('ticket-qr-wrap')) {
+                    parent.style.setProperty('width', (size + 20) + 'px', 'important');
+                    parent.style.setProperty('height', (size + 20) + 'px', 'important');
+                    parent.style.setProperty('display', 'flex', 'important');
+                    parent.style.setProperty('align-items', 'center', 'important');
+                    parent.style.setProperty('justify-content', 'center', 'important');
+                    parent.style.setProperty('padding', '10px', 'important');
+                    parent.style.setProperty('box-sizing', 'border-box', 'important');
+                }
+
+                const canvas = el.querySelector('canvas');
+                const img = el.querySelector('img');
+                const svg = el.querySelector('svg');
+                if (canvas) {
+                    canvas.style.setProperty('width', size + 'px', 'important');
+                    canvas.style.setProperty('height', size + 'px', 'important');
+                    canvas.style.setProperty('display', 'none', 'important');
+                }
+                if (img) {
+                    img.style.setProperty('width', size + 'px', 'important');
+                    img.style.setProperty('height', size + 'px', 'important');
+                    img.style.setProperty('display', 'block', 'important');
+                    img.style.setProperty('margin', '0 auto', 'important');
+                }
+                if (svg) {
+                    svg.setAttribute('width', size);
+                    svg.setAttribute('height', size);
+                    svg.style.setProperty('width', size + 'px', 'important');
+                    svg.style.setProperty('height', size + 'px', 'important');
+                }
+            };
+            
+            applyStyles();
+            // Đảm bảo chạy lại sau khi QRCode library hoàn thành tiến trình vẽ bất đồng bộ
+            setTimeout(applyStyles, 50);
+            setTimeout(applyStyles, 150);
+            setTimeout(applyStyles, 300);
+        } catch(err) {
+            console.error('[QR Error] Failed to generate dynamic QR:', err);
+            // Fallback to static mockup image if library fails
+            el.innerHTML = `<img src="images/qr_code_payment.png" alt="QR Payment" style="width:${size}px;height:${size}px;object-fit:contain;display:block;margin:0 auto;">`;
+        }
     }
 
     /* ── QR Timer countdown (5 min) ── */
@@ -844,17 +938,10 @@
         // Booking note
         document.getElementById('bookingNoteId').textContent = bookingId;
 
-        // Generate ticket QR (unique data with booking info)
-        const ticketQrData = JSON.stringify({
-            id: bookingId,
-            movie: booking.movieTitle,
-            seats: booking.seats,
-            time: booking.time,
-            date: booking.date,
-            hall: booking.hall,
-            paid: finalAmount,
-            method: method
-        });
+        // Tạo URL kiểm tra vé trực tuyến (giống website thật khi quét mã QR)
+        const ticketIdsStr = bookingId.replace('DC-', '');
+        const ticketQrData = serverLanOrigin + '/verify-ticket.html?id=' + ticketIdsStr;
+
         generateQR('ticketQr', ticketQrData, 110);
 
         // Barcode
@@ -866,6 +953,12 @@
         }, 500);
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openVerifyPage() {
+        const bookingId = booking.bookingId || document.getElementById('ticketBookingId').textContent;
+        const ticketIdsStr = bookingId.replace('DC-', '');
+        window.open('/verify-ticket.html?id=' + ticketIdsStr, '_blank');
     }
 
     /* ── Download (Print) Ticket ── */
@@ -912,7 +1005,20 @@
     }
 
     /* ── INIT ── */
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Lấy IP LAN của server để thay thế localhost
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            try {
+                const ipRes = await fetch('/api/bookings/server-ip');
+                const ipJson = await ipRes.json();
+                if (ipJson.success && ipJson.ip && ipJson.ip !== 'localhost') {
+                    serverLanOrigin = window.location.protocol + '//' + ipJson.ip + ':' + window.location.port;
+                }
+            } catch(e) {
+                console.warn('Could not fetch server LAN IP:', e);
+            }
+        }
+
         // User
         try {
             const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');

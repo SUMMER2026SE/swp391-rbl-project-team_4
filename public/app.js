@@ -1,4 +1,5 @@
-const socket = io();
+const socket = typeof io !== 'undefined' ? io() : { on: () => {}, emit: () => {} };
+const API_BASE = (window.location.protocol === 'file:' || window.location.hostname === '') ? 'http://localhost:9999' : '';
 
 const mockMovies = [
     { id: 1, title: 'LẬT MẶT 7: MỘT ĐIỀU ƯỚC', rating: 'T16', image: 'images/poster.png', genre: 'Hành động', duration: 120, trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
@@ -391,13 +392,21 @@ const app = {
     },
 
     // --- Dynamic Movie Fetching for Guest Pages ---
+    allMovies: [],
+    filterState: {
+        status: 'Now Showing',
+        search: '',
+        genres: [],
+        formats: []
+    },
+
     async loadDynamicMovies() {
-        // 1. For index.html (Now Showing) -> .movie-grid
-        const nowShowingGrid = document.querySelector('.movie-grid');
+        // 1. For index.html (Now Showing) -> #now-showing .movie-grid
+        const nowShowingGrid = document.querySelector('#now-showing .movie-grid');
+        const imaxGrid = document.querySelector('#imax .movie-grid');
         if (nowShowingGrid) {
             try {
-                const cityQuery = this.currentCity && this.currentCity !== 'Toàn quốc' ? `?city=${encodeURIComponent(this.currentCity)}` : '';
-                const res = await fetch(`/api/movies/now-showing${cityQuery}`);
+                const res = await fetch(`${API_BASE}/api/movies/now-showing`);
                 const json = await res.json();
                 if (json.success && json.data) {
                     nowShowingGrid.innerHTML = json.data.map(movie => `
@@ -412,11 +421,36 @@ const app = {
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.MainCast ? movie.MainCast : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                <div class="movie-genre">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</div>
                                 <div class="movie-rating">★ 8.5</div>
                             </div>
                         </div>
                     `).join('');
+
+                    if (imaxGrid) {
+                        const imaxMovies = json.data.filter(movie => movie.Formats && movie.Formats.includes('IMAX'));
+                        if (imaxMovies.length > 0) {
+                            imaxGrid.innerHTML = imaxMovies.map(movie => `
+                                <div class="movie-card">
+                                    <div class="movie-poster">
+                                        <span class="age-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                                        <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                                        <div class="poster-overlay">
+                                            <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                            <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">ĐẶT VÉ</button>
+                                        </div>
+                                    </div>
+                                    <div class="movie-info">
+                                        <h3 class="movie-title">${movie.Title}</h3>
+                                        <div class="movie-genre">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                        <div class="movie-rating">★ 8.5</div>
+                                    </div>
+                                </div>
+                            `).join('');
+                        } else {
+                            imaxGrid.innerHTML = '<p style="color:#9ca3af;padding:20px;grid-column: 1/-1;text-align:center;">Hiện tại không có phim chiếu định dạng IMAX.</p>';
+                        }
+                    }
                 }
             } catch (err) {
                 console.error('Failed to load now showing movies:', err);
@@ -427,7 +461,7 @@ const app = {
         const comingSoonGrid = document.querySelector('#coming-soon .movie-grid');
         if (comingSoonGrid) {
             try {
-                const res = await fetch('/api/movies/coming-soon');
+                const res = await fetch(`${API_BASE}/api/movies/coming-soon`);
                 const json = await res.json();
                 if (json.success && json.data) {
                     comingSoonGrid.innerHTML = json.data.map(movie => `
@@ -441,7 +475,7 @@ const app = {
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.MainCast ? movie.MainCast : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</div>
+                                <div class="movie-genre">${movie.Genres ? movie.Genres : 'Khoa học viễn tưởng'} | ${movie.Duration} phút</div>
                                 <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">Sắp chiếu</div>
                             </div>
                         </div>
@@ -456,12 +490,35 @@ const app = {
         const allMoviesGrid = document.querySelector('.movies-grid');
         if (allMoviesGrid) {
             try {
-                const res = await fetch('/api/movies');
+                const res = await fetch(`${API_BASE}/api/movies`);
                 const json = await res.json();
                 if (json.success && json.data) {
                     window.allMoviesData = json.data;
                     app.renderMoviesGrid(json.data);
                     app.initMovieFilters();
+                    this.allMovies = json.data;
+                    
+                    // Parse query parameters to pre-fill filters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const statusParam = urlParams.get('status');
+                    const searchParam = urlParams.get('search');
+                    
+                    if (statusParam === 'showing' || statusParam === 'Now Showing') {
+                        this.filterState.status = 'Now Showing';
+                    } else if (statusParam === 'coming' || statusParam === 'Coming Soon') {
+                        this.filterState.status = 'Coming Soon';
+                    } else {
+                        this.filterState.status = 'Now Showing'; // Default view
+                    }
+                    
+                    if (searchParam) {
+                        this.filterState.search = searchParam;
+                        const searchInput = document.getElementById('searchInput');
+                        if (searchInput) searchInput.value = searchParam;
+                    }
+                    
+                    this.updateTabUI();
+                    this.filterAndRenderMovies();
                 }
             } catch (err) {
                 console.error('Failed to load all movies:', err);
@@ -479,6 +536,83 @@ const app = {
         }
 
         allMoviesGrid.innerHTML = movies.map(movie => `
+    switchMovieStatusTab(status) {
+        this.filterState.status = status;
+        this.updateTabUI();
+        this.filterAndRenderMovies();
+    },
+
+    updateTabUI() {
+        const tabNowShowing = document.getElementById('tab-now-showing');
+        const tabComingSoon = document.getElementById('tab-coming-soon');
+        if (tabNowShowing && tabComingSoon) {
+            if (this.filterState.status === 'Now Showing') {
+                tabNowShowing.classList.add('active');
+                tabComingSoon.classList.remove('active');
+            } else {
+                tabNowShowing.classList.remove('active');
+                tabComingSoon.classList.add('active');
+            }
+        }
+    },
+
+    filterAndRenderMovies() {
+        const allMoviesGrid = document.querySelector('.movies-grid');
+        if (!allMoviesGrid || !this.allMovies) return;
+
+        // Collect checked genre & format filter values
+        const selectedGenres = Array.from(document.querySelectorAll('input[name="genre"]:checked')).map(cb => cb.value);
+        const selectedFormats = Array.from(document.querySelectorAll('input[name="format"]:checked')).map(cb => cb.value);
+        const searchQuery = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+
+        const filtered = this.allMovies.filter(movie => {
+            // 1. Status Tab filter
+            if (movie.Status !== this.filterState.status) {
+                return false;
+            }
+
+            // 2. Text Search filter
+            if (searchQuery) {
+                const titleMatch = movie.Title.toLowerCase().includes(searchQuery);
+                const descMatch = movie.Description && movie.Description.toLowerCase().includes(searchQuery);
+                const directorMatch = movie.Director && movie.Director.toLowerCase().includes(searchQuery);
+                const castMatch = movie.MainCast && movie.MainCast.toLowerCase().includes(searchQuery);
+                if (!titleMatch && !descMatch && !directorMatch && !castMatch) {
+                    return false;
+                }
+            }
+
+            // 3. Genre checkbox filter (logical OR within genres)
+            if (selectedGenres.length > 0) {
+                const movieGenres = movie.Genres ? movie.Genres.split(',').map(g => g.trim()) : [];
+                const matchesGenre = selectedGenres.some(g => movieGenres.includes(g));
+                if (!matchesGenre) return false;
+            }
+
+            // 4. Format checkbox filter (logical OR within formats)
+            if (selectedFormats.length > 0) {
+                const movieFormats = movie.Formats ? movie.Formats.split(',').map(f => f.trim()) : ['2D'];
+                const matchesFormat = selectedFormats.some(f => movieFormats.includes(f));
+                if (!matchesFormat) return false;
+            }
+
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            allMoviesGrid.innerHTML = `
+                <div class="no-movies-found" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted-light);">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.5; display: inline-block;">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M8 12h8" />
+                    </svg>
+                    <p style="font-size: 1.1rem; font-weight: 500;">Không tìm thấy phim phù hợp với bộ lọc.</p>
+                </div>
+            `;
+            return;
+        }
+
+        allMoviesGrid.innerHTML = filtered.map(movie => `
             <div class="movie-card">
                 <div class="movie-poster">
                     <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
@@ -492,6 +626,14 @@ const app = {
                     <div class="movie-rating">
                         <span class="stars">★ 4.9</span>
                         <span class="genres">${movie.Duration} phút | ${movie.Formats || '2D'}</span>
+                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                    </div>
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title" title="${movie.Title}">${movie.Title}</h3>
+                    <div class="movie-rating">
+                        <span class="stars">★ 8.5</span>
+                        <span class="genres">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</span>
                     </div>
                 </div>
             </div>
@@ -564,34 +706,119 @@ const app = {
     async loadCinemasNavbar() {
         const dropdown = document.getElementById('cinemaDropdown');
         if (!dropdown) return;
+    // --- Promotions (Tin tức & Khuyến mãi) ---
+    async loadPromotions() {
+        const grid = document.getElementById('promotionsGrid');
+        if (!grid) return;
 
         try {
-            const res = await fetch('/api/movies/cinemas');
+            const res = await fetch(`${API_BASE}/api/movies/promotions`);
             const json = await res.json();
-            if (json.success && json.data) {
-                const grouped = {};
-                json.data.forEach(c => {
-                    if (!grouped[c.City]) grouped[c.City] = [];
-                    grouped[c.City].push(c);
-                });
 
-                let html = '';
-                for (const city in grouped) {
-                    html += `<div class="dropdown-group">${city}</div>`;
-                    grouped[city].forEach(c => {
-                        html += `<a href="booking.html?cinemaId=${c.CinemaID}">${c.CinemaName}</a>`;
-                    });
-                }
-                dropdown.innerHTML = html;
+            if (!json.success || !json.data || json.data.length === 0) {
+                grid.innerHTML = '<p style="color:#999;padding:20px;text-align:center;">Chưa có khuyến mãi nào.</p>';
+                return;
             }
+
+            const promos = json.data;
+            const featured = promos.find(p => p.IsFeatured) || promos[0];
+            const normals  = promos.filter(p => p.PromotionID !== featured.PromotionID);
+
+            let html = '';
+
+            // Featured card
+            html += `
+                <div class="promo-card promo-featured">
+                    <div class="promo-image">
+                        ${featured.BadgeLabel ? `<div class="promo-badge">${featured.BadgeLabel}</div>` : ''}
+                        <img src="${featured.ImageURL || 'images/default_poster.svg'}"
+                             alt="${featured.Title}"
+                             onerror="this.onerror=null;this.src='images/default_poster.svg'">
+                    </div>
+                    <div class="promo-content">
+                        <h3>${featured.Title}</h3>
+                        <p>${featured.Description || ''}</p>
+                        <a href="${featured.LinkURL || '#'}" class="btn-promo">Tìm Hiểu Thêm</a>
+                    </div>
+                </div>`;
+
+            // Normal cards
+            normals.forEach(p => {
+                html += `
+                <div class="promo-card promo-normal">
+                    ${p.BadgeLabel ? `<div class="promo-badge-overlay">${p.BadgeLabel}</div>` : ''}
+                    <img src="${p.ImageURL || 'images/default_poster.svg'}"
+                         alt="${p.Title}"
+                         onerror="this.onerror=null;this.src='images/default_poster.svg'">
+                    <div class="promo-overlay-content">
+                        <h3>${p.Title}</h3>
+                        <p>${p.Description || ''}</p>
+                    </div>
+                </div>`;
+            });
+
+            grid.innerHTML = html;
         } catch (err) {
-            console.error('Failed to load cinemas for navbar:', err);
+            console.warn('[app] loadPromotions failed, showing fallback:', err.message);
+            // Fallback to static cards if API not available
+            grid.innerHTML = `
+                <div class="promo-card promo-featured">
+                    <div class="promo-image">
+                        <div class="promo-badge">MEMBER EXCLUSIVE</div>
+                        <img src="images/combo_popcorn.png" alt="Unlimited Popcorn Thursdays">
+                    </div>
+                    <div class="promo-content">
+                        <h3>Unlimited Popcorn Thursdays</h3>
+                        <p>Tham gia chương trình Star Rewards ngay hôm nay và nhận bỏng ngô không giới hạn mỗi thứ năm với mọi lần mua vé.</p>
+                        <a href="#" class="btn-promo">Tìm Hiểu Thêm</a>
+                    </div>
+                </div>
+                <div class="promo-card promo-normal">
+                    <div class="promo-badge-overlay">GROUP DISCOUNTS</div>
+                    <img src="images/promo_student.png" alt="Group Discounts">
+                    <div class="promo-overlay-content">
+                        <h3>Group Discounts</h3>
+                        <p>Tiết kiệm 20% cho đặt chỗ 10 vé trở lên</p>
+                    </div>
+                </div>
+                <div class="promo-card promo-normal">
+                    <div class="promo-badge-overlay">EXPERIENCE</div>
+                    <img src="images/promo_imax_weekend.png" alt="IMAX Weekend">
+                    <div class="promo-overlay-content">
+                        <h3>IMAX Weekend</h3>
+                        <p>Trải nghiệm phim ở định dạng lớn nhất có thể</p>
+                    </div>
+                </div>`;
         }
     }
 };
 
+
 document.addEventListener('DOMContentLoaded', () => {
     app.initSocket();
     app.loadDynamicMovies();
-    app.loadCinemasNavbar();
+    app.loadPromotions();
+
+    const searchInput = document.getElementById('searchInput');
+    const isMoviesPage = !!document.querySelector('.movies-grid');
+
+    if (searchInput) {
+        if (isMoviesPage) {
+            searchInput.addEventListener('input', () => app.filterAndRenderMovies());
+        } else {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    window.location.href = `movies.html?search=${encodeURIComponent(searchInput.value)}`;
+                }
+            });
+        }
+    }
+
+    // Bind change listeners to genre and format checkboxes on movies page
+    if (isMoviesPage) {
+        document.querySelectorAll('input[name="genre"], input[name="format"]').forEach(cb => {
+            cb.addEventListener('change', () => app.filterAndRenderMovies());
+        });
+    }
 });
+

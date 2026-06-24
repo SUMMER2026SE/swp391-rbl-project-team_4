@@ -1,9 +1,13 @@
 const lockedSeats = new Map(); // key: `${showtimeId}_${seatId}`, value: { socketId, timerId, timestamp }
 const socketToSeats = new Map(); // key: socketId, value: Set of `${showtimeId}_${seatId}`
 
+// ─── Payment Room: map ticketId → Set of socketIds đang chờ thanh toán ───
+let _io = null; // Lưu io instance để controller có thể emit về client
+
 const SEAT_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 module.exports = (io) => {
+    _io = io; // Lưu reference để dùng ở ngoài module
     io.on('connection', (socket) => {
         console.log(`[Socket] 🟢 Client connected: ${socket.id}`);
 
@@ -15,6 +19,34 @@ module.exports = (io) => {
             const room = `room_showtime_${showtimeId}`;
             socket.join(room);
             console.log(`[Socket] Client ${socket.id} joined ${room}`);
+        });
+
+        // 1b. Join Payment Room — client gọi sau khi tạo vé thành công, truyền ticketIds
+        // Room name: payment_TICKETID1_TICKETID2_... (sắp xếp tăng dần để nhất quán)
+        socket.on('joinPaymentRoom', async (ticketIds) => {
+            if (!Array.isArray(ticketIds) || ticketIds.length === 0) return;
+            const sortedIds = [...ticketIds].map(Number).sort((a, b) => a - b);
+            const room = `payment_${sortedIds.join('_')}`;
+            socket.join(room);
+            console.log(`[Socket] 💳 Client ${socket.id} joined payment room: ${room}`);
+            // Gửi ACK để client biết đã join thành công
+            socket.emit('paymentRoomJoined', { room, ticketIds: sortedIds });
+
+            // ⭐ Nếu vé đã được xác nhận thành công từ trước trong DB, emit payment_confirmed ngay lập tức
+            try {
+                const BookingModel = require('../models/bookingModel');
+                const tickets = await BookingModel.checkBookingStatus(sortedIds);
+                if (tickets.length > 0 && tickets.every(t => t.Status === 'confirmed')) {
+                    console.log(`[Socket] Ticket room ${room} joined but already confirmed. Sending immediate confirmation.`);
+                    socket.emit('payment_confirmed', {
+                        ticketIds: sortedIds,
+                        confirmedAt: new Date().toISOString(),
+                        source: 'socket-rejoin-auto'
+                    });
+                }
+            } catch (err) {
+                console.error('[Socket joinPaymentRoom check status error]:', err.message);
+            }
         });
 
         // 2. Hold Seat
@@ -117,4 +149,26 @@ module.exports.getLockedSeats = (showtimeId) => {
         }
     }
     return seats;
+};
+
+/**
+ * Emit sự kiện xác nhận thanh toán thành công về đúng payment room.
+ * Được gọi từ bookingController sau khi webhook / polling xác nhận tiền đã về.
+ *
+ * @param {number[]} ticketIds - Danh sách TicketID đã xác nhận
+ * @param {object}  payload    - Thông tin bổ sung gửi về client
+ */
+module.exports.emitPaymentConfirmed = (ticketIds, payload = {}) => {
+    if (!_io) {
+        console.warn('[Socket] emitPaymentConfirmed called but io is not initialized yet.');
+        return;
+    }
+    const sortedIds = [...ticketIds].map(Number).sort((a, b) => a - b);
+    const room = `payment_${sortedIds.join('_')}`;
+    _io.to(room).emit('payment_confirmed', {
+        ticketIds: sortedIds,
+        confirmedAt: new Date().toISOString(),
+        ...payload
+    });
+    console.log(`[Socket] 🎉 Emitted payment_confirmed to room: ${room}`);
 };

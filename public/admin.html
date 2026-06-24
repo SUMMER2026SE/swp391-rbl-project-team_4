@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="css/admin.css">
-    <link rel="stylesheet" href="css/chatbot.css">
 </head>
 <body>
 
@@ -61,11 +60,15 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 Giá vé
             </button>
+            <button class="sn" data-page="promotions" onclick="navigate('promotions',this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+                Tin tức &amp; KM
+            </button>
         </div>
     </nav>
 
     <!-- Quick Vé -->
-    <button class="btn-quick-ticket" onclick="alert('Tính năng bán vé nhanh đang phát triển!')">
+    <button class="btn-quick-ticket" onclick="openQuickSellModal()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Bán vé nhanh
     </button>
@@ -98,20 +101,66 @@
                 <button class="ttab" onclick="switchTab('health',this)">Tình trạng hệ thống</button>
             </nav>
         </div>
+
+        <!-- Dashboard Filters (cinema + period) -->
+        <div class="topbar-filters" id="dashboardFilters">
+            <!-- Cinema Branch Dropdown -->
+            <div class="filter-dropdown-wrap" id="cinemaDropdownWrap">
+                <button class="filter-dropdown-btn" id="cinemaDropdownBtn" onclick="toggleCinemaDropdown()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span id="cinemaDropdownLabel">Tất cả cụm rạp</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="dropdown-chevron" id="cinemaChevron"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="filter-dropdown-menu" id="cinemaDropdownMenu">
+                    <div class="fdm-search">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <input type="text" id="cinemaSearch" placeholder="Tìm rạp..." oninput="filterCinemaList(this.value)">
+                    </div>
+                    <div class="fdm-list" id="cinemaList">
+                        <div class="fdm-item active" data-id="" onclick="selectCinema('', 'Tất cả cụm rạp', this)">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            Tất cả cụm rạp
+                        </div>
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Period Filter -->
+            <div class="period-pills" id="periodPills">
+                <button class="period-pill" data-period="today" onclick="selectPeriod('today', this)">Hôm nay</button>
+                <button class="period-pill" data-period="week" onclick="selectPeriod('week', this)">Tuần này</button>
+                <button class="period-pill" data-period="month" onclick="selectPeriod('month', this)">Tháng này</button>
+                <button class="period-pill active" data-period="" onclick="selectPeriod('', this)">Tất cả</button>
+            </div>
+        </div>
+
         <div class="topbar-right">
             <div class="tb-search">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                 <input type="text" placeholder="Tìm kiếm phim, diễn viên, đạo diễn..." id="adminSearch">
             </div>
+            <div id="liveClock" style="font-family: 'Courier New', monospace; font-size: 1rem; color: #6b7280; font-weight: 600; margin: 0 15px;"></div>
             <button class="btn-add-main" onclick="openAddMovieModal()">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Thêm Phim
             </button>
-            <button class="tb-icon" aria-label="Notifications" id="bellBtn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                <span class="notif-dot"></span>
-            </button>
-            <button class="tb-icon" aria-label="Help">
+            <div style="position: relative;">
+                <button class="tb-icon" aria-label="Notifications" id="bellBtn" onclick="toggleNotifDropdown()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <span class="notif-dot" id="notifDot" style="display: none;"></span>
+                </button>
+                <div id="notifDropdown" style="display: none; position: absolute; top: 45px; right: 0; width: 300px; background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; z-index: 1000; overflow: hidden; flex-direction: column;">
+                    <div style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1f2937; display: flex; justify-content: space-between; align-items: center;">
+                        Thông báo
+                        <span style="font-size: 0.8rem; color: #6b7280; font-weight: 400; cursor: pointer;" onclick="clearNotifs()">Xóa tất cả</span>
+                    </div>
+                    <div id="notifList" style="max-height: 300px; overflow-y: auto; background: #f9fafb;">
+                        <div style="padding: 20px; text-align: center; color: #9ca3af; font-size: 0.9rem;">Không có thông báo mới</div>
+                    </div>
+                </div>
+            </div>
+            <button class="tb-icon" aria-label="Help" onclick="showToast('Hướng dẫn', 'Vui lòng tham khảo tài liệu hướng dẫn (HUONG_DAN_CHAY.md) hoặc liên hệ kỹ thuật.')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </button>
             <div class="tb-avatar" id="adminAvatar">A</div>
@@ -129,12 +178,7 @@
                 <p>Phân tích hoạt động và doanh thu rạp chiếu theo thời gian thực.</p>
             </div>
             <div class="heading-actions">
-                <button class="btn-range" id="btnRange">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    30 ngày qua
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <button class="btn-export" onclick="alert('Exporting PDF…')">
+                <button class="btn-export" onclick="exportPdf()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Xuất PDF
                 </button>
@@ -146,7 +190,7 @@
             <div class="kpi-card">
                 <div class="kpi-label">TỔNG DOANH THU</div>
                 <div class="kpi-row">
-                    <div class="kpi-value">$248,392</div>
+                    <div class="kpi-value">-- VND</div>
                     <div class="kpi-badge up">▲12%</div>
                 </div>
                 <div class="kpi-bar"><div class="kpi-bar-fill" style="width:78%;background:var(--accent)"></div></div>
@@ -157,7 +201,7 @@
             <div class="kpi-card">
                 <div class="kpi-label">VÉ ĐÃ BÁN</div>
                 <div class="kpi-row">
-                    <div class="kpi-value">14,205</div>
+                    <div class="kpi-value">--</div>
                     <div class="kpi-badge up">▲8.4%</div>
                 </div>
                 <div class="kpi-bar"><div class="kpi-bar-fill" style="width:65%;background:#e8192c"></div></div>
@@ -168,7 +212,7 @@
             <div class="kpi-card">
                 <div class="kpi-label">DOANH THU ĐỒ ĂN</div>
                 <div class="kpi-row">
-                    <div class="kpi-value">$52,110</div>
+                    <div class="kpi-value">-- VND</div>
                     <div class="kpi-badge down">▼2.1%</div>
                 </div>
                 <div class="kpi-bar"><div class="kpi-bar-fill" style="width:45%;background:#f59e0b"></div></div>
@@ -179,7 +223,7 @@
             <div class="kpi-card">
                 <div class="kpi-label">TỶ LỆ LẤP ĐẦY</div>
                 <div class="kpi-row">
-                    <div class="kpi-value">76.8%</div>
+                    <div class="kpi-value">-- %</div>
                     <div class="kpi-badge up">▲15%</div>
                 </div>
                 <div class="kpi-bar"><div class="kpi-bar-fill" style="width:76.8%;background:#3b82f6"></div></div>
@@ -207,80 +251,41 @@
                 <div class="chart-wrap">
                     <canvas id="revenueChart"></canvas>
                 </div>
-                <div class="chart-branches">
-                    <span>Quận 1</span><span>Quận 3</span><span>Quận 7</span><span>Quận 10</span><span>Sân bay</span>
-                </div>
             </div>
 
-            <!-- Xếp hạng Trực tiếp -->
-            <div class="chart-card small">
-                <div class="chart-card-header">
-                    <div class="chart-title">Xếp hạng Trực tiếp</div>
+            <!-- Right Column -->
+            <div class="right-col" style="display: flex; flex-direction: column; gap: 16px;">
+                <!-- Xếp hạng Trực tiếp -->
+                <div class="chart-card small">
+                    <div class="chart-card-header">
+                        <div class="chart-title">Xếp hạng Trực tiếp</div>
+                    </div>
+                    <div class="rankings-list">
+                        <!-- Populated by JS -->
+                    </div>
+                    <button class="btn-view-reports" onclick="navigate('movies', document.querySelector('[data-page=movies]'))">
+                        Xem tất cả báo cáo
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
                 </div>
-                <div class="rankings-list">
-                    <div class="rank-item">
-                        <img src="images/movie_neon_dreams.png" alt="Neon Horizon" class="rank-poster">
-                        <div class="rank-info">
-                            <div class="rank-title">Neon Horizon</div>
-                            <div class="rank-stars">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                4.9/5
-                            </div>
-                        </div>
-                        <div class="rank-revenue">
-                            <div class="rank-amount">$42K</div>
-                            <div class="rank-today">HÔM NAY</div>
-                        </div>
-                    </div>
-                    <div class="rank-item">
-                        <img src="images/movie_lastnoir.png" alt="The Last Echo" class="rank-poster">
-                        <div class="rank-info">
-                            <div class="rank-title">The Last Echo</div>
-                            <div class="rank-stars">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                4.7/5
-                            </div>
-                        </div>
-                        <div class="rank-revenue">
-                            <div class="rank-amount">$38K</div>
-                            <div class="rank-today">HÔM NAY</div>
-                        </div>
-                    </div>
-                    <div class="rank-item">
-                        <img src="images/movie_oppenheimer.png" alt="Golden Age" class="rank-poster">
-                        <div class="rank-info">
-                            <div class="rank-title">Golden Age</div>
-                            <div class="rank-stars">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                4.8/5
-                            </div>
-                        </div>
-                        <div class="rank-revenue">
-                            <div class="rank-amount">$31K</div>
-                            <div class="rank-today">HÔM NAY</div>
-                        </div>
-                    </div>
-                    <div class="rank-item">
-                        <img src="images/movie_odyssey.png" alt="The Odyssey" class="rank-poster">
-                        <div class="rank-info">
-                            <div class="rank-title">The Odyssey</div>
-                            <div class="rank-stars">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                4.6/5
-                            </div>
-                        </div>
-                        <div class="rank-revenue">
-                            <div class="rank-amount">$24K</div>
-                            <div class="rank-today">HÔM NAY</div>
-                        </div>
-                    </div>
-                </div>
-                <button class="btn-view-reports" onclick="navigate('movies', document.querySelector('[data-page=movies]'))">
-                    Xem tất cả báo cáo
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </button>
-            </div>
 
+                <!-- Live Status Widget -->
+                <div class="chart-card small" style="flex: 1;">
+                    <div class="chart-card-header" style="padding-bottom: 10px;">
+                        <div class="chart-title" style="display: flex; align-items: center; gap: 6px;">
+                            <span class="live-indicator"></span> Live Status
+                        </div>
+                    </div>
+                    <div class="live-legend">
+                        <span class="l-badge empty">🟢 Trống</span>
+                        <span class="l-badge playing">🔴 Đang chiếu</span>
+                        <span class="l-badge cleaning">🟡 Sắp hết/Dọn dẹp</span>
+                    </div>
+                    <div class="live-rooms-grid" id="liveRoomsGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Recent Transactions -->
@@ -294,7 +299,7 @@
                     <button class="tb-icon-sm" title="More options">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                     </button>
-                    <button class="btn-fab" title="Add Transaction" onclick="alert('Add transaction coming soon!')">
+                    <button class="btn-fab" title="Add Transaction" onclick="openQuickSellModal()">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </button>
                 </div>
@@ -463,8 +468,8 @@
             <div class="pagination flex-between">
                 <span class="pg-info" id="moviePgInfo">Hiển thị 1-3 / 24 phim</span>
                 <div class="pg-controls">
-                    <button class="pg-btn-text" id="moviePgPrev" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> Trước</button>
-                    <button class="pg-btn-text" id="moviePgNext">Sau <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+                    <button class="pg-btn-text" id="moviePgPrev" onclick="showToast('Thông báo', 'Đang ở trang đầu tiên.')" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> Trước</button>
+                    <button class="pg-btn-text" id="moviePgNext" onclick="showToast('Thông báo', 'Toàn bộ phim đã được hiển thị trên một trang.')">Sau <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
                 </div>
             </div>
         </div>
@@ -568,184 +573,258 @@
             </div>
             
             <div class="fnb-tabs">
-                <button class="fnb-tab active">KHO ĐỒ ĂN</button>
-                <button class="fnb-tab">VOUCHER & KHUYẾ́N MÃI</button>
+                <button class="fnb-tab active" onclick="switchFnbTab('fnb', this)">KHO ĐỒ ĂN</button>
+                <button class="fnb-tab" onclick="switchFnbTab('voucher', this)">VOUCHER & KHUYẾ́N MÃI</button>
             </div>
 
-            <div class="fnb-grid-layout">
-                <!-- Left: Items -->
-                <div class="fnb-items" id="fnbItemsContainer">
-                    <!-- Master Combo -->
-                    <div class="fnb-card-big">
-                        <div class="fcb-img-wrap">
-                            <img src="images/combo_mega.png" alt="Cinema Master Combo" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                        </div>
-                        <div class="fcb-info">
-                            <span class="fcb-badge">BÁN CHẠY</span>
-                            <h3>Cinema Master Combo</h3>
-                            <div class="fcb-details">
-                                <div class="fcb-price-block">
-                                    <span class="fcb-label">GIÁ</span>
-                                    <span class="fcb-price">$24.00</span>
-                                </div>
-                                <div class="fcb-stock-block">
-                                    <span class="fcb-label">TỒN KHO</span>
-                                    <div class="fcb-progress-wrap">
-                                        <div class="fcb-progress"><div style="width: 82%; background: var(--accent);"></div></div>
-                                        <span class="fcb-stock-val">820</span>
+            <!-- F&B Subpage -->
+            <div id="fnbSubpage" style="display: flex; flex-direction: column; gap: 32px; width: 100%;">
+                <div class="fnb-grid-layout">
+                    <!-- Left: Items -->
+                    <div class="fnb-items" id="fnbItemsContainer">
+                        <!-- Master Combo -->
+                        <div class="fnb-card-big">
+                            <div class="fcb-img-wrap">
+                                <img src="images/combo_mega.png" alt="Cinema Master Combo" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                            </div>
+                            <div class="fcb-info">
+                                <span class="fcb-badge">BÁN CHẠY</span>
+                                <h3>Cinema Master Combo</h3>
+                                <div class="fcb-details">
+                                    <div class="fcb-price-block">
+                                        <span class="fcb-label">GIÁ</span>
+                                        <span class="fcb-price">$24.00</span>
+                                    </div>
+                                    <div class="fcb-stock-block">
+                                        <span class="fcb-label">TỒN KHO</span>
+                                        <div class="fcb-progress-wrap">
+                                            <div class="fcb-progress"><div style="width: 82%; background: var(--accent);"></div></div>
+                                            <span class="fcb-stock-val">820</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <button class="fcb-edit" title="Edit Item">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
                         </div>
-                        <button class="fcb-edit" title="Edit Item">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        </button>
+
+                        <!-- Small Cards Grid -->
+                        <div class="fnb-cards-grid">
+                            <div class="fnb-card-sm" style="border-color: rgba(232,25,44,0.4);">
+                                <div class="fc-sm-top">
+                                    <h4>Caramel Glaze Bucket</h4>
+                                    <span class="fc-sm-price text-red">$12.50</span>
+                                </div>
+                                <div class="fc-sm-bottom">
+                                    <div class="fc-sm-inv">
+                                        <span class="fc-sm-label">TỒN KHO</span>
+                                        <span class="fc-sm-val">142 đơn vị</span>
+                                    </div>
+                                    <span class="inv-badge moderate">Trung bình</span>
+                                </div>
+                            </div>
+                            <div class="fnb-card-sm" style="border-color: #fcd34d;">
+                                <div class="fc-sm-top">
+                                    <h4>Midnight Cola Large</h4>
+                                    <span class="fc-sm-price text-red">$6.00</span>
+                                </div>
+                                <div class="fc-sm-bottom">
+                                    <div class="fc-sm-inv">
+                                        <span class="fc-sm-label">TỒN KHO</span>
+                                        <span class="fc-sm-val">2,400 đơn vị</span>
+                                    </div>
+                                    <span class="inv-badge high">Dồi dào</span>
+                                </div>
+                            </div>
+                            <div class="fnb-card-sm" style="border: 2px solid var(--accent); box-shadow: 0 4px 12px rgba(232,25,44,0.1);">
+                                <div class="fc-sm-top">
+                                    <h4>Nachos Grande Tray</h4>
+                                    <span class="fc-sm-price text-red">$14.00</span>
+                                </div>
+                                <div class="fc-sm-bottom">
+                                    <div class="fc-sm-inv">
+                                        <span class="fc-sm-label">TỒN KHO</span>
+                                        <span class="fc-sm-val">14 đơn vị</span>
+                                    </div>
+                                    <span class="inv-badge danger">SẮP HẾ́T HÀNG</span>
+                                </div>
+                            </div>
+                            <div class="fnb-card-sm" style="border-color: #93c5fd;">
+                                <div class="fc-sm-top">
+                                    <h4>Artisanal Pretzel</h4>
+                                    <span class="fc-sm-price text-red">$9.00</span>
+                                </div>
+                                <div class="fc-sm-bottom">
+                                    <div class="fc-sm-inv">
+                                        <span class="fc-sm-label">TỒN KHO</span>
+                                        <span class="fc-sm-val">88 đơn vị</span>
+                                    </div>
+                                    <span class="inv-badge moderate">Trung bình</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Small Cards Grid -->
-                    <div class="fnb-cards-grid">
-                        <div class="fnb-card-sm" style="border-color: rgba(232,25,44,0.4);">
-                            <div class="fc-sm-top">
-                                <h4>Caramel Glaze Bucket</h4>
-                                <span class="fc-sm-price text-red">$12.50</span>
-                            </div>
-                            <div class="fc-sm-bottom">
-                                <div class="fc-sm-inv">
-                                    <span class="fc-sm-label">TỒN KHO</span>
-                                    <span class="fc-sm-val">142 đơn vị</span>
+                    <!-- Right: Form -->
+                    <div class="fnb-form-side">
+                        <div class="fnb-form-card">
+                            <h2 id="fnbFormTitle">THÊM ĐỒ ĂN</h2>
+                            <form id="addFnbForm">
+                                <input type="hidden" id="fnbId">
+                                <div class="ff-group">
+                                    <label>TÊN MẶT HÀNG</label>
+                                    <input type="text" id="fnbName" placeholder="VD: Nachos Đặc biệt" required>
                                 </div>
-                                <span class="inv-badge moderate">Trung bình</span>
-                            </div>
-                        </div>
-                        <div class="fnb-card-sm" style="border-color: #fcd34d;">
-                            <div class="fc-sm-top">
-                                <h4>Midnight Cola Large</h4>
-                                <span class="fc-sm-price text-red">$6.00</span>
-                            </div>
-                            <div class="fc-sm-bottom">
-                                <div class="fc-sm-inv">
-                                    <span class="fc-sm-label">TỒN KHO</span>
-                                    <span class="fc-sm-val">2,400 đơn vị</span>
+                                <div class="ff-group">
+                                    <label>MÔ TẢ (Tùy chọn)</label>
+                                    <input type="text" id="fnbDesc" placeholder="Mô tả ngắn gọn...">
                                 </div>
-                                <span class="inv-badge high">Dồi dào</span>
-                            </div>
-                        </div>
-                        <div class="fnb-card-sm" style="border: 2px solid var(--accent); box-shadow: 0 4px 12px rgba(232,25,44,0.1);">
-                            <div class="fc-sm-top">
-                                <h4>Nachos Grande Tray</h4>
-                                <span class="fc-sm-price text-red">$14.00</span>
-                            </div>
-                            <div class="fc-sm-bottom">
-                                <div class="fc-sm-inv">
-                                    <span class="fc-sm-label">TỒN KHO</span>
-                                    <span class="fc-sm-val">14 đơn vị</span>
+                                <div class="ff-group">
+                                    <label>ĐƯỜNG DẪN ẢNH (URL)</label>
+                                    <input type="text" id="fnbImageURL" placeholder="VD: images/combo1.png">
                                 </div>
-                                <span class="inv-badge danger">SẮP HẾ́T HÀNG</span>
-                            </div>
-                        </div>
-                        <div class="fnb-card-sm" style="border-color: #93c5fd;">
-                            <div class="fc-sm-top">
-                                <h4>Artisanal Pretzel</h4>
-                                <span class="fc-sm-price text-red">$9.00</span>
-                            </div>
-                            <div class="fc-sm-bottom">
-                                <div class="fc-sm-inv">
-                                    <span class="fc-sm-label">TỒN KHO</span>
-                                    <span class="fc-sm-val">88 đơn vị</span>
+                                <div class="ff-row">
+                                    <div class="ff-group" style="flex:1;">
+                                        <label>GIÁ (VNĐ)</label>
+                                        <input type="number" id="fnbPrice" placeholder="0" required>
+                                    </div>
+                                    <div class="ff-group" style="flex:1;">
+                                        <label>SỐ LƯỢNG KHO</label>
+                                        <input type="number" id="fnbStock" placeholder="100" required>
+                                    </div>
                                 </div>
-                                <span class="inv-badge moderate">Trung bình</span>
-                            </div>
+                                <div class="ff-group">
+                                    <label>DANH MỤC</label>
+                                    <div class="ff-select-wrap">
+                                        <select id="fnbCategory">
+                                            <option>Bắp rang & Snack</option>
+                                            <option>Nước uống</option>
+                                            <option>Combos</option>
+                                        </select>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:10px;margin-top:10px;">
+                                    <button type="button" onclick="cancelEditFnB()" class="btn-outline-red" id="btnCancelFnb" style="display:none;flex:1;padding:12px;">Hủy sửa</button>
+                                    <button type="button" onclick="saveFnB()" class="btn-solid-red" id="btnSaveFnb" style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px; padding: 12px;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                                        <span id="fnbBtnText">Thêm vào danh mục</span>
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right: Form -->
-                <div class="fnb-form-side">
-                    <div class="fnb-form-card">
-                        <h2 id="fnbFormTitle">THÊM ĐỒ ĂN</h2>
-                        <form id="addFnbForm">
-                            <input type="hidden" id="fnbId">
-                            <div class="ff-group">
-                                <label>TÊN MẶT HÀNG</label>
-                                <input type="text" id="fnbName" placeholder="VD: Nachos Đặc biệt" required>
-                            </div>
-                            <div class="ff-group">
-                                <label>MÔ TẢ (Tùy chọn)</label>
-                                <input type="text" id="fnbDesc" placeholder="Mô tả ngắn gọn...">
-                            </div>
-                            <div class="ff-group">
-                                <label>ĐƯỜNG DẪN ẢNH (URL)</label>
-                                <input type="text" id="fnbImageURL" placeholder="VD: images/combo1.png">
-                            </div>
-                            <div class="ff-row">
-                                <div class="ff-group" style="flex:1;">
-                                    <label>GIÁ (VNĐ)</label>
-                                    <input type="number" id="fnbPrice" placeholder="0" required>
-                                </div>
-                                <div class="ff-group" style="flex:1;">
-                                    <label>SỐ LƯỢNG KHO</label>
-                                    <input type="number" id="fnbStock" placeholder="100" required>
-                                </div>
-                            </div>
-                            <div class="ff-group">
-                                <label>DANH MỤC</label>
-                                <div class="ff-select-wrap">
-                                    <select id="fnbCategory">
-                                        <option>Bắp rang & Snack</option>
-                                        <option>Nước uống</option>
-                                        <option>Combos</option>
-                                    </select>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                                </div>
-                            </div>
-                            <div style="display:flex;gap:10px;margin-top:10px;">
-                                <button type="button" onclick="cancelEditFnB()" class="btn-outline-red" id="btnCancelFnb" style="display:none;flex:1;padding:12px;">Hủy sửa</button>
-                                <button type="button" onclick="saveFnB()" class="btn-solid-red" id="btnSaveFnb" style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px; padding: 12px;">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                    <span id="fnbBtnText">Thêm vào danh mục</span>
-                                </button>
-                            </div>
-                        </form>
+                <!-- Bottom KPIs -->
+                <div class="fnb-kpis">
+                    <div class="fkpi-card">
+                        <div class="fkpi-icon" style="background: rgba(232,25,44,0.1); color: var(--accent);">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                        </div>
+                        <div class="fkpi-info">
+                            <div class="fkpi-label">TOTAL DOANH THU ĐỒ ĂN</div>
+                            <div class="fkpi-val" id="fnbKpiRevenue">0 đ</div>
+                        </div>
+                    </div>
+                    <div class="fkpi-card">
+                        <div class="fkpi-icon" style="background: rgba(217,119,6,0.1); color: #d97706;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                        </div>
+                        <div class="fkpi-info">
+                            <div class="fkpi-label">SỐ LƯỢNG ĐÃ BÁN</div>
+                            <div class="fkpi-val" id="fnbKpiVouchers">0</div>
+                        </div>
+                    </div>
+                    <div class="fkpi-card">
+                        <div class="fkpi-icon" style="background: rgba(37,99,235,0.1); color: #2563eb;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                        </div>
+                        <div class="fkpi-info">
+                            <div class="fkpi-label">CẢNH BÁO TỒN KHO THẤP</div>
+                            <div class="fkpi-val text-red" id="fnbKpiLowStock">0 Mặt hàng</div>
+                        </div>
+                    </div>
+                    <div class="fkpi-card">
+                        <div class="fkpi-icon" style="background: var(--bg); color: var(--text2);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                        </div>
+                        <div class="fkpi-info">
+                            <div class="fkpi-label">TỔNG SỐ MÓN ĂN</div>
+                            <div class="fkpi-val" id="fnbKpiTotal">0</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Bottom KPIs -->
-            <div class="fnb-kpis">
-                <div class="fkpi-card">
-                    <div class="fkpi-icon" style="background: rgba(232,25,44,0.1); color: var(--accent);">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <!-- Voucher Subpage -->
+            <div id="voucherSubpage" style="display: none; flex-direction: column; gap: 32px; width: 100%;">
+                <div class="fnb-grid-layout">
+                    <!-- Left: Vouchers list -->
+                    <div class="fnb-items" id="voucherItemsContainer">
+                        <!-- Filled dynamically by JS -->
                     </div>
-                    <div class="fkpi-info">
-                        <div class="fkpi-label">TOTAL DOANH THU ĐỒ ĂN</div>
-                        <div class="fkpi-val" id="fnbKpiRevenue">0 đ</div>
-                    </div>
-                </div>
-                <div class="fkpi-card">
-                    <div class="fkpi-icon" style="background: rgba(217,119,6,0.1); color: #d97706;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-                    </div>
-                    <div class="fkpi-info">
-                        <div class="fkpi-label">SỐ LƯỢNG ĐÃ BÁN</div>
-                        <div class="fkpi-val" id="fnbKpiVouchers">0</div>
-                    </div>
-                </div>
-                <div class="fkpi-card">
-                    <div class="fkpi-icon" style="background: rgba(37,99,235,0.1); color: #2563eb;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                    </div>
-                    <div class="fkpi-info">
-                        <div class="fkpi-label">CẢNH BÁO TỒN KHO THẤP</div>
-                        <div class="fkpi-val text-red" id="fnbKpiLowStock">0 Mặt hàng</div>
-                    </div>
-                </div>
-                <div class="fkpi-card">
-                    <div class="fkpi-icon" style="background: var(--bg); color: var(--text2);">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-                    </div>
-                    <div class="fkpi-info">
-                        <div class="fkpi-label">TỔNG SỐ MÓN ĂN</div>
-                        <div class="fkpi-val" id="fnbKpiTotal">0</div>
+
+                    <!-- Right: Voucher Form -->
+                    <div class="fnb-form-side">
+                        <div class="fnb-form-card">
+                            <h2 id="voucherFormTitle">THÊM VOUCHER</h2>
+                            <form id="addVoucherForm">
+                                <input type="hidden" id="voucherId">
+                                <div class="ff-group">
+                                    <label>MÃ VOUCHER</label>
+                                    <input type="text" id="voucherCode" placeholder="VD: GIAM20K" style="text-transform: uppercase;" required>
+                                </div>
+                                <div class="ff-group">
+                                    <label>LOẠI GIẢM GIÁ</label>
+                                    <div class="ff-select-wrap">
+                                        <select id="voucherDiscountType" onchange="toggleVoucherFields()">
+                                            <option value="percent">Phần trăm (%)</option>
+                                            <option value="fixed">Số tiền cố định (đ)</option>
+                                        </select>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </div>
+                                </div>
+                                <div class="ff-row">
+                                    <div class="ff-group" style="flex:1;">
+                                        <label>GIÁ TRỊ GIẢM</label>
+                                        <input type="number" id="voucherDiscountValue" placeholder="0" required>
+                                    </div>
+                                    <div class="ff-group" style="flex:1;">
+                                        <label>ĐƠN TỐI THIỂU (đ)</label>
+                                        <input type="number" id="voucherMinOrderValue" placeholder="0" value="0" required>
+                                    </div>
+                                </div>
+                                <div class="ff-row">
+                                    <div class="ff-group" style="flex:1;">
+                                        <label id="lblMaxDiscount">GIẢM TỐI ĐA (đ)</label>
+                                        <input type="number" id="voucherMaxDiscount" placeholder="Không giới hạn">
+                                    </div>
+                                    <div class="ff-group" style="flex:1;">
+                                        <label>LƯỢT DÙNG TỐI ĐA</label>
+                                        <input type="number" id="voucherUsageLimit" placeholder="Không giới hạn">
+                                    </div>
+                                </div>
+                                <div class="ff-row">
+                                    <div class="ff-group" style="flex:1;">
+                                        <label>NGÀY BẮT ĐẦU</label>
+                                        <input type="date" id="voucherStartDate" required>
+                                    </div>
+                                    <div class="ff-group" style="flex:1;">
+                                        <label>NGÀY KẾT THÚC</label>
+                                        <input type="date" id="voucherEndDate" required>
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:10px;margin-top:10px;">
+                                    <button type="button" onclick="cancelEditVoucher()" class="btn-outline-red" id="btnCancelVoucher" style="display:none;flex:1;padding:12px;">Hủy sửa</button>
+                                    <button type="button" onclick="saveVoucher()" class="btn-solid-red" id="btnSaveVoucher" style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px; padding: 12px;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                                        <span id="voucherBtnText">Tạo Voucher</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -781,20 +860,20 @@
                         <div class="sf-group">
                             <label>THEO VAI TRÒ</label>
                             <div class="sf-pills">
-                                <button class="sf-pill active">Tất cả</button>
-                                <button class="sf-pill">Admin</button>
-                                <button class="sf-pill">Quản lý</button>
-                                <button class="sf-pill">Nhân viên</button>
-                                <button class="sf-pill">Khách hàng</button>
+                                <button class="sf-pill active" onclick="filterStaffByRole('Tất cả', this)">Tất cả</button>
+                                <button class="sf-pill" onclick="filterStaffByRole('Admin', this)">Admin</button>
+                                <button class="sf-pill" onclick="filterStaffByRole('Quản lý', this)">Quản lý</button>
+                                <button class="sf-pill" onclick="filterStaffByRole('Nhân viên', this)">Nhân viên</button>
+                                <button class="sf-pill" onclick="filterStaffByRole('Khách hàng', this)">Khách hàng</button>
                             </div>
                         </div>
                         <div class="sf-group" style="margin-top: 20px;">
                             <label>TRẠNG THÁI</label>
                             <div class="sf-select-wrap">
-                                <select>
-                                    <option>Active</option>
-                                    <option>Banned</option>
-                                    <option>Inactive</option>
+                                <select onchange="filterStaffByStatus(this.value)">
+                                    <option value="Tất cả">Tất cả</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Banned">Banned</option>
                                 </select>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                             </div>
@@ -879,15 +958,158 @@
             </div>
             
             <!-- FAB Add User -->
-            <button class="fab-add-user" title="Add New User">
+            <button class="fab-add-user" title="Add New User" onclick="showToast('Thông báo', 'Chức năng Thêm nhân viên đang được phát triển')">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
             </button>
         </div>
     </div>
-    <div class="page" id="page-pricing"><div class="placeholder-page"><div class="ph-icon">💵</div><h2>Quản lý Giá vé</h2><p>Thiết lập giá vé, giảm giá và chương trình khuyến mãi.</p></div></div>
-    <div class="page" id="page-settings"><div class="placeholder-page"><div class="ph-icon">⚙️</div><h2>Cài đặt</h2><p>Cấu hình tùy chọn hệ thống và tài khoản quản trị.</p></div></div>
+    <div class="page" id="page-pricing">
+        <div class="content-scroll" style="padding: 30px 40px; max-width: 800px; margin: 0 auto;">
+            <div class="page-header" style="margin-bottom: 30px;">
+                <h1 style="font-size: 1.8rem; font-weight: 800; color: #1f2937;">Quản lý Giá vé</h1>
+                <p style="color: #6b7280; margin-top: 8px;">Thiết lập giá vé cơ bản và hệ số nhân cho từng loại ghế.</p>
+            </div>
+            
+            <div class="setting-card" style="background: #ffffff; border-radius: 12px; padding: 25px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #374151; font-weight: 600; font-size: 0.9rem;">Giá vé cơ bản (VNĐ)</label>
+                    <input type="number" id="cfg_BASE_TICKET_PRICE" class="form-input" style="width: 100%; padding: 12px; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 8px; color: #1f2937;" placeholder="VD: 50000">
+                    <div style="font-size: 0.8rem; color: #6b7280; margin-top: 6px;">Mức giá gốc áp dụng cho ghế thường (Standard).</div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #374151; font-weight: 600; font-size: 0.9rem;">Hệ số ghế VIP (Multiplier)</label>
+                    <input type="number" step="0.1" id="cfg_VIP_MULTIPLIER" class="form-input" style="width: 100%; padding: 12px; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 8px; color: #1f2937;" placeholder="VD: 1.2">
+                    <div style="font-size: 0.8rem; color: #6b7280; margin-top: 6px;">Ví dụ 1.2 có nghĩa là Giá vé VIP = Giá cơ bản * 1.2.</div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 30px;">
+                    <label style="display: block; margin-bottom: 8px; color: #374151; font-weight: 600; font-size: 0.9rem;">Hệ số ghế Couple (Multiplier)</label>
+                    <input type="number" step="0.1" id="cfg_COUPLE_MULTIPLIER" class="form-input" style="width: 100%; padding: 12px; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 8px; color: #1f2937;" placeholder="VD: 1.5">
+                    <div style="font-size: 0.8rem; color: #6b7280; margin-top: 6px;">Lưu ý: Một ghế Couple thực chất là 2 chỗ ngồi, hệ số này áp dụng trên tổng giá trị.</div>
+                </div>
+
+                <button class="btn-primary" style="width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;" onclick="savePricingSettings()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    LƯU BẢNG GIÁ
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="page" id="page-settings">
+        <div class="content-scroll" style="padding: 30px 40px; max-width: 800px; margin: 0 auto;">
+            <div class="page-header" style="margin-bottom: 30px;">
+                <h1 style="font-size: 1.8rem; font-weight: 800; color: #1f2937;">Cài đặt Hệ thống</h1>
+                <p style="color: #6b7280; margin-top: 8px;">Cấu hình các thông số hoạt động của rạp chiếu và tài khoản quản trị.</p>
+            </div>
+
+            <!-- Cấu hình chung -->
+            <div class="setting-card" style="background: #ffffff; border-radius: 12px; padding: 25px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 24px;">
+                <h3 style="color: #1f2937; margin-bottom: 20px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Thông tin liên hệ
+                </h3>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #374151; font-weight: 600; font-size: 0.9rem;">Hotline</label>
+                    <input type="text" id="cfg_HOTLINE" class="form-input" style="width: 100%; padding: 12px; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 8px; color: #1f2937;">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #374151; font-weight: 600; font-size: 0.9rem;">Email Hỗ trợ</label>
+                    <input type="email" id="cfg_SUPPORT_EMAIL" class="form-input" style="width: 100%; padding: 12px; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 8px; color: #1f2937;">
+                </div>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; margin-bottom: 20px;">
+                    <div>
+                        <div style="color: #ef4444; font-weight: bold; margin-bottom: 4px;">Chế độ bảo trì (Maintenance Mode)</div>
+                        <div style="font-size: 0.85rem; color: #6b7280;">Tạm khóa tính năng đặt vé của khách hàng (hiện thông báo bảo trì).</div>
+                    </div>
+                    <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                        <input type="checkbox" id="cfg_MAINTENANCE_MODE" style="opacity: 0; width: 0; height: 0;">
+                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #d1d5db; transition: .4s; border-radius: 34px;"></span>
+                    </label>
+                </div>
+
+                <button class="btn-primary" style="padding: 12px 24px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; float: right;" onclick="saveSystemSettings()">
+                    Lưu Cài đặt
+                </button>
+                <div style="clear: both;"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ══ PROMOTIONS PAGE ══ -->
+    <div class="page" id="page-promotions">
+      <div class="content-scroll" style="padding: 30px 40px; display: flex; flex-direction: column; gap: 24px;">
+        <div class="dash-heading">
+          <div>
+            <h1>QUẢN LÝ TIN TỨC &amp; KHUYẾN MÃI</h1>
+            <p>Thêm, sửa, xóa các chương trình khuyến mãi hiển thị trên trang chủ.</p>
+          </div>
+          <div class="heading-actions">
+            <button class="btn-add-main" onclick="openPromoModal()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Thêm mới
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="promo-kpis" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 8px;">
+            <div class="fkpi-card">
+                <div class="fkpi-icon" style="background: rgba(232,25,44,0.1); color: var(--accent);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+                </div>
+                <div class="fkpi-info">
+                    <div class="fkpi-label">TỔNG KHUYẾN MÃI</div>
+                    <div class="fkpi-val" id="promoKpiTotal">0</div>
+                </div>
+            </div>
+            <div class="fkpi-card">
+                <div class="fkpi-icon" style="background: rgba(16,185,129,0.1); color: #16a34a;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+                <div class="fkpi-info">
+                    <div class="fkpi-label">ĐANG HIỂN THỊ</div>
+                    <div class="fkpi-val" id="promoKpiActive">0</div>
+                </div>
+            </div>
+            <div class="fkpi-card">
+                <div class="fkpi-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div class="fkpi-info">
+                    <div class="fkpi-label">TIN NỔI BẬT</div>
+                    <div class="fkpi-val" id="promoKpiFeatured">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-wrap">
+            <table class="data-table" id="promoTable">
+              <thead>
+                <tr>
+                  <th style="width:80px">ẢNH</th>
+                  <th>TIÊU ĐỀ</th>
+                  <th>BADGE</th>
+                  <th>NỔI BẬT</th>
+                  <th>TRẠNG THÁI</th>
+                  <th>THỨ TỰ</th>
+                  <th>THAO TÁC</th>
+                </tr>
+              </thead>
+              <tbody id="promoBody">
+                <tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
 
 </div><!-- end main-wrap -->
+
 
 <!-- Side Panel for Thêm Phim -->
 <div class="side-panel-overlay" id="addMovieModalOverlay" onclick="closeAddMovieModal()"></div>
@@ -1032,8 +1254,164 @@
         <button class="btn-panel-save" id="btnSaveShowtime" onclick="saveShowtime()">Lưu Suất Chiếu</button>
     </div>
 </div>
+<!-- ══════════════════════════════════════
+     QUICK SELL MODAL (POS)
+══════════════════════════════════════ -->
+<div class="side-panel-overlay" id="quickSellModalOverlay" onclick="closeQuickSellModal()"></div>
+<div class="side-panel" id="quickSellModal" style="width: 900px; max-width: 95vw;">
+    <div class="panel-header">
+        <h2>Bán Vé Nhanh (POS)</h2>
+        <button class="btn-close-panel" onclick="closeQuickSellModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="panel-body" style="display: flex; gap: 20px; padding: 20px; flex-wrap: wrap;">
+        
+        <!-- Cột 1: Chọn suất chiếu -->
+        <div class="qs-col" style="flex: 1; min-width: 250px;">
+            <h3 style="margin-bottom: 15px; font-size: 1rem; color: var(--text-dark);">1. Chọn Suất Chiếu Hôm Nay</h3>
+            <div id="qsShowtimesList" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                <!-- Render bằng JS -->
+                <p style="color: #6b7280; font-size: 0.9rem;">Đang tải suất chiếu...</p>
+            </div>
+        </div>
 
-<script src="js/admin.js"></script>
+        <!-- Cột 2: Chọn ghế -->
+        <div class="qs-col" style="flex: 2; min-width: 300px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; padding: 0 20px;">
+            <h3 style="margin-bottom: 15px; font-size: 1rem; color: var(--text-dark);">2. Chọn Ghế</h3>
+            <div id="qsSeatMapContainer" style="background: #111827; border-radius: 8px; padding: 20px; text-align: center; min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <p style="color: #9ca3af;">Vui lòng chọn suất chiếu trước</p>
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: center; font-size: 0.85rem;">
+                <span style="display:flex;align-items:center;gap:5px;"><div style="width:16px;height:16px;background:#374151;border-radius:4px;"></div> Trống</span>
+                <span style="display:flex;align-items:center;gap:5px;"><div style="width:16px;height:16px;background:#e8192c;border-radius:4px;"></div> Đã bán</span>
+                <span style="display:flex;align-items:center;gap:5px;"><div style="width:16px;height:16px;background:#10b981;border-radius:4px;"></div> Đang chọn</span>
+            </div>
+        </div>
+
+        <!-- Cột 3: Thanh toán & F&B -->
+        <div class="qs-col" style="flex: 1.5; min-width: 250px;">
+            <h3 style="margin-bottom: 15px; font-size: 1rem; color: var(--text-dark);">3. Thanh Toán</h3>
+            
+            <div class="form-group">
+                <label class="form-label">Ghế đã chọn</label>
+                <div id="qsSelectedSeats" style="font-weight: bold; color: var(--accent); min-height: 24px;">Chưa chọn ghế</div>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px;">
+                <label class="form-label">Đồ ăn & Nước uống</label>
+                <div id="qsFnbList" style="display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto;">
+                    <!-- Render bằng JS -->
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px;">
+                <label class="form-label">SĐT Khách hàng (Tùy chọn)</label>
+                <input type="text" id="qsCustomerPhone" class="form-control" placeholder="Nhập SĐT để tích điểm...">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;">
+                <label class="form-label">Mã Giảm Giá</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="qsVoucherCode" class="form-control" placeholder="Nhập mã..." style="flex: 1; text-transform: uppercase;">
+                    <button class="btn-solid-green" style="padding: 0 15px;" onclick="applyQsVoucher()">Áp dụng</button>
+                </div>
+                <div id="qsVoucherMessage" style="font-size: 0.8rem; margin-top: 5px;"></div>
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #d1d5db;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: #6b7280;">Tiền vé:</span>
+                    <span id="qsTicketTotal" style="font-weight: 600;">0 đ</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: #6b7280;">Tiền F&B:</span>
+                    <span id="qsFnbTotal" style="font-weight: 600;">0 đ</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: #6b7280;">Giảm giá:</span>
+                    <span id="qsDiscountTotal" style="font-weight: 600; color: #10b981;">- 0 đ</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; color: var(--text-dark); margin-top: 10px;">
+                    <span>Tổng cộng:</span>
+                    <span id="qsFinalTotal" style="color: var(--accent);">0 đ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel-footer">
+        <button class="btn-panel-cancel" onclick="closeQuickSellModal()">Hủy</button>
+        <button class="btn-panel-save" id="btnSubmitQuickSell" onclick="submitQuickSell()" style="background: var(--accent);" disabled>Thanh Toán & In Vé</button>
+    </div>
+</div>
+<!-- ══════════════════════════════════════
+     TOAST NOTIFICATIONS
+══════════════════════════════════════ -->
+<div id="adminToastContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/admin.js?v=4"></script>
+
+<!-- Promotions Modal -->
+<div id="promoModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;" onclick="closePromoModal()"></div>
+<div id="promoModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:401;background:var(--surface);border-radius:12px;padding:32px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+    <h2 id="promoModalTitle" style="font-size:1.2rem;font-weight:800;color:var(--text);text-transform:uppercase;">THÊM KHUYẾN MÃI</h2>
+    <button onclick="closePromoModal()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.4rem;line-height:1;">×</button>
+  </div>
+  <form id="promoForm" onsubmit="savePromo(event)" style="display:flex;flex-direction:column;gap:16px;">
+    <input type="hidden" id="promoId">
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">TIÊU ĐỀ *</label>
+      <input type="text" id="promoTitle" placeholder="VD: Unlimited Popcorn Thursdays" required
+        style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+    </div>
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">MÔ TẢ</label>
+      <textarea id="promoDesc" rows="3" placeholder="Mô tả ngắn về chương trình..."
+        style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;resize:vertical;"></textarea>
+    </div>
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">NHÃN BADGE</label>
+      <input type="text" id="promoBadge" placeholder="VD: MEMBER EXCLUSIVE"
+        style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+    </div>
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">LINK URL</label>
+      <input type="text" id="promoLink" placeholder="VD: promotions.html"
+        style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+    </div>
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">UPLOAD ẢNH</label>
+      <input type="file" id="promoImage" accept="image/*"
+        style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.85rem;">
+      <div id="promoCurrentImg" style="margin-top:8px;font-size:0.8rem;color:var(--text2);"></div>
+    </div>
+    <div style="display:flex;gap:24px;">
+      <div class="ff-group" style="flex:1;">
+        <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">THỨ TỰ HIỂN THỊ</label>
+        <input type="number" id="promoSort" value="0" min="0"
+          style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+      </div>
+      <div class="ff-group" style="flex:1;">
+        <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">&nbsp;</label>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:0.9rem;">
+            <input type="checkbox" id="promoFeatured" style="width:16px;height:16px;accent-color:var(--accent);"> Nổi bật (Featured)
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:0.9rem;">
+            <input type="checkbox" id="promoActive" checked style="width:16px;height:16px;accent-color:var(--accent);"> Đang hoạt động
+          </label>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
+      <button type="button" onclick="closePromoModal()" style="padding:10px 20px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-weight:600;">Hủy</button>
+      <button type="submit" style="padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Lưu</button>
+    </div>
+  </form>
+</div>
+
 
 <style>
 .btn-solid-green { padding: 9px 18px; background: #10b981; color: #fff; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 700; transition: all var(--tr); border: none; cursor: pointer; }
@@ -1054,7 +1432,6 @@
 @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
 </style>
 
-    <script src="js/chatbot.js"></script>
 </body>
 </html>
 
