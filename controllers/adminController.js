@@ -6,7 +6,7 @@ const AdminModel = require('../models/adminModel');
 const PDFDocument = require('pdfkit');
 
 function removeAccents(str) {
-  if(!str) return '';
+  if (!str) return '';
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, 'd').replace(/Đ/g, 'D');
 }
 
@@ -73,7 +73,7 @@ exports.saveSeats = async (req, res) => {
     if (!seats || !Array.isArray(seats)) {
       return res.status(400).json({ success: false, message: 'Dữ liệu ghế không hợp lệ.' });
     }
-    
+
     await AdminModel.saveSeats(roomId, seats);
     res.json({ success: true, message: 'Lưu sơ đồ ghế thành công!' });
   } catch (err) {
@@ -428,6 +428,7 @@ exports.getTopMovies = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+
 exports.getLiveRooms = async (req, res) => {
   try {
     const cinemaId = req.query.cinemaId || null;
@@ -456,8 +457,8 @@ exports.exportPdf = async (req, res) => {
 
     // Remove accents function if not globally available, just copy logic or use simple replace
     const normalizeStr = str => {
-        if (!str) return '';
-        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
+      if (!str) return '';
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
     };
 
     // Header
@@ -470,32 +471,32 @@ exports.exportPdf = async (req, res) => {
     // 1. KPI Section (4 boxes)
     doc.fillColor('#111827').fontSize(14).text('1. OVERVIEW STATISTICS');
     doc.moveDown(0.5);
-    
+
     // Draw KPI table
     const startY = doc.y;
     doc.rect(50, startY, 500, 60).stroke('#d1d5db');
     doc.moveTo(175, startY).lineTo(175, startY + 60).stroke('#d1d5db');
     doc.moveTo(300, startY).lineTo(300, startY + 60).stroke('#d1d5db');
     doc.moveTo(425, startY).lineTo(425, startY + 60).stroke('#d1d5db');
-    
+
     doc.fontSize(10).fillColor('#6b7280');
     doc.text('Total Revenue', 60, startY + 10, { width: 105, align: 'center' });
     doc.text('Tickets Sold', 185, startY + 10, { width: 105, align: 'center' });
     doc.text('F&B Revenue', 310, startY + 10, { width: 105, align: 'center' });
     doc.text('Occupancy', 435, startY + 10, { width: 105, align: 'center' });
-    
+
     doc.fontSize(12).fillColor('#111827');
     doc.text(`${new Intl.NumberFormat('en-US').format(stats.TotalRevenue || 0)} VND`, 60, startY + 30, { width: 105, align: 'center' });
     doc.text(`${new Intl.NumberFormat('en-US').format(stats.TicketSales || 0)}`, 185, startY + 30, { width: 105, align: 'center' });
     doc.text(`${new Intl.NumberFormat('en-US').format(stats.FnBSales || 0)} VND`, 310, startY + 30, { width: 105, align: 'center' });
     doc.text(`${stats.OccupancyRate || 0}%`, 435, startY + 30, { width: 105, align: 'center' });
-    
+
     doc.y = startY + 80;
 
     // 2. Top Movies Section
     doc.fontSize(14).fillColor('#111827').text('2. TOP MOVIES RANKING');
     doc.moveDown(0.5);
-    
+
     // Table Header
     let tableY = doc.y;
     doc.rect(50, tableY, 500, 20).fillAndStroke('#f3f4f6', '#d1d5db');
@@ -504,10 +505,10 @@ exports.exportPdf = async (req, res) => {
     doc.text('Movie Title', 90, tableY + 5);
     doc.text('Tickets', 350, tableY + 5);
     doc.text('Revenue (VND)', 430, tableY + 5);
-    
+
     tableY += 20;
     doc.fillColor('#111827');
-    
+
     if (topMovies && topMovies.length > 0) {
       topMovies.forEach((m, idx) => {
         doc.rect(50, tableY, 500, 25).stroke('#e5e7eb');
@@ -522,13 +523,13 @@ exports.exportPdf = async (req, res) => {
       doc.text('No movie data available.', 60, tableY + 7);
       tableY += 25;
     }
-    
+
     doc.y = tableY + 30;
 
     // 3. Recent Transactions
     doc.fontSize(14).fillColor('#111827').text('3. RECENT TRANSACTIONS');
     doc.moveDown(0.5);
-    
+
     tableY = doc.y;
     doc.rect(50, tableY, 500, 20).fillAndStroke('#f3f4f6', '#d1d5db');
     doc.fillColor('#4b5563').fontSize(10);
@@ -537,10 +538,10 @@ exports.exportPdf = async (req, res) => {
     doc.text('Date', 250, tableY + 5);
     doc.text('Amount', 370, tableY + 5);
     doc.text('Status', 470, tableY + 5);
-    
+
     tableY += 20;
     doc.fillColor('#111827');
-    
+
     if (recentTxns && recentTxns.length > 0) {
       recentTxns.forEach(t => {
         doc.rect(50, tableY, 500, 25).stroke('#e5e7eb');
@@ -548,12 +549,12 @@ exports.exportPdf = async (req, res) => {
         doc.text(normalizeStr(t.branch).substring(0, 20), 120, tableY + 7);
         doc.text(normalizeStr(t.date), 250, tableY + 7);
         doc.text(normalizeStr(t.amount), 370, tableY + 7);
-        
+
         // Status color
         if (t.status === 'COMPLETED') doc.fillColor('#10b981');
         else if (t.status === 'CANCELLED') doc.fillColor('#ef4444');
         else doc.fillColor('#f59e0b');
-        
+
         doc.text(t.status, 470, tableY + 7);
         doc.fillColor('#111827'); // reset
         tableY += 25;
@@ -591,7 +592,7 @@ exports.getRevenueChartData = async (req, res) => {
     let fnbData = [];
 
     if (period === 'today') {
-      labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+      labels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
       ticketData = new Array(24).fill(0);
       fnbData = new Array(24).fill(0);
 
@@ -611,7 +612,7 @@ exports.getRevenueChartData = async (req, res) => {
         ticketData[day] += t.TotalAmount || 0;
         fnbData[day] += t.FnBRevenue || 0;
       });
-      
+
       // Shift so Monday is first
       labels.push(labels.shift());
       ticketData.push(ticketData.shift());
@@ -619,7 +620,7 @@ exports.getRevenueChartData = async (req, res) => {
 
     } else if (period === 'month') {
       const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-      labels = Array.from({length: daysInMonth}, (_, i) => `Ngày ${i + 1}`);
+      labels = Array.from({ length: daysInMonth }, (_, i) => `Ngày ${i + 1}`);
       ticketData = new Array(daysInMonth).fill(0);
       fnbData = new Array(daysInMonth).fill(0);
 
@@ -631,7 +632,7 @@ exports.getRevenueChartData = async (req, res) => {
 
     } else {
       // all -> 12 months
-      labels = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+      labels = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
       ticketData = new Array(12).fill(0);
       fnbData = new Array(12).fill(0);
 
@@ -656,6 +657,7 @@ exports.getRevenueChartData = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+
 // ════════════════════════════════════════════════════════════
 //  PROMOTIONS MANAGEMENT
 // ════════════════════════════════════════════════════════════
@@ -739,3 +741,4 @@ exports.togglePromotionActive = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+

@@ -22,6 +22,12 @@ router.post('/webhook',                     bookingCtrl.receivePaymentWebhook);
 // GET  /api/bookings/webhook/pending        — Lấy danh sách vé đang chờ thanh toán (Public - phục vụ Simulator)
 router.get('/webhook/pending',              bookingCtrl.getPendingWebhooks);
 
+// GET  /api/bookings/public/:ticketIds        — Xem thông tin vé công khai (Public - check-in QR)
+router.get('/public/:ticketIds',              bookingCtrl.getPublicBookingDetails);
+
+// GET  /api/bookings/server-ip              — Lấy IP LAN của server để sinh mã QR check-in (Public)
+router.get('/server-ip',                    bookingCtrl.getServerIP);
+
 // Áp dụng verifyToken cho toàn bộ booking routes (trừ các routes public bên trên)
 router.use(verifyToken);
 
@@ -36,6 +42,9 @@ router.get('/check-status',                 bookingCtrl.checkBookingStatus);
 
 // POST /api/bookings/cancel                 — Huỷ vé pending ngay lập tức
 router.post('/cancel',                      bookingCtrl.cancelBooking);
+
+// POST /api/bookings/:ticketId/request-cancel — Khách hàng yêu cầu huỷ vé đã xác nhận
+router.post('/:ticketId/request-cancel',    bookingCtrl.requestCancelBooking);
 
 // GET  /api/bookings/:ticketId              — Chi tiết một vé
 router.get('/:ticketId',                    bookingCtrl.getBookingDetail);

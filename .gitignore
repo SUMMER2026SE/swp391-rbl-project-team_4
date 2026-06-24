@@ -74,10 +74,6 @@ web_modules/
 
 # dotenv environment variable files
 .env
-<<<<<<< HEAD
-*.log
-uploads/
-=======
 .env.test
 .env.production
 .env.local
@@ -128,4 +124,5 @@ dist
 # (If you don't want to commit uploaded posters/avatars)
 uploads/*
 !uploads/.gitkeep
->>>>>>> 08ad2a25e422c908eb9e438877ba67dcda78436a
+.env
+config/db.js

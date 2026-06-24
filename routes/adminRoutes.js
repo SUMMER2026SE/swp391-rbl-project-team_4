@@ -146,5 +146,6 @@ router.delete('/promotions/:id', adminCtrl.deletePromotion);
 
 // PATCH  /api/admin/promotions/:id/toggle  — Bật/tắt trạng thái
 router.patch('/promotions/:id/toggle', adminCtrl.togglePromotionActive);
+
 module.exports = router;
 

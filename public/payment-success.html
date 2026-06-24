@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -414,8 +414,11 @@
             width: 110px;
             height: 110px;
         }
-        #ticketQr canvas, #ticketQr img {
-            display:block !important;
+        #ticketQr canvas {
+            display: none !important;
+        }
+        #ticketQr img {
+            display: block !important;
             width: 110px !important;
             height: 110px !important;
         }
@@ -544,9 +547,17 @@
                 <span class="logo-text">D-CINEMA</span>
             </a>
             <nav class="nav-links">
-                <a href="movies.html">Phim</a>
-                <a href="booking.html" class="active">Rạp</a>
-                <a href="promotions.html">Promotions</a>
+                <div class="dropdown">
+                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
+                    <div class="dropdown-menu">
+                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                    </div>
+                </div>
+                <a href="booking.html" id="nav-rap">Rạp</a>
+                <a href="promotions.html" id="nav-promo">Promotions</a>
+                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
@@ -636,7 +647,7 @@
 
                 <!-- Ticket Bottom: QR + Info -->
                 <div class="ticket-bottom">
-                    <div class="ticket-qr-wrap">
+                    <div class="ticket-qr-wrap" style="cursor: pointer;" onclick="openVerifyPage()" title="Nhấp vào mã QR để mở trang xác thực vé (giả lập quét QR)">
                         <div id="ticketQr"></div>
                     </div>
                     <div class="ticket-bottom-info">
@@ -708,6 +719,7 @@
     
     let booking = {};
     let qrTimers = {};
+    let serverLanOrigin = window.location.origin;
 
     const METHOD_LABELS = {
         qrpay:     'QR Pay (VietQR/MB Bank)',
@@ -785,6 +797,7 @@
                 if (canvas) {
                     canvas.style.setProperty('width', size + 'px', 'important');
                     canvas.style.setProperty('height', size + 'px', 'important');
+                    canvas.style.setProperty('display', 'none', 'important');
                 }
                 if (img) {
                     img.style.setProperty('width', size + 'px', 'important');
@@ -925,17 +938,10 @@
         // Booking note
         document.getElementById('bookingNoteId').textContent = bookingId;
 
-        // Generate ticket QR (unique data with booking info)
-        const ticketQrData = JSON.stringify({
-            id: bookingId,
-            movie: booking.movieTitle,
-            seats: booking.seats,
-            time: booking.time,
-            date: booking.date,
-            hall: booking.hall,
-            paid: finalAmount,
-            method: method
-        });
+        // Tạo URL kiểm tra vé trực tuyến (giống website thật khi quét mã QR)
+        const ticketIdsStr = bookingId.replace('DC-', '');
+        const ticketQrData = serverLanOrigin + '/verify-ticket.html?id=' + ticketIdsStr;
+
         generateQR('ticketQr', ticketQrData, 110);
 
         // Barcode
@@ -947,6 +953,12 @@
         }, 500);
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openVerifyPage() {
+        const bookingId = booking.bookingId || document.getElementById('ticketBookingId').textContent;
+        const ticketIdsStr = bookingId.replace('DC-', '');
+        window.open('/verify-ticket.html?id=' + ticketIdsStr, '_blank');
     }
 
     /* ── Download (Print) Ticket ── */
@@ -993,7 +1005,20 @@
     }
 
     /* ── INIT ── */
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Lấy IP LAN của server để thay thế localhost
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            try {
+                const ipRes = await fetch('/api/bookings/server-ip');
+                const ipJson = await ipRes.json();
+                if (ipJson.success && ipJson.ip && ipJson.ip !== 'localhost') {
+                    serverLanOrigin = window.location.protocol + '//' + ipJson.ip + ':' + window.location.port;
+                }
+            } catch(e) {
+                console.warn('Could not fetch server LAN IP:', e);
+            }
+        }
+
         // User
         try {
             const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');

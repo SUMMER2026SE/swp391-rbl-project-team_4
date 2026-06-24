@@ -28,6 +28,8 @@
                 </div>
                 <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
+                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -279,6 +281,11 @@
 
             if (buyBtn) {
                 buyBtn.addEventListener('click', () => {
+                    const isLogged = (localStorage.getItem('user') || sessionStorage.getItem('user'));
+                    if (!isLogged) {
+                        window.location.href = 'auth.html';
+                        return;
+                    }
                     if (movieId) {
                         window.location.href = `booking.html?movieId=${movieId}`;
                     } else {

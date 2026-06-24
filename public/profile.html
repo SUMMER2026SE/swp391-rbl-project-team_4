@@ -44,7 +44,7 @@
                     </svg>
                     <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
                 </div>
-                <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
+                <a href="profile.html" class="nav-user-icon" title="Hồ sơ" class="active">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
@@ -728,12 +728,15 @@
                             PosterURL: t.PosterURL,
                             StartTime: t.StartTime,
                             RoomName: t.RoomName,
+                            Status: t.Status,
                             TotalAmount: 0,
-                            Seats: []
+                            Seats: [],
+                            TicketIDs: []
                         };
                     }
                     bookingsMap[key].TotalAmount += Number(t.TotalAmount);
                     bookingsMap[key].Seats.push(t.SeatRow + t.SeatNumber);
+                    bookingsMap[key].TicketIDs.push(t.TicketID);
                 });
                 
                 const groupedBookings = Object.values(bookingsMap);
@@ -752,13 +755,22 @@
                     const dateStr = st.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                     const timeStr = st.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
                     
-                    const isUpcoming = st > now;
-                    const statusClass = isUpcoming ? 'upcoming' : 'watched';
-                    const statusText = isUpcoming ? 'Upcoming' : 'Watched';
-                    const btnClass = isUpcoming ? 'btn-view-ticket' : 'btn-view-ticket secondary';
-                    const btnText = isUpcoming ? 'View Ticket' : 'Download';
+                    let isUpcoming = st > now;
+                    let statusClass = isUpcoming ? 'upcoming' : 'watched';
+                    let statusText = isUpcoming ? 'Upcoming' : 'Watched';
+                    let btnClass = isUpcoming ? 'btn-view-ticket' : 'btn-view-ticket secondary';
+                    let btnText = 'View Ticket';
+                    
+                    if (b.Status === 'cancelled') {
+                        statusClass = 'cancelled';
+                        statusText = 'Cancelled';
+                        btnClass = 'btn-view-ticket secondary';
+                        btnText = 'N/A';
+                    }
                     
                     const priceFormatted = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(b.TotalAmount);
+                    
+                    const isCancelable = b.Status !== 'cancelled' && (st.getTime() - Date.now() > 2 * 60 * 60 * 1000);
                     
                     html += `
                         <div class="ticket-item">
@@ -780,7 +792,14 @@
                             <div class="t-right">
                                 <div class="t-status ${statusClass}">${statusText}</div>
                                 <div class="t-price">${priceFormatted}</div>
-                                <button class="${btnClass}">${btnText}</button>
+                                <div style="display: flex; gap: 8px;">
+                                    ${isCancelable ? `
+                                    <button class="btn-view-ticket secondary" style="color: #dc2626; border-color: rgba(220, 38, 38, 0.3);" onclick="cancelTicket(${b.TicketIDs[0]})">
+                                        Hủy vé
+                                    </button>
+                                    ` : ''}
+                                    ${b.Status !== 'cancelled' ? `<button class="${btnClass}" onclick="viewTicket(${b.TicketIDs[0]})">${btnText}</button>` : ''}
+                                </div>
                             </div>
                         </div>
                     `;
@@ -801,6 +820,39 @@
         {localStorage.removeItem('user'); sessionStorage.removeItem('user');}
         {localStorage.removeItem('token'); sessionStorage.removeItem('token');}
         window.location.href = 'auth.html';
+    }
+
+    /* ─── View Ticket ─── */
+    function viewTicket(ticketId) {
+        sessionStorage.setItem('viewTicketId', ticketId);
+        window.location.href = 'payment-success.html?v=' + Date.now();
+    }
+
+    /* ─── Cancel Ticket ─── */
+    async function cancelTicket(ticketId) {
+        if (!confirm("Bạn có chắc chắn muốn hủy vé này?\\nSố tiền sẽ được hoàn lại vào tài khoản ngân hàng của bạn trong vòng 3-5 ngày làm việc.")) {
+            return;
+        }
+
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/bookings/${ticketId}/request-cancel`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                alert('Hủy vé thành công!');
+                fetchMyBookings(); // Reload list
+            } else {
+                alert('Không thể hủy vé: ' + data.message);
+            }
+        } catch (err) {
+            alert('Có lỗi xảy ra khi hủy vé.');
+        }
     }
     </script>
 

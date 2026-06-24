@@ -165,7 +165,7 @@ class MovieModel {
     let dateFilter = '';
     if (date) {
       request.input('date', sql.Date, date);
-      dateFilter = 'AND CAST(st.StartTime AS DATE) = @date';
+      dateFilter = 'AND CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date';
     }
 
     const result = await request.query(`
@@ -273,7 +273,7 @@ class MovieModel {
       JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
       JOIN   Movies  m ON st.MovieID  = m.MovieID
       WHERE  r.CinemaID = @cinemaId
-        AND  CAST(st.StartTime AS DATE) = @date
+        AND  CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date
         AND  st.Status  = 'active'
         AND  st.StartTime > GETUTCDATE()
         ${movieFilter}

@@ -159,7 +159,7 @@ class AdminModel {
 
     let filters = 'WHERE 1=1';
     if (movieId) { request.input('movieId', sql.Int, parseInt(movieId)); filters += ' AND st.MovieID = @movieId'; }
-    if (date) { request.input('date', sql.Date, date); filters += ' AND CAST(st.StartTime AS DATE) = @date'; }
+    if (date) { request.input('date', sql.Date, date); filters += ' AND CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date'; }
     if (cinemaId) { request.input('cinemaId', sql.Int, parseInt(cinemaId)); filters += ' AND c.CinemaID = @cinemaId'; }
 
     const result = await request.query(`
@@ -794,6 +794,10 @@ class AdminModel {
       `);
     return result.recordset;
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> d173bd87361c61b494e5f8013436577d9dd450e3
   static async getLiveRoomsStatus(cinemaId) {
     const pool = await getPool();
     let query = `
@@ -829,6 +833,10 @@ class AdminModel {
     const result = await request.query(query);
     return result.recordset;
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> d173bd87361c61b494e5f8013436577d9dd450e3
   // --- PROMOTIONS MANAGEMENT ---
   static async getAllPromotions() {
     const pool = await getPool();
@@ -921,6 +929,10 @@ class AdminModel {
       `);
     return result.recordset.length > 0 ? result.recordset[0] : null;
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> d173bd87361c61b494e5f8013436577d9dd450e3
 }
 
 module.exports = AdminModel;

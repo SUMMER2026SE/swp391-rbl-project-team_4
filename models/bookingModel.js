@@ -42,7 +42,7 @@ class BookingModel {
     return result.recordset;
   }
 
-  static async validateVoucher(code) {
+  static async validateVoucher(code, userId) {
     const pool = await getPool();
     const result = await pool.request()
       .input('code', sql.NVarChar, code)
@@ -57,7 +57,25 @@ class BookingModel {
           AND  EndDate   >= GETDATE()
           AND  (UsageLimit IS NULL OR UsedCount < UsageLimit)
       `);
-    return result.recordset.length > 0 ? result.recordset[0] : null;
+    if (result.recordset.length === 0) return null;
+    const voucher = result.recordset[0];
+
+    if (userId) {
+      const checkUsed = await pool.request()
+        .input('userId', sql.Int, userId)
+        .input('voucherId', sql.Int, voucher.VoucherID)
+        .query(`
+          SELECT COUNT(*) as cnt 
+          FROM Tickets 
+          WHERE UserID = @userId 
+            AND VoucherID = @voucherId 
+            AND Status IN ('confirmed', 'used', 'pending')
+        `);
+      if (checkUsed.recordset[0].cnt > 0) {
+        voucher.alreadyUsed = true;
+      }
+    }
+    return voucher;
   }
 
   static async createBooking(userId, { showtimeId, seatIds, foodItems, voucherCode, paymentMethod }) {
@@ -183,6 +201,22 @@ class BookingModel {
         `);
         if (vResult.recordset.length > 0) {
           const v = vResult.recordset[0];
+          
+          // Check if this user has already used this voucher
+          const checkUsedReq = transaction.request();
+          checkUsedReq.input('userId', sql.Int, userId);
+          checkUsedReq.input('voucherId', sql.Int, v.VoucherID);
+          const checkUsedResult = await checkUsedReq.query(`
+            SELECT COUNT(*) as cnt 
+            FROM Tickets 
+            WHERE UserID = @userId 
+              AND VoucherID = @voucherId 
+              AND Status IN ('confirmed', 'used', 'pending')
+          `);
+          if (checkUsedResult.recordset[0].cnt > 0) {
+            throw new Error('Bạn đã sử dụng voucher này rồi. Mỗi khách hàng chỉ được sử dụng mã này 1 lần.');
+          }
+
           voucherId = v.VoucherID;
           if (totalAmount >= (v.MinOrderValue || 0)) {
             discountAmount = v.DiscountType === 'percent'
@@ -436,6 +470,50 @@ class BookingModel {
     return result.recordset;
   }
 
+  static async cancelConfirmedBooking(ticketId, userId) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('ticketId', sql.Int, ticketId)
+      .input('userId', sql.Int, userId)
+      .query(`
+        DECLARE @ShowtimeID int;
+        DECLARE @Status varchar(20);
+        DECLARE @StartTime datetime;
+        
+        SELECT @ShowtimeID = t.ShowtimeID, @Status = t.Status, @StartTime = st.StartTime
+        FROM Tickets t
+        JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+        WHERE t.TicketID = @ticketId AND t.UserID = @userId;
+
+        IF @ShowtimeID IS NULL
+        BEGIN
+            SELECT 'NOT_FOUND' AS ErrorCode, 'Không tìm thấy vé hợp lệ của bạn.' AS Message;
+            RETURN;
+        END
+
+        IF @Status <> 'confirmed'
+        BEGIN
+            SELECT 'INVALID_STATUS' AS ErrorCode, 'Chỉ có thể hủy vé đã được xác nhận thanh toán.' AS Message;
+            RETURN;
+        END
+
+        IF DATEDIFF(minute, GETUTCDATE(), @StartTime) < 120
+        BEGIN
+            SELECT 'TOO_LATE' AS ErrorCode, 'Chỉ được phép hủy vé trước khi suất chiếu bắt đầu ít nhất 2 giờ.' AS Message;
+            RETURN;
+        END
+
+        UPDATE Tickets SET Status = 'cancelled' WHERE TicketID = @ticketId;
+        SELECT 'SUCCESS' AS ErrorCode, 'Hủy vé thành công.' AS Message;
+      `);
+      
+    const record = result.recordset[0];
+    if (record.ErrorCode !== 'SUCCESS') {
+      throw new Error(record.Message);
+    }
+    return true;
+  }
+
   static async cleanupExpiredPendingBookings() {
     const pool = await getPool();
     try {
@@ -537,7 +615,8 @@ class BookingModel {
                r.RoomName,
                c.CinemaName, c.Address,
                s.SeatRow, s.SeatNumber, s.SeatType,
-               v.Code AS VoucherCode
+               v.Code AS VoucherCode,
+               u.Email AS UserEmail, u.FullName AS UserFullName
         FROM   Tickets t
         JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
         JOIN   Movies    m  ON st.MovieID   = m.MovieID
@@ -545,6 +624,7 @@ class BookingModel {
         JOIN   Cinemas   c  ON r.CinemaID   = c.CinemaID
         JOIN   Seats     s  ON t.SeatID     = s.SeatID
         LEFT   JOIN Vouchers v ON t.VoucherID = v.VoucherID
+        JOIN   Users     u  ON t.UserID     = u.UserID
         WHERE  t.TicketID = @ticketId
       `);
 

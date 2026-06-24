@@ -2155,6 +2155,9 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
 });
 
+
+
+
 /* ══════════════════════════════════════
    NOTIFICATIONS (Socket.io)
 ══════════════════════════════════════ */
@@ -2584,7 +2587,6 @@ async function submitQuickSell() {
     btn.textContent = 'Thanh Toán & In Vé';
     btn.disabled = false;
 }
-
 
 
 /* ════════════════════════════════════════════════
