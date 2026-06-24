@@ -147,5 +147,13 @@ router.delete('/promotions/:id', adminCtrl.deletePromotion);
 // PATCH  /api/admin/promotions/:id/toggle  — Bật/tắt trạng thái
 router.patch('/promotions/:id/toggle', adminCtrl.togglePromotionActive);
 
+
+// ==========================================
+// SYSTEM SETTINGS
+// ==========================================
+const settingsController = require('../controllers/settingsController');
+router.get('/settings', settingsController.getAllSettings);
+router.put('/settings', settingsController.updateSettings);
+
 module.exports = router;
 

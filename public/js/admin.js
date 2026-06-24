@@ -616,8 +616,8 @@ function closeAddMovieModal() {
 function filterMovies(filter, btn) {
     document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-
-    if (filter === 'All') {
+    
+    if (filter === 'Tất cả') {
         filteredMovies = [...MOVIE_DATA];
     } else {
         filteredMovies = MOVIE_DATA.filter(m => m.Status.toUpperCase() === filter.toUpperCase());
@@ -737,6 +737,10 @@ function navigate(page, btn) {
 
     if (page === 'promotions') {
         loadPromotions();
+    }
+    
+    if (page === 'pricing' || page === 'settings') {
+        loadSettings();
     }
 }
 
@@ -1242,29 +1246,89 @@ async function saveVoucher() {
    STAFF MANAGEMENT
 ══════════════════════════ */
 let STAFF_DATA = [];
+let FILTERED_STAFF = [];
+let currentStaffRoleFilter = 'Tất cả';
+let currentStaffStatusFilter = 'Tất cả';
 
 async function loadStaff() {
     try {
         const res = await apiFetch('/api/admin/users');
         if (res.success) {
-            STAFF_DATA = res.data;
-            renderStaffTable();
+            STAFF_DATA = res.data || [];
+            updateStaffKPIs();
+            applyStaffFilters();
         }
     } catch (err) {
         console.error('Failed to load staff:', err);
     }
 }
 
+function updateStaffKPIs() {
+    const totalCount = STAFF_DATA.length;
+    const activeCount = STAFF_DATA.filter(u => u.IsActive).length;
+    const adminCount = STAFF_DATA.filter(u => u.RoleName === 'Admin').length;
+    const managerCount = STAFF_DATA.filter(u => u.RoleName === 'Manager').length;
+    const customerCount = STAFF_DATA.filter(u => u.RoleName === 'Customer').length;
+
+    const valNodes = document.querySelectorAll('.sh-stat .shs-val');
+    if (valNodes.length >= 2) {
+        valNodes[0].textContent = totalCount;
+        valNodes[1].textContent = activeCount;
+    }
+
+    const kpiCards = document.querySelectorAll('.staff-kpis .skpi-desc');
+    if (kpiCards.length >= 4) {
+        kpiCards[0].textContent = `${adminCount} người được ủy quyền`;
+        kpiCards[1].textContent = `${managerCount} người được ủy quyền`;
+        kpiCards[2].textContent = `0 người được ủy quyền`; 
+        kpiCards[3].textContent = `${customerCount} khách hàng`; 
+    }
+}
+
+function filterStaffByRole(role, btn) {
+    if (btn) {
+        document.querySelectorAll('.sf-pills .sf-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    currentStaffRoleFilter = role;
+    applyStaffFilters();
+}
+
+function filterStaffByStatus(status) {
+    currentStaffStatusFilter = status;
+    applyStaffFilters();
+}
+
+function applyStaffFilters() {
+    FILTERED_STAFF = STAFF_DATA.filter(u => {
+        let roleMatch = true;
+        if (currentStaffRoleFilter !== 'Tất cả') {
+            if (currentStaffRoleFilter === 'Admin') roleMatch = (u.RoleName === 'Admin');
+            if (currentStaffRoleFilter === 'Quản lý') roleMatch = (u.RoleName === 'Manager');
+            if (currentStaffRoleFilter === 'Khách hàng') roleMatch = (u.RoleName === 'Customer');
+            if (currentStaffRoleFilter === 'Nhân viên') roleMatch = (u.RoleName === 'Staff');
+        }
+        
+        let statusMatch = true;
+        if (currentStaffStatusFilter !== 'Tất cả') {
+            if (currentStaffStatusFilter === 'Active') statusMatch = u.IsActive === 1;
+            if (currentStaffStatusFilter === 'Banned' || currentStaffStatusFilter === 'Inactive') statusMatch = u.IsActive === 0;
+        }
+        return roleMatch && statusMatch;
+    });
+    renderStaffTable();
+}
+
 function renderStaffTable() {
     const body = document.getElementById('staffTableBody');
     if (!body) return;
-
-    if (STAFF_DATA.length === 0) {
+    
+    if (FILTERED_STAFF.length === 0) {
         body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px;">Không có dữ liệu nhân sự</td></tr>';
         return;
     }
 
-    body.innerHTML = STAFF_DATA.map(user => {
+    body.innerHTML = FILTERED_STAFF.map(user => {
         let roleClass = user.RoleName.toLowerCase() === 'admin' ? 'admin' : (user.RoleName.toLowerCase() === 'manager' ? 'manager' : 'staff');
 
         return `
@@ -1300,7 +1364,7 @@ function renderStaffTable() {
     `}).join('');
 
     const pgInfo = document.getElementById('staffPgInfo');
-    if (pgInfo) pgInfo.innerHTML = `Hiển thị <strong>${STAFF_DATA.length}</strong> nhân viên`;
+    if (pgInfo) pgInfo.innerHTML = `Hiển thị <strong>${FILTERED_STAFF.length}</strong> nhân viên`;
 }
 
 async function changeStaffRole(userId, newRole) {
@@ -2197,6 +2261,12 @@ function renderNotifs() {
     listEl.innerHTML = html;
 }
 
+/* Bridge function: showAdminToast → showToast */
+function showAdminToast(message, type = 'success') {
+    const title = type === 'error' ? '❌ Lỗi' : '✅ Thành công';
+    showToast(title, message);
+}
+
 function showToast(title, message) {
     const container = document.getElementById('adminToastContainer');
     const toast = document.createElement('div');
@@ -2273,16 +2343,16 @@ let qsState = {
 };
 
 function openQuickSellModal() {
-    document.getElementById('quickSellModal').classList.add('active');
-    document.getElementById('quickSellModalOverlay').classList.add('active');
+    document.getElementById('quickSellModal').classList.add('show');
+    document.getElementById('quickSellModalOverlay').classList.add('show');
     resetQsState();
     loadQsShowtimes();
     loadQsFnb();
 }
 
 function closeQuickSellModal() {
-    document.getElementById('quickSellModal').classList.remove('active');
-    document.getElementById('quickSellModalOverlay').classList.remove('active');
+    document.getElementById('quickSellModal').classList.remove('show');
+    document.getElementById('quickSellModalOverlay').classList.remove('show');
 }
 
 function resetQsState() {
@@ -2766,5 +2836,77 @@ async function togglePromo(id) {
         }
     } catch (err) {
         showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+
+
+
+/* ══════════════════════════
+   SETTINGS & PRICING
+══════════════════════════ */
+async function loadSettings() {
+    try {
+        const res = await apiFetch('/api/admin/settings');
+        if (res.success) {
+            const data = res.data;
+            if(document.getElementById('cfg_BASE_TICKET_PRICE')) document.getElementById('cfg_BASE_TICKET_PRICE').value = data.BASE_TICKET_PRICE || '';
+            if(document.getElementById('cfg_VIP_MULTIPLIER')) document.getElementById('cfg_VIP_MULTIPLIER').value = data.VIP_MULTIPLIER || '';
+            if(document.getElementById('cfg_COUPLE_MULTIPLIER')) document.getElementById('cfg_COUPLE_MULTIPLIER').value = data.COUPLE_MULTIPLIER || '';
+            
+            if(document.getElementById('cfg_HOTLINE')) document.getElementById('cfg_HOTLINE').value = data.HOTLINE || '';
+            if(document.getElementById('cfg_SUPPORT_EMAIL')) document.getElementById('cfg_SUPPORT_EMAIL').value = data.SUPPORT_EMAIL || '';
+            if(document.getElementById('cfg_MAINTENANCE_MODE')) document.getElementById('cfg_MAINTENANCE_MODE').checked = (data.MAINTENANCE_MODE === 'true');
+        }
+    } catch (e) {
+        console.error('Failed to load settings', e);
+    }
+}
+
+async function savePricingSettings() {
+    const basePrice = document.getElementById('cfg_BASE_TICKET_PRICE').value;
+    const vipM = document.getElementById('cfg_VIP_MULTIPLIER').value;
+    const coupleM = document.getElementById('cfg_COUPLE_MULTIPLIER').value;
+    
+    if(!basePrice || !vipM || !coupleM) return showToast('Lỗi', 'Vui lòng điền đủ thông tin');
+    
+    const payload = [
+        { key: 'BASE_TICKET_PRICE', value: basePrice },
+        { key: 'VIP_MULTIPLIER', value: vipM },
+        { key: 'COUPLE_MULTIPLIER', value: coupleM }
+    ];
+    
+    await updateSettingsApi(payload);
+}
+
+async function saveSystemSettings() {
+    const hotline = document.getElementById('cfg_HOTLINE').value;
+    const email = document.getElementById('cfg_SUPPORT_EMAIL').value;
+    const maint = document.getElementById('cfg_MAINTENANCE_MODE').checked;
+    
+    const payload = [
+        { key: 'HOTLINE', value: hotline },
+        { key: 'SUPPORT_EMAIL', value: email },
+        { key: 'MAINTENANCE_MODE', value: maint ? 'true' : 'false' }
+    ];
+    
+    await updateSettingsApi(payload);
+}
+
+async function updateSettingsApi(settingsArray) {
+    try {
+        const res = await apiFetch('/api/admin/settings', {
+            method: 'PUT',
+            body: JSON.stringify({ settings: settingsArray })
+        });
+        if (res.success) {
+            showToast('Thành công', res.message);
+            loadSettings();
+        } else {
+            showToast('Lỗi', res.message);
+        }
+    } catch (e) {
+        console.error('Failed to save settings', e);
+        showToast('Lỗi', 'Lỗi kết nối server');
     }
 }
