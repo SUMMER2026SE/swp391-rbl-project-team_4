@@ -20,7 +20,7 @@ exports.createMovie = async (req, res) => {
     console.log('[adminController] req.body:', req.body);
     console.log('[adminController] req.file:', req.file);
 
-    const { title, description, director, duration, ageRating, status, mainCast } = req.body || {};
+    const { title, description, director, duration, ageRating, status, mainCast, trailerURL } = req.body || {};
     if (!title || !duration) {
       return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc: title, duration.' });
     }
@@ -35,7 +35,8 @@ exports.createMovie = async (req, res) => {
       ageRating,
       posterURL,
       status,
-      mainCast
+      mainCast,
+      trailerURL
     };
 
     const movie = await AdminModel.createMovie(movieData);
@@ -84,6 +85,8 @@ exports.saveSeats = async (req, res) => {
 
 exports.updateMovie = async (req, res) => {
   try {
+    console.log('[adminController] updateMovie req.body:', req.body);
+    console.log('[adminController] updateMovie trailerURL:', req.body.trailerURL);
     const posterURL = req.file ? 'images/' + req.file.filename : undefined;
     const body = { ...req.body };
     if (posterURL) body.posterURL = posterURL;
@@ -392,6 +395,78 @@ exports.getCinemas = async (req, res) => {
   } catch (err) {
     console.error('[adminController] getCinemas:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.createCinema = async (req, res) => {
+  try {
+    const { name, address, city } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Tên rạp là bắt buộc.' });
+    const cinema = await AdminModel.createCinema({ name, address, city });
+    res.status(201).json({ success: true, message: 'Thêm rạp thành công!', data: cinema });
+  } catch (err) {
+    console.error('[adminController] createCinema:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.updateCinema = async (req, res) => {
+  try {
+    const { name, address, city } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Tên rạp là bắt buộc.' });
+    const cinema = await AdminModel.updateCinema(parseInt(req.params.id), { name, address, city });
+    if (!cinema) return res.status(404).json({ success: false, message: 'Không tìm thấy rạp.' });
+    res.json({ success: true, message: 'Cập nhật rạp thành công!', data: cinema });
+  } catch (err) {
+    console.error('[adminController] updateCinema:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.deleteCinema = async (req, res) => {
+  try {
+    await AdminModel.deleteCinema(parseInt(req.params.id));
+    res.json({ success: true, message: 'Xóa rạp thành công!' });
+  } catch (err) {
+    console.error('[adminController] deleteCinema:', err.message);
+    const status = err.message.includes('Không thể xóa') ? 400 : 500;
+    res.status(status).json({ success: false, message: err.message });
+  }
+};
+
+exports.createRoom = async (req, res) => {
+  try {
+    const { cinemaId, name } = req.body;
+    if (!cinemaId || !name) return res.status(400).json({ success: false, message: 'Vui lòng nhập đầy đủ thông tin.' });
+    const room = await AdminModel.createRoom({ cinemaId: parseInt(cinemaId), name, totalSeats: 0 });
+    res.status(201).json({ success: true, message: 'Thêm phòng thành công!', data: room });
+  } catch (err) {
+    console.error('[adminController] createRoom:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.updateRoom = async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Tên phòng là bắt buộc.' });
+    const room = await AdminModel.updateRoom(parseInt(req.params.id), { name });
+    if (!room) return res.status(404).json({ success: false, message: 'Không tìm thấy phòng.' });
+    res.json({ success: true, message: 'Cập nhật phòng thành công!', data: room });
+  } catch (err) {
+    console.error('[adminController] updateRoom:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.deleteRoom = async (req, res) => {
+  try {
+    await AdminModel.deleteRoom(parseInt(req.params.id));
+    res.json({ success: true, message: 'Xóa phòng thành công!' });
+  } catch (err) {
+    console.error('[adminController] deleteRoom:', err.message);
+    const status = err.message.includes('Không thể xóa') ? 400 : 500;
+    res.status(status).json({ success: false, message: err.message });
   }
 };
 
