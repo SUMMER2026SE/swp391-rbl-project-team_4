@@ -175,93 +175,99 @@
 
             <div id="now-showing" class="movie-tab-content active" style="display: block;">
                 <div class="movie-grid">
-                    <!-- Movie 1 -->
+                    <!-- Movie 1: Ma Xó -->
                     <div class="movie-card">
                         <div class="movie-poster">
                             <span class="age-badge age-T18">T18</span>
-                            <img src="images/movie_oppenheimer.png" alt="Oppenheimer">
+                            <img src="images/movie_maxo.png" alt="Ma Xó">
                             <div class="poster-overlay">
-                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html'">Chi
-                                    Tiết</button>
-                                <button class="btn-primary" onclick="window.location.href='booking.html'">ĐẶT
-                                    VÉ</button>
+                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=2'">Chi Tiết</button>
+                                <button class="btn-primary" onclick="app.handleBookingClick(2)">ĐẶT VÉ</button>
                             </div>
                         </div>
                         <div class="movie-info">
-                            <h3 class="movie-title">Oppenheimer</h3>
-                            <div class="movie-genre">Chính kịch | 180 phút</div>
-                            <div class="movie-rating">★ 8.6</div>
+                            <h3 class="movie-title">Ma Xó</h3>
+                            <div class="movie-genre">Kinh dị | 102 phút</div>
+                            <div class="movie-rating">★ 8.5</div>
                         </div>
                     </div>
-                    <!-- Movie 2 -->
-                    <div class="movie-card">
-                        <div class="movie-poster">
-                            <span class="age-badge age-T13">T13</span>
-                            <img src="images/movie_interstellar.png" alt="Interstellar: Rebirth">
-                            <div class="poster-overlay">
-                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html'">Chi
-                                    Tiết</button>
-                                <button class="btn-primary" onclick="window.location.href='booking.html'">ĐẶT
-                                    VÉ</button>
-                            </div>
-                        </div>
-                        <div class="movie-info">
-                            <h3 class="movie-title">Interstellar: Rebirth</h3>
-                            <div class="movie-genre">Viễn tưởng | 169 phút</div>
-                            <div class="movie-rating">★ 9.0</div>
-                        </div>
-                    </div>
-                    <!-- Movie 3 -->
+                    <!-- Movie 2: Ốc Mượn Hồn -->
                     <div class="movie-card">
                         <div class="movie-poster">
                             <span class="age-badge age-T16">T16</span>
-                            <img src="images/movie_lastnoir.png" alt="The Last Noir">
+                            <img src="images/movie_ocmuonhon.png" alt="Ốc Mượn Hồn">
                             <div class="poster-overlay">
-                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html'">Chi
-                                    Tiết</button>
-                                <button class="btn-primary" onclick="window.location.href='booking.html'">ĐẶT
-                                    VÉ</button>
+                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=1'">Chi Tiết</button>
+                                <button class="btn-primary" onclick="app.handleBookingClick(1)">ĐẶT VÉ</button>
                             </div>
                         </div>
                         <div class="movie-info">
-                            <h3 class="movie-title">The Last Noir</h3>
-                            <div class="movie-genre">Hình sự | 128 phút</div>
-                            <div class="movie-rating">★ 7.8</div>
+                            <h3 class="movie-title">Ốc Mượn Hồn</h3>
+                            <div class="movie-genre">Kinh dị, Tâm lý | 109 phút</div>
+                            <div class="movie-rating">★ 8.5</div>
                         </div>
                     </div>
-                    <!-- Movie 4 -->
+                    <!-- Movie 3: Dưới Bóng Điện Hạ -->
+                    <div class="movie-card">
+                        <div class="movie-poster">
+                            <span class="age-badge age-T16">T16</span>
+                            <img src="images/movie_duoibongdienha.png" alt="Dưới Bóng Điện Hạ">
+                            <div class="poster-overlay">
+                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=3'">Chi Tiết</button>
+                                <button class="btn-primary" onclick="app.handleBookingClick(3)">ĐẶT VÉ</button>
+                            </div>
+                        </div>
+                        <div class="movie-info">
+                            <h3 class="movie-title">Dưới Bóng Điện Hạ</h3>
+                            <div class="movie-genre">Chính kịch, Tâm lý | 117 phút</div>
+                            <div class="movie-rating">★ 8.5</div>
+                        </div>
+                    </div>
+                    <!-- Movie 4: Siêu Quậy Marsupilami -->
                     <div class="movie-card">
                         <div class="movie-poster">
                             <span class="age-badge age-P">P</span>
-                            <img src="images/movie_odyssey.png" alt="Magic Odyssey">
+                            <img src="images/movie_marsupilami.png" alt="Siêu Quậy Marsupilami">
                             <div class="poster-overlay">
-                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html'">Chi
-                                    Tiết</button>
-                                <button class="btn-primary" onclick="window.location.href='booking.html'">ĐẶT
-                                    VÉ</button>
+                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=4'">Chi Tiết</button>
+                                <button class="btn-primary" onclick="app.handleBookingClick(4)">ĐẶT VÉ</button>
                             </div>
                         </div>
                         <div class="movie-info">
-                            <h3 class="movie-title">Magic Odyssey</h3>
-                            <div class="movie-genre">Phiêu lưu | 142 phút</div>
-                            <div class="movie-rating">★ 8.2</div>
+                            <h3 class="movie-title">Siêu Quậy Marsupilami</h3>
+                            <div class="movie-genre">Hành động, Hài hước | 99 phút</div>
+                            <div class="movie-rating">★ 8.5</div>
                         </div>
                     </div>
-                    <!-- Movie 5 -->
+                    <!-- Movie 5: John Wick: Chapter 4 -->
                     <div class="movie-card">
                         <div class="movie-poster">
-                            <span class="age-badge age-T16">T16</span>
-                            <img src="images/movie_velocity.png" alt="Velocity X">
+                            <span class="age-badge age-T18">T18</span>
+                            <img src="images/movie_john_wick_4.png" alt="John Wick: Chapter 4">
                             <div class="poster-overlay">
-                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html'">Chi
-                                    Tiết</button>
-                                <button class="btn-primary" onclick="window.location.href='booking.html'">ĐẶT
-                                    VÉ</button>
+                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=5'">Chi Tiết</button>
+                                <button class="btn-primary" onclick="app.handleBookingClick(5)">ĐẶT VÉ</button>
                             </div>
                         </div>
                         <div class="movie-info">
-                            <h3 class="movie-title">Velocity X</h3>
-                            <div class="movie-genre">Hành động | 135 phút</div>
+                            <h3 class="movie-title">John Wick: Chapter 4</h3>
+                            <div class="movie-genre">Hành động | 169 phút</div>
+                            <div class="movie-rating">★ 8.5</div>
+                        </div>
+                    </div>
+                    <!-- Movie 6: Doraemon Movie 45 -->
+                    <div class="movie-card">
+                        <div class="movie-poster">
+                            <span class="age-badge age-P">P</span>
+                            <img src="images/doraemon_sea.png" alt="Doraemon Movie 45">
+                            <div class="poster-overlay">
+                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=6'">Chi Tiết</button>
+                                <button class="btn-primary" onclick="app.handleBookingClick(6)">ĐẶT VÉ</button>
+                            </div>
+                        </div>
+                        <div class="movie-info">
+                            <h3 class="movie-title">Doraemon Movie 45 (2026): Nobita Và Lâu Đài Dưới Đáy Biển</h3>
+                            <div class="movie-genre">Hoạt hình | 101 phút</div>
                             <div class="movie-rating">★ 8.5</div>
                         </div>
                     </div>
@@ -271,46 +277,49 @@
             <!-- Tab Sắp Chiếu -->
             <div id="coming-soon" class="movie-tab-content" style="display: none;">
                 <div class="movie-grid">
+                    <!-- Movie 1: Câu Chuyện Đồ Chơi 5 -->
                     <div class="movie-card">
                         <div class="movie-poster">
                             <span class="coming-badge">SẮP CHIẾU</span>
-                            <img src="images/movie_odyssey.png" alt="Kingdom of Gold">
+                            <img src="images/movie_toy_story_5.png" alt="Câu Chuyện Đồ Chơi 5">
                             <div class="poster-overlay">
-                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html'">Chi Tiết</button>
+                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=10'">Chi Tiết</button>
                             </div>
                         </div>
                         <div class="movie-info">
-                            <h3 class="movie-title">Kingdom of Gold</h3>
-                            <div class="movie-genre">Sử thi | 155 phút</div>
-                            <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">15/06/2024</div>
+                            <h3 class="movie-title">Câu Chuyện Đồ Chơi 5</h3>
+                            <div class="movie-genre">Hoạt hình | 102 phút</div>
+                            <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">16/06/2026</div>
                         </div>
                     </div>
+                    <!-- Movie 2: Trường Hè, 2001 -->
                     <div class="movie-card">
                         <div class="movie-poster">
                             <span class="coming-badge">SẮP CHIẾU</span>
-                            <img src="images/movie_velocity.png" alt="Neon Genesis">
+                            <img src="images/movie_truong_he_2001.png" alt="Trường Hè, 2001">
                             <div class="poster-overlay">
-                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html'">Chi Tiết</button>
+                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=11'">Chi Tiết</button>
                             </div>
                         </div>
                         <div class="movie-info">
-                            <h3 class="movie-title">Neon Genesis</h3>
-                            <div class="movie-genre">Viễn tưởng | 145 phút</div>
-                            <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">22/06/2024</div>
+                            <h3 class="movie-title">Trường Hè, 2001</h3>
+                            <div class="movie-genre">Chính kịch | 110 phút</div>
+                            <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">22/06/2026</div>
                         </div>
                     </div>
+                    <!-- Movie 3: Ám Ảnh -->
                     <div class="movie-card">
                         <div class="movie-poster">
                             <span class="coming-badge">SẮP CHIẾU</span>
-                            <img src="images/movie_lastnoir.png" alt="The Director's Cut">
+                            <img src="images/movie_amanh.png" alt="Ám Ảnh">
                             <div class="poster-overlay">
-                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html'">Chi Tiết</button>
+                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=12'">Chi Tiết</button>
                             </div>
                         </div>
                         <div class="movie-info">
-                            <h3 class="movie-title">The Director's Cut</h3>
-                            <div class="movie-genre">Tâm lý | 138 phút</div>
-                            <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">01/07/2024</div>
+                            <h3 class="movie-title">Ám Ảnh</h3>
+                            <div class="movie-genre">Kinh dị | 109 phút</div>
+                            <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">01/07/2026</div>
                         </div>
                     </div>
                 </div>
@@ -319,19 +328,36 @@
             <!-- Tab IMAX -->
             <div id="imax" class="movie-tab-content" style="display: none;">
                 <div class="movie-grid">
+                    <!-- Movie 1: Ma Xó (IMAX) -->
                     <div class="movie-card">
                         <div class="movie-poster">
                             <span class="age-badge age-T18">T18</span>
-                            <img src="images/dune_poster.png" alt="Dune IMAX">
+                            <img src="images/movie_maxo.png" alt="Ma Xó (IMAX)">
                             <div class="poster-overlay">
-                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html'">Chi Tiết</button>
-                                <button class="btn-primary" onclick="window.location.href='booking.html'">ĐẶT VÉ</button>
+                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=2'">Chi Tiết</button>
+                                <button class="btn-primary" onclick="app.handleBookingClick(2)">ĐẶT VÉ</button>
                             </div>
                         </div>
                         <div class="movie-info">
-                            <h3 class="movie-title">Dune: Part Two (IMAX)</h3>
-                            <div class="movie-genre">Viễn tưởng | 166 phút</div>
-                            <div class="movie-rating">★ 9.5</div>
+                            <h3 class="movie-title">Ma Xó (IMAX)</h3>
+                            <div class="movie-genre">Kinh dị | 102 phút</div>
+                            <div class="movie-rating">★ 8.5</div>
+                        </div>
+                    </div>
+                    <!-- Movie 2: Lầu Chú Hỏa (IMAX) -->
+                    <div class="movie-card">
+                        <div class="movie-poster">
+                            <span class="age-badge age-T18">T18</span>
+                            <img src="images/movie_lau_chu_hoa.png" alt="Lầu Chú Hỏa (IMAX)">
+                            <div class="poster-overlay">
+                                <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=8'">Chi Tiết</button>
+                                <button class="btn-primary" onclick="app.handleBookingClick(8)">ĐẶT VÉ</button>
+                            </div>
+                        </div>
+                        <div class="movie-info">
+                            <h3 class="movie-title">Lầu Chú Hỏa (IMAX)</h3>
+                            <div class="movie-genre">Kinh dị | 94 phút</div>
+                            <div class="movie-rating">★ 8.5</div>
                         </div>
                     </div>
                 </div>

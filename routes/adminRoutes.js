@@ -128,7 +128,6 @@ router.get('/stats/revenue-chart', adminCtrl.getRevenueChartData);
 // GET    /api/admin/stats/live-rooms      — Trạng thái phòng chiếu live
 router.get('/stats/live-rooms', adminCtrl.getLiveRooms);
 
-
 // ─── Promotions Management ──────────────────────────────────
 // GET    /api/admin/promotions             — Danh sách tất cả khuyến mãi (admin)
 router.get('/promotions', adminCtrl.getAllPromotions);
