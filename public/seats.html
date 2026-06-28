@@ -300,171 +300,186 @@
 
         /* Base Seat Design */
         .seat {
-            width: 36px;
-            height: 34px;
-            border-radius: 8px 8px 4px 4px;
+            width: 38px;
+            height: 36px;
+            border-radius: 8px 8px 6px 6px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 800;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255,255,255,0.07);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.08);
             position: relative;
             flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
         }
         /* Chair headrest */
         .seat::before {
             content: '';
             position: absolute;
             top: 2px;
-            left: 4px;
-            right: 4px;
-            height: 8px;
-            background: rgba(255,255,255,0.12);
-            border-radius: 2px;
+            left: 5px;
+            right: 5px;
+            height: 9px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 3px;
             transition: all 0.2s;
         }
         /* Chair cushion */
         .seat::after {
             content: '';
             position: absolute;
-            bottom: 3px;
-            left: 4px;
-            right: 4px;
-            top: 13px;
-            background: rgba(0,0,0,0.25);
-            border-radius: 2px;
-            border: 1px solid rgba(255,255,255,0.05);
+            bottom: 4px;
+            left: 5px;
+            right: 5px;
+            top: 14px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.04);
             transition: all 0.2s;
         }
 
         /* Normal Seat */
         .seat.normal {
-            background: linear-gradient(180deg, #5a6578, #3b424e);
+            background: linear-gradient(180deg, #475569, #1e293b);
             color: #cbd5e1;
         }
         .seat.normal:hover:not(.booked):not(.locked) {
-            background: linear-gradient(180deg, #7c8ba1, #4f5869);
-            transform: translateY(-3px) scale(1.08);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+            background: linear-gradient(180deg, #64748b, #334155);
+            transform: translateY(-4px) scale(1.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6), 0 0 12px rgba(100, 116, 139, 0.3);
             color: #fff;
+            border-color: rgba(255,255,255,0.2);
         }
         .seat.normal:hover::before {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.28);
         }
 
         /* VIP Seat */
         .seat.vip {
-            background: linear-gradient(180deg, #c2610d, #8f4305);
+            background: linear-gradient(180deg, #e28a18, #8a4805);
             color: #fef08a;
-            border-color: rgba(252, 211, 77, 0.25);
+            border-color: rgba(252, 211, 77, 0.3);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4), 0 0 4px rgba(245, 158, 11, 0.15);
         }
         .seat.vip:hover:not(.booked):not(.locked) {
-            background: linear-gradient(180deg, #e07416, #aa5209);
-            transform: translateY(-3px) scale(1.08);
-            box-shadow: 0 6px 14px rgba(180, 83, 9, 0.55);
+            background: linear-gradient(180deg, #f59e0b, #b45309);
+            transform: translateY(-4px) scale(1.1);
+            box-shadow: 0 8px 20px rgba(180, 83, 9, 0.6), 0 0 15px rgba(245, 158, 11, 0.5);
             color: #fff;
+            border-color: rgba(252, 211, 77, 0.5);
         }
         .seat.vip::before {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
         }
 
         /* Couple Seat */
         .seat.couple {
-            width: 78px;
-            height: 34px;
-            border-radius: 9px 9px 4px 4px;
-            background: linear-gradient(180deg, #b81f5d, #7d0e3d);
+            width: 82px;
+            height: 36px;
+            border-radius: 9px 9px 6px 6px;
+            background: linear-gradient(180deg, #db2777, #7d0e3d);
             color: #fce7f3;
-            border-color: rgba(251, 207, 232, 0.25);
-            font-size: 0.65rem;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            border-color: rgba(251, 207, 232, 0.3);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 5px rgba(219, 39, 119, 0.15);
         }
         .seat.couple::before {
             content: '♥';
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             position: absolute;
             top: 2px;
             left: 50%;
             transform: translateX(-50%);
-            width: 14px;
-            height: 14px;
-            background: rgba(255,255,255,0.18);
+            width: 15px;
+            height: 15px;
+            background: rgba(255,255,255,0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #f472b6;
+            color: #fb7185;
+            transition: all 0.2s;
         }
         .seat.couple::after {
             content: '';
             position: absolute;
-            bottom: 3px;
-            left: 6px;
-            right: 6px;
+            bottom: 4px;
+            left: 7px;
+            right: 7px;
             top: 15px;
-            background: rgba(0,0,0,0.25);
-            border-radius: 3px;
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
         }
         .seat.couple:hover:not(.booked):not(.locked) {
-            background: linear-gradient(180deg, #d82c73, #9d174d);
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 6px 16px rgba(157, 23, 77, 0.65);
+            background: linear-gradient(180deg, #ec4899, #9d174d);
+            transform: translateY(-4px) scale(1.06);
+            box-shadow: 0 8px 24px rgba(157, 23, 77, 0.7), 0 0 15px rgba(219, 39, 119, 0.5);
             color: #fff;
+            border-color: rgba(251, 207, 232, 0.5);
+        }
+        .seat.couple:hover::before {
+            background: rgba(255,255,255,0.3);
+            color: #f43f5e;
         }
 
-        /* Selected */
+        /* Selected Seat */
         .seat.selected {
-            background: linear-gradient(180deg, #ff1a26, #cc000a) !important;
+            background: linear-gradient(180deg, #ff2a36, #b90610) !important;
             color: #fff !important;
-            border-color: rgba(255,255,255,0.35) !important;
-            transform: translateY(-3px) scale(1.08) !important;
-            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.65) !important;
+            border-color: rgba(255,255,255,0.45) !important;
+            transform: translateY(-4px) scale(1.1) !important;
+            box-shadow: 0 8px 24px rgba(229, 9, 20, 0.7), 0 0 15px rgba(229, 9, 20, 0.6) !important;
         }
         .seat.selected::before {
-            background: rgba(255,255,255,0.35) !important;
+            background: rgba(255,255,255,0.4) !important;
         }
 
-        /* Booked */
+        /* Booked Seat */
         .seat.booked {
-            background: var(--seat-booked) !important;
-            color: #384252 !important;
+            background: linear-gradient(180deg, #1e293b, #0f172a) !important;
+            color: #334155 !important;
             cursor: not-allowed;
             border-color: rgba(255,255,255,0.02) !important;
-            opacity: 0.35;
+            opacity: 0.25;
             transform: none !important;
-            box-shadow: none !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6) !important;
         }
         .seat.booked::before, .seat.booked::after { display: none !important; }
 
-        /* Locked by others */
+        /* Locked Seat */
         .seat.locked {
-            background: rgba(37, 43, 51, 0.8) !important;
+            background: repeating-linear-gradient(
+                45deg,
+                #1a1d24,
+                #1a1d24 4px,
+                #2d3540 4px,
+                #2d3540 8px
+            ) !important;
             color: #4b5563 !important;
             cursor: not-allowed;
             border: 1px dashed #ef4444 !important;
-            opacity: 0.7;
+            opacity: 0.6;
         }
 
         /* Aisle gap in row */
-        .aisle-gap { width: 22px; flex-shrink: 0; }
+        .aisle-gap { width: 24px; flex-shrink: 0; }
 
         /* ─── Legend ─── */
         .legend {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 24px;
             justify-content: center;
-            background: rgba(255,255,255,0.02);
-            padding: 16px 28px;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            padding: 18px 36px;
             border-radius: 40px;
             border: 1px solid var(--border);
-            max-width: 720px;
+            max-width: 800px;
             margin: 0 auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .legend-item {
             display: flex;
@@ -481,11 +496,37 @@
             flex-shrink: 0;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .legend-box.normal { background: linear-gradient(180deg, #5a6578, #3b424e); }
-        .legend-box.vip { background: linear-gradient(180deg, #c2610d, #8f4305); }
-        .legend-box.couple { background: linear-gradient(180deg, #b81f5d, #7d0e3d); width: 56px; }
-        .legend-box.selected { background: linear-gradient(180deg, #ff1a26, #cc000a); }
-        .legend-box.booked { background: var(--seat-booked); opacity: 0.35; border: 1px solid #252a30; }
+        .legend-box.normal { background: linear-gradient(180deg, #475569, #1e293b); }
+        .legend-box.vip { background: linear-gradient(180deg, #e28a18, #8a4805); }
+        .legend-box.couple { background: linear-gradient(180deg, #db2777, #7d0e3d); width: 56px; }
+        .legend-box.selected { background: linear-gradient(180deg, #ff2a36, #b90610); }
+        .legend-box.booked { background: #1e293b; opacity: 0.25; border: 1px solid #252a30; }
+
+        /* Row plate labels */
+        .row-label {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-align: center;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            transition: all 0.3s;
+        }
+        .seat-row:hover .row-label {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
 
         /* ─── Sidebar Summary ─── */
         .sidebar-summary {
@@ -677,6 +718,197 @@
 
         .error-state svg { color: var(--primary); }
         .error-state h3 { color: var(--text-muted); }
+
+        /* ─── Smart Seat Filter Bar ─── */
+        .seat-filter-container {
+            max-width: 720px;
+            margin: 0 auto 24px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+        }
+        .seat-filter-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            text-align: center;
+        }
+        .seat-filter-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        @media (max-width: 600px) {
+            .seat-filter-options {
+                grid-template-columns: 1fr;
+            }
+        }
+        .filter-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .filter-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: transparent;
+            transition: background 0.3s;
+        }
+        .filter-card:hover {
+            background: var(--bg-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        .filter-card.active {
+            background: rgba(229, 9, 20, 0.06);
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.15);
+        }
+        .filter-card.active::before {
+            background: var(--primary);
+        }
+        .filter-icon {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .filter-card.active .filter-icon {
+            background: rgba(229, 9, 20, 0.15);
+            color: var(--primary);
+        }
+        .filter-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .filter-label {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .filter-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .group-size-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            animation: fadeIn 0.3s ease;
+        }
+        .qty-btn-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px 8px;
+        }
+        .qty-btn-group button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .qty-btn-group button:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .qty-btn-group span {
+            font-size: 1rem;
+            font-weight: 800;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* Hiệu ứng làm mờ ghế không phù hợp */
+        .seat.filtered-out {
+            opacity: 0.15 !important;
+            filter: grayscale(80%) blur(0.5px);
+            pointer-events: none;
+        }
+
+        /* ─── Hiệu ứng động khi chọn ghế ─── */
+        @keyframes pulseAvailable {
+            0% {
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                border-color: rgba(255, 255, 255, 0.07);
+            }
+            50% {
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
+                border-color: rgba(255, 255, 255, 0.3);
+                transform: scale(1.03);
+            }
+            100% {
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                border-color: rgba(255, 255, 255, 0.07);
+            }
+        }
+        
+        /* Hiệu ứng thở nhẹ cho tất cả ghế trống khi đang có ít nhất 1 ghế được chọn */
+        .selection-active .seat:not(.selected):not(.booked):not(.locked):not(.filtered-out) {
+            animation: pulseAvailable 2s infinite ease-in-out;
+        }
+
+        /* Icon ngôi sao cho ghế VIP */
+        .seat-star {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 0.55rem;
+            color: #fbbf24;
+            z-index: 10;
+            text-shadow: 0 0 2px rgba(0,0,0,0.8);
+            line-height: 1;
+        }
+        .seat.vip .seat-num {
+            position: relative;
+            z-index: 10;
+            margin-top: 5px;
+        }
+
+        /* Vị trí nhãn ghế đôi tránh đè hình trái tim */
+        .couple-label {
+            position: relative;
+            z-index: 5;
+            margin-top: 10px;
+            font-size: 0.6rem;
+            letter-spacing: 0.5px;
+            font-weight: 800;
+        }
     </style>
     <link rel="stylesheet" href="css/chatbot.css">
 </head>
@@ -750,6 +982,44 @@
                 <div class="screen-label">Màn Hình</div>
             </div>
 
+            <!-- Bộ lọc ghế thông minh -->
+            <div class="seat-filter-container">
+                <div class="seat-filter-title">Bộ lọc & Chọn nhanh ghế</div>
+                <div class="seat-filter-options">
+                    <div class="filter-card" id="filterSingle" onclick="toggleSeatFilter('single')">
+                        <div class="filter-icon">👤</div>
+                        <div class="filter-info">
+                            <span class="filter-label">Ghế 1 người</span>
+                            <span class="filter-desc">Ưu tiên ghế VIP trung tâm</span>
+                        </div>
+                    </div>
+                    <div class="filter-card" id="filterCouple" onclick="toggleSeatFilter('couple')">
+                        <div class="filter-icon">💖</div>
+                        <div class="filter-info">
+                            <span class="filter-label">Ghế 2 người</span>
+                            <span class="filter-desc">Ưu tiên ghế đôi / cặp VIP</span>
+                        </div>
+                    </div>
+                    <div class="filter-card" id="filterGroup" onclick="toggleSeatFilter('group')">
+                        <div class="filter-icon">👥</div>
+                        <div class="filter-info">
+                            <span class="filter-label">Ghế nhóm</span>
+                            <span class="filter-desc">Dãy ghế liền kề nhau</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chọn số lượng ghế cho nhóm -->
+                <div class="group-size-selector" id="groupSizeSelector" style="display: none;">
+                    <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Số lượng ghế nhóm:</span>
+                    <div class="qty-btn-group">
+                        <button onclick="changeGroupSize(-1)">-</button>
+                        <span id="groupSizeValue">3</span>
+                        <button onclick="changeGroupSize(1)">+</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Seat availability -->
             <div id="seatAvailability" style="text-align:center;margin-bottom:20px;font-size:0.85rem;color:var(--text-muted);"></div>
 
@@ -767,7 +1037,7 @@
             </div>
 
             <!-- Seat Map Viewport -->
-            <div id="seatMapViewport" style="overflow-x: auto; overflow-y: hidden; border: 1px solid var(--border); border-radius: 12px; padding: 40px 16px; margin-bottom: 30px; background: rgba(0,0,0,0.15); display: flex; justify-content: center; min-height: 400px; align-items: flex-start; scrollbar-width: thin;">
+            <div id="seatMapViewport" style="overflow-x: auto; overflow-y: hidden; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 50px 24px; margin-bottom: 30px; background: radial-gradient(circle at 50% 10%, #15191e 0%, #080a0c 90%); display: flex; justify-content: center; min-height: 400px; align-items: flex-start; scrollbar-width: thin; box-shadow: inset 0 0 30px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.4);">
                 <div class="seat-map" id="seatMapContainer" style="transform-origin: center top; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);">
                     <div class="loading-state">
                         <div class="spinner"></div>
@@ -898,6 +1168,8 @@
         let currentZoom = 1.0;
         let countdownInterval = null;
         let secondsLeft = 600; // 10 minutes (đồng bộ với Socket.IO)
+        let activeSeatFilter = null;     // 'single' | 'couple' | 'group' | null
+        let groupSize = 3;               // Default size for group seats
 
         // ──────────────────────────────────────────────
         //  Zoom & Timer & Tooltip Helpers
@@ -977,6 +1249,476 @@
                 const tooltip = document.getElementById('seatTooltip');
                 if (tooltip) tooltip.style.display = 'none';
             });
+        }
+
+        // ──────────────────────────────────────────────
+        //  Smart Seat Filtering & Recommendation Logic
+        // ──────────────────────────────────────────────
+        function toggleSeatFilter(type) {
+            // Remove active classes
+            document.querySelectorAll('.filter-card').forEach(card => card.classList.remove('active'));
+            const groupSelector = document.getElementById('groupSizeSelector');
+            if (groupSelector) groupSelector.style.display = 'none';
+
+            if (activeSeatFilter === type) {
+                // Deactivate filter
+                activeSeatFilter = null;
+                clearVisualSeatFiltering();
+                showToast('Đã tắt bộ lọc ghế.');
+            } else {
+                activeSeatFilter = type;
+                const card = document.getElementById(`filter${type.charAt(0).toUpperCase() + type.slice(1)}`);
+                if (card) card.classList.add('active');
+
+                if (type === 'group') {
+                    if (groupSelector) groupSelector.style.display = 'flex';
+                }
+
+                // Auto-select optimal seats based on new filter
+                autoSelectOptimalSeats();
+                // Apply visual dimming
+                applyVisualSeatFiltering();
+            }
+        }
+
+        function changeGroupSize(delta) {
+            const newVal = groupSize + delta;
+            if (newVal >= 3 && newVal <= 8) {
+                groupSize = newVal;
+                const displayEl = document.getElementById('groupSizeValue');
+                if (displayEl) displayEl.textContent = groupSize;
+
+                if (activeSeatFilter === 'group') {
+                    autoSelectOptimalSeats();
+                    applyVisualSeatFiltering();
+                }
+            } else if (newVal > 8) {
+                showToast('Tối đa 8 ghế mỗi lần đặt!', 'warn');
+            }
+        }
+
+        function isSeatAvailable(seat) {
+            if (!seat) return false;
+            if (seat.SeatStatus === 'booked' || seat.SeatStatus === 'locked') return false;
+            if (lockedByOthers.has(seat.SeatID)) return false;
+            return true;
+        }
+
+        function clearSelectedSeats() {
+            if (selectedSeats.size > 0) {
+                selectedSeats.forEach(seatId => {
+                    const el = getSeatEl(seatId);
+                    if (el) el.classList.remove('selected');
+                    if (socket) socket.emit('releaseSeat', { showtimeId, seatId });
+                });
+                selectedSeats.clear();
+            }
+            stopTimer();
+            updateSummary();
+        }
+
+        function getSeatRowDataMap() {
+            const rows = {};
+            seatsList.forEach(seat => {
+                if (!rows[seat.SeatRow]) rows[seat.SeatRow] = [];
+                rows[seat.SeatRow].push(seat);
+            });
+            Object.keys(rows).forEach(row => {
+                rows[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
+            });
+            return rows;
+        }
+
+        function applyVisualSeatFiltering() {
+            if (!activeSeatFilter) {
+                clearVisualSeatFiltering();
+                return;
+            }
+
+            const coupleRows = getCoupleRows();
+            const rows = getSeatRowDataMap();
+            const sortedRowKeys = Object.keys(rows).sort();
+
+            // First, find all valid seat IDs/pairs for the active filter
+            const validSeatIds = new Set();
+            const validCouplePairs = new Set(); // Key format: "row_minNum-maxNum"
+
+            if (activeSeatFilter === 'single') {
+                seatsList.forEach(s => {
+                    if (!coupleRows.has(s.SeatRow) && isSeatAvailable(s)) {
+                        validSeatIds.add(s.SeatID);
+                    }
+                });
+            } else if (activeSeatFilter === 'couple') {
+                // 1. Physical Couple seats
+                sortedRowKeys.forEach(row => {
+                    if (coupleRows.has(row)) {
+                        const rowSeats = rows[row];
+                        for (let i = 0; i < rowSeats.length; i += 2) {
+                            const s1 = rowSeats[i];
+                            const s2 = rowSeats[i+1];
+                            if (s1 && s2 && isSeatAvailable(s1) && isSeatAvailable(s2)) {
+                                validSeatIds.add(s1.SeatID);
+                                validSeatIds.add(s2.SeatID);
+                                validCouplePairs.add(`${row}_${Math.min(s1.SeatNumber, s2.SeatNumber)}-${Math.max(s1.SeatNumber, s2.SeatNumber)}`);
+                            }
+                        }
+                    } else {
+                        // 2. Adjacent pairs in normal rows
+                        const rowSeats = rows[row];
+                        const total = rowSeats.length;
+                        const half = Math.floor(total / 2);
+                        for (let i = 0; i < rowSeats.length - 1; i++) {
+                            // Can't cross aisle gap
+                            if (total > 4 && i === half - 1) continue;
+                            const s1 = rowSeats[i];
+                            const s2 = rowSeats[i+1];
+                            if (isSeatAvailable(s1) && isSeatAvailable(s2)) {
+                                validSeatIds.add(s1.SeatID);
+                                validSeatIds.add(s2.SeatID);
+                            }
+                        }
+                    }
+                });
+            } else if (activeSeatFilter === 'group') {
+                // Find blocks of groupSize contiguous seats in normal/VIP rows or couple rows
+                sortedRowKeys.forEach(row => {
+                    const rowSeats = rows[row];
+                    const total = rowSeats.length;
+                    const half = Math.floor(total / 2);
+                    const isCoupleRow = coupleRows.has(row);
+
+                    if (isCoupleRow) {
+                        // For couple rows, groupSize is in number of individual seats.
+                        // Let's find contiguous couple pairs.
+                        // Each couple seat consists of 2 seats. We need enough couple seats to fit groupSize.
+                        const requiredCouplePairs = Math.ceil(groupSize / 2);
+                        const couplePairsInRow = [];
+                        for (let i = 0; i < rowSeats.length; i += 2) {
+                            const s1 = rowSeats[i];
+                            const s2 = rowSeats[i+1];
+                            if (s1 && s2) {
+                                couplePairsInRow.push({ s1, s2, available: isSeatAvailable(s1) && isSeatAvailable(s2) });
+                            }
+                        }
+
+                        for (let i = 0; i <= couplePairsInRow.length - requiredCouplePairs; i++) {
+                            let validBlock = true;
+                            // Check if required pairs are all available and contiguous
+                            for (let j = 0; j < requiredCouplePairs; j++) {
+                                if (!couplePairsInRow[i + j].available) {
+                                    validBlock = false;
+                                    break;
+                                }
+                            }
+                            if (validBlock) {
+                                for (let j = 0; j < requiredCouplePairs; j++) {
+                                    validSeatIds.add(couplePairsInRow[i + j].s1.SeatID);
+                                    validSeatIds.add(couplePairsInRow[i + j].s2.SeatID);
+                                    validCouplePairs.add(`${row}_${Math.min(couplePairsInRow[i + j].s1.SeatNumber, couplePairsInRow[i + j].s2.SeatNumber)}-${Math.max(couplePairsInRow[i + j].s1.SeatNumber, couplePairsInRow[i + j].s2.SeatNumber)}`);
+                                }
+                            }
+                        }
+                    } else {
+                        // Normal rows
+                        for (let i = 0; i <= rowSeats.length - groupSize; i++) {
+                            // Check aisle gap crossover
+                            if (total > 4 && i < half && (i + groupSize - 1) >= half) {
+                                continue;
+                            }
+                            let validBlock = true;
+                            for (let j = 0; j < groupSize; j++) {
+                                if (!isSeatAvailable(rowSeats[i + j])) {
+                                    validBlock = false;
+                                    break;
+                                }
+                            }
+                            if (validBlock) {
+                                for (let j = 0; j < groupSize; j++) {
+                                    validSeatIds.add(rowSeats[i + j].SeatID);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Now, apply the `filtered-out` class to elements that are not in the valid sets
+            // 1. Single seats
+            document.querySelectorAll('.seat:not(.couple)').forEach(el => {
+                const seatId = parseInt(el.getAttribute('data-id'));
+                if (validSeatIds.has(seatId)) {
+                    el.classList.remove('filtered-out');
+                } else {
+                    el.classList.add('filtered-out');
+                }
+            });
+
+            // 2. Couple seats
+            document.querySelectorAll('.seat.couple').forEach(el => {
+                const id1 = parseInt(el.getAttribute('data-id-1'));
+                const id2 = parseInt(el.getAttribute('data-id-2'));
+                
+                // Let's check if both seat IDs are in validSeatIds
+                if (validSeatIds.has(id1) && validSeatIds.has(id2)) {
+                    el.classList.remove('filtered-out');
+                } else {
+                    el.classList.add('filtered-out');
+                }
+            });
+        }
+
+        function clearVisualSeatFiltering() {
+            document.querySelectorAll('.seat').forEach(el => {
+                el.classList.remove('filtered-out');
+            });
+        }
+
+        function autoSelectOptimalSeats() {
+            // Clear current selection first
+            clearSelectedSeats();
+
+            if (!activeSeatFilter) return;
+
+            const coupleRows = getCoupleRows();
+            const rows = getSeatRowDataMap();
+            const sortedRowKeys = Object.keys(rows).sort();
+            const midRowIdx = (sortedRowKeys.length - 1) / 2;
+
+            // Compute row centers
+            const rowCenters = {};
+            sortedRowKeys.forEach(row => {
+                const nums = rows[row].map(s => s.SeatNumber);
+                const minNum = Math.min(...nums);
+                const maxNum = Math.max(...nums);
+                rowCenters[row] = (minNum + maxNum) / 2;
+            });
+
+            if (activeSeatFilter === 'single') {
+                // Find all available single seats and rank them
+                const candidates = [];
+                seatsList.forEach(seat => {
+                    if (!coupleRows.has(seat.SeatRow) && isSeatAvailable(seat)) {
+                        // Calculate score
+                        const isVip = seat.SeatType === 'VIP';
+                        const typeScore = isVip ? 1000 : 0;
+                        const rowDist = Math.abs(sortedRowKeys.indexOf(seat.SeatRow) - midRowIdx);
+                        const rowScore = 100 - (rowDist * 10);
+                        const numDist = Math.abs(seat.SeatNumber - rowCenters[seat.SeatRow]);
+                        const numScore = 50 - (numDist * 2);
+
+                        candidates.push({
+                            seat,
+                            score: typeScore + rowScore + numScore
+                        });
+                    }
+                });
+
+                if (candidates.length > 0) {
+                    candidates.sort((a, b) => b.score - a.score);
+                    const best = candidates[0].seat;
+                    
+                    // Select it
+                    selectedSeats.add(best.SeatID);
+                    const el = getSeatEl(best.SeatID);
+                    if (el) el.classList.add('selected');
+                    if (socket) socket.emit('holdSeat', { showtimeId, seatId: best.SeatID });
+                    
+                    startTimer();
+                    updateSummary();
+                    showToast(`Đã chọn ghế VIP/Thường tốt nhất: Hàng ${best.SeatRow} Ghế ${best.SeatNumber}`);
+                } else {
+                    showToast('Xin lỗi, không có ghế đơn lẻ nào còn trống!', 'error');
+                }
+            } else if (activeSeatFilter === 'couple') {
+                const candidates = []; // { type: 'couple' | 'vip' | 'normal', seats: [s1, s2], score: number }
+
+                // 1. Look for physical Couple seats
+                sortedRowKeys.forEach(row => {
+                    if (coupleRows.has(row)) {
+                        const rowSeats = rows[row];
+                        for (let i = 0; i < rowSeats.length; i += 2) {
+                            const s1 = rowSeats[i];
+                            const s2 = rowSeats[i+1];
+                            if (s1 && s2 && isSeatAvailable(s1) && isSeatAvailable(s2)) {
+                                const rowDist = Math.abs(sortedRowKeys.indexOf(row) - midRowIdx);
+                                const rowScore = 100 - (rowDist * 10);
+                                const numDist = Math.abs(((s1.SeatNumber + s2.SeatNumber)/2) - rowCenters[row]);
+                                const numScore = 50 - (numDist * 2);
+
+                                candidates.push({
+                                    type: 'couple',
+                                    seats: [s1, s2],
+                                    score: 2000 + rowScore + numScore
+                                });
+                            }
+                        }
+                    } else {
+                        // 2. Adjacent pairs in normal rows
+                        const rowSeats = rows[row];
+                        const total = rowSeats.length;
+                        const half = Math.floor(total / 2);
+                        for (let i = 0; i < rowSeats.length - 1; i++) {
+                            // Can't cross aisle gap
+                            if (total > 4 && i === half - 1) continue;
+                            const s1 = rowSeats[i];
+                            const s2 = rowSeats[i+1];
+                            if (isSeatAvailable(s1) && isSeatAvailable(s2)) {
+                                const s1Vip = s1.SeatType === 'VIP';
+                                const s2Vip = s2.SeatType === 'VIP';
+                                let baseScore = 0;
+                                if (s1Vip && s2Vip) baseScore = 1000;
+                                else if (s1Vip || s2Vip) baseScore = 500;
+
+                                const rowDist = Math.abs(sortedRowKeys.indexOf(row) - midRowIdx);
+                                const rowScore = 100 - (rowDist * 10);
+                                const numDist = Math.abs(((s1.SeatNumber + s2.SeatNumber)/2) - rowCenters[row]);
+                                const numScore = 50 - (numDist * 2);
+
+                                candidates.push({
+                                    type: s1Vip && s2Vip ? 'vip' : 'normal',
+                                    seats: [s1, s2],
+                                    score: baseScore + rowScore + numScore
+                                });
+                            }
+                        }
+                    }
+                });
+
+                if (candidates.length > 0) {
+                    candidates.sort((a, b) => b.score - a.score);
+                    const best = candidates[0];
+                    const s1 = best.seats[0];
+                    const s2 = best.seats[1];
+
+                    selectedSeats.add(s1.SeatID);
+                    selectedSeats.add(s2.SeatID);
+
+                    // Add visual selected class
+                    // If it is couple seat element, it has data-id-1 and data-id-2
+                    const el = getSeatEl(s1.SeatID);
+                    if (el) el.classList.add('selected');
+
+                    if (socket) {
+                        socket.emit('holdSeat', { showtimeId, seatId: s1.SeatID });
+                        socket.emit('holdSeat', { showtimeId, seatId: s2.SeatID });
+                    }
+
+                    startTimer();
+                    updateSummary();
+
+                    if (best.type === 'couple') {
+                        showToast(`Đã tự động chọn ghế đôi Sweetbox tốt nhất: Hàng ${s1.SeatRow} Ghế ${s1.SeatNumber}-${s2.SeatNumber}`);
+                    } else {
+                        showToast(`Đã chọn cặp ghế VIP/Thường tốt nhất: Hàng ${s1.SeatRow} Ghế ${s1.SeatNumber}, ${s2.SeatNumber}`);
+                    }
+                } else {
+                    showToast('Xin lỗi, không còn ghế đôi hoặc cặp ghế trống nào!', 'error');
+                }
+            } else if (activeSeatFilter === 'group') {
+                const candidates = []; // { seats: Seat[], score: number }
+
+                sortedRowKeys.forEach(row => {
+                    const rowSeats = rows[row];
+                    const total = rowSeats.length;
+                    const half = Math.floor(total / 2);
+                    const isCoupleRow = coupleRows.has(row);
+
+                    if (isCoupleRow) {
+                        // Groups in couple row
+                        const requiredCouplePairs = Math.ceil(groupSize / 2);
+                        const couplePairsInRow = [];
+                        for (let i = 0; i < rowSeats.length; i += 2) {
+                            const s1 = rowSeats[i];
+                            const s2 = rowSeats[i+1];
+                            if (s1 && s2) {
+                                couplePairsInRow.push({ s1, s2, available: isSeatAvailable(s1) && isSeatAvailable(s2) });
+                            }
+                        }
+
+                        for (let i = 0; i <= couplePairsInRow.length - requiredCouplePairs; i++) {
+                            let validBlock = true;
+                            const blockSeats = [];
+                            for (let j = 0; j < requiredCouplePairs; j++) {
+                                if (!couplePairsInRow[i + j].available) {
+                                    validBlock = false;
+                                    break;
+                                }
+                                blockSeats.push(couplePairsInRow[i + j].s1);
+                                blockSeats.push(couplePairsInRow[i + j].s2);
+                            }
+
+                            if (validBlock) {
+                                // Calculate score
+                                const rowDist = Math.abs(sortedRowKeys.indexOf(row) - midRowIdx);
+                                const rowScore = 100 - (rowDist * 10);
+                                const avgNum = blockSeats.reduce((sum, s) => sum + s.SeatNumber, 0) / blockSeats.length;
+                                const numDist = Math.abs(avgNum - rowCenters[row]);
+                                const numScore = 50 - (numDist * 2);
+
+                                candidates.push({
+                                    seats: blockSeats.slice(0, groupSize), // select exactly groupSize seats
+                                    score: 500 + rowScore + numScore // physical couple row bonus
+                                });
+                            }
+                        }
+                    } else {
+                        // Regular rows
+                        for (let i = 0; i <= rowSeats.length - groupSize; i++) {
+                            if (total > 4 && i < half && (i + groupSize - 1) >= half) {
+                                continue; // crossing aisle
+                            }
+                            let validBlock = true;
+                            const blockSeats = [];
+                            let vipCount = 0;
+
+                            for (let j = 0; j < groupSize; j++) {
+                                const s = rowSeats[i + j];
+                                if (!isSeatAvailable(s)) {
+                                    validBlock = false;
+                                    break;
+                                }
+                                blockSeats.push(s);
+                                if (s.SeatType === 'VIP') vipCount++;
+                            }
+
+                            if (validBlock) {
+                                const rowDist = Math.abs(sortedRowKeys.indexOf(row) - midRowIdx);
+                                const rowScore = 100 - (rowDist * 10);
+                                const avgNum = blockSeats.reduce((sum, s) => sum + s.SeatNumber, 0) / blockSeats.length;
+                                const numDist = Math.abs(avgNum - rowCenters[row]);
+                                const numScore = 50 - (numDist * 2);
+                                const vipScore = vipCount * 200;
+
+                                candidates.push({
+                                    seats: blockSeats,
+                                    score: vipScore + rowScore + numScore
+                                });
+                            }
+                        }
+                    }
+                });
+
+                if (candidates.length > 0) {
+                    candidates.sort((a, b) => b.score - a.score);
+                    const best = candidates[0];
+
+                    best.seats.forEach(s => {
+                        selectedSeats.add(s.SeatID);
+                        const el = getSeatEl(s.SeatID);
+                        if (el) el.classList.add('selected');
+                        if (socket) socket.emit('holdSeat', { showtimeId, seatId: s.SeatID });
+                    });
+
+                    startTimer();
+                    updateSummary();
+
+                    const desc = best.seats.map(s => `${s.SeatRow}${s.SeatNumber}`).join(', ');
+                    showToast(`Đã tự động chọn dãy ${groupSize} ghế liền kề tốt nhất: ${desc}`);
+                } else {
+                    showToast(`Không tìm thấy dãy ${groupSize} ghế trống liền kề nào!`, 'error');
+                }
+            }
         }
 
         // ──────────────────────────────────────────────
@@ -1238,8 +1980,8 @@
                         coupleEl.setAttribute('data-id-2', s2.SeatID);
                         coupleEl.setAttribute('data-row', row);
                         coupleEl.innerHTML = `
-                            <span style="font-size:0.62rem;letter-spacing:0.5px;">
-                                ♥ ${row}${s1.SeatNumber}-${s2.SeatNumber}
+                            <span class="couple-label">
+                                ${row}${s1.SeatNumber}-${s2.SeatNumber}
                             </span>
                         `;
 
@@ -1292,7 +2034,12 @@
             el.setAttribute('data-id', seat.SeatID);
             el.setAttribute('data-row', seat.SeatRow);
             el.setAttribute('data-type', typeClass);
-            el.textContent = seat.SeatNumber;
+            
+            if (isVip && !isBooked) {
+                el.innerHTML = `<span class="seat-star">★</span><span class="seat-num">${seat.SeatNumber}</span>`;
+            } else {
+                el.textContent = seat.SeatNumber;
+            }
 
             if (!isBooked && !isLocked) {
                 el.onclick = () => handleSingleSeat(el, seat.SeatID);
@@ -1310,6 +2057,15 @@
         // ──────────────────────────────────────────────
         function handleSingleSeat(el, seatId) {
             if (el.classList.contains('booked') || el.classList.contains('locked')) return;
+
+            // Disable active filter on manual click
+            if (activeSeatFilter) {
+                activeSeatFilter = null;
+                document.querySelectorAll('.filter-card').forEach(card => card.classList.remove('active'));
+                const groupSelector = document.getElementById('groupSizeSelector');
+                if (groupSelector) groupSelector.style.display = 'none';
+                clearVisualSeatFiltering();
+            }
 
             if (selectedSeats.has(seatId)) {
                 selectedSeats.delete(seatId);
@@ -1331,6 +2087,15 @@
 
         function handleCoupleSeat(el, seatId1, seatId2) {
             if (el.classList.contains('booked') || el.classList.contains('locked')) return;
+
+            // Disable active filter on manual click
+            if (activeSeatFilter) {
+                activeSeatFilter = null;
+                document.querySelectorAll('.filter-card').forEach(card => card.classList.remove('active'));
+                const groupSelector = document.getElementById('groupSizeSelector');
+                if (groupSelector) groupSelector.style.display = 'none';
+                clearVisualSeatFiltering();
+            }
 
             const alreadySelected = selectedSeats.has(seatId1) && selectedSeats.has(seatId2);
 
@@ -1385,6 +2150,15 @@
             const btnContinue = document.getElementById('btnContinue');
             const breakdownSection = document.getElementById('priceBreakdown');
             const breakdownRows = document.getElementById('priceBreakdownRows');
+
+            const container = document.getElementById('seatMapContainer');
+            if (container) {
+                if (selectedSeats.size > 0) {
+                    container.classList.add('selection-active');
+                } else {
+                    container.classList.remove('selection-active');
+                }
+            }
 
             if (selectedSeats.size === 0) {
                 seatsDisplay.textContent = 'Chưa chọn';
