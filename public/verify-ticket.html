@@ -418,19 +418,27 @@
             card.className = 'verify-card ' + (isConfirmed ? 'confirmed' : 'pending');
 
             const statusIcon = isConfirmed ? '✓' : '⏳';
-            const statusLabel = isConfirmed ? 'VÉ HỢP LỆ' : 'VÉ CHỜ THANH TOÁN';
-            const statusSub = isConfirmed ? 'Đã xác nhận thanh toán' : 'Chưa nhận được chuyển khoản';
+            const statusLabel = isConfirmed ? 'VÉ HỢP LỆ — CHECK IN' : 'VÉ CHỜ THANH TOÁN';
+            const statusSub = isConfirmed ? 'Vui lòng vào rạp, chúc xem phim vui vẻ! 🎬' : 'Chưa nhận được chuyển khoản';
 
             // Format showtime
             const start = new Date(data.startTime);
             const dateStr = start.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
             const timeStr = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
+            // Seat highlight (works for single or multiple seats)
+            const seatDisplay = data.seats || '—';
+
             card.innerHTML = `
                 <div class="status-section">
                     <div class="status-glow-outer">${statusIcon}</div>
                     <h1 class="status-title">${statusLabel}</h1>
-                    <p class="status-time">${statusSub} · ${new Date().toLocaleTimeString('vi-VN')}</p>
+                    <p class="status-time">${statusSub}</p>
+                    ${isConfirmed ? `
+                    <div style="display:inline-flex;align-items:center;gap:10px;padding:10px 24px;border-radius:40px;background:rgba(34,197,94,0.12);border:2px solid var(--green);margin-top:6px;">
+                        <span style="font-size:1.6rem;">🪑</span>
+                        <span style="font-size:1.4rem;font-weight:900;color:var(--green);letter-spacing:2px;">${seatDisplay}</span>
+                    </div>` : ''}
                 </div>
 
                 <div class="details-section">
@@ -481,7 +489,7 @@
                         </div>
                         <div class="info-row">
                             <span class="info-key">Ghế đã chọn</span>
-                            <span class="info-val highlight" style="font-size: 1.1rem; letter-spacing: 0.5px;">${data.seats}</span>
+                            <span class="info-val highlight" style="font-size: 1.2rem; font-weight:900; letter-spacing: 1.5px;">${seatDisplay}</span>
                         </div>
                         <div class="info-row">
                             <span class="info-key">Đồ ăn kèm</span>
@@ -501,6 +509,7 @@
                 </div>
             `;
         }
+
     </script>
 </body>
 </html>

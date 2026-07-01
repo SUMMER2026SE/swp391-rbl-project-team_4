@@ -390,47 +390,145 @@
             border-top:2px dashed var(--border2);
         }
 
-        /* Ticket bottom: QR */
+        /* Ticket bottom: QR Carousel */
         .ticket-bottom {
             display:flex;
-            align-items:center;
-            gap:20px;
-            padding:20px 24px;
-        }
-
-        .ticket-qr-wrap {
-            padding:10px;
-            background:#fff;
-            border-radius:10px;
-            flex-shrink:0;
-            box-shadow:0 4px 16px rgba(0,0,0,0.3);
-            width: 130px;
-            height: 130px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #ticketQr {
-            width: 110px;
-            height: 110px;
-        }
-        #ticketQr canvas {
-            display: none !important;
-        }
-        #ticketQr img {
-            display: block !important;
-            width: 110px !important;
-            height: 110px !important;
-        }
-
-        .ticket-bottom-info {
-            flex:1;
-            display:flex;
             flex-direction:column;
+            align-items:center;
+            gap:0;
+            padding:0;
+        }
+
+        /* ── QR Carousel Section (per-ticket) ── */
+        .qr-carousel-section {
+            width:100%;
+            background: linear-gradient(180deg, rgba(229,9,20,0.04) 0%, rgba(0,0,0,0) 100%);
+            border-top: 1px dashed var(--border2);
+            padding: 20px 24px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .qr-carousel-label {
+            font-size:0.72rem;
+            font-weight:800;
+            letter-spacing:2px;
+            text-transform:uppercase;
+            color:var(--muted);
+            display:flex;
+            align-items:center;
             gap:8px;
         }
+        .qr-carousel-label::before, .qr-carousel-label::after {
+            content:'';
+            flex:1;
+            height:1px;
+            background: linear-gradient(90deg, transparent, var(--border2));
+        }
+        .qr-carousel-label::after {
+            background: linear-gradient(90deg, var(--border2), transparent);
+        }
+
+        .qr-carousel-body {
+            display:flex;
+            align-items:center;
+            gap:16px;
+        }
+
+        .qr-nav-btn {
+            width:36px; height:36px;
+            border-radius:50%;
+            background:var(--card2);
+            border:1px solid var(--border2);
+            color:var(--text);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer;
+            transition:all 0.2s;
+            flex-shrink:0;
+            font-size:1rem;
+        }
+        .qr-nav-btn:hover { background:var(--border2); transform:scale(1.1); }
+        .qr-nav-btn:disabled { opacity:0.3; cursor:default; transform:none; }
+
+        .qr-ticket-card {
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            gap:10px;
+        }
+
+        .qr-ticket-wrap {
+            padding:12px;
+            background:#fff;
+            border-radius:14px;
+            box-shadow:0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(229,9,20,0.12);
+            cursor:pointer;
+            transition:transform 0.2s, box-shadow 0.2s;
+            position:relative;
+        }
+        .qr-ticket-wrap:hover {
+            transform:translateY(-3px) scale(1.03);
+            box-shadow:0 14px 40px rgba(229,9,20,0.3), 0 0 0 2px rgba(229,9,20,0.3);
+        }
+        .qr-scan-hint {
+            font-size:0.65rem;
+            font-weight:700;
+            color:var(--muted);
+            letter-spacing:0.5px;
+            text-align:center;
+        }
+
+        .qr-seat-badge {
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            padding:5px 14px;
+            border-radius:30px;
+            font-size:0.82rem;
+            font-weight:800;
+            letter-spacing:1px;
+            background:rgba(229,9,20,0.12);
+            color:var(--primary);
+            border:1px solid rgba(229,9,20,0.25);
+        }
+
+        .qr-ticket-num {
+            font-size:0.72rem;
+            color:var(--muted);
+            font-weight:600;
+        }
+
+        .qr-dots {
+            display:flex;
+            gap:6px;
+        }
+        .qr-dot {
+            width:7px; height:7px;
+            border-radius:50%;
+            background:var(--border2);
+            transition:all 0.25s;
+        }
+        .qr-dot.active {
+            background:var(--primary);
+            width:18px;
+            border-radius:4px;
+        }
+
+        /* summary bottom row */
+        .ticket-summary-row {
+            width:100%;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:16px 24px;
+            border-top:1px solid var(--border);
+            gap:12px;
+        }
+
         .ticket-admit {
-            font-size:1.2rem;
+            font-size:1.05rem;
             font-weight:900;
             color:var(--text);
             letter-spacing:0.5px;
@@ -443,7 +541,6 @@
         .ticket-barcode {
             display:flex;
             gap:2px;
-            margin-top:8px;
         }
         .bc-bar {
             background:var(--muted);
@@ -645,21 +742,32 @@
                     <div class="notch-hole right"></div>
                 </div>
 
-                <!-- Ticket Bottom: QR + Info -->
+                <!-- Ticket Bottom: Individual QR Carousel + Summary -->
                 <div class="ticket-bottom">
-                    <div class="ticket-qr-wrap" style="cursor: pointer;" onclick="openVerifyPage()" title="Nhấp vào mã QR để mở trang xác thực vé (giả lập quét QR)">
-                        <div id="ticketQr"></div>
+                    <!-- QR Carousel (1 QR per seat) -->
+                    <div class="qr-carousel-section" id="qrCarouselSection">
+                        <div class="qr-carousel-label" style="width:100%">Mã QR — Quét từng vé khi vào rạp</div>
+                        <div class="qr-carousel-body">
+                            <button class="qr-nav-btn" id="qrPrevBtn" onclick="qrCarouselNav(-1)" disabled>&#8249;</button>
+                            <div class="qr-ticket-card" id="qrTicketCard">
+                                <!-- Populated by JS -->
+                            </div>
+                            <button class="qr-nav-btn" id="qrNextBtn" onclick="qrCarouselNav(1)">&#8250;</button>
+                        </div>
+                        <div class="qr-dots" id="qrDots"></div>
                     </div>
-                    <div class="ticket-bottom-info">
-                        <div class="ticket-admit" id="ticketAdmit">ADMIT ONE</div>
-                        <div class="ticket-fnb" id="ticketFnb">Không có đồ ăn kèm</div>
-                        <!-- Barcode decoration -->
-                        <div class="ticket-barcode" id="ticketBarcode"></div>
-                    </div>
-                    <div class="ticket-total-col">
-                        <div class="ticket-total-label">Tổng tiền</div>
-                        <div class="ticket-total-value" id="ticketTotal">0 VND</div>
-                        <div style="font-size:0.7rem;color:var(--muted);margin-top:4px;" id="ticketPayMethod">—</div>
+                    <!-- Summary row -->
+                    <div class="ticket-summary-row">
+                        <div>
+                            <div class="ticket-admit" id="ticketAdmit">ADMIT ONE</div>
+                            <div class="ticket-fnb" id="ticketFnb">Không có đồ ăn kèm</div>
+                            <div class="ticket-barcode" id="ticketBarcode" style="margin-top:8px"></div>
+                        </div>
+                        <div class="ticket-total-col">
+                            <div class="ticket-total-label">Tổng tiền</div>
+                            <div class="ticket-total-value" id="ticketTotal">0 VND</div>
+                            <div style="font-size:0.7rem;color:var(--muted);margin-top:4px;" id="ticketPayMethod">—</div>
+                        </div>
                     </div>
                 </div>
 
@@ -890,6 +998,57 @@
         showTicket();
     }
 
+    /* ── QR Carousel State ── */
+    let qrCarouselIndex = 0;
+    let qrCarouselTicketIds = [];
+    let qrCarouselSeats = [];
+
+    function qrCarouselNav(dir) {
+        const total = qrCarouselTicketIds.length;
+        if (total === 0) return;
+        qrCarouselIndex = Math.max(0, Math.min(total - 1, qrCarouselIndex + dir));
+        renderQrCarouselSlide();
+    }
+
+    function renderQrCarouselSlide() {
+        const total = qrCarouselTicketIds.length;
+        const idx = qrCarouselIndex;
+        const ticketId = qrCarouselTicketIds[idx];
+        const seat = qrCarouselSeats[idx] || ('Ghế #' + (idx + 1));
+
+        // QR URL: individual ticket (scan one at a time like a real cinema)
+        const qrUrl = serverLanOrigin + '/verify-ticket.html?id=' + ticketId;
+
+        // Build card HTML
+        const card = document.getElementById('qrTicketCard');
+        card.innerHTML = `
+            <div class="qr-ticket-wrap" onclick="openVerifyPageSingle('${ticketId}')" title="Nhấn để xem trang xác thực vé này">
+                <div id="qrSlide_${idx}" style="width:130px;height:130px;"></div>
+            </div>
+            <div class="qr-scan-hint">📱 Nhấn vào QR để giả lập quét</div>
+            <div class="qr-seat-badge">🪑 ${seat}</div>
+            <div class="qr-ticket-num">Vé ${idx + 1} / ${total} &nbsp;·&nbsp; #${ticketId}</div>
+        `;
+
+        // Generate QR inside the new element
+        generateQR('qrSlide_' + idx, qrUrl, 130);
+
+        // Update nav buttons
+        document.getElementById('qrPrevBtn').disabled = (idx === 0);
+        document.getElementById('qrNextBtn').disabled = (idx === total - 1);
+
+        // Update dots
+        const dotsEl = document.getElementById('qrDots');
+        dotsEl.innerHTML = '';
+        for (let i = 0; i < total; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'qr-dot' + (i === idx ? ' active' : '');
+            dot.onclick = ((i2) => () => { qrCarouselIndex = i2; renderQrCarouselSlide(); })(i);
+            dot.style.cursor = 'pointer';
+            dotsEl.appendChild(dot);
+        }
+    }
+
     /* ── Render E-Ticket ── */
     function showTicket() {
         const ticketScreen = document.getElementById('ticketScreen');
@@ -899,6 +1058,16 @@
         const finalAmount = booking.finalAmount || booking.totalAmount || 0;
         const bookingId = booking.bookingId || ('DC-' + Math.floor(1000000 + Math.random() * 9000000));
         const seatCount = booking.seatCount || 1;
+
+        // Parse ticket IDs from bookingId: 'DC-354-355-358-357-359'
+        const idsRaw = bookingId.replace(/^DC-/i, '');
+        qrCarouselTicketIds = idsRaw.split('-').map(s => s.trim()).filter(s => /^\d+$/.test(s));
+        // If only 1 combined ID or parsing fails, fall back to whole string
+        if (qrCarouselTicketIds.length === 0) qrCarouselTicketIds = [idsRaw];
+
+        // Build seat labels from booking.seats (e.g. 'A8, A9, A10, A11, A12')
+        const seatsArr = (booking.seats || '').split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+        qrCarouselSeats = qrCarouselTicketIds.map((_, i) => seatsArr[i] || ('Ghế ' + (i + 1)));
 
         // Banner
         const banner = document.getElementById('ticketBanner');
@@ -926,8 +1095,8 @@
         document.getElementById('ticketPayMethod').textContent = 'qua ' + (METHOD_LABELS[method] || method);
 
         // Admit label
-        const labels = {1:'ADMIT ONE',2:'ADMIT TWO',3:'ADMIT THREE',4:'ADMIT FOUR',5:'ADMIT FIVE'};
-        document.getElementById('ticketAdmit').textContent = labels[seatCount] || `ADMIT ${seatCount}`;
+        const admitLabels = {1:'ADMIT ONE',2:'ADMIT TWO',3:'ADMIT THREE',4:'ADMIT FOUR',5:'ADMIT FIVE'};
+        document.getElementById('ticketAdmit').textContent = admitLabels[seatCount] || `ADMIT ${seatCount}`;
 
         // F&B
         if (booking.foodDisplayItems && booking.foodDisplayItems.length > 0) {
@@ -938,11 +1107,13 @@
         // Booking note
         document.getElementById('bookingNoteId').textContent = bookingId;
 
-        // Tạo URL kiểm tra vé trực tuyến (giống website thật khi quét mã QR)
-        const ticketIdsStr = bookingId.replace('DC-', '');
-        const ticketQrData = serverLanOrigin + '/verify-ticket.html?id=' + ticketIdsStr;
+        // Hide nav buttons if only 1 ticket
+        document.getElementById('qrPrevBtn').style.display = qrCarouselTicketIds.length <= 1 ? 'none' : '';
+        document.getElementById('qrNextBtn').style.display = qrCarouselTicketIds.length <= 1 ? 'none' : '';
 
-        generateQR('ticketQr', ticketQrData, 110);
+        // Initialize carousel at slide 0
+        qrCarouselIndex = 0;
+        renderQrCarouselSlide();
 
         // Barcode
         buildBarcode(document.getElementById('ticketBarcode'));
@@ -957,8 +1128,12 @@
 
     function openVerifyPage() {
         const bookingId = booking.bookingId || document.getElementById('ticketBookingId').textContent;
-        const ticketIdsStr = bookingId.replace('DC-', '');
+        const ticketIdsStr = bookingId.replace(/^DC-/i, '');
         window.open('/verify-ticket.html?id=' + ticketIdsStr, '_blank');
+    }
+
+    function openVerifyPageSingle(ticketId) {
+        window.open('/verify-ticket.html?id=' + ticketId, '_blank');
     }
 
     /* ── Download (Print) Ticket ── */
