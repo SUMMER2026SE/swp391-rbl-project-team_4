@@ -383,36 +383,38 @@
         }
 
         .screen-bar {
-            height: 8px;
-            background: linear-gradient(90deg, transparent, rgba(229, 9, 20, 0.6), #ff1a26, rgba(229, 9, 20, 0.6), transparent);
+            height: 10px;
+            background: linear-gradient(90deg, transparent 5%, rgba(229, 9, 20, 0.2) 20%, #ff2a36 50%, rgba(229, 9, 20, 0.2) 80%, transparent 95%);
             border-radius: 50% / 100% 100% 0 0;
-            box-shadow: 0 4px 30px rgba(229, 9, 20, 0.6), 0 2px 10px rgba(229, 9, 20, 0.3);
-            transform: rotateX(-15deg);
+            box-shadow: 0 6px 30px rgba(229, 9, 20, 0.85), 0 2px 15px rgba(255, 42, 54, 0.5);
+            transform: rotateX(-12deg);
             position: relative;
             z-index: 2;
         }
 
         .screen-glow {
-            width: 80%;
-            height: 140px;
-            background: linear-gradient(180deg, rgba(229, 9, 20, 0.12) 0%, rgba(229, 9, 20, 0.01) 85%, transparent 100%);
+            width: 85%;
+            height: 180px;
+            background: radial-gradient(ellipse at top, rgba(229, 9, 20, 0.2) 0%, rgba(229, 9, 20, 0.05) 50%, transparent 80%);
             margin: 0 auto;
             position: absolute;
-            left: 10%;
-            top: 8px;
+            left: 7.5%;
+            top: 10px;
             z-index: 1;
-            clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+            clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
             pointer-events: none;
-            opacity: 0.75;
+            opacity: 0.95;
+            filter: blur(10px);
         }
 
         .screen-label {
             margin-top: 18px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 800;
-            letter-spacing: 6px;
-            color: var(--text-muted);
+            letter-spacing: 8px;
+            color: rgba(255, 255, 255, 0.35);
             text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(229, 9, 20, 0.3);
         }
 
         /* Seat Map */
@@ -485,6 +487,13 @@
             border-radius: 3px;
             border: 1px solid rgba(255, 255, 255, 0.04);
             transition: all 0.2s;
+        }
+
+        /* Dimmed Invalid Seats */
+        .seat.dimmed {
+            opacity: 0.25 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
         }
 
         /* Normal Seat */
@@ -959,160 +968,117 @@
             color: var(--text-muted);
         }
 
-        /* ─── Smart Seat Filter Bar ─── */
-        .seat-filter-container {
-            max-width: 720px;
+        /* ─── Cinema Rules Banner ─── */
+        .cinema-rules-banner {
+            max-width: 850px;
             margin: 0 auto 24px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.07);
             border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
         }
 
-        .seat-filter-title {
-            font-size: 0.85rem;
-            font-weight: 700;
+        .cinema-rules-banner:hover {
+            border-color: rgba(245, 158, 11, 0.25);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), 0 0 20px rgba(245, 158, 11, 0.05);
+        }
+        
+        .banner-badge {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            color: #f59e0b;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.72rem;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            color: var(--text-muted);
-            margin-bottom: 14px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
         }
 
-        .seat-filter-options {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #f59e0b;
+            border-radius: 50%;
+            position: relative;
         }
 
-        @media (max-width: 600px) {
-            .seat-filter-options {
-                grid-template-columns: 1fr;
+        .pulse-dot::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            border: 2px solid #f59e0b;
+            opacity: 0;
+            animation: pulse-ring 2s cubic-bezier(0.25, 0, 0, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.5);
+                opacity: 0.8;
+            }
+            80%, 100% {
+                transform: scale(1.8);
+                opacity: 0;
             }
         }
 
-        .filter-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px 16px;
-            cursor: pointer;
+        .banner-content {
             display: flex;
             align-items: center;
-            gap: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+            gap: 28px;
+            flex-wrap: wrap;
+            flex-grow: 1;
+            justify-content: flex-end;
         }
 
-        .filter-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: transparent;
-            transition: background 0.3s;
-        }
-
-        .filter-card:hover {
-            background: var(--bg-hover);
-            border-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .filter-card.active {
-            background: rgba(229, 9, 20, 0.06);
-            border-color: var(--primary);
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.15);
-        }
-
-        .filter-card.active::before {
-            background: var(--primary);
-        }
-
-        .filter-icon {
-            font-size: 1.3rem;
+        .rule-item {
             display: flex;
             align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            transition: all 0.3s;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: #94a3b8;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        .filter-card.active .filter-icon {
-            background: rgba(229, 9, 20, 0.15);
-            color: var(--primary);
+        .rule-icon {
+            color: #f59e0b;
+            font-size: 0.9rem;
+            text-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
         }
 
-        .filter-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .filter-label {
-            font-size: 0.88rem;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .filter-desc {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-        }
-
-        .group-size-selector {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 16px;
-            padding-top: 14px;
-            border-top: 1px solid var(--border);
-            animation: fadeIn 0.3s ease;
-        }
-
-        .qty-btn-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 4px 8px;
-        }
-
-        .qty-btn-group button {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-
-        .qty-btn-group button:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .qty-btn-group span {
-            font-size: 1rem;
-            font-weight: 800;
-            min-width: 20px;
-            text-align: center;
+        @media (max-width: 900px) {
+            .cinema-rules-banner {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 18px;
+                gap: 14px;
+            }
+            .banner-badge {
+                align-self: flex-start;
+            }
+            .banner-content {
+                gap: 12px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
 
         /* Hiệu ứng làm mờ ghế không phù hợp */
@@ -1400,41 +1366,24 @@
                 <div class="screen-label">Màn Hình</div>
             </div>
 
-            <!-- Bộ lọc ghế thông minh -->
-            <div class="seat-filter-container">
-                <div class="seat-filter-title">Bộ lọc & Chọn nhanh ghế</div>
-                <div class="seat-filter-options">
-                    <div class="filter-card" id="filterSingle" onclick="toggleSeatFilter('single')">
-                        <div class="filter-icon">👤</div>
-                        <div class="filter-info">
-                            <span class="filter-label">Ghế 1 người</span>
-                            <span class="filter-desc">Ưu tiên ghế VIP trung tâm</span>
-                        </div>
-                    </div>
-                    <div class="filter-card" id="filterCouple" onclick="toggleSeatFilter('couple')">
-                        <div class="filter-icon">💖</div>
-                        <div class="filter-info">
-                            <span class="filter-label">Ghế 2 người</span>
-                            <span class="filter-desc">Ưu tiên ghế đôi / cặp VIP</span>
-                        </div>
-                    </div>
-                    <div class="filter-card" id="filterGroup" onclick="toggleSeatFilter('group')">
-                        <div class="filter-icon">👥</div>
-                        <div class="filter-info">
-                            <span class="filter-label">Ghế nhóm</span>
-                            <span class="filter-desc">Dãy ghế liền kề nhau</span>
-                        </div>
-                    </div>
+            <!-- Quy tắc phòng chiếu chuẩn -->
+            <div class="cinema-rules-banner">
+                <div class="banner-badge">
+                    <span class="pulse-dot"></span>
+                    Quy Tắc Rạp Phim
                 </div>
-
-                <!-- Chọn số lượng ghế cho nhóm -->
-                <div class="group-size-selector" id="groupSizeSelector" style="display: none;">
-                    <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Số lượng ghế
-                        nhóm:</span>
-                    <div class="qty-btn-group">
-                        <button onclick="changeGroupSize(-1)">-</button>
-                        <span id="groupSizeValue">3</span>
-                        <button onclick="changeGroupSize(1)">+</button>
+                <div class="banner-content">
+                    <div class="rule-item">
+                        <span class="rule-icon">✦</span>
+                        <span>Không chừa ghế trống đơn lẻ</span>
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-icon">✦</span>
+                        <span>Chọn các ghế liền kề nhau</span>
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-icon">✦</span>
+                        <span>Hàng Sweetbox luôn theo cặp</span>
                     </div>
                 </div>
             </div>
@@ -1635,8 +1584,6 @@
         let currentZoom = 1.0;
         let countdownInterval = null;
         let secondsLeft = 600; // 10 minutes (đồng bộ với Socket.IO)
-        let activeSeatFilter = null;     // 'single' | 'couple' | 'group' | null
-        let groupSize = 3;               // Default size for group seats
 
         // ──────────────────────────────────────────────
         //  Zoom & Timer & Tooltip Helpers
@@ -1724,476 +1671,6 @@
                 const tooltip = document.getElementById('seatTooltip');
                 if (tooltip) tooltip.style.display = 'none';
             });
-        }
-
-        // ──────────────────────────────────────────────
-        //  Smart Seat Filtering & Recommendation Logic
-        // ──────────────────────────────────────────────
-        function toggleSeatFilter(type) {
-            // Remove active classes
-            document.querySelectorAll('.filter-card').forEach(card => card.classList.remove('active'));
-            const groupSelector = document.getElementById('groupSizeSelector');
-            if (groupSelector) groupSelector.style.display = 'none';
-
-            if (activeSeatFilter === type) {
-                // Deactivate filter
-                activeSeatFilter = null;
-                clearVisualSeatFiltering();
-                showToast('Đã tắt bộ lọc ghế.');
-            } else {
-                activeSeatFilter = type;
-                const card = document.getElementById(`filter${type.charAt(0).toUpperCase() + type.slice(1)}`);
-                if (card) card.classList.add('active');
-
-                if (type === 'group') {
-                    if (groupSelector) groupSelector.style.display = 'flex';
-                }
-
-                // Auto-select optimal seats based on new filter
-                autoSelectOptimalSeats();
-                // Apply visual dimming
-                applyVisualSeatFiltering();
-            }
-        }
-
-        function changeGroupSize(delta) {
-            const newVal = groupSize + delta;
-            if (newVal >= 3 && newVal <= 8) {
-                groupSize = newVal;
-                const displayEl = document.getElementById('groupSizeValue');
-                if (displayEl) displayEl.textContent = groupSize;
-
-                if (activeSeatFilter === 'group') {
-                    autoSelectOptimalSeats();
-                    applyVisualSeatFiltering();
-                }
-            } else if (newVal > 8) {
-                showToast('Tối đa 8 ghế mỗi lần đặt!', 'warn');
-            }
-        }
-
-        function isSeatAvailable(seat) {
-            if (!seat) return false;
-            if (seat.SeatStatus === 'booked' || seat.SeatStatus === 'locked') return false;
-            if (lockedByOthers.has(seat.SeatID)) return false;
-            return true;
-        }
-
-        function clearSelectedSeats() {
-            if (selectedSeats.size > 0) {
-                selectedSeats.forEach(seatId => {
-                    const el = getSeatEl(seatId);
-                    if (el) el.classList.remove('selected');
-                    if (socket) socket.emit('releaseSeat', { showtimeId, seatId });
-                });
-                selectedSeats.clear();
-            }
-            stopTimer();
-            updateSummary();
-        }
-
-        function getSeatRowDataMap() {
-            const rows = {};
-            seatsList.forEach(seat => {
-                if (!rows[seat.SeatRow]) rows[seat.SeatRow] = [];
-                rows[seat.SeatRow].push(seat);
-            });
-            Object.keys(rows).forEach(row => {
-                rows[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
-            });
-            return rows;
-        }
-
-        function applyVisualSeatFiltering() {
-            if (!activeSeatFilter) {
-                clearVisualSeatFiltering();
-                return;
-            }
-
-            const coupleRows = getCoupleRows();
-            const rows = getSeatRowDataMap();
-            const sortedRowKeys = Object.keys(rows).sort();
-
-            // First, find all valid seat IDs/pairs for the active filter
-            const validSeatIds = new Set();
-            const validCouplePairs = new Set(); // Key format: "row_minNum-maxNum"
-
-            if (activeSeatFilter === 'single') {
-                seatsList.forEach(s => {
-                    if (!coupleRows.has(s.SeatRow) && isSeatAvailable(s)) {
-                        validSeatIds.add(s.SeatID);
-                    }
-                });
-            } else if (activeSeatFilter === 'couple') {
-                // 1. Physical Couple seats
-                sortedRowKeys.forEach(row => {
-                    if (coupleRows.has(row)) {
-                        const rowSeats = rows[row];
-                        for (let i = 0; i < rowSeats.length; i += 2) {
-                            const s1 = rowSeats[i];
-                            const s2 = rowSeats[i + 1];
-                            if (s1 && s2 && isSeatAvailable(s1) && isSeatAvailable(s2)) {
-                                validSeatIds.add(s1.SeatID);
-                                validSeatIds.add(s2.SeatID);
-                                validCouplePairs.add(`${row}_${Math.min(s1.SeatNumber, s2.SeatNumber)}-${Math.max(s1.SeatNumber, s2.SeatNumber)}`);
-                            }
-                        }
-                    } else {
-                        // 2. Adjacent pairs in normal rows
-                        const rowSeats = rows[row];
-                        const total = rowSeats.length;
-                        const half = Math.floor(total / 2);
-                        for (let i = 0; i < rowSeats.length - 1; i++) {
-                            // Can't cross aisle gap
-                            if (total > 4 && i === half - 1) continue;
-                            const s1 = rowSeats[i];
-                            const s2 = rowSeats[i + 1];
-                            if (isSeatAvailable(s1) && isSeatAvailable(s2)) {
-                                validSeatIds.add(s1.SeatID);
-                                validSeatIds.add(s2.SeatID);
-                            }
-                        }
-                    }
-                });
-            } else if (activeSeatFilter === 'group') {
-                // Find blocks of groupSize contiguous seats in normal/VIP rows or couple rows
-                sortedRowKeys.forEach(row => {
-                    const rowSeats = rows[row];
-                    const total = rowSeats.length;
-                    const half = Math.floor(total / 2);
-                    const isCoupleRow = coupleRows.has(row);
-
-                    if (isCoupleRow) {
-                        // For couple rows, groupSize is in number of individual seats.
-                        // Let's find contiguous couple pairs.
-                        // Each couple seat consists of 2 seats. We need enough couple seats to fit groupSize.
-                        const requiredCouplePairs = Math.ceil(groupSize / 2);
-                        const couplePairsInRow = [];
-                        for (let i = 0; i < rowSeats.length; i += 2) {
-                            const s1 = rowSeats[i];
-                            const s2 = rowSeats[i + 1];
-                            if (s1 && s2) {
-                                couplePairsInRow.push({ s1, s2, available: isSeatAvailable(s1) && isSeatAvailable(s2) });
-                            }
-                        }
-
-                        for (let i = 0; i <= couplePairsInRow.length - requiredCouplePairs; i++) {
-                            let validBlock = true;
-                            // Check if required pairs are all available and contiguous
-                            for (let j = 0; j < requiredCouplePairs; j++) {
-                                if (!couplePairsInRow[i + j].available) {
-                                    validBlock = false;
-                                    break;
-                                }
-                            }
-                            if (validBlock) {
-                                for (let j = 0; j < requiredCouplePairs; j++) {
-                                    validSeatIds.add(couplePairsInRow[i + j].s1.SeatID);
-                                    validSeatIds.add(couplePairsInRow[i + j].s2.SeatID);
-                                    validCouplePairs.add(`${row}_${Math.min(couplePairsInRow[i + j].s1.SeatNumber, couplePairsInRow[i + j].s2.SeatNumber)}-${Math.max(couplePairsInRow[i + j].s1.SeatNumber, couplePairsInRow[i + j].s2.SeatNumber)}`);
-                                }
-                            }
-                        }
-                    } else {
-                        // Normal rows
-                        for (let i = 0; i <= rowSeats.length - groupSize; i++) {
-                            // Check aisle gap crossover
-                            if (total > 4 && i < half && (i + groupSize - 1) >= half) {
-                                continue;
-                            }
-                            let validBlock = true;
-                            for (let j = 0; j < groupSize; j++) {
-                                if (!isSeatAvailable(rowSeats[i + j])) {
-                                    validBlock = false;
-                                    break;
-                                }
-                            }
-                            if (validBlock) {
-                                for (let j = 0; j < groupSize; j++) {
-                                    validSeatIds.add(rowSeats[i + j].SeatID);
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Now, apply the `filtered-out` class to elements that are not in the valid sets
-            // 1. Single seats
-            document.querySelectorAll('.seat:not(.couple)').forEach(el => {
-                const seatId = parseInt(el.getAttribute('data-id'));
-                if (validSeatIds.has(seatId)) {
-                    el.classList.remove('filtered-out');
-                } else {
-                    el.classList.add('filtered-out');
-                }
-            });
-
-            // 2. Couple seats
-            document.querySelectorAll('.seat.couple').forEach(el => {
-                const id1 = parseInt(el.getAttribute('data-id-1'));
-                const id2 = parseInt(el.getAttribute('data-id-2'));
-
-                // Let's check if both seat IDs are in validSeatIds
-                if (validSeatIds.has(id1) && validSeatIds.has(id2)) {
-                    el.classList.remove('filtered-out');
-                } else {
-                    el.classList.add('filtered-out');
-                }
-            });
-        }
-
-        function clearVisualSeatFiltering() {
-            document.querySelectorAll('.seat').forEach(el => {
-                el.classList.remove('filtered-out');
-            });
-        }
-
-        function autoSelectOptimalSeats() {
-            // Clear current selection first
-            clearSelectedSeats();
-
-            if (!activeSeatFilter) return;
-
-            const coupleRows = getCoupleRows();
-            const rows = getSeatRowDataMap();
-            const sortedRowKeys = Object.keys(rows).sort();
-            const midRowIdx = (sortedRowKeys.length - 1) / 2;
-
-            // Compute row centers
-            const rowCenters = {};
-            sortedRowKeys.forEach(row => {
-                const nums = rows[row].map(s => s.SeatNumber);
-                const minNum = Math.min(...nums);
-                const maxNum = Math.max(...nums);
-                rowCenters[row] = (minNum + maxNum) / 2;
-            });
-
-            if (activeSeatFilter === 'single') {
-                // Find all available single seats and rank them
-                const candidates = [];
-                seatsList.forEach(seat => {
-                    if (!coupleRows.has(seat.SeatRow) && isSeatAvailable(seat)) {
-                        // Calculate score
-                        const isVip = seat.SeatType === 'VIP';
-                        const typeScore = isVip ? 1000 : 0;
-                        const rowDist = Math.abs(sortedRowKeys.indexOf(seat.SeatRow) - midRowIdx);
-                        const rowScore = 100 - (rowDist * 10);
-                        const numDist = Math.abs(seat.SeatNumber - rowCenters[seat.SeatRow]);
-                        const numScore = 50 - (numDist * 2);
-
-                        candidates.push({
-                            seat,
-                            score: typeScore + rowScore + numScore
-                        });
-                    }
-                });
-
-                if (candidates.length > 0) {
-                    candidates.sort((a, b) => b.score - a.score);
-                    const best = candidates[0].seat;
-
-                    // Select it
-                    selectedSeats.add(best.SeatID);
-                    const el = getSeatEl(best.SeatID);
-                    if (el) el.classList.add('selected');
-                    if (socket) socket.emit('holdSeat', { showtimeId, seatId: best.SeatID });
-
-                    startTimer();
-                    updateSummary();
-                    showToast(`Đã chọn ghế VIP/Thường tốt nhất: Hàng ${best.SeatRow} Ghế ${best.SeatNumber}`);
-                } else {
-                    showToast('Xin lỗi, không có ghế đơn lẻ nào còn trống!', 'error');
-                }
-            } else if (activeSeatFilter === 'couple') {
-                const candidates = []; // { type: 'couple' | 'vip' | 'normal', seats: [s1, s2], score: number }
-
-                // 1. Look for physical Couple seats
-                sortedRowKeys.forEach(row => {
-                    if (coupleRows.has(row)) {
-                        const rowSeats = rows[row];
-                        for (let i = 0; i < rowSeats.length; i += 2) {
-                            const s1 = rowSeats[i];
-                            const s2 = rowSeats[i + 1];
-                            if (s1 && s2 && isSeatAvailable(s1) && isSeatAvailable(s2)) {
-                                const rowDist = Math.abs(sortedRowKeys.indexOf(row) - midRowIdx);
-                                const rowScore = 100 - (rowDist * 10);
-                                const numDist = Math.abs(((s1.SeatNumber + s2.SeatNumber) / 2) - rowCenters[row]);
-                                const numScore = 50 - (numDist * 2);
-
-                                candidates.push({
-                                    type: 'couple',
-                                    seats: [s1, s2],
-                                    score: 2000 + rowScore + numScore
-                                });
-                            }
-                        }
-                    } else {
-                        // 2. Adjacent pairs in normal rows
-                        const rowSeats = rows[row];
-                        const total = rowSeats.length;
-                        const half = Math.floor(total / 2);
-                        for (let i = 0; i < rowSeats.length - 1; i++) {
-                            // Can't cross aisle gap
-                            if (total > 4 && i === half - 1) continue;
-                            const s1 = rowSeats[i];
-                            const s2 = rowSeats[i + 1];
-                            if (isSeatAvailable(s1) && isSeatAvailable(s2)) {
-                                const s1Vip = s1.SeatType === 'VIP';
-                                const s2Vip = s2.SeatType === 'VIP';
-                                let baseScore = 0;
-                                if (s1Vip && s2Vip) baseScore = 1000;
-                                else if (s1Vip || s2Vip) baseScore = 500;
-
-                                const rowDist = Math.abs(sortedRowKeys.indexOf(row) - midRowIdx);
-                                const rowScore = 100 - (rowDist * 10);
-                                const numDist = Math.abs(((s1.SeatNumber + s2.SeatNumber) / 2) - rowCenters[row]);
-                                const numScore = 50 - (numDist * 2);
-
-                                candidates.push({
-                                    type: s1Vip && s2Vip ? 'vip' : 'normal',
-                                    seats: [s1, s2],
-                                    score: baseScore + rowScore + numScore
-                                });
-                            }
-                        }
-                    }
-                });
-
-                if (candidates.length > 0) {
-                    candidates.sort((a, b) => b.score - a.score);
-                    const best = candidates[0];
-                    const s1 = best.seats[0];
-                    const s2 = best.seats[1];
-
-                    selectedSeats.add(s1.SeatID);
-                    selectedSeats.add(s2.SeatID);
-
-                    // Add visual selected class
-                    // If it is couple seat element, it has data-id-1 and data-id-2
-                    const el = getSeatEl(s1.SeatID);
-                    if (el) el.classList.add('selected');
-
-                    if (socket) {
-                        socket.emit('holdSeat', { showtimeId, seatId: s1.SeatID });
-                        socket.emit('holdSeat', { showtimeId, seatId: s2.SeatID });
-                    }
-
-                    startTimer();
-                    updateSummary();
-
-                    if (best.type === 'couple') {
-                        showToast(`Đã tự động chọn ghế đôi Sweetbox tốt nhất: Hàng ${s1.SeatRow} Ghế ${s1.SeatNumber}-${s2.SeatNumber}`);
-                    } else {
-                        showToast(`Đã chọn cặp ghế VIP/Thường tốt nhất: Hàng ${s1.SeatRow} Ghế ${s1.SeatNumber}, ${s2.SeatNumber}`);
-                    }
-                } else {
-                    showToast('Xin lỗi, không còn ghế đôi hoặc cặp ghế trống nào!', 'error');
-                }
-            } else if (activeSeatFilter === 'group') {
-                const candidates = []; // { seats: Seat[], score: number }
-
-                sortedRowKeys.forEach(row => {
-                    const rowSeats = rows[row];
-                    const total = rowSeats.length;
-                    const half = Math.floor(total / 2);
-                    const isCoupleRow = coupleRows.has(row);
-
-                    if (isCoupleRow) {
-                        // Groups in couple row
-                        const requiredCouplePairs = Math.ceil(groupSize / 2);
-                        const couplePairsInRow = [];
-                        for (let i = 0; i < rowSeats.length; i += 2) {
-                            const s1 = rowSeats[i];
-                            const s2 = rowSeats[i + 1];
-                            if (s1 && s2) {
-                                couplePairsInRow.push({ s1, s2, available: isSeatAvailable(s1) && isSeatAvailable(s2) });
-                            }
-                        }
-
-                        for (let i = 0; i <= couplePairsInRow.length - requiredCouplePairs; i++) {
-                            let validBlock = true;
-                            const blockSeats = [];
-                            for (let j = 0; j < requiredCouplePairs; j++) {
-                                if (!couplePairsInRow[i + j].available) {
-                                    validBlock = false;
-                                    break;
-                                }
-                                blockSeats.push(couplePairsInRow[i + j].s1);
-                                blockSeats.push(couplePairsInRow[i + j].s2);
-                            }
-
-                            if (validBlock) {
-                                // Calculate score
-                                const rowDist = Math.abs(sortedRowKeys.indexOf(row) - midRowIdx);
-                                const rowScore = 100 - (rowDist * 10);
-                                const avgNum = blockSeats.reduce((sum, s) => sum + s.SeatNumber, 0) / blockSeats.length;
-                                const numDist = Math.abs(avgNum - rowCenters[row]);
-                                const numScore = 50 - (numDist * 2);
-
-                                candidates.push({
-                                    seats: blockSeats.slice(0, groupSize), // select exactly groupSize seats
-                                    score: 500 + rowScore + numScore // physical couple row bonus
-                                });
-                            }
-                        }
-                    } else {
-                        // Regular rows
-                        for (let i = 0; i <= rowSeats.length - groupSize; i++) {
-                            if (total > 4 && i < half && (i + groupSize - 1) >= half) {
-                                continue; // crossing aisle
-                            }
-                            let validBlock = true;
-                            const blockSeats = [];
-                            let vipCount = 0;
-
-                            for (let j = 0; j < groupSize; j++) {
-                                const s = rowSeats[i + j];
-                                if (!isSeatAvailable(s)) {
-                                    validBlock = false;
-                                    break;
-                                }
-                                blockSeats.push(s);
-                                if (s.SeatType === 'VIP') vipCount++;
-                            }
-
-                            if (validBlock) {
-                                const rowDist = Math.abs(sortedRowKeys.indexOf(row) - midRowIdx);
-                                const rowScore = 100 - (rowDist * 10);
-                                const avgNum = blockSeats.reduce((sum, s) => sum + s.SeatNumber, 0) / blockSeats.length;
-                                const numDist = Math.abs(avgNum - rowCenters[row]);
-                                const numScore = 50 - (numDist * 2);
-                                const vipScore = vipCount * 200;
-
-                                candidates.push({
-                                    seats: blockSeats,
-                                    score: vipScore + rowScore + numScore
-                                });
-                            }
-                        }
-                    }
-                });
-
-                if (candidates.length > 0) {
-                    candidates.sort((a, b) => b.score - a.score);
-                    const best = candidates[0];
-
-                    best.seats.forEach(s => {
-                        selectedSeats.add(s.SeatID);
-                        const el = getSeatEl(s.SeatID);
-                        if (el) el.classList.add('selected');
-                        if (socket) socket.emit('holdSeat', { showtimeId, seatId: s.SeatID });
-                    });
-
-                    startTimer();
-                    updateSummary();
-
-                    const desc = best.seats.map(s => `${s.SeatRow}${s.SeatNumber}`).join(', ');
-                    showToast(`Đã tự động chọn dãy ${groupSize} ghế liền kề tốt nhất: ${desc}`);
-                } else {
-                    showToast(`Không tìm thấy dãy ${groupSize} ghế trống liền kề nào!`, 'error');
-                }
-            }
         }
 
         // ──────────────────────────────────────────────
@@ -2344,6 +1821,7 @@
                     seatsList = json.data;
                     renderSeatGrid();
                     updateAvailability();
+                    updateSummary();
                 } else {
                     document.getElementById('seatMapContainer').innerHTML = `
                         <div class="error-state">
@@ -2400,20 +1878,34 @@
                 rowsMap[seat.SeatRow].push(seat);
             });
 
-            const sortedRows = Object.keys(rowsMap).sort();
-
-            // Determine which rows are couple rows
+            // Determine couple rows based on alphabetical order first
+            const alphabetRows = Object.keys(rowsMap).sort();
             const coupleRows = new Set();
-            sortedRows.forEach(row => {
+            alphabetRows.forEach(row => {
                 const seats = rowsMap[row];
                 if (seats.some(s => s.SeatType && s.SeatType.toLowerCase().includes('couple'))) {
                     coupleRows.add(row);
                 }
             });
-            // Fallback: if no explicit couple type, treat last row as couple
-            if (coupleRows.size === 0 && sortedRows.length > 0) {
-                coupleRows.add(sortedRows[sortedRows.length - 1]);
+            if (coupleRows.size === 0 && alphabetRows.length > 0) {
+                coupleRows.add(alphabetRows[alphabetRows.length - 1]);
             }
+
+            // Priority-based sort: Standard (3) > VIP (2) > Couple (1)
+            const getRowPriority = (row) => {
+                if (coupleRows.has(row)) return 1;
+                const seats = rowsMap[row] || [];
+                const hasVip = seats.some(s => s.SeatType === 'VIP');
+                if (hasVip) return 2;
+                return 3;
+            };
+
+            const sortedRows = [...alphabetRows].sort((a, b) => {
+                const prioA = getRowPriority(a);
+                const prioB = getRowPriority(b);
+                if (prioA !== prioB) return prioB - prioA;
+                return a.localeCompare(b);
+            });
 
             sortedRows.forEach(row => {
                 const rowDiv = document.createElement('div');
@@ -2470,27 +1962,22 @@
                             const seatPrice = basePrice * 1.5;
                             addTooltipListeners(coupleEl, `Ghế Cặp Đôi ${row}${s1.SeatNumber}-${s2.SeatNumber}`, seatPrice);
                         }
-
                         rowDiv.appendChild(coupleEl);
                     }
                 } else {
-                    // Normal / VIP row
                     const rowSeats = rowsMap[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
-                    const total = rowSeats.length;
-                    const half = Math.floor(total / 2);
-
-                    rowSeats.forEach((seat, idx) => {
-                        // Add aisle gap in middle of row
-                        if (idx === half && total > 4) {
+                    rowSeats.forEach((s, idx) => {
+                        const total = rowSeats.length;
+                        const half = Math.floor(total / 2);
+                        if (total > 4 && idx === half) {
                             const gap = document.createElement('div');
                             gap.className = 'aisle-gap';
                             rowDiv.appendChild(gap);
                         }
-                        const seatEl = makeSingleSeatEl(seat, false);
+                        const seatEl = makeSingleSeatEl(s, false);
                         rowDiv.appendChild(seatEl);
                     });
                 }
-
                 // Right label
                 const lblR = document.createElement('div');
                 lblR.className = 'row-label';
@@ -2500,6 +1987,7 @@
                 container.appendChild(rowDiv);
             });
         }
+
 
         function makeSingleSeatEl(seat, isInCoupleRow) {
             const isVip = seat.SeatType === 'VIP';
@@ -2531,25 +2019,149 @@
         }
 
         // ──────────────────────────────────────────────
+
+        //  Seat Selection Validation Logic (Cinema Standard)
+        //  Rule: No isolated (orphaned) single empty seat may exist
+        //        in any row segment where seats have been selected.
+        //        An empty seat is "isolated" when both sides are blocked:
+        //          - selected seat, booked/locked seat, row edge, or aisle gap
+        // ──────────────────────────────────────────────
+        function validateSeatSelection(proposedSet) {
+            if (proposedSet.size === 0) return { valid: true };
+
+            // Build row → sorted seats map
+            const rowsMap = {};
+            seatsList.forEach(s => {
+                if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = [];
+                rowsMap[s.SeatRow].push(s);
+            });
+
+            const coupleRows = getCoupleRows();
+
+            for (const row of Object.keys(rowsMap)) {
+                const rowSeats = [...rowsMap[row]].sort((a, b) => a.SeatNumber - b.SeatNumber);
+                const isCouple = coupleRows.has(row);
+
+                // Skip rows with no selections
+                if (!rowSeats.some(s => proposedSet.has(s.SeatID))) continue;
+
+                // Couple rows: must select whole pairs
+                if (isCouple) {
+                    for (let i = 0; i < rowSeats.length - 1; i += 2) {
+                        const s1 = rowSeats[i], s2 = rowSeats[i + 1];
+                        if (!s1 || !s2) continue;
+                        if (proposedSet.has(s1.SeatID) !== proposedSet.has(s2.SeatID)) {
+                            return { valid: false, message: `Ghế cặp đôi hàng ${row} phải chọn theo cặp (${row}${s1.SeatNumber}-${s2.SeatNumber}).` };
+                        }
+                    }
+                    continue;
+                }
+
+                // Single/VIP rows - split into segments at aisle
+                const total = rowSeats.length;
+                const aisleIdx = total > 4 ? Math.floor(total / 2) : -1;
+                const segments = [];
+                let seg = [];
+                for (let i = 0; i < total; i++) {
+                    if (i === aisleIdx) { segments.push(seg); seg = []; }
+                    seg.push(rowSeats[i]);
+                }
+                if (seg.length) segments.push(seg);
+
+                for (const segment of segments) {
+                    if (!segment.some(s => proposedSet.has(s.SeatID))) continue;
+                    const segLen = segment.length;
+
+                    // Rule 1: selected seats must be contiguous (no available gap between them)
+                    const selIdxs = segment.map((s,idx) => proposedSet.has(s.SeatID) ? idx : -1).filter(idx => idx !== -1);
+                    for (let i = selIdxs[0]; i <= selIdxs[selIdxs.length - 1]; i++) {
+                        const s = segment[i];
+                        if (!proposedSet.has(s.SeatID) && s.SeatStatus !== 'booked' && !lockedByOthers.has(s.SeatID)) {
+                            return { valid: false, message: `Ghế ${row}${s.SeatNumber} bị bỏ trống giữa ghế đã chọn — phải liền kề nhau!` };
+                        }
+                    }
+
+                    // Rule 2: No isolated (orphaned) single empty seat in segment
+                    for (let i = 0; i < segLen; i++) {
+                        const s = segment[i];
+                        if (proposedSet.has(s.SeatID)) continue;
+                        if (s.SeatStatus === 'booked' || lockedByOthers.has(s.SeatID)) continue;
+
+                        const leftBarrier  = i === 0        || proposedSet.has(segment[i-1].SeatID) || segment[i-1].SeatStatus === 'booked' || lockedByOthers.has(segment[i-1].SeatID);
+                        const rightBarrier = i === segLen-1 || proposedSet.has(segment[i+1].SeatID) || segment[i+1].SeatStatus === 'booked' || lockedByOthers.has(segment[i+1].SeatID);
+
+                        if (leftBarrier && rightBarrier) {
+                            return { valid: false, message: `Ghế ${row}${s.SeatNumber} sẽ bị cô lập (bỏ trống 1 ghế đơn). Hãy chọn thêm hoặc điều chỉnh!` };
+                        }
+                    }
+                }
+            }
+
+            return { valid: true };
+        }
+
+        function updateSeatDimming() {
+            if (!seatsList || seatsList.length === 0) return;
+
+            document.querySelectorAll('.seat').forEach(el => {
+                el.classList.remove('dimmed');
+            });
+
+            const coupleRows = getCoupleRows();
+
+            seatsList.forEach(seat => {
+                if (seat.SeatStatus === 'booked' || lockedByOthers.has(seat.SeatID)) return;
+                if (selectedSeats.has(seat.SeatID)) return;
+
+                const el = getSeatEl(seat.SeatID);
+                if (!el) return;
+
+                const proposedSet = new Set(selectedSeats);
+                if (coupleRows.has(seat.SeatRow)) {
+                    const pairNum = seat.SeatNumber % 2 === 0 ? seat.SeatNumber - 1 : seat.SeatNumber + 1;
+                    const pairSeat = seatsList.find(s => s.SeatRow === seat.SeatRow && s.SeatNumber === pairNum);
+                    proposedSet.add(seat.SeatID);
+                    if (pairSeat) proposedSet.add(pairSeat.SeatID);
+                } else {
+                    proposedSet.add(seat.SeatID);
+                }
+
+                const res = validateSeatSelection(proposedSet);
+                if (!res.valid) {
+                    el.classList.add('dimmed');
+                }
+            });
+        }
+
+        // ──────────────────────────────────────────────
         //  Seat Click Handlers
         // ──────────────────────────────────────────────
         function handleSingleSeat(el, seatId) {
             if (el.classList.contains('booked') || el.classList.contains('locked') || lockedByOthers.has(seatId)) return;
 
-            // Disable active filter on manual click
-            if (activeSeatFilter) {
-                activeSeatFilter = null;
-                document.querySelectorAll('.filter-card').forEach(card => card.classList.remove('active'));
-                const groupSelector = document.getElementById('groupSizeSelector');
-                if (groupSelector) groupSelector.style.display = 'none';
-                clearVisualSeatFiltering();
+            if (el.classList.contains('dimmed')) {
+                const proposedSet = new Set(selectedSeats);
+                proposedSet.add(seatId);
+                const valRes = validateSeatSelection(proposedSet);
+                showToast(valRes.message || 'Không thể chọn ghế này!', 'warn');
+                return;
             }
+
+
 
             if (selectedSeats.has(seatId)) {
                 selectedSeats.delete(seatId);
                 el.classList.remove('selected');
                 if (socket) socket.emit('releaseSeat', { showtimeId, seatId });
             } else {
+                const proposedSet = new Set(selectedSeats);
+                proposedSet.add(seatId);
+                const valRes = validateSeatSelection(proposedSet);
+                if (!valRes.valid) {
+                    showToast(valRes.message, 'warn');
+                    return;
+                }
+
                 if (selectedSeats.size >= 8) {
                     showToast('Bạn chỉ được chọn tối đa 8 ghế!', 'warn');
                     return;
@@ -2566,14 +2178,16 @@
         function handleCoupleSeat(el, seatId1, seatId2) {
             if (el.classList.contains('booked') || el.classList.contains('locked') || lockedByOthers.has(seatId1) || lockedByOthers.has(seatId2)) return;
 
-            // Disable active filter on manual click
-            if (activeSeatFilter) {
-                activeSeatFilter = null;
-                document.querySelectorAll('.filter-card').forEach(card => card.classList.remove('active'));
-                const groupSelector = document.getElementById('groupSizeSelector');
-                if (groupSelector) groupSelector.style.display = 'none';
-                clearVisualSeatFiltering();
+            if (el.classList.contains('dimmed')) {
+                const proposedSet = new Set(selectedSeats);
+                proposedSet.add(seatId1);
+                proposedSet.add(seatId2);
+                const valRes = validateSeatSelection(proposedSet);
+                showToast(valRes.message || 'Không thể chọn ghế này!', 'warn');
+                return;
             }
+
+
 
             const alreadySelected = selectedSeats.has(seatId1) && selectedSeats.has(seatId2);
 
@@ -2586,6 +2200,15 @@
                     socket.emit('releaseSeat', { showtimeId, seatId: seatId2 });
                 }
             } else {
+                const proposedSet = new Set(selectedSeats);
+                proposedSet.add(seatId1);
+                proposedSet.add(seatId2);
+                const valRes = validateSeatSelection(proposedSet);
+                if (!valRes.valid) {
+                    showToast(valRes.message, 'warn');
+                    return;
+                }
+
                 if (selectedSeats.size >= 8) {
                     showToast('Bạn chỉ được chọn tối đa 8 ghế!', 'warn');
                     return;
@@ -2651,6 +2274,7 @@
                 if (mobileSeats) mobileSeats.textContent = 'Chưa chọn';
                 if (mobileTotal) mobileTotal.textContent = '0 ₫';
                 if (mobileBtnContinue) mobileBtnContinue.disabled = true;
+                updateSeatDimming();
                 return;
             }
 
@@ -2739,6 +2363,7 @@
             updateAvailability();
             // Sync 3D view if active
             if (typeof update3DSeatColors === 'function') update3DSeatColors();
+            updateSeatDimming();
         }
 
         function updateAvailability() {
@@ -2777,6 +2402,12 @@
         // ──────────────────────────────────────────────
         function confirmSeats() {
             if (selectedSeats.size === 0 || !showtimeData) return;
+
+            const validation = validateSeatSelection(selectedSeats);
+            if (!validation.valid) {
+                showToast(validation.message, 'warn');
+                return;
+            }
 
             const basePrice = showtimeData.Price || 0;
             const coupleRows = getCoupleRows();
@@ -2935,7 +2566,33 @@
                 if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = [];
                 rowsMap[s.SeatRow].push(s);
             });
-            const sortedRows = Object.keys(rowsMap).sort();
+            
+            const alphabetRows = Object.keys(rowsMap).sort();
+            const coupleRows = new Set();
+            alphabetRows.forEach(row => {
+                const seats = rowsMap[row];
+                if (seats.some(s => s.SeatType && s.SeatType.toLowerCase().includes('couple'))) {
+                    coupleRows.add(row);
+                }
+            });
+            if (coupleRows.size === 0 && alphabetRows.length > 0) {
+                coupleRows.add(alphabetRows[alphabetRows.length - 1]);
+            }
+
+            const getRowPriority = (row) => {
+                if (coupleRows.has(row)) return 1;
+                const seats = rowsMap[row] || [];
+                const hasVip = seats.some(s => s.SeatType === 'VIP');
+                if (hasVip) return 2;
+                return 3;
+            };
+
+            const sortedRows = [...alphabetRows].sort((a, b) => {
+                const prioA = getRowPriority(a);
+                const prioB = getRowPriority(b);
+                if (prioA !== prioB) return prioB - prioA;
+                return a.localeCompare(b);
+            });
             const totalRows  = sortedRows.length;
 
             const SEAT_STEP = 1.08;
@@ -3206,12 +2863,13 @@
             // SEAT DATA
             // ============================================================
             const coupleRowSet = new Set();
-            sortedRows.forEach(row => {
+            const alphabetRowsForCoupleSet = Object.keys(rowsMap).sort();
+            alphabetRowsForCoupleSet.forEach(row => {
                 if (rowsMap[row].some(s => s.SeatType && s.SeatType.toLowerCase().includes('couple')))
                     coupleRowSet.add(row);
             });
-            if (coupleRowSet.size === 0 && totalRows > 0)
-                coupleRowSet.add(sortedRows[totalRows - 1]);
+            if (coupleRowSet.size === 0 && alphabetRowsForCoupleSet.length > 0)
+                coupleRowSet.add(alphabetRowsForCoupleSet[alphabetRowsForCoupleSet.length - 1]);
 
             // ============================================================
             // COLORS
