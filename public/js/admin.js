@@ -104,6 +104,95 @@ async function exportPdf() {
     }
 }
 
+async function exportCsv() {
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    if (!token) return alert('Vui lÃ²ng Ä‘Äƒng nháº­p!');
+
+    const params = new URLSearchParams();
+    if (dashCinemaId) params.set('cinemaId', dashCinemaId);
+    if (dashPeriod) params.set('period', dashPeriod);
+    const qs = params.toString() ? '?' + params.toString() : '';
+
+    try {
+        const res = await fetch('/api/admin/stats/export-csv' + qs, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            return alert(errData.message || 'KhÃ´ng thá»ƒ xuáº¥t file CSV.');
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'D-Cinema-Report.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error('Error downloading CSV:', err);
+        alert('Lá»—i káº¿t ná»‘i khi xuáº¥t CSV!');
+    }
+}
+
+async function exportExcel() {
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    if (!token) return alert('Vui lÃ²ng Ä‘Äƒng nháº­p!');
+
+    const params = new URLSearchParams();
+    if (dashCinemaId) params.set('cinemaId', dashCinemaId);
+    if (dashPeriod) params.set('period', dashPeriod);
+    const qs = params.toString() ? '?' + params.toString() : '';
+
+    try {
+        const res = await fetch('/api/admin/stats/export-excel' + qs, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            return alert(errData.message || 'KhÃ´ng thá»ƒ xuáº¥t file Excel.');
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'D-Cinema-Report.xls';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error('Error downloading Excel:', err);
+        alert('Lá»—i káº¿t ná»‘i khi xuáº¥t Excel!');
+    }
+}
+
+function ensureReportExportButtons() {
+    const actions = document.querySelector('.heading-actions');
+    if (!actions || document.getElementById('btnExportCsv')) return;
+
+    const csvBtn = document.createElement('button');
+    csvBtn.className = 'btn-export';
+    csvBtn.id = 'btnExportCsv';
+    csvBtn.type = 'button';
+    csvBtn.onclick = exportCsv;
+    csvBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> CSV';
+
+    const excelBtn = document.createElement('button');
+    excelBtn.className = 'btn-export';
+    excelBtn.id = 'btnExportExcel';
+    excelBtn.type = 'button';
+    excelBtn.onclick = exportExcel;
+    excelBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel';
+
+    actions.appendChild(csvBtn);
+    actions.appendChild(excelBtn);
+}
 
 async function fetchLiveRoomsStatus() {
     try {
@@ -739,6 +828,7 @@ function navigate(page, btn) {
 
     if (page === 'promotions') {
         loadPromotions();
+        loadNewsArticles();
     }
     
     if (page === 'pricing' || page === 'settings') {
@@ -2496,6 +2586,7 @@ window.saveSeatLayout = async function () {
    INIT
 ══════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
+    ensureReportExportButtons();
     loadMovies();
     loadRecentTransactions();
     loadFnB();
@@ -2992,6 +3083,170 @@ async function submitQuickSell() {
 /* ════════════════════════════════════════════════
    PROMOTIONS MANAGEMENT
 ════════════════════════════════════════════════ */
+let NEWS_DATA = [];
+
+function adminEscape(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function formatAdminDate(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('vi-VN');
+}
+
+function toDateInputValue(value) {
+    const date = value ? new Date(value) : new Date();
+    if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 10);
+    return date.toISOString().slice(0, 10);
+}
+
+async function loadNewsArticles() {
+    try {
+        const res = await apiFetch('/api/admin/news');
+        if (res.success) {
+            NEWS_DATA = res.data || [];
+            renderNewsAdminTable();
+        }
+    } catch (err) {
+        console.error('[Admin] loadNewsArticles:', err);
+    }
+}
+
+function renderNewsAdminTable() {
+    const body = document.getElementById('newsAdminBody');
+    if (!body) return;
+    if (!NEWS_DATA.length) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có bài viết nào.</td></tr>';
+        return;
+    }
+    body.innerHTML = NEWS_DATA.map(item => `
+        <tr class="txn-row">
+            <td><img src="${item.ImageURL || 'images/default_poster.svg'}" alt="${adminEscape(item.Title)}" onerror="this.onerror=null;this.src='images/default_poster.svg'" style="width:70px;height:48px;object-fit:cover;border-radius:6px;box-shadow:var(--shadow-xs);border:1px solid var(--border);"></td>
+            <td>
+                <div style="font-weight:700;color:var(--text);font-size:0.88rem;">${adminEscape(item.Title)}</div>
+                <div style="font-size:0.78rem;color:var(--text2);margin-top:4px;line-height:1.4;">${adminEscape((item.Summary || '').substring(0, 90))}${item.Summary && item.Summary.length > 90 ? '...' : ''}</div>
+            </td>
+            <td><span class="status-badge ${item.Type === 'events' ? 'active' : 'finished'}">${item.Type === 'events' ? 'Sự kiện' : 'Tin tức'}</span></td>
+            <td style="color:var(--text2);font-size:0.84rem;">${formatAdminDate(item.PublishedAt)}</td>
+            <td>${item.IsFeatured ? '<span class="status-badge active">Nổi bật</span>' : '<span class="status-badge finished">Thường</span>'}</td>
+            <td>${item.IsActive ? '<span class="status-badge active">Đang hiện</span>' : '<span class="status-badge finished">Đã ẩn</span>'}</td>
+            <td>
+                <div class="table-actions">
+                    <button class="tb-icon-sm" title="Sửa" onclick="openNewsModal(${item.ArticleID})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                    <button class="tb-icon-sm" title="${item.IsActive ? 'Ẩn' : 'Hiện'}" onclick="toggleNewsArticle(${item.ArticleID})" style="color:${item.IsActive ? '#6b7280' : '#10b981'}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    <button class="tb-icon-sm danger" title="Xóa" onclick="deleteNewsArticle(${item.ArticleID})" style="color:var(--danger)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openNewsModal(id) {
+    document.getElementById('newsForm').reset();
+    document.getElementById('newsCurrentImg').innerHTML = '';
+    document.getElementById('newsPublishedAt').value = toDateInputValue();
+    document.getElementById('newsActive').checked = true;
+    document.getElementById('newsFeatured').checked = false;
+    document.getElementById('newsId').value = '';
+    document.getElementById('newsModalTitle').textContent = 'THÊM TIN TỨC';
+    if (id) {
+        const item = NEWS_DATA.find(x => x.ArticleID === id);
+        if (!item) return;
+        document.getElementById('newsModalTitle').textContent = 'SỬA TIN TỨC';
+        document.getElementById('newsId').value = item.ArticleID;
+        document.getElementById('newsTitle').value = item.Title || '';
+        document.getElementById('newsType').value = item.Type || 'news';
+        document.getElementById('newsSummary').value = item.Summary || '';
+        document.getElementById('newsContent').value = item.Content || '';
+        document.getElementById('newsAuthor').value = item.Author || '';
+        document.getElementById('newsPublishedAt').value = toDateInputValue(item.PublishedAt);
+        document.getElementById('newsBadge').value = item.BadgeLabel || '';
+        document.getElementById('newsSort').value = item.SortOrder || 0;
+        document.getElementById('newsFeatured').checked = !!item.IsFeatured;
+        document.getElementById('newsActive').checked = !!item.IsActive;
+        if (item.ImageURL) document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
+    }
+    document.getElementById('newsModalOverlay').style.display = 'block';
+    document.getElementById('newsAdminModal').style.display = 'block';
+}
+
+function closeNewsModal() {
+    document.getElementById('newsModalOverlay').style.display = 'none';
+    document.getElementById('newsAdminModal').style.display = 'none';
+}
+
+async function saveNewsArticle(event) {
+    event.preventDefault();
+    const id = document.getElementById('newsId').value;
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const formData = new FormData();
+    formData.append('title', document.getElementById('newsTitle').value);
+    formData.append('type', document.getElementById('newsType').value);
+    formData.append('summary', document.getElementById('newsSummary').value);
+    formData.append('content', document.getElementById('newsContent').value);
+    formData.append('author', document.getElementById('newsAuthor').value);
+    formData.append('publishedAt', document.getElementById('newsPublishedAt').value);
+    formData.append('badgeLabel', document.getElementById('newsBadge').value);
+    formData.append('sortOrder', document.getElementById('newsSort').value);
+    formData.append('isFeatured', document.getElementById('newsFeatured').checked ? 'true' : 'false');
+    formData.append('isActive', document.getElementById('newsActive').checked ? 'true' : 'false');
+    const imageFile = document.getElementById('newsImage').files[0];
+    if (imageFile) formData.append('image', imageFile);
+    try {
+        const res = await fetch(id ? `/api/admin/news/${id}` : '/api/admin/news', {
+            method: id ? 'PUT' : 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAdminToast(data.message, 'success');
+            closeNewsModal();
+            loadNewsArticles();
+        } else {
+            showAdminToast('Lỗi: ' + data.message, 'error');
+        }
+    } catch (err) {
+        console.error('[Admin] saveNewsArticle:', err);
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+async function deleteNewsArticle(id) {
+    if (!confirm('Bạn có chắc muốn xóa bài viết này không?')) return;
+    try {
+        const res = await apiFetch(`/api/admin/news/${id}`, { method: 'DELETE' });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadNewsArticles();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+async function toggleNewsArticle(id) {
+    try {
+        const res = await apiFetch(`/api/admin/news/${id}/toggle`, { method: 'PATCH' });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadNewsArticles();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
 let PROMO_DATA = [];
 
 async function loadPromotions() {

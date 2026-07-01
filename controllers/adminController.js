@@ -5,6 +5,165 @@
 const AdminModel = require('../models/adminModel');
 const PDFDocument = require('pdfkit');
 
+function formatReportDate(value) {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function csvCell(value) {
+  if (value === null || value === undefined) return '';
+  const text = value instanceof Date ? formatReportDate(value) : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function rowsToCsv(rows) {
+  return rows.map(row => row.map(csvCell).join(',')).join('\r\n');
+}
+
+function htmlCell(value) {
+  if (value === null || value === undefined) return '';
+  const text = value instanceof Date ? formatReportDate(value) : String(value);
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function htmlTable(title, rows) {
+  const body = rows.map((row, rowIndex) => {
+    const tag = rowIndex === 0 ? 'th' : 'td';
+    return `<tr>${row.map(cell => `<${tag}>${htmlCell(cell)}</${tag}>`).join('')}</tr>`;
+  }).join('');
+  return `<h2>${htmlCell(title)}</h2><table>${body}</table>`;
+}
+
+async function buildReportData(query = {}) {
+  const period = query.period || 'all';
+  const cinemaId = query.cinemaId || null;
+  const year = parseInt(query.year) || new Date().getFullYear();
+
+  const [stats, topMovies, recentTxns, monthlyRevenue, revenueStats] = await Promise.all([
+    AdminModel.getDashboardStats({ cinemaId, period }),
+    AdminModel.getTopMovies(20),
+    AdminModel.getRecentTransactions(50),
+    AdminModel.getMonthlyRevenue(year, cinemaId),
+    AdminModel.getRevenueStats({ cinemaId }),
+  ]);
+
+  return { period, cinemaId, year, stats, topMovies, recentTxns, monthlyRevenue, revenueStats };
+}
+
+function buildReportRows(report) {
+  const overviewRows = [
+    ['Metric', 'Value'],
+    ['Period', report.period],
+    ['Year', report.year],
+    ['Total Revenue', report.stats.TotalRevenue || 0],
+    ['Tickets Sold', report.stats.TicketSales || 0],
+    ['FnB Revenue', report.stats.FnBSales || 0],
+    ['Occupancy Rate (%)', report.stats.OccupancyRate || 0],
+  ];
+
+  const topMovieRows = [
+    ['Rank', 'Movie', 'Tickets', 'Today Revenue'],
+    ...(report.topMovies || []).map((movie, index) => [
+      index + 1,
+      movie.Title,
+      movie.TotalTickets || 0,
+      movie.TodayRevenue || 0,
+    ]),
+  ];
+
+  const transactionRows = [
+    ['Transaction ID', 'Branch', 'Item', 'Date', 'Amount', 'Status'],
+    ...(report.recentTxns || []).map(txn => [
+      txn.id,
+      txn.branch,
+      txn.item,
+      txn.date,
+      txn.amount,
+      txn.status,
+    ]),
+  ];
+
+  const monthlyRows = [
+    ['Month', 'Ticket Revenue', 'FnB Revenue', 'Total Revenue'],
+    ...(report.monthlyRevenue || []).map(item => {
+      const ticketRevenue = Number(item.TicketRevenue || 0);
+      const fnbRevenue = Number(item.FnBRevenue || 0);
+      return [item.MonthNumber, ticketRevenue, fnbRevenue, ticketRevenue + fnbRevenue];
+    }),
+  ];
+
+  const detailRows = [
+    ['Booking Date', 'Movie', 'Cinema', 'Tickets', 'Total Revenue', 'Average Ticket Revenue'],
+    ...((report.revenueStats && report.revenueStats.data) || []).map(item => [
+      formatReportDate(item.BookingDate).slice(0, 10),
+      item.MovieTitle,
+      item.CinemaName,
+      item.TotalTickets || 0,
+      item.TotalRevenue || 0,
+      item.AvgTicketRevenue || 0,
+    ]),
+  ];
+
+  return { overviewRows, topMovieRows, transactionRows, monthlyRows, detailRows };
+}
+
+function buildCsvReport(report) {
+  const rows = buildReportRows(report);
+  return [
+    'D-CINEMA DASHBOARD REPORT',
+    `Generated At,${csvCell(new Date())}`,
+    '',
+    'OVERVIEW',
+    rowsToCsv(rows.overviewRows),
+    '',
+    'TOP MOVIES',
+    rowsToCsv(rows.topMovieRows),
+    '',
+    'RECENT TRANSACTIONS',
+    rowsToCsv(rows.transactionRows),
+    '',
+    'MONTHLY REVENUE',
+    rowsToCsv(rows.monthlyRows),
+    '',
+    'REVENUE DETAILS',
+    rowsToCsv(rows.detailRows),
+  ].join('\r\n');
+}
+
+function buildExcelReport(report) {
+  const rows = buildReportRows(report);
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; color: #111827; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    h2 { font-size: 15px; margin: 24px 0 8px; color: #991b1b; }
+    .meta { color: #6b7280; margin-bottom: 16px; }
+    table { border-collapse: collapse; margin-bottom: 10px; }
+    th { background: #111827; color: #ffffff; font-weight: 700; }
+    th, td { border: 1px solid #d1d5db; padding: 6px 10px; mso-number-format: "\\@"; }
+  </style>
+</head>
+<body>
+  <h1>D-CINEMA DASHBOARD REPORT</h1>
+  <div class="meta">Generated at: ${htmlCell(formatReportDate(new Date()))}</div>
+  ${htmlTable('Overview', rows.overviewRows)}
+  ${htmlTable('Top Movies', rows.topMovieRows)}
+  ${htmlTable('Recent Transactions', rows.transactionRows)}
+  ${htmlTable('Monthly Revenue', rows.monthlyRows)}
+  ${htmlTable('Revenue Details', rows.detailRows)}
+</body>
+</html>`;
+}
+
 function removeAccents(str) {
   if (!str) return '';
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, 'd').replace(/Đ/g, 'D');
@@ -649,6 +808,36 @@ exports.exportPdf = async (req, res) => {
   } catch (err) {
     console.error('[adminController] exportPdf:', err.message);
     res.status(500).json({ success: false, message: 'Server error generating PDF.' });
+  }
+};
+
+exports.exportCsv = async (req, res) => {
+  try {
+    const report = await buildReportData(req.query);
+    const csv = buildCsvReport(report);
+    const filename = `D-Cinema-Report-${new Date().toISOString().slice(0, 10)}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(Buffer.from('\ufeff' + csv, 'utf8'));
+  } catch (err) {
+    console.error('[adminController] exportCsv:', err.message);
+    res.status(500).json({ success: false, message: 'Server error generating CSV report.' });
+  }
+};
+
+exports.exportExcel = async (req, res) => {
+  try {
+    const report = await buildReportData(req.query);
+    const workbookHtml = buildExcelReport(report);
+    const filename = `D-Cinema-Report-${new Date().toISOString().slice(0, 10)}.xls`;
+
+    res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(Buffer.from('\ufeff' + workbookHtml, 'utf8'));
+  } catch (err) {
+    console.error('[adminController] exportExcel:', err.message);
+    res.status(500).json({ success: false, message: 'Server error generating Excel report.' });
   }
 };
 

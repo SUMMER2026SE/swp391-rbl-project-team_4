@@ -748,17 +748,61 @@ const app = {
         if (!grid) return;
 
         try {
-            const res = await fetch(`${API_BASE}/api/movies/promotions`);
-            const json = await res.json();
+            // Lấy cả Khuyến mãi và Tin tức
+            const [promoRes, newsRes] = await Promise.all([
+                fetch(`${API_BASE}/api/movies/promotions`),
+                fetch(`${API_BASE}/api/news`)
+            ]);
+            const promoJson = await promoRes.json();
+            const newsJson = await newsRes.json();
 
-            if (!json.success || !json.data || json.data.length === 0) {
-                grid.innerHTML = '<p style="color:#999;padding:20px;text-align:center;">Chưa có khuyến mãi nào.</p>';
+            let combined = [];
+
+            if (promoJson.success && promoJson.data) {
+                combined = combined.concat(promoJson.data.map(p => ({
+                    id: p.PromotionID,
+                    type: 'promo',
+                    title: p.Title,
+                    description: p.Description,
+                    badge: p.BadgeLabel,
+                    img: p.ImageURL,
+                    link: p.LinkURL || '#',
+                    isFeatured: p.IsFeatured,
+                    sortOrder: p.SortOrder,
+                    date: p.CreatedAt
+                })));
+            }
+
+            if (newsJson.success && newsJson.data) {
+                combined = combined.concat(newsJson.data.map(n => ({
+                    id: n.ArticleID,
+                    type: 'news',
+                    title: n.Title,
+                    description: n.Summary,
+                    badge: n.BadgeLabel || (n.Type === 'events' ? 'Sự kiện' : 'Tin tức'),
+                    img: n.ImageURL,
+                    link: 'news-events.html',
+                    isFeatured: n.IsFeatured,
+                    sortOrder: n.SortOrder,
+                    date: n.PublishedAt
+                })));
+            }
+
+            if (combined.length === 0) {
+                grid.innerHTML = '<p style="color:#999;padding:20px;text-align:center;">Chưa có tin tức & khuyến mãi nào.</p>';
                 return;
             }
 
-            const promos = json.data;
-            const featured = promos.find(p => p.IsFeatured) || promos[0];
-            const normals  = promos.filter(p => p.PromotionID !== featured.PromotionID);
+            // Ưu tiên Nổi bật, sau đó đến Thứ tự hiển thị, sau đó mới đến ngày mới nhất
+            combined.sort((a, b) => {
+                if (a.isFeatured && !b.isFeatured) return -1;
+                if (!a.isFeatured && b.isFeatured) return 1;
+                if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+                return new Date(b.date) - new Date(a.date);
+            });
+
+            const featured = combined.find(p => p.isFeatured) || combined[0];
+            const normals  = combined.filter(p => p !== featured).slice(0, 4); // Hiển thị thêm 4 thẻ phụ
 
             let html = '';
 
@@ -766,15 +810,15 @@ const app = {
             html += `
                 <div class="promo-card promo-featured">
                     <div class="promo-image">
-                        ${featured.BadgeLabel ? `<div class="promo-badge">${featured.BadgeLabel}</div>` : ''}
-                        <img src="${featured.ImageURL || 'images/default_poster.svg'}"
-                             alt="${featured.Title}"
+                        ${featured.badge ? `<div class="promo-badge">${featured.badge}</div>` : ''}
+                        <img src="${featured.img || 'images/default_poster.svg'}"
+                             alt="${featured.title}"
                              onerror="this.onerror=null;this.src='images/default_poster.svg'">
                     </div>
                     <div class="promo-content">
-                        <h3>${featured.Title}</h3>
-                        <p>${featured.Description || ''}</p>
-                        <a href="${featured.LinkURL || '#'}" class="btn-promo">Tìm Hiểu Thêm</a>
+                        <h3>${featured.title}</h3>
+                        <p>${featured.description || ''}</p>
+                        <a href="${featured.link}" class="btn-promo">Tìm Hiểu Thêm</a>
                     </div>
                 </div>`;
 
@@ -782,13 +826,13 @@ const app = {
             normals.forEach(p => {
                 html += `
                 <div class="promo-card promo-normal">
-                    ${p.BadgeLabel ? `<div class="promo-badge-overlay">${p.BadgeLabel}</div>` : ''}
-                    <img src="${p.ImageURL || 'images/default_poster.svg'}"
-                         alt="${p.Title}"
+                    ${p.badge ? `<div class="promo-badge-overlay">${p.badge}</div>` : ''}
+                    <img src="${p.img || 'images/default_poster.svg'}"
+                         alt="${p.title}"
                          onerror="this.onerror=null;this.src='images/default_poster.svg'">
                     <div class="promo-overlay-content">
-                        <h3>${p.Title}</h3>
-                        <p>${p.Description || ''}</p>
+                        <h3>${p.title}</h3>
+                        <p>${p.description || ''}</p>
                     </div>
                 </div>`;
             });

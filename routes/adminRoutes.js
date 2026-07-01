@@ -7,6 +7,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const adminCtrl = require('../controllers/adminController');
+const newsCtrl = require('../controllers/newsController');
 const { verifyToken, isSuperAdmin } = require('../middleware/authMiddleware');
 
 const storage = multer.diskStorage({
@@ -132,6 +133,12 @@ router.get('/stats/recent-transactions', adminCtrl.getRecentTransactions);
 // GET    /api/admin/stats/export-pdf   — Xuất báo cáo PDF
 router.get('/stats/export-pdf', adminCtrl.exportPdf);
 
+// GET    /api/admin/stats/export-csv   — Xuất báo cáo CSV
+router.get('/stats/export-csv', adminCtrl.exportCsv);
+
+// GET    /api/admin/stats/export-excel — Xuất báo cáo Excel
+router.get('/stats/export-excel', adminCtrl.exportExcel);
+
 // GET    /api/admin/stats/revenue      — Thống kê doanh thu
 router.get('/stats/revenue', adminCtrl.getRevenueStats);
 
@@ -165,6 +172,13 @@ router.delete('/promotions/:id', adminCtrl.deletePromotion);
 
 // PATCH  /api/admin/promotions/:id/toggle  — Bật/tắt trạng thái
 router.patch('/promotions/:id/toggle', adminCtrl.togglePromotionActive);
+
+// News article management
+router.get('/news', newsCtrl.getAdminArticles);
+router.post('/news', upload.single('image'), newsCtrl.createArticle);
+router.put('/news/:id', upload.single('image'), newsCtrl.updateArticle);
+router.delete('/news/:id', newsCtrl.deleteArticle);
+router.patch('/news/:id/toggle', newsCtrl.toggleArticleActive);
 
 
 // ==========================================

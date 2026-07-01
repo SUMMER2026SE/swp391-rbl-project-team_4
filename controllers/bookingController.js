@@ -9,6 +9,39 @@ const { sendBookingEmail } = require('../services/emailService');
 const { emitPaymentConfirmed } = require('../sockets/socketManager');
 const os = require('os');
 
+async function sendBookingConfirmationEmails(ticketIds, source = 'booking') {
+  for (const ticketId of ticketIds) {
+    try {
+      const ticketDetail = await BookingModel.getBookingDetail(ticketId);
+      if (!ticketDetail || !ticketDetail.UserEmail) {
+        console.warn(`[${source}] Skip booking email for ticket ${ticketId}: missing user email.`);
+        continue;
+      }
+
+      const foodStr = Array.isArray(ticketDetail.foodItems) && ticketDetail.foodItems.length > 0
+        ? ticketDetail.foodItems.map(f => `${f.Quantity}x ${f.Name}`).join(', ')
+        : '';
+      const ticketCode = ticketDetail.QRCode || ticketId.toString();
+      const totalAmount = Number(ticketDetail.TotalAmount || 0).toLocaleString('vi-VN') + 'đ';
+
+      await sendBookingEmail(ticketDetail.UserEmail, {
+        customerName: ticketDetail.UserFullName || 'Khach hang',
+        movieTitle: ticketDetail.MovieTitle,
+        cinemaName: ticketDetail.CinemaName,
+        roomName: ticketDetail.RoomName,
+        showtime: new Date(ticketDetail.StartTime).toLocaleString('vi-VN'),
+        seats: `${ticketDetail.SeatRow}${ticketDetail.SeatNumber}`,
+        food: foodStr,
+        totalAmount,
+        ticketCode,
+        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ticketCode)}`
+      });
+    } catch (emailErr) {
+      console.error(`[${source}] Failed to send booking email for ticket ${ticketId}:`, emailErr.message);
+    }
+  }
+}
+
 // ─────────────────────────────────────────────────────────────
 //  GET /api/bookings/food-beverages
 // ─────────────────────────────────────────────────────────────
@@ -310,6 +343,8 @@ exports.checkBookingStatus = async (req, res) => {
                   } catch (emitErr) {
                     console.warn('[Polling] emitPaymentConfirmed failed (non-critical):', emitErr.message);
                   }
+
+                  await sendBookingConfirmationEmails(ids, 'Polling');
                 } catch (dbErr) {
                   if (dbErr.code === 'DUPLICATE_TRANSACTION') {
                     console.log(`[SePay Polling Check] Giao dịch trùng lặp đã được xử lý thành công trước đó.`);

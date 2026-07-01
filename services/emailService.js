@@ -195,4 +195,79 @@ async function sendBookingEmail(toEmail, bookingInfo) {
   }
 }
 
-module.exports = { sendOTPEmail, sendBookingEmail };
+async function sendShowtimeReminderEmail(toEmail, reminderInfo) {
+  const mailOptions = {
+    from: `"D-Cinema" <${process.env.SMTP_EMAIL}>`,
+    to: toEmail,
+    subject: `Nhac lich chieu: ${reminderInfo.movieTitle} - D-Cinema`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+      </head>
+      <body style="margin:0;padding:0;background-color:#06060a;font-family:'Segoe UI',Arial,sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#06060a;padding:40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color:#0d0d14;border-radius:16px;border:1px solid rgba(255,255,255,0.06);overflow:hidden;">
+                <tr>
+                  <td style="background:linear-gradient(135deg,#dc2626,#991b1b);padding:32px 40px;text-align:center;">
+                    <h1 style="margin:0;color:#fff;font-size:28px;font-weight:900;letter-spacing:3px;">
+                      <span style="font-size:32px;">D</span>-CINEMA
+                    </h1>
+                    <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:13px;letter-spacing:2px;">
+                      SHOWTIME REMINDER
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:40px;">
+                    <h2 style="margin:0 0 16px;color:#f1f1f4;font-size:20px;font-weight:700;">
+                      Xin chao ${reminderInfo.customerName},
+                    </h2>
+                    <p style="margin:0 0 24px;color:#b7b7c8;font-size:15px;line-height:1.6;">
+                      Suat chieu cua ban sap bat dau. Vui long den rap som hon 15-20 phut de check-in va nhan bap nuoc neu co.
+                    </p>
+
+                    <div style="background:#1a1a24;padding:22px;border-radius:12px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.06);">
+                      <h3 style="color:#f87171;margin:0 0 14px;font-size:19px;">${reminderInfo.movieTitle}</h3>
+                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Rap:</strong> ${reminderInfo.cinemaName}</p>
+                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Phong:</strong> ${reminderInfo.roomName}</p>
+                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Thoi gian:</strong> ${reminderInfo.showtime}</p>
+                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Ghe:</strong> <span style="color:#fbbf24;font-size:18px;font-weight:800;">${reminderInfo.seats}</span></p>
+                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Ma ve:</strong> ${reminderInfo.ticketCodes}</p>
+                    </div>
+
+                    <p style="margin:0;color:#8b8b9e;font-size:13px;line-height:1.6;">
+                      Email nay duoc gui tu dong de nhac lich chieu. Neu ban da huy ve hoac can ho tro, vui long lien he quay dich vu D-Cinema.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:24px 40px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+                    <p style="margin:0;color:#55556a;font-size:12px;">
+                      D-CINEMA STUDIOS. ALL RIGHTS RESERVED.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('[EmailService] Showtime reminder email sent to:', toEmail, '| MessageID:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    console.error('[EmailService] Failed to send showtime reminder email:', err.message);
+    throw err;
+  }
+}
+
+module.exports = { sendOTPEmail, sendBookingEmail, sendShowtimeReminderEmail };

@@ -173,7 +173,7 @@
     <!-- Page Logic -->
     <script>
         // Data for news and events
-        const newsData = [
+        let newsData = [
             {
                 id: 1,
                 type: "events",
@@ -308,6 +308,44 @@
         let currentFilter = 'all';
         let searchQuery = '';
 
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatNewsDate(value) {
+            if (!value) return '';
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('vi-VN');
+        }
+
+        async function loadNewsFromApi() {
+            try {
+                const response = await fetch('/api/news');
+                const json = await response.json();
+                if (!json.success || !Array.isArray(json.data) || json.data.length === 0) return;
+
+                newsData = json.data.map(item => ({
+                    id: item.ArticleID,
+                    type: item.Type,
+                    badge: item.BadgeLabel || (item.Type === 'events' ? 'Sự kiện' : 'Tin tức'),
+                    badgeClass: item.IsFeatured ? 'badge-hot' : (item.Type === 'events' ? 'badge-event' : 'badge-news'),
+                    title: item.Title,
+                    desc: item.Summary || '',
+                    date: formatNewsDate(item.PublishedAt),
+                    img: item.ImageURL || 'images/promo_hero_banner.png',
+                    author: item.Author || 'D-Cinema',
+                    content: item.Content || `<p>${escapeHtml(item.Summary || '')}</p>`
+                }));
+            } catch (err) {
+                console.warn('Khong the tai tin tuc tu API, dung du lieu mac dinh:', err.message);
+            }
+        }
+
         // Render cards
         function renderNews() {
             newsGrid.innerHTML = '';
@@ -337,16 +375,16 @@
                 card.className = 'news-card';
                 card.innerHTML = `
                     <div class="card-img-wrapper">
-                        <span class="card-badge ${item.badgeClass}">${item.badge}</span>
-                        <img src="${item.img}" alt="${item.title}">
+                        <span class="card-badge ${item.badgeClass}">${escapeHtml(item.badge)}</span>
+                        <img src="${item.img}" alt="${escapeHtml(item.title)}">
                     </div>
                     <div class="card-content">
                         <div class="card-meta">
                             <span>🕒 ${item.date}</span>
                             <span>✍ ${item.author}</span>
                         </div>
-                        <h3 class="card-title">${item.title}</h3>
-                        <p class="card-desc">${item.desc}</p>
+                        <h3 class="card-title">${escapeHtml(item.title)}</h3>
+                        <p class="card-desc">${escapeHtml(item.desc)}</p>
                         <div class="card-btn-more" onclick="openDetail(${item.id})">
                             Xem chi tiết
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -403,7 +441,8 @@
         });
 
         // Update login state
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadNewsFromApi();
             renderNews();
             
             const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));

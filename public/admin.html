@@ -1056,10 +1056,39 @@
             <p>Thêm, sửa, xóa các chương trình khuyến mãi hiển thị trên trang chủ.</p>
           </div>
           <div class="heading-actions">
+            <button class="btn-add-main" onclick="openNewsModal()" style="background:#111827;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Thêm tin tức
+            </button>
             <button class="btn-add-main" onclick="openPromoModal()">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Thêm mới
             </button>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">Tin tức & Sự kiện</div>
+            <div style="color:var(--text2);font-size:0.85rem;">Quản lý bài viết hiển thị tại trang Tin tức & Sự kiện</div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" id="newsAdminTable">
+              <thead>
+                <tr>
+                  <th style="width:80px">ẢNH</th>
+                  <th>TIÊU ĐỀ</th>
+                  <th>LOẠI</th>
+                  <th>NGÀY ĐĂNG</th>
+                  <th>NỔI BẬT</th>
+                  <th>TRẠNG THÁI</th>
+                  <th>THAO TÁC</th>
+                </tr>
+              </thead>
+              <tbody id="newsAdminBody">
+                <tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -1363,7 +1392,7 @@
 <div id="adminToastContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
 
 <script src="/socket.io/socket.io.js"></script>
-<script src="js/admin.js?v=6"></script>
+<script src="js/admin.js?v=8"></script>
 
 <!-- Promotions Modal -->
 <div id="promoModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;" onclick="closePromoModal()"></div>
@@ -1420,6 +1449,84 @@
     </div>
     <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
       <button type="button" onclick="closePromoModal()" style="padding:10px 20px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-weight:600;">Hủy</button>
+      <button type="submit" style="padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Lưu</button>
+    </div>
+  </form>
+</div>
+
+<!-- News Modal -->
+<div id="newsModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:410;" onclick="closeNewsModal()"></div>
+<div id="newsAdminModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:411;background:var(--surface);border-radius:12px;padding:32px;width:680px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+    <h2 id="newsModalTitle" style="font-size:1.2rem;font-weight:800;color:var(--text);text-transform:uppercase;">THÊM TIN TỨC</h2>
+    <button onclick="closeNewsModal()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.4rem;line-height:1;">×</button>
+  </div>
+  <form id="newsForm" action="/api/admin/news" method="post" enctype="multipart/form-data" onsubmit="saveNewsArticle(event); return false;" style="display:flex;flex-direction:column;gap:16px;">
+    <input type="hidden" id="newsId">
+    <div style="display:flex;gap:14px;">
+      <div class="ff-group" style="flex:1;">
+        <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">TIÊU ĐỀ *</label>
+        <input type="text" id="newsTitle" required placeholder="Nhập tiêu đề bài viết"
+          style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+      </div>
+      <div class="ff-group" style="width:160px;">
+        <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">LOẠI</label>
+        <select id="newsType" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+          <option value="news">Tin tức</option>
+          <option value="events">Sự kiện</option>
+        </select>
+      </div>
+    </div>
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">TÓM TẮT</label>
+      <textarea id="newsSummary" rows="3" placeholder="Mô tả ngắn hiển thị trên thẻ tin tức"
+        style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;resize:vertical;"></textarea>
+    </div>
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">NỘI DUNG</label>
+      <textarea id="newsContent" rows="8" placeholder="Có thể nhập HTML cơ bản như <p>, <h3>, <ul>, <li>"
+        style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;resize:vertical;"></textarea>
+    </div>
+    <div style="display:flex;gap:14px;">
+      <div class="ff-group" style="flex:1;">
+        <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">TÁC GIẢ</label>
+        <input type="text" id="newsAuthor" placeholder="D-Cinema"
+          style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+      </div>
+      <div class="ff-group" style="width:190px;">
+        <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">NGÀY ĐĂNG</label>
+        <input type="date" id="newsPublishedAt"
+          style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+      </div>
+    </div>
+    <div style="display:flex;gap:14px;">
+      <div class="ff-group" style="flex:1;">
+        <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">BADGE</label>
+        <input type="text" id="newsBadge" placeholder="VD: Tin mới, Hot Event"
+          style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+      </div>
+      <div class="ff-group" style="width:130px;">
+        <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">THỨ TỰ</label>
+        <input type="number" id="newsSort" value="0" min="0"
+          style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
+      </div>
+    </div>
+    <div class="ff-group">
+      <label style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">UPLOAD ẢNH</label>
+      <input type="file" id="newsImage" accept="image/*"
+        style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.85rem;">
+      <div id="newsCurrentImg" style="margin-top:8px;font-size:0.8rem;color:var(--text2);"></div>
+    </div>
+    <div style="display:flex;gap:20px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:0.9rem;">
+        <input type="checkbox" id="newsFeatured" style="width:16px;height:16px;accent-color:var(--accent);"> Nổi bật
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:0.9rem;">
+        <input type="checkbox" id="newsActive" checked style="width:16px;height:16px;accent-color:var(--accent);"> Đang hiển thị
+      </label>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
+      <button type="button" onclick="closeNewsModal()" style="padding:10px 20px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-weight:600;">Hủy</button>
       <button type="submit" style="padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Lưu</button>
     </div>
   </form>

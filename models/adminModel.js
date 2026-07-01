@@ -1,5 +1,31 @@
 const { sql, getPool } = require('../config/db');
 
+let schemaReady = false;
+
+async function ensurePromotionsTable() {
+  if (schemaReady) return;
+  const pool = await getPool();
+  await pool.request().query(`
+    IF OBJECT_ID('dbo.Promotions', 'U') IS NULL
+    BEGIN
+      CREATE TABLE dbo.Promotions (
+        PromotionID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        Title NVARCHAR(255) NOT NULL,
+        Description NVARCHAR(1000) NULL,
+        BadgeLabel NVARCHAR(80) NULL,
+        ImageURL VARCHAR(500) NULL,
+        LinkURL VARCHAR(500) NULL,
+        IsFeatured BIT NOT NULL CONSTRAINT DF_Promotions_IsFeatured DEFAULT 0,
+        IsActive BIT NOT NULL CONSTRAINT DF_Promotions_IsActive DEFAULT 1,
+        SortOrder INT NOT NULL CONSTRAINT DF_Promotions_SortOrder DEFAULT 0,
+        CreatedAt DATETIME NOT NULL CONSTRAINT DF_Promotions_CreatedAt DEFAULT GETDATE(),
+        UpdatedAt DATETIME NULL
+      );
+    END;
+  `);
+  schemaReady = true;
+}
+
 class AdminModel {
   // --- MOVIE MANAGEMENT ---
   static async createMovie(data) {
@@ -951,6 +977,7 @@ class AdminModel {
   }
 
   static async getActivePromotions() {
+    await ensurePromotionsTable();
     const pool = await getPool();
     const result = await pool.request().query(`
       SELECT PromotionID, Title, Description, BadgeLabel, ImageURL, LinkURL,
@@ -963,6 +990,7 @@ class AdminModel {
   }
 
   static async createPromotion(data) {
+    await ensurePromotionsTable();
     const pool = await getPool();
     const result = await pool.request()
       .input('title', sql.NVarChar, data.title)
@@ -982,6 +1010,7 @@ class AdminModel {
   }
 
   static async updatePromotion(id, data) {
+    await ensurePromotionsTable();
     const pool = await getPool();
     const result = await pool.request()
       .input('id', sql.Int, id)
@@ -1011,6 +1040,7 @@ class AdminModel {
   }
 
   static async deletePromotion(id) {
+    await ensurePromotionsTable();
     const pool = await getPool();
     await pool.request()
       .input('id', sql.Int, id)
@@ -1018,6 +1048,7 @@ class AdminModel {
   }
 
   static async togglePromotionActive(id) {
+    await ensurePromotionsTable();
     const pool = await getPool();
     const result = await pool.request()
       .input('id', sql.Int, id)
