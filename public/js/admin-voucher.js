@@ -1,0 +1,437 @@
+// ==========================================
+// public/js/admin-voucher.js
+// JavaScript Client for Voucher Management
+// ==========================================
+
+const TOKEN = localStorage.getItem('token') || sessionStorage.getItem('token');
+if (!TOKEN) {
+    window.location.href = 'auth.html';
+}
+
+// Global state
+let vouchersData = [];
+let currentPage = 1;
+const itemsPerPage = 8;
+let searchQuery = '';
+let statusFilterValue = '';
+let editingVoucherId = null;
+
+// DOM Content Loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Parse user profile
+    const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (userStr) {
+        try {
+            const user = JSON.parse(userStr);
+            document.getElementById('adminName').textContent = user.FullName || 'Admin';
+        } catch (e) {}
+    }
+
+    // Set default dates in form (start = now, end = 30 days from now)
+    const now = new Date();
+    const future = new Date();
+    future.setDate(now.getDate() + 30);
+    
+    document.getElementById('startDate').value = formatDateTimeLocal(now);
+    document.getElementById('endDate').value = formatDateTimeLocal(future);
+
+    // Initial load
+    loadVouchers();
+});
+
+// Helper: Format Date for <input type="datetime-local">
+function formatDateTimeLocal(date) {
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(date - tzOffset)).toISOString().slice(0, 16);
+    return localISOTime;
+}
+
+// Helper: Format Date for displaying in UI
+function formatDateDisplay(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// API Helper
+async function apiCall(url, method = 'GET', body = null) {
+    try {
+        const headers = {
+            'Authorization': `Bearer ${TOKEN}`
+        };
+        if (body) {
+            headers['Content-Type'] = 'application/json';
+        }
+        
+        const options = { method, headers };
+        if (body) {
+            options.body = JSON.stringify(body);
+        }
+
+        const res = await fetch(url, options);
+        const data = await res.json();
+        return data;
+    } catch (err) {
+        console.error(`API Call failed [${method} ${url}]:`, err);
+        return { success: false, message: 'Lỗi kết nối máy chủ.' };
+    }
+}
+
+// Show Toast message
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <span>${message}</span>
+        <span style="cursor:pointer; font-weight:bold; margin-left:12px;" onclick="this.parentElement.remove()">×</span>
+    `;
+
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.remove();
+    }, 4000);
+}
+
+// Load Vouchers from Server
+async function loadVouchers() {
+    let url = `/api/admin/vouchers`;
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('search', searchQuery);
+    if (statusFilterValue) params.set('status', statusFilterValue);
+    
+    const qs = params.toString();
+    if (qs) url += `?${qs}`;
+
+    const res = await apiCall(url);
+    if (res.success) {
+        vouchersData = res.data;
+        renderVouchersTable();
+    } else {
+        showToast(res.message || 'Không thể tải danh sách voucher', 'error');
+    }
+}
+
+// Render Table with Pagination & Filters
+function renderVouchersTable() {
+    const tbody = document.getElementById('voucherListContainer');
+    if (!tbody) return;
+
+    // Filter results locally or calculate client pagination
+    const totalItems = vouchersData.length;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+    const paginatedItems = vouchersData.slice(startIndex, endIndex);
+
+    if (totalItems === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center">Không tìm thấy voucher nào.</td></tr>`;
+        updatePaginationInfo(0, 0, 0);
+        return;
+    }
+
+    let html = '';
+    paginatedItems.forEach(v => {
+        // Double check exp status
+        const isExpired = new Date(v.EndDate) < new Date();
+        const displayStatus = isExpired ? 'Expired' : v.Status;
+        
+        let statusBadge = '';
+        if (displayStatus === 'Active') {
+            statusBadge = `<span class="badge badge-active">Hoạt động</span>`;
+        } else if (displayStatus === 'Expired') {
+            statusBadge = `<span class="badge badge-expired">Hết hạn</span>`;
+        } else {
+            statusBadge = `<span class="badge badge-inactive">Tạm ẩn</span>`;
+        }
+
+        const discVal = parseFloat(v.DiscountValue);
+        const discountText = v.DiscountType === 'Percentage' 
+            ? `${discVal}%` 
+            : `${discVal.toLocaleString('vi-VN')} đ`;
+
+        const minOrder = parseFloat(v.MinimumOrder).toLocaleString('vi-VN') + ' đ';
+        const limitText = `${v.UsedCount} / ${v.UsageLimit}`;
+        const duration = `Từ: ${formatDateDisplay(v.StartDate)}<br>Đến: ${formatDateDisplay(v.EndDate)}`;
+
+        // Expired vouchers disable edit if status is Expired
+        const disableEdit = displayStatus === 'Expired';
+        const editButton = disableEdit 
+            ? `<button class="btn-icon" style="opacity:0.3; cursor:not-allowed;" title="Voucher đã hết hạn, không được sửa" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`
+            : `<button class="btn-icon edit-btn" onclick="startEdit(${v.VoucherID})" title="Sửa"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`;
+
+        // Active toggle action
+        const toggleIcon = v.Status === 'Active' 
+            ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>`
+            : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+            
+        const toggleButton = disableEdit
+            ? ''
+            : `<button class="btn-icon" onclick="toggleActiveStatus(${v.VoucherID}, '${v.Status}')" title="${v.Status === 'Active' ? 'Vô hiệu hóa' : 'Kích hoạt'}">${toggleIcon}</button>`;
+
+        html += `
+            <tr>
+                <td style="font-weight:700; color:var(--primary-color);">${v.VoucherCode}</td>
+                <td>${v.VoucherName}</td>
+                <td style="font-weight:600; color:#fff;">${discountText}</td>
+                <td>${minOrder}</td>
+                <td>${limitText}</td>
+                <td style="font-size:0.8rem; color:var(--text-secondary);">${duration}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <div class="actions-cell">
+                        ${editButton}
+                        ${toggleButton}
+                        <button class="btn-icon delete-btn" onclick="deleteVoucher(${v.VoucherID})" title="Xóa mềm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+    updatePaginationInfo(startIndex + 1, endIndex, totalItems);
+}
+
+// Update pagination buttons state
+function updatePaginationInfo(start, end, total) {
+    const info = document.getElementById('paginationInfo');
+    if (info) {
+        info.textContent = total > 0 ? `Hiển thị ${start}-${end} trên tổng ${total}` : `Hiển thị 0 trên tổng 0`;
+    }
+
+    const prev = document.getElementById('btnPrevPage');
+    const next = document.getElementById('btnNextPage');
+    if (prev) prev.disabled = currentPage === 1;
+    if (next) next.disabled = end >= total;
+}
+
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderVouchersTable();
+    }
+}
+
+function nextPage() {
+    const totalItems = vouchersData.length;
+    if (currentPage * itemsPerPage < totalItems) {
+        currentPage++;
+        renderVouchersTable();
+    }
+}
+
+// Search & filter handling
+function handleSearch() {
+    searchQuery = document.getElementById('searchInput').value.trim();
+    currentPage = 1;
+    loadVouchers();
+}
+
+function handleFilter() {
+    statusFilterValue = document.getElementById('statusFilter').value;
+    currentPage = 1;
+    loadVouchers();
+}
+
+// Change Input field label based on Discount Type
+function handleDiscountTypeChange() {
+    const type = document.getElementById('discountType').value;
+    const label = document.getElementById('discountValueLabel');
+    const input = document.getElementById('discountValue');
+    
+    if (type === 'Percentage') {
+        label.textContent = 'Giá trị giảm (%) *';
+        input.placeholder = 'VD: 10';
+        input.max = '100';
+    } else {
+        label.textContent = 'Giá trị giảm (VND) *';
+        input.placeholder = 'VD: 50000';
+        input.removeAttribute('max');
+    }
+}
+
+// Edit voucher loader
+async function startEdit(id) {
+    const res = await apiCall(`/api/admin/vouchers/${id}`);
+    if (res.success && res.data) {
+        const v = res.data;
+        
+        // Double check Expired status
+        if (v.Status === 'Expired' || new Date(v.EndDate) < new Date()) {
+            showToast('Không thể chỉnh sửa voucher đã hết hạn!', 'error');
+            return;
+        }
+
+        editingVoucherId = v.VoucherID;
+        document.getElementById('voucherId').value = v.VoucherID;
+        document.getElementById('voucherCode').value = v.VoucherCode;
+        document.getElementById('voucherName').value = v.VoucherName;
+        document.getElementById('discountType').value = v.DiscountType;
+        document.getElementById('discountValue').value = v.DiscountValue;
+        document.getElementById('minimumOrder').value = v.MinimumOrder;
+        document.getElementById('maximumDiscount').value = v.MaximumDiscount;
+        document.getElementById('usageLimit').value = v.UsageLimit;
+        
+        document.getElementById('startDate').value = formatDateTimeLocal(new Date(v.StartDate));
+        document.getElementById('endDate').value = formatDateTimeLocal(new Date(v.EndDate));
+        
+        document.getElementById('description').value = v.Description || '';
+        document.getElementById('status').value = v.Status;
+
+        handleDiscountTypeChange();
+
+        document.getElementById('formTitle').textContent = 'CHỈNH SỬA VOUCHER';
+        document.getElementById('btnSubmit').textContent = 'Cập nhật';
+    } else {
+        showToast('Không thể lấy chi tiết voucher', 'error');
+    }
+}
+
+// Reset Form
+function resetForm() {
+    editingVoucherId = null;
+    document.getElementById('voucherForm').reset();
+    document.getElementById('voucherId').value = '';
+    document.getElementById('formTitle').textContent = 'TẠO VOUCHER MỚI';
+    document.getElementById('btnSubmit').textContent = 'Thêm Voucher';
+    
+    const now = new Date();
+    const future = new Date();
+    future.setDate(now.getDate() + 30);
+    
+    document.getElementById('startDate').value = formatDateTimeLocal(now);
+    document.getElementById('endDate').value = formatDateTimeLocal(future);
+    handleDiscountTypeChange();
+}
+
+// Submit Create/Update Form
+async function handleSubmit(event) {
+    event.preventDefault();
+
+    const code = document.getElementById('voucherCode').value.trim();
+    const name = document.getElementById('voucherName').value.trim();
+    const type = document.getElementById('discountType').value;
+    const value = parseFloat(document.getElementById('discountValue').value);
+    const minOrder = parseFloat(document.getElementById('minimumOrder').value);
+    const maxDiscount = parseFloat(document.getElementById('maximumDiscount').value);
+    const limit = parseInt(document.getElementById('usageLimit').value);
+    const startStr = document.getElementById('startDate').value;
+    const endStr = document.getElementById('endDate').value;
+    const desc = document.getElementById('description').value.trim();
+    const status = document.getElementById('status').value;
+
+    // Client-side Validations
+    if (!code) {
+        showToast('Mã voucher không được để trống.', 'error');
+        return;
+    }
+    if (!name) {
+        showToast('Tên chương trình không được để trống.', 'error');
+        return;
+    }
+    if (isNaN(value) || value <= 0) {
+        showToast('Giá trị giảm phải lớn hơn 0.', 'error');
+        return;
+    }
+    if (type === 'Percentage' && value > 100) {
+        showToast('Phần trăm giảm không được vượt quá 100%.', 'error');
+        return;
+    }
+    if (isNaN(minOrder) || minOrder < 0) {
+        showToast('Giá trị đơn hàng tối thiểu phải >= 0.', 'error');
+        return;
+    }
+    if (isNaN(maxDiscount) || maxDiscount < 0) {
+        showToast('Giá trị giảm tối đa phải >= 0.', 'error');
+        return;
+    }
+    if (isNaN(limit) || limit < 1) {
+        showToast('Giới hạn lượt dùng phải >= 1.', 'error');
+        return;
+    }
+
+    const start = new Date(startStr);
+    const end = new Date(endStr);
+    if (start >= end) {
+        showToast('Ngày bắt đầu phải nhỏ hơn ngày kết thúc.', 'error');
+        return;
+    }
+
+    const payload = {
+        voucherCode: code,
+        voucherName: name,
+        discountType: type,
+        discountValue: value,
+        minimumOrder: minOrder,
+        maximumDiscount: maxDiscount,
+        usageLimit: limit,
+        startDate: startStr,
+        endDate: endStr,
+        description: desc,
+        status: status
+    };
+
+    const submitBtn = document.getElementById('btnSubmit');
+    const origText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Đang xử lý...';
+
+    const url = editingVoucherId ? `/api/admin/vouchers/${editingVoucherId}` : `/api/admin/vouchers`;
+    const method = editingVoucherId ? 'PUT' : 'POST';
+
+    const res = await apiCall(url, method, payload);
+    submitBtn.disabled = false;
+    submitBtn.textContent = origText;
+
+    if (res.success) {
+        showToast(res.message || 'Lưu thành công!', 'success');
+        resetForm();
+        loadVouchers();
+    } else {
+        showToast(res.message || 'Lưu thất bại.', 'error');
+    }
+}
+
+// Toggle status Bật/Tắt trạng thái hoạt động
+async function toggleActiveStatus(id, currentStatus) {
+    const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+    const res = await apiCall(`/api/admin/vouchers/${id}`, 'PUT', { status: newStatus });
+    if (res.success) {
+        showToast(`Đã chuyển trạng thái sang ${newStatus === 'Active' ? 'Kích hoạt' : 'Tạm ẩn'}.`, 'success');
+        loadVouchers();
+    } else {
+        showToast(res.message || 'Không thể đổi trạng thái.', 'error');
+    }
+}
+
+// Soft Delete (marks as Inactive)
+async function deleteVoucher(id) {
+    if (!confirm('Bạn có chắc chắn muốn xóa voucher này không? (Chuyển trạng thái sang Inactive)')) {
+        return;
+    }
+
+    const res = await apiCall(`/api/admin/vouchers/${id}`, 'DELETE');
+    if (res.success) {
+        showToast('Đã xóa mềm voucher (Trạng thái Inactive).', 'success');
+        loadVouchers();
+        if (editingVoucherId === id) resetForm();
+    } else {
+        showToast(res.message || 'Không thể xóa voucher.', 'error');
+    }
+}
+
+// Logout handler
+function logout() {
+    if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        window.location.href = 'auth.html';
+    }
+}

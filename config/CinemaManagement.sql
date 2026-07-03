@@ -543,3 +543,32 @@ BEGIN
 END
 GO
 
+-- ═══════════════════ BẢNG VOUCHER KHUYẾN MÃI ═══════════════════
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Voucher')
+BEGIN
+    CREATE TABLE Voucher (
+        VoucherID INT IDENTITY(1,1) PRIMARY KEY,
+        VoucherCode VARCHAR(50) NOT NULL UNIQUE,
+        VoucherName NVARCHAR(255) NOT NULL,
+        DiscountType VARCHAR(50) NOT NULL, -- 'Percentage' hoặc 'Fixed Amount'
+        DiscountValue DECIMAL(18,2) NOT NULL,
+        MinimumOrder DECIMAL(18,2) DEFAULT 0,
+        MaximumDiscount DECIMAL(18,2) DEFAULT 0,
+        UsageLimit INT DEFAULT 1,
+        UsedCount INT DEFAULT 0,
+        StartDate DATETIME NOT NULL,
+        EndDate DATETIME NOT NULL,
+        Status VARCHAR(50) DEFAULT 'Active', -- 'Active', 'Inactive', 'Expired'
+        Description NVARCHAR(1000),
+        CreatedAt DATETIME DEFAULT GETDATE()
+    );
+
+    INSERT INTO Voucher (VoucherCode, VoucherName, DiscountType, DiscountValue, MinimumOrder, MaximumDiscount, UsageLimit, UsedCount, StartDate, EndDate, Status, Description)
+    VALUES 
+    ('KM10PERCENT', N'Khuyến mãi 10% mùa hè', 'Percentage', 10.00, 100000.00, 50000.00, 100, 12, '2026-06-01', '2026-08-31', 'Active', N'Giảm giá 10% tối đa 50k cho đơn hàng từ 100k.'),
+    ('KM100KFIXED', N'Khuyến mãi 100k tri ân', 'Fixed Amount', 100000.00, 500000.00, 100000.00, 50, 5, '2026-06-01', '2026-07-31', 'Active', N'Giảm trực tiếp 100k cho hóa đơn từ 500k.'),
+    ('KMEXPIRED', N'Khuyến mãi đã hết hạn', 'Percentage', 20.00, 50000.00, 20000.00, 20, 20, '2026-01-01', '2026-03-01', 'Expired', N'Chương trình giảm giá đầu năm.');
+END
+GO
+
+
