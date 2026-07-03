@@ -179,7 +179,7 @@ exports.createMovie = async (req, res) => {
     console.log('[adminController] req.body:', req.body);
     console.log('[adminController] req.file:', req.file);
 
-    const { title, description, director, duration, ageRating, status, mainCast, trailerURL } = req.body || {};
+    const { title, description, director, duration, ageRating, status, mainCast, trailerURL, genreIds } = req.body || {};
     if (!title || !duration) {
       return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc: title, duration.' });
     }
@@ -195,7 +195,8 @@ exports.createMovie = async (req, res) => {
       posterURL,
       status,
       mainCast,
-      trailerURL
+      trailerURL,
+      genreIds
     };
 
     const movie = await AdminModel.createMovie(movieData);
@@ -808,6 +809,62 @@ exports.exportPdf = async (req, res) => {
   } catch (err) {
     console.error('[adminController] exportPdf:', err.message);
     res.status(500).json({ success: false, message: 'Server error generating PDF.' });
+  }
+};
+
+exports.getGenres = async (req, res) => {
+  try {
+    const data = await AdminModel.getGenres({ includeInactive: req.query.includeInactive !== 'false' });
+    res.json({ success: true, count: data.length, data });
+  } catch (err) {
+    console.error('[adminController] getGenres:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.createGenre = async (req, res) => {
+  try {
+    const data = await AdminModel.createGenre(req.body.genreName || req.body.name);
+    res.status(201).json({ success: true, message: 'Đã thêm thể loại.', data });
+  } catch (err) {
+    console.error('[adminController] createGenre:', err.message);
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+exports.updateGenre = async (req, res) => {
+  try {
+    const data = await AdminModel.updateGenre(req.params.id, req.body.genreName || req.body.name);
+    if (!data) return res.status(404).json({ success: false, message: 'Không tìm thấy thể loại.' });
+    res.json({ success: true, message: 'Đã cập nhật thể loại.', data });
+  } catch (err) {
+    console.error('[adminController] updateGenre:', err.message);
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+exports.toggleGenre = async (req, res) => {
+  try {
+    const data = await AdminModel.toggleGenre(req.params.id);
+    if (!data) return res.status(404).json({ success: false, message: 'Không tìm thấy thể loại.' });
+    res.json({ success: true, message: 'Đã đổi trạng thái thể loại.', data });
+  } catch (err) {
+    console.error('[adminController] toggleGenre:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.deleteGenre = async (req, res) => {
+  try {
+    const data = await AdminModel.deleteGenre(req.params.id);
+    res.json({
+      success: true,
+      message: data && data.Deactivated ? 'Thể loại đang được dùng nên đã chuyển sang ẩn.' : 'Đã xóa thể loại.',
+      data
+    });
+  } catch (err) {
+    console.error('[adminController] deleteGenre:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
 
