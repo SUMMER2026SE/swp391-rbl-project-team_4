@@ -586,6 +586,132 @@ function buildChart(chartData) {
 ══════════════════════════ */
 let MOVIE_DATA = [];
 let filteredMovies = [];
+let GENRE_DATA = [];
+
+async function loadGenres() {
+    try {
+        const res = await apiFetch('/api/admin/genres');
+        if (res.success) {
+            GENRE_DATA = res.data || [];
+            renderGenreAdminList();
+            renderMovieGenreCheckboxes();
+        }
+    } catch (err) {
+        console.error('[Admin] loadGenres:', err);
+    }
+}
+
+function renderGenreAdminList() {
+    const wrap = document.getElementById('genreAdminList');
+    if (!wrap) return;
+    if (!GENRE_DATA.length) {
+        wrap.innerHTML = '<span style="color:var(--text2);font-size:0.85rem;">Chưa có thể loại nào.</span>';
+        return;
+    }
+    wrap.innerHTML = GENRE_DATA.map(g => `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:${g.IsActive ? 'var(--surface)' : '#f3f4f6'};">
+            <span style="font-weight:700;color:${g.IsActive ? 'var(--text)' : 'var(--text3)'};">${g.GenreName}</span>
+            <span style="font-size:0.75rem;color:var(--text2);">${g.MovieCount || 0} phim</span>
+            <button class="tb-icon-sm" title="Sửa" onclick="editGenre(${g.GenreID})">✎</button>
+            <button class="tb-icon-sm" title="${g.IsActive ? 'Ẩn' : 'Hiện'}" onclick="toggleGenre(${g.GenreID})">${g.IsActive ? 'Ẩn' : 'Hiện'}</button>
+            <button class="tb-icon-sm danger" title="Xóa" onclick="deleteGenre(${g.GenreID})">×</button>
+        </div>
+    `).join('');
+}
+
+function renderMovieGenreCheckboxes(selectedIds = []) {
+    const wrap = document.getElementById('movieGenreCheckboxes');
+    if (!wrap) return;
+    const activeGenres = GENRE_DATA.filter(g => g.IsActive);
+    if (!activeGenres.length) {
+        wrap.innerHTML = '<span style="color:var(--text2);font-size:0.85rem;">Chưa có thể loại. Hãy thêm ở trang Phim.</span>';
+        return;
+    }
+    const selectedSet = new Set(selectedIds.map(id => parseInt(id, 10)));
+    wrap.innerHTML = activeGenres.map(g => `
+        <label style="display:flex;align-items:center;gap:8px;color:var(--text);font-size:0.9rem;cursor:pointer;">
+            <input type="checkbox" class="movie-genre-checkbox" value="${g.GenreID}" ${selectedSet.has(g.GenreID) ? 'checked' : ''} style="accent-color:var(--accent);">
+            ${g.GenreName}
+        </label>
+    `).join('');
+}
+
+function getSelectedMovieGenreIds() {
+    return Array.from(document.querySelectorAll('.movie-genre-checkbox:checked')).map(input => input.value);
+}
+
+async function saveGenre() {
+    const input = document.getElementById('genreNameInput');
+    const name = input ? input.value.trim() : '';
+    if (!name) return alert('Vui lòng nhập tên thể loại.');
+    try {
+        const res = await apiFetch('/api/admin/genres', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ genreName: name })
+        });
+        if (res.success) {
+            input.value = '';
+            await loadGenres();
+            await loadMovies();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        alert('Lỗi khi lưu thể loại.');
+    }
+}
+
+async function editGenre(id) {
+    const genre = GENRE_DATA.find(g => g.GenreID === id);
+    if (!genre) return;
+    const name = prompt('Nhập tên thể loại mới:', genre.GenreName);
+    if (!name || !name.trim()) return;
+    try {
+        const res = await apiFetch(`/api/admin/genres/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ genreName: name.trim() })
+        });
+        if (res.success) {
+            await loadGenres();
+            await loadMovies();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        alert('Lỗi khi cập nhật thể loại.');
+    }
+}
+
+async function toggleGenre(id) {
+    try {
+        const res = await apiFetch(`/api/admin/genres/${id}/toggle`, { method: 'PATCH' });
+        if (res.success) {
+            await loadGenres();
+            await loadMovies();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        alert('Lỗi khi đổi trạng thái thể loại.');
+    }
+}
+
+async function deleteGenre(id) {
+    if (!confirm('Bạn có chắc muốn xóa thể loại này không? Nếu đang được dùng, hệ thống sẽ chuyển sang ẩn.')) return;
+    try {
+        const res = await apiFetch(`/api/admin/genres/${id}`, { method: 'DELETE' });
+        if (res.success) {
+            await loadGenres();
+            await loadMovies();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        alert('Lỗi khi xóa thể loại.');
+    }
+}
 
 async function loadMovies() {
     try {
@@ -629,9 +755,10 @@ function renderMovieTable() {
             </td>
             <td>
                 <div class="m-genres">
-                    <span class="genre-tag">${m.AgeRating || 'G'}</span>
+                    ${(m.Genres || 'Chưa gán').split(',').map(g => `<span class="genre-tag">${g.trim()}</span>`).join('')}
                 </div>
             </td>
+            <td><span class="genre-tag">${m.AgeRating || 'Chưa gán'}</span></td>
             <td><div class="m-duration">${m.Duration} phút</div></td>
             <td>
                 <div class="table-actions">
@@ -676,6 +803,8 @@ function editMovie(id) {
     document.getElementById('movieAgeRating').value = movie.AgeRating || '';
     document.getElementById('movieMainCast').value = movie.MainCast || '';
     document.getElementById('movieTrailerURL').value = movie.TrailerURL || '';
+    const selectedGenres = String(movie.GenreIDs || '').split(',').map(id => parseInt(id, 10)).filter(Boolean);
+    renderMovieGenreCheckboxes(selectedGenres);
     const preview = document.getElementById('posterPreview');
     if (movie.PosterURL) {
         preview.src = movie.PosterURL;
@@ -691,6 +820,7 @@ function openAddMovieModal() {
         document.querySelector('.btn-panel-save').textContent = 'Lưu Phim';
         document.getElementById('addMovieForm').reset();
         document.getElementById('posterPreview').style.display = 'none';
+        renderMovieGenreCheckboxes();
     }
     document.getElementById('addMovieModalOverlay').classList.add('show');
     document.getElementById('addMovieModal').classList.add('show');
@@ -749,6 +879,7 @@ async function saveMovie() {
         formData.append('ageRating', document.getElementById('movieAgeRating').value);
         formData.append('mainCast', document.getElementById('movieMainCast').value);
         formData.append('trailerURL', document.getElementById('movieTrailerURL').value);
+        formData.append('genreIds', getSelectedMovieGenreIds().join(','));
 
         const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         const url = editingMovieId ? `/api/admin/movies/${editingMovieId}` : '/api/admin/movies';
@@ -824,6 +955,11 @@ function navigate(page, btn) {
         const dateInput = document.getElementById('scheduleDateInput');
         if (dateInput) dateInput.value = scheduleDate;
         loadShowtimes();
+    }
+
+    if (page === 'movies') {
+        loadGenres();
+        loadMovies();
     }
 
     if (page === 'promotions') {
