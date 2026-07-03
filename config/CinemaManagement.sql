@@ -538,8 +538,16 @@ BEGIN
         Price DECIMAL(18,2) NOT NULL,
         ImageURL NVARCHAR(500),
         Status NVARCHAR(50) DEFAULT 'Active', -- 'Active', 'Inactive', 'Deleted'
-        CreatedAt DATETIME DEFAULT GETDATE()
+        CreatedAt DATETIME DEFAULT GETDATE(),
+        Stock INT DEFAULT 100
     );
+
+    INSERT INTO Combo (ComboName, Description, Price, ImageURL, Status, CreatedAt, Stock)
+    VALUES 
+    (N'Combo Couple', N'1 Bắp ngọt lớn + 2 Nước ngọt lớn', 95000.00, 'images/default_fnb.png', 'Active', GETDATE(), 150),
+    (N'Combo Family', N'2 Bắp ngọt lớn + 4 Nước ngọt lớn', 175000.00, 'images/default_fnb.png', 'Active', GETDATE(), 99),
+    (N'Combo Solo', N'1 Bắp ngọt nhỏ + 1 Nước ngọt lớn', 55000.00, 'images/default_fnb.png', 'Active', GETDATE(), 200),
+    (N'Combo Hotdog', N'1 ly coca lớn + 1 cây HotDog', 45000.00, 'images/default_fnb.png', 'Active', GETDATE(), 100);
 END
 GO
 

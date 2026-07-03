@@ -30,7 +30,7 @@ exports.getComboById = async (req, res) => {
 
 exports.createCombo = async (req, res) => {
     try {
-        const { comboName, description, price, status } = req.body;
+        const { comboName, description, price, status, stock } = req.body;
 
         // Validation
         if (!comboName || comboName.trim() === '') {
@@ -40,6 +40,11 @@ exports.createCombo = async (req, res) => {
         const parsedPrice = parseFloat(price);
         if (isNaN(parsedPrice) || parsedPrice < 0) {
             return res.status(400).json({ success: false, message: 'Giá combo phải là số lớn hơn hoặc bằng 0.' });
+        }
+
+        const parsedStock = parseInt(stock);
+        if (isNaN(parsedStock) || parsedStock < 0) {
+            return res.status(400).json({ success: false, message: 'Tồn kho combo phải là số lớn hơn hoặc bằng 0.' });
         }
 
         let imageURL = 'images/default_fnb.png';
@@ -52,7 +57,8 @@ exports.createCombo = async (req, res) => {
             description: description ? description.trim() : null,
             price: parsedPrice,
             imageURL,
-            status: status || 'Active'
+            status: status || 'Active',
+            stock: parsedStock
         });
 
         res.status(201).json({ success: true, message: 'Thêm combo thành công!', data: combo });
@@ -74,7 +80,7 @@ exports.updateCombo = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Không tìm thấy combo cần sửa.' });
         }
 
-        const { comboName, description, price, status } = req.body;
+        const { comboName, description, price, status, stock } = req.body;
         const updateData = {};
 
         // Validation
@@ -95,6 +101,14 @@ exports.updateCombo = async (req, res) => {
                 return res.status(400).json({ success: false, message: 'Giá combo phải là số lớn hơn hoặc bằng 0.' });
             }
             updateData.price = parsedPrice;
+        }
+
+        if (stock !== undefined) {
+            const parsedStock = parseInt(stock);
+            if (isNaN(parsedStock) || parsedStock < 0) {
+                return res.status(400).json({ success: false, message: 'Tồn kho combo phải là số lớn hơn hoặc bằng 0.' });
+            }
+            updateData.stock = parsedStock;
         }
 
         if (status !== undefined) {

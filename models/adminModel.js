@@ -472,13 +472,14 @@ class AdminModel {
 
   static async deleteFnB(id) {
     const pool = await getPool();
-    // Check if it's used in Ticket_FnB
-    const usageCheck = await pool.request()
+    // Delete reference records in junction tables
+    await pool.request()
       .input('id', sql.Int, id)
-      .query(`SELECT COUNT(*) as cnt FROM Ticket_FnB WHERE FnBID = @id`);
-    if (usageCheck.recordset[0].cnt > 0) {
-      throw new Error('Không thể xóa món ăn đã có người mua.');
-    }
+      .query(`DELETE FROM Ticket_FnB WHERE FnBID = @id`);
+    await pool.request()
+      .input('id', sql.Int, id)
+      .query(`DELETE FROM Booking_FnB WHERE FnBID = @id`);
+    // Delete the F&B item
     await pool.request()
       .input('id', sql.Int, id)
       .query(`DELETE FROM FoodBeverages WHERE FnBID = @id`);
