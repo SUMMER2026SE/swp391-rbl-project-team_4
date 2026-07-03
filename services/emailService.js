@@ -199,7 +199,7 @@ async function sendShowtimeReminderEmail(toEmail, reminderInfo) {
   const mailOptions = {
     from: `"D-Cinema" <${process.env.SMTP_EMAIL}>`,
     to: toEmail,
-    subject: `Nhac lich chieu: ${reminderInfo.movieTitle} - D-Cinema`,
+    subject: `Nhắc lịch chiếu: ${reminderInfo.movieTitle} - D-Cinema`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -217,30 +217,30 @@ async function sendShowtimeReminderEmail(toEmail, reminderInfo) {
                       <span style="font-size:32px;">D</span>-CINEMA
                     </h1>
                     <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:13px;letter-spacing:2px;">
-                      SHOWTIME REMINDER
+                      NHẮC LỊCH CHIẾU
                     </p>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding:40px;">
                     <h2 style="margin:0 0 16px;color:#f1f1f4;font-size:20px;font-weight:700;">
-                      Xin chao ${reminderInfo.customerName},
+                      Xin chào ${reminderInfo.customerName},
                     </h2>
                     <p style="margin:0 0 24px;color:#b7b7c8;font-size:15px;line-height:1.6;">
-                      Suat chieu cua ban sap bat dau. Vui long den rap som hon 15-20 phut de check-in va nhan bap nuoc neu co.
+                      Suất chiếu của bạn sắp bắt đầu. Vui lòng đến rạp sớm hơn 15-20 phút để check-in và nhận bắp nước nếu có.
                     </p>
 
                     <div style="background:#1a1a24;padding:22px;border-radius:12px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.06);">
                       <h3 style="color:#f87171;margin:0 0 14px;font-size:19px;">${reminderInfo.movieTitle}</h3>
-                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Rap:</strong> ${reminderInfo.cinemaName}</p>
-                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Phong:</strong> ${reminderInfo.roomName}</p>
-                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Thoi gian:</strong> ${reminderInfo.showtime}</p>
-                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Ghe:</strong> <span style="color:#fbbf24;font-size:18px;font-weight:800;">${reminderInfo.seats}</span></p>
-                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Ma ve:</strong> ${reminderInfo.ticketCodes}</p>
+                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Rạp:</strong> ${reminderInfo.cinemaName}</p>
+                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Phòng:</strong> ${reminderInfo.roomName}</p>
+                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Thời gian:</strong> ${reminderInfo.showtime}</p>
+                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Ghế:</strong> <span style="color:#fbbf24;font-size:18px;font-weight:800;">${reminderInfo.seats}</span></p>
+                      <p style="color:#f1f1f4;margin:8px 0;"><strong>Mã vé:</strong> ${reminderInfo.ticketCodes}</p>
                     </div>
 
                     <p style="margin:0;color:#8b8b9e;font-size:13px;line-height:1.6;">
-                      Email nay duoc gui tu dong de nhac lich chieu. Neu ban da huy ve hoac can ho tro, vui long lien he quay dich vu D-Cinema.
+                      Email này được gửi tự động để nhắc lịch chiếu. Nếu bạn đã hủy vé hoặc cần hỗ trợ, vui lòng liên hệ quầy dịch vụ D-Cinema.
                     </p>
                   </td>
                 </tr>
