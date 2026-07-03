@@ -289,6 +289,19 @@
         </div>
 
         <!-- Recent Transactions -->
+        <div class="table-card" style="margin-bottom:20px;">
+            <div class="table-header">
+                <div class="table-title">Quản lý thể loại</div>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <input id="genreNameInput" type="text" placeholder="Nhập thể loại mới" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);min-width:220px;">
+                    <button class="btn-add-main" onclick="saveGenre()" style="padding:9px 14px;">Thêm thể loại</button>
+                </div>
+            </div>
+            <div id="genreAdminList" style="display:flex;flex-wrap:wrap;gap:10px;padding:16px;">
+                <span style="color:var(--text2);font-size:0.85rem;">Đang tải thể loại...</span>
+            </div>
+        </div>
+
         <div class="table-card">
             <div class="table-header">
                 <div class="table-title">Giao dịch gần đây</div>
@@ -465,6 +478,7 @@
                             <th>TÊN PHIM</th>
                             <th>TRẠNG THÁI</th>
                             <th>THỂ LOẠI</th>
+                            <th>ĐỘ TUỔI</th>
                             <th>THỜI LƯỢNG</th>
                             <th>THAO TÁC</th>
                         </tr>
@@ -1207,6 +1221,12 @@
                 <input type="text" id="movieMainCast" class="form-control" placeholder="Diễn viên chính, diễn viên phụ...">
             </div>
             <div class="form-group">
+                <label class="form-label">THỂ LOẠI</label>
+                <div id="movieGenreCheckboxes" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;max-height:180px;overflow:auto;">
+                    <span style="color:var(--text2);font-size:0.85rem;">Đang tải thể loại...</span>
+                </div>
+            </div>
+            <div class="form-group">
                 <label class="form-label">ĐƯỜNG DẪN TRAILER (URL YOUTUBE)</label>
                 <input type="text" id="movieTrailerURL" class="form-control" placeholder="VD: https://www.youtube.com/watch?v=dQw4w9WgXcQ">
             </div>
@@ -1392,7 +1412,7 @@
 <div id="adminToastContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
 
 <script src="/socket.io/socket.io.js"></script>
-<script src="js/admin.js?v=8"></script>
+<script src="js/admin.js?v=10"></script>
 
 <!-- Promotions Modal -->
 <div id="promoModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;" onclick="closePromoModal()"></div>
@@ -1613,4 +1633,3 @@
 
 </body>
 </html>
-
