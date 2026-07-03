@@ -68,6 +68,9 @@ class MovieModel {
               FROM Movie_Genres mg 
               JOIN Genres g ON mg.GenreID = g.GenreID 
               WHERE mg.MovieID = m.MovieID) AS Genres,
+             (SELECT STRING_AGG(CAST(mg.GenreID AS varchar(20)), ',')
+              FROM Movie_Genres mg
+              WHERE mg.MovieID = m.MovieID) AS GenreIDs,
              COALESCE((SELECT STRING_AGG(Format, ', ') 
                        FROM (SELECT DISTINCT CASE 
                                WHEN r2.RoomName LIKE '%3D%' THEN '3D'
@@ -109,6 +112,9 @@ class MovieModel {
               FROM Movie_Genres mg 
               JOIN Genres g ON mg.GenreID = g.GenreID 
               WHERE mg.MovieID = m.MovieID) AS Genres,
+             (SELECT STRING_AGG(CAST(mg.GenreID AS varchar(20)), ',')
+              FROM Movie_Genres mg
+              WHERE mg.MovieID = m.MovieID) AS GenreIDs,
              COALESCE((SELECT STRING_AGG(Format, ', ') 
                        FROM (SELECT DISTINCT CASE 
                                WHEN r.RoomName LIKE '%3D%' THEN '3D'
@@ -151,6 +157,9 @@ class MovieModel {
               FROM Movie_Genres mg 
               JOIN Genres g ON mg.GenreID = g.GenreID 
               WHERE mg.MovieID = m.MovieID) AS Genres,
+             (SELECT STRING_AGG(CAST(mg.GenreID AS varchar(20)), ',')
+              FROM Movie_Genres mg
+              WHERE mg.MovieID = m.MovieID) AS GenreIDs,
              COALESCE((SELECT STRING_AGG(Format, ', ') 
                        FROM (SELECT DISTINCT CASE 
                                WHEN r.RoomName LIKE '%3D%' THEN '3D'
@@ -179,6 +188,9 @@ class MovieModel {
                 FROM Movie_Genres mg 
                 JOIN Genres g ON mg.GenreID = g.GenreID 
                 WHERE mg.MovieID = m.MovieID) AS Genres,
+               (SELECT STRING_AGG(CAST(mg.GenreID AS varchar(20)), ',')
+                FROM Movie_Genres mg
+                WHERE mg.MovieID = m.MovieID) AS GenreIDs,
                COALESCE((SELECT STRING_AGG(Format, ', ') 
                          FROM (SELECT DISTINCT CASE 
                                  WHEN r.RoomName LIKE '%3D%' THEN '3D'
