@@ -43,6 +43,17 @@ async function ensureReminderColumn() {
     BEGIN
       ALTER TABLE Tickets ADD ReminderSentAt DATETIME NULL;
     END
+
+    IF NOT EXISTS (
+      SELECT 1 FROM sys.indexes
+      WHERE name = 'IX_Tickets_ReminderScan'
+        AND object_id = OBJECT_ID('dbo.Tickets')
+    )
+    BEGIN
+      CREATE INDEX IX_Tickets_ReminderScan
+      ON dbo.Tickets (Status, ReminderSentAt, ShowtimeID, UserID)
+      INCLUDE (SeatID, QRCode);
+    END
   `);
 
   schemaReady = true;
@@ -62,7 +73,7 @@ async function getUpcomingReminderGroups() {
       SELECT
         u.UserID,
         u.Email,
-        COALESCE(NULLIF(u.FullName, ''), 'Khach hang') AS CustomerName,
+        COALESCE(NULLIF(u.FullName, ''), N'Khách hàng') AS CustomerName,
         st.ShowtimeID,
         st.StartTime,
         st.EndTime,
@@ -84,8 +95,8 @@ async function getUpcomingReminderGroups() {
         AND u.Email IS NOT NULL
         AND LTRIM(RTRIM(u.Email)) <> ''
         AND st.Status = 'active'
-        AND st.StartTime >= DATEADD(minute, @minBefore, GETDATE())
-        AND st.StartTime <  DATEADD(minute, @maxBefore, GETDATE())
+        AND st.StartTime >= DATEADD(minute, @minBefore, GETUTCDATE())
+        AND st.StartTime <  DATEADD(minute, @maxBefore, GETUTCDATE())
       GROUP BY
         u.UserID, u.Email, u.FullName,
         st.ShowtimeID, st.StartTime, st.EndTime,
