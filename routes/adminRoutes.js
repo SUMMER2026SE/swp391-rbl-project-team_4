@@ -42,6 +42,12 @@ router.put('/rooms/:id/seats', adminCtrl.saveSeats);
 // DELETE /api/admin/movies/:id      — Xóa (soft) phim
 router.delete('/movies/:id', adminCtrl.deleteMovie);
 
+router.get('/genres', adminCtrl.getGenres);
+router.post('/genres', adminCtrl.createGenre);
+router.put('/genres/:id', adminCtrl.updateGenre);
+router.patch('/genres/:id/toggle', adminCtrl.toggleGenre);
+router.delete('/genres/:id', adminCtrl.deleteGenre);
+
 // ─── Showtime Management ─────────────────────────────────────
 // GET    /api/admin/showtimes       — Danh sách tất cả suất chiếu
 router.get('/showtimes', adminCtrl.getAllShowtimes);
