@@ -42,6 +42,11 @@ router.put('/rooms/:id/seats', adminCtrl.saveSeats);
 // DELETE /api/admin/movies/:id      — Xóa (soft) phim
 router.delete('/movies/:id', adminCtrl.deleteMovie);
 
+// Movie review management
+router.get('/movie-reviews', adminCtrl.getMovieReviews);
+router.patch('/movie-reviews/:id/toggle', adminCtrl.toggleMovieReview);
+router.delete('/movie-reviews/:id', adminCtrl.deleteMovieReview);
+
 router.get('/genres', adminCtrl.getGenres);
 router.post('/genres', adminCtrl.createGenre);
 router.put('/genres/:id', adminCtrl.updateGenre);
