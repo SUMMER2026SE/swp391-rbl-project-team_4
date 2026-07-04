@@ -272,6 +272,42 @@ exports.deleteMovie = async (req, res) => {
   }
 };
 
+exports.getMovieReviews = async (req, res) => {
+  try {
+    const data = await AdminModel.getMovieReviews(req.query || {});
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[adminController] getMovieReviews:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server khi tải đánh giá phim.' });
+  }
+};
+
+exports.toggleMovieReview = async (req, res) => {
+  try {
+    const review = await AdminModel.toggleMovieReview(req.params.id);
+    if (!review) return res.status(404).json({ success: false, message: 'Không tìm thấy đánh giá.' });
+    res.json({
+      success: true,
+      message: review.IsVisible ? 'Đã hiển thị đánh giá.' : 'Đã ẩn đánh giá.',
+      data: review
+    });
+  } catch (err) {
+    console.error('[adminController] toggleMovieReview:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server khi đổi trạng thái đánh giá.' });
+  }
+};
+
+exports.deleteMovieReview = async (req, res) => {
+  try {
+    const deleted = await AdminModel.deleteMovieReview(req.params.id);
+    if (!deleted) return res.status(404).json({ success: false, message: 'Không tìm thấy đánh giá.' });
+    res.json({ success: true, message: 'Đã xóa đánh giá.' });
+  } catch (err) {
+    console.error('[adminController] deleteMovieReview:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server khi xóa đánh giá.' });
+  }
+};
+
 // ════════════════════════════════════════════════════════════
 //  SHOWTIME MANAGEMENT
 // ════════════════════════════════════════════════════════════
