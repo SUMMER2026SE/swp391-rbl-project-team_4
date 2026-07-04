@@ -429,6 +429,79 @@ input, textarea, select { font-family: inherit; outline: none; }
     background: var(--bg3);
 }
 
+/* ──────────────── REWARDS TAB ──────────────── */
+.reward-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+.reward-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.reward-card-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text);
+}
+.reward-card-meta {
+    font-size: 0.78rem;
+    color: var(--text2);
+    line-height: 1.5;
+}
+.reward-card-points {
+    color: var(--gold);
+    font-size: 1.4rem;
+    font-weight: 900;
+}
+.reward-card button {
+    width: 100%;
+    margin-top: auto;
+    justify-content: center;
+}
+.reward-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.reward-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+}
+.reward-row-main {
+    min-width: 0;
+}
+.reward-row-title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+.reward-row-sub {
+    font-size: 0.75rem;
+    color: var(--text2);
+}
+.reward-row-value {
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: var(--gold);
+    white-space: nowrap;
+}
+.reward-row-value.negative {
+    color: var(--accent);
+}
+
 /* ──────────────── PASSWORD TAB ──────────────── */
 .pw-grid { margin-bottom: 6px; }
 .pw-wrap { position: relative; }
@@ -526,5 +599,7 @@ input, textarea, select { font-family: inherit; outline: none; }
     .mc-progress-wrap { width: 100%; }
     .ticket-item { flex-wrap: wrap; }
     .t-right { flex-direction: row; align-items: center; }
+    .reward-grid { grid-template-columns: 1fr; }
+    .reward-row { align-items: flex-start; flex-direction: column; }
     .footer-inner { grid-template-columns: 1fr; }
 }
