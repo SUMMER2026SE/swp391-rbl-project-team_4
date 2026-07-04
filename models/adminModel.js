@@ -2,6 +2,58 @@ const { sql, getPool } = require('../config/db');
 
 let schemaReady = false;
 let genreSchemaReady = false;
+let reviewSchemaReady = false;
+
+async function ensureMovieReviewsTable() {
+  if (reviewSchemaReady) return;
+  const pool = await getPool();
+  await pool.request().query(`
+    IF OBJECT_ID('dbo.MovieReviews', 'U') IS NULL
+    BEGIN
+      CREATE TABLE dbo.MovieReviews (
+        ReviewID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        MovieID INT NOT NULL,
+        UserID INT NOT NULL,
+        Rating INT NOT NULL,
+        Comment NVARCHAR(1000) NULL,
+        IsVisible BIT NOT NULL CONSTRAINT DF_MovieReviews_IsVisible DEFAULT 1,
+        CreatedAt DATETIME NOT NULL CONSTRAINT DF_MovieReviews_CreatedAt DEFAULT GETDATE(),
+        UpdatedAt DATETIME NULL,
+        CONSTRAINT CK_MovieReviews_Rating CHECK (Rating BETWEEN 1 AND 5),
+        CONSTRAINT UQ_MovieReviews_Movie_User UNIQUE (MovieID, UserID),
+        CONSTRAINT FK_MovieReviews_Movies FOREIGN KEY (MovieID) REFERENCES dbo.Movies(MovieID),
+        CONSTRAINT FK_MovieReviews_Users FOREIGN KEY (UserID) REFERENCES dbo.Users(UserID)
+      );
+    END;
+
+    IF COL_LENGTH('dbo.MovieReviews', 'IsVisible') IS NULL
+    BEGIN
+      ALTER TABLE dbo.MovieReviews ADD IsVisible BIT NOT NULL CONSTRAINT DF_MovieReviews_IsVisible DEFAULT 1;
+    END;
+
+    IF COL_LENGTH('dbo.MovieReviews', 'CreatedAt') IS NULL
+    BEGIN
+      ALTER TABLE dbo.MovieReviews ADD CreatedAt DATETIME NOT NULL CONSTRAINT DF_MovieReviews_CreatedAt DEFAULT GETDATE();
+    END;
+
+    IF COL_LENGTH('dbo.MovieReviews', 'UpdatedAt') IS NULL
+    BEGIN
+      ALTER TABLE dbo.MovieReviews ADD UpdatedAt DATETIME NULL;
+    END;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM sys.indexes
+      WHERE name = 'IX_MovieReviews_MovieID_IsVisible'
+        AND object_id = OBJECT_ID('dbo.MovieReviews')
+    )
+    BEGIN
+      CREATE INDEX IX_MovieReviews_MovieID_IsVisible
+      ON dbo.MovieReviews (MovieID, IsVisible)
+      INCLUDE (Rating, CreatedAt, UpdatedAt);
+    END;
+  `);
+  reviewSchemaReady = true;
+}
 
 async function ensurePromotionsTable() {
   if (schemaReady) return;
@@ -188,6 +240,107 @@ class AdminModel {
     await pool.request()
       .input('movieId', sql.Int, movieId)
       .query(`UPDATE Movies SET Status = 'deleted' WHERE MovieID = @movieId`);
+  }
+
+  static async getMovieReviews({ movieId, status, rating, search } = {}) {
+    await ensureMovieReviewsTable();
+    const pool = await getPool();
+    const request = pool.request();
+
+    let filters = 'WHERE 1=1';
+    if (movieId) {
+      request.input('movieId', sql.Int, parseInt(movieId, 10));
+      filters += ' AND mr.MovieID = @movieId';
+    }
+    if (status === 'visible') {
+      filters += ' AND mr.IsVisible = 1';
+    } else if (status === 'hidden') {
+      filters += ' AND mr.IsVisible = 0';
+    }
+    if (rating) {
+      request.input('rating', sql.Int, parseInt(rating, 10));
+      filters += ' AND mr.Rating = @rating';
+    }
+    if (search) {
+      request.input('search', sql.NVarChar, `%${String(search).trim()}%`);
+      filters += ` AND (
+        m.Title LIKE @search
+        OR u.FullName LIKE @search
+        OR u.Email LIKE @search
+        OR mr.Comment LIKE @search
+      )`;
+    }
+
+    const result = await request.query(`
+      SELECT
+        COUNT(*) AS TotalReviews,
+        SUM(CASE WHEN mr.IsVisible = 1 THEN 1 ELSE 0 END) AS VisibleReviews,
+        SUM(CASE WHEN mr.IsVisible = 0 THEN 1 ELSE 0 END) AS HiddenReviews,
+        CAST(ROUND(ISNULL(AVG(CAST(CASE WHEN mr.IsVisible = 1 THEN mr.Rating END AS decimal(4,2))), 0), 1) AS decimal(3,1)) AS AverageRating
+      FROM MovieReviews mr
+      JOIN Movies m ON mr.MovieID = m.MovieID
+      JOIN Users u ON mr.UserID = u.UserID
+      ${filters};
+
+      SELECT
+        mr.ReviewID,
+        mr.MovieID,
+        m.Title AS MovieTitle,
+        m.PosterURL,
+        mr.UserID,
+        COALESCE(NULLIF(u.FullName, ''), u.Email, N'Khách hàng') AS FullName,
+        u.Email,
+        mr.Rating,
+        mr.Comment,
+        mr.IsVisible,
+        mr.CreatedAt,
+        mr.UpdatedAt
+      FROM MovieReviews mr
+      JOIN Movies m ON mr.MovieID = m.MovieID
+      JOIN Users u ON mr.UserID = u.UserID
+      ${filters}
+      ORDER BY COALESCE(mr.UpdatedAt, mr.CreatedAt) DESC, mr.ReviewID DESC;
+    `);
+
+    const summary = result.recordsets[0][0] || {};
+    return {
+      summary: {
+        totalReviews: Number(summary.TotalReviews || 0),
+        visibleReviews: Number(summary.VisibleReviews || 0),
+        hiddenReviews: Number(summary.HiddenReviews || 0),
+        averageRating: Number(summary.AverageRating || 0)
+      },
+      reviews: result.recordsets[1] || []
+    };
+  }
+
+  static async toggleMovieReview(reviewId) {
+    await ensureMovieReviewsTable();
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('reviewId', sql.Int, parseInt(reviewId, 10))
+      .query(`
+        UPDATE MovieReviews
+        SET IsVisible = CASE WHEN IsVisible = 1 THEN 0 ELSE 1 END,
+            UpdatedAt = GETDATE()
+        OUTPUT INSERTED.ReviewID, INSERTED.MovieID, INSERTED.UserID, INSERTED.Rating,
+               INSERTED.Comment, INSERTED.IsVisible, INSERTED.CreatedAt, INSERTED.UpdatedAt
+        WHERE ReviewID = @reviewId;
+      `);
+    return result.recordset[0] || null;
+  }
+
+  static async deleteMovieReview(reviewId) {
+    await ensureMovieReviewsTable();
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('reviewId', sql.Int, parseInt(reviewId, 10))
+      .query(`
+        DELETE FROM MovieReviews
+        OUTPUT DELETED.ReviewID
+        WHERE ReviewID = @reviewId;
+      `);
+    return result.recordset[0] || null;
   }
 
   static async getGenres({ includeInactive = true } = {}) {
