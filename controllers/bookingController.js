@@ -150,6 +150,13 @@ exports.validateVoucher = async (req, res) => {
       });
     }
 
+    if (voucher.notOwned) {
+      return res.status(403).json({
+        success: false,
+        message: 'Voucher này thuộc tài khoản khác.',
+      });
+    }
+
     res.json({
       success: true,
       message: 'Voucher hợp lệ!',
@@ -211,7 +218,8 @@ exports.createBooking = async (req, res) => {
       err.message.includes('không hợp lệ') ||
       err.message.includes('không đủ số lượng') ||
       err.message.includes('đã ngừng bán') ||
-      err.message.includes('không được hỗ trợ')
+      err.message.includes('không được hỗ trợ') ||
+      err.message.includes('Voucher')
     ) {
       return res.status(409).json({ success: false, message: err.message });
     }
