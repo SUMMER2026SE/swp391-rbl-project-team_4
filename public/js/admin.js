@@ -723,6 +723,7 @@ async function loadMovies() {
             renderMovieTable();
             renderScheduleMovieLibrary();
             populateMovieSelect(); // Populate the showtime creation dropdown
+            populateReviewMovieFilter();
         }
     } catch (err) {
         console.error('Failed to load movies:', err);
@@ -960,6 +961,11 @@ function navigate(page, btn) {
     if (page === 'movies') {
         loadGenres();
         loadMovies();
+    }
+
+    if (page === 'reviews') {
+        populateReviewMovieFilter();
+        loadAdminReviews();
     }
 
     if (page === 'promotions') {
@@ -3219,6 +3225,169 @@ async function submitQuickSell() {
 /* ════════════════════════════════════════════════
    PROMOTIONS MANAGEMENT
 ════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   MOVIE REVIEW MANAGEMENT
+════════════════════════════════════════════════ */
+let REVIEW_DATA = [];
+let reviewSearchTimer = null;
+
+function renderAdminStars(rating) {
+    const value = Math.max(0, Math.min(5, parseInt(rating, 10) || 0));
+    return '★'.repeat(value) + '<span style="color:#d1d5db;">' + '★'.repeat(5 - value) + '</span>';
+}
+
+function populateReviewMovieFilter() {
+    const select = document.getElementById('reviewMovieFilter');
+    if (!select) return;
+    const current = select.value;
+    const movies = Array.isArray(MOVIE_DATA) ? MOVIE_DATA : [];
+    select.innerHTML = '<option value="">Tất cả phim</option>' + movies
+        .slice()
+        .sort((a, b) => String(a.Title || '').localeCompare(String(b.Title || ''), 'vi'))
+        .map(movie => `<option value="${movie.MovieID}">${adminEscape(movie.Title)}</option>`)
+        .join('');
+    if ([...select.options].some(option => option.value === current)) select.value = current;
+}
+
+function getReviewFilters() {
+    const params = new URLSearchParams();
+    const movieId = document.getElementById('reviewMovieFilter')?.value;
+    const status = document.getElementById('reviewStatusFilter')?.value;
+    const rating = document.getElementById('reviewRatingFilter')?.value;
+    const search = document.getElementById('reviewSearchInput')?.value.trim();
+    if (movieId) params.set('movieId', movieId);
+    if (status) params.set('status', status);
+    if (rating) params.set('rating', rating);
+    if (search) params.set('search', search);
+    return params.toString();
+}
+
+async function loadAdminReviews() {
+    const body = document.getElementById('reviewAdminBody');
+    if (body) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải đánh giá...</td></tr>';
+    }
+    try {
+        const query = getReviewFilters();
+        const res = await apiFetch('/api/admin/movie-reviews' + (query ? '?' + query : ''));
+        if (!res.success) {
+            if (body) body.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">${adminEscape(res.message || 'Không thể tải đánh giá.')}</td></tr>`;
+            return;
+        }
+        REVIEW_DATA = (res.data && res.data.reviews) || [];
+        renderAdminReviewSummary(res.data && res.data.summary);
+        renderAdminReviewTable();
+    } catch (err) {
+        console.error('[Admin] loadAdminReviews:', err);
+        if (body) body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">Lỗi kết nối server.</td></tr>';
+    }
+}
+
+function debouncedLoadAdminReviews() {
+    clearTimeout(reviewSearchTimer);
+    reviewSearchTimer = setTimeout(loadAdminReviews, 350);
+}
+
+function renderAdminReviewSummary(summary = {}) {
+    const totalEl = document.getElementById('reviewKpiTotal');
+    const visibleEl = document.getElementById('reviewKpiVisible');
+    const hiddenEl = document.getElementById('reviewKpiHidden');
+    const averageEl = document.getElementById('reviewKpiAverage');
+    if (totalEl) totalEl.textContent = summary.totalReviews || 0;
+    if (visibleEl) visibleEl.textContent = summary.visibleReviews || 0;
+    if (hiddenEl) hiddenEl.textContent = summary.hiddenReviews || 0;
+    if (averageEl) averageEl.textContent = Number(summary.averageRating || 0).toFixed(1);
+}
+
+function renderAdminReviewTable() {
+    const body = document.getElementById('reviewAdminBody');
+    if (!body) return;
+
+    if (!REVIEW_DATA.length) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có đánh giá phù hợp.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = REVIEW_DATA.map(review => {
+        const poster = review.PosterURL || 'images/default_poster.svg';
+        const updated = review.UpdatedAt ? `<div style="font-size:0.72rem;color:var(--text3);margin-top:3px;">Cập nhật: ${formatAdminDate(review.UpdatedAt)}</div>` : '';
+        return `
+            <tr class="txn-row">
+                <td>
+                    <div style="display:flex;align-items:center;gap:12px;min-width:220px;">
+                        <img src="${adminEscape(poster)}" alt="${adminEscape(review.MovieTitle)}" onerror="this.onerror=null;this.src='images/default_poster.svg'" style="width:48px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--border);">
+                        <div>
+                            <div style="font-weight:800;color:var(--text);font-size:0.88rem;">${adminEscape(review.MovieTitle)}</div>
+                            <div style="font-size:0.72rem;color:var(--text2);margin-top:3px;">ID phim: ${review.MovieID}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div style="font-weight:700;color:var(--text);font-size:0.86rem;">${adminEscape(review.FullName)}</div>
+                    <div style="font-size:0.75rem;color:var(--text2);margin-top:4px;">${adminEscape(review.Email || '')}</div>
+                </td>
+                <td>
+                    <div style="color:#f59e0b;font-size:1rem;white-space:nowrap;">${renderAdminStars(review.Rating)}</div>
+                    <div style="font-size:0.75rem;color:var(--text2);margin-top:4px;">${review.Rating}/5</div>
+                </td>
+                <td style="max-width:360px;">
+                    <div style="color:var(--text);font-size:0.84rem;line-height:1.5;white-space:normal;">${adminEscape(review.Comment || 'Không có bình luận.')}</div>
+                </td>
+                <td style="color:var(--text2);font-size:0.84rem;">
+                    ${formatAdminDate(review.CreatedAt)}
+                    ${updated}
+                </td>
+                <td>
+                    ${review.IsVisible
+                        ? '<span class="status-badge active">Đang hiển thị</span>'
+                        : '<span class="status-badge finished">Đã ẩn</span>'}
+                </td>
+                <td>
+                    <div class="table-actions">
+                        <button class="tb-icon-sm" title="${review.IsVisible ? 'Ẩn đánh giá' : 'Hiển thị đánh giá'}" onclick="toggleAdminReview(${review.ReviewID})" style="color:${review.IsVisible ? '#6b7280' : '#10b981'}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                        <button class="tb-icon-sm danger" title="Xóa đánh giá" onclick="deleteAdminReview(${review.ReviewID})" style="color:var(--danger)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function toggleAdminReview(reviewId) {
+    try {
+        const res = await apiFetch(`/api/admin/movie-reviews/${reviewId}/toggle`, { method: 'PATCH' });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadAdminReviews();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        console.error('[Admin] toggleAdminReview:', err);
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+async function deleteAdminReview(reviewId) {
+    if (!confirm('Bạn có chắc muốn xóa đánh giá này không?')) return;
+    try {
+        const res = await apiFetch(`/api/admin/movie-reviews/${reviewId}`, { method: 'DELETE' });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadAdminReviews();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        console.error('[Admin] deleteAdminReview:', err);
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
 let NEWS_DATA = [];
 
 function adminEscape(value) {
