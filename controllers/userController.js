@@ -2,6 +2,7 @@
 //  controllers/userController.js  –  User Profile API (MVC Refactored)
 // ============================================================
 const UserModel = require('../models/userModel');
+const RewardModel = require('../models/rewardModel');
 const bcrypt = require('bcryptjs');
 
 const SALT_ROUNDS = 10;
@@ -111,5 +112,34 @@ exports.uploadAvatar = async (req, res) => {
   } catch (err) {
     console.error('[userController] uploadAvatar:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server khi upload ảnh.' });
+  }
+};
+
+exports.getRewards = async (req, res) => {
+  try {
+    const data = await RewardModel.getSummary(req.user.userId);
+    if (!data) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng.' });
+    }
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[userController] getRewards:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server khi tải điểm thưởng.' });
+  }
+};
+
+exports.redeemReward = async (req, res) => {
+  try {
+    const { rewardId } = req.body || {};
+    const data = await RewardModel.redeemReward(req.user.userId, rewardId);
+    res.status(201).json({
+      success: true,
+      message: 'Đổi điểm thành công.',
+      data,
+    });
+  } catch (err) {
+    console.error('[userController] redeemReward:', err.message);
+    const status = /không hợp lệ|cần|Không tìm thấy/i.test(err.message) ? 400 : 500;
+    res.status(status).json({ success: false, message: err.message || 'Lỗi server khi đổi điểm.' });
   }
 };
