@@ -1917,66 +1917,56 @@
                 lblL.textContent = row;
                 rowDiv.appendChild(lblL);
 
-                const isCouple = coupleRows.has(row);
+                const rowSeats = rowsMap[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
+                const total = rowSeats.length;
+                const half = Math.floor(total / 2);
 
-                if (isCouple) {
-                    // Couple row: seats are paired (1-2), (3-4), etc.
-                    const rowSeats = rowsMap[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
-                    for (let i = 0; i < rowSeats.length; i += 2) {
-                        const s1 = rowSeats[i];
+                for (let i = 0; i < total; i++) {
+                    const s1 = rowSeats[i];
+                    if (!s1) continue;
+
+                    // Center aisle gap
+                    if (total > 4 && i === half) {
+                        const gap = document.createElement('div');
+                        gap.className = 'aisle-gap';
+                        rowDiv.appendChild(gap);
+                    }
+
+                    if (s1.SeatType && s1.SeatType.toLowerCase().includes('couple')) {
                         const s2 = rowSeats[i + 1];
-                        if (!s1) continue;
+                        if (s2 && s2.SeatType && s2.SeatType.toLowerCase().includes('couple') && s2.SeatNumber === s1.SeatNumber + 1) {
+                            const isBooked = s1.SeatStatus === 'booked' || s2.SeatStatus === 'booked';
+                            const isLocked = s1.SeatStatus === 'locked' || s2.SeatStatus === 'locked';
 
-                        // Add small aisle gap every 3 pair
-                        if (i > 0 && i % 6 === 0) {
-                            const gap = document.createElement('div');
-                            gap.className = 'aisle-gap';
-                            rowDiv.appendChild(gap);
-                        }
+                            const coupleEl = document.createElement('div');
+                            coupleEl.className = `seat couple${isBooked ? ' booked' : ''}${isLocked ? ' locked' : ''}`;
+                            coupleEl.setAttribute('data-id-1', s1.SeatID);
+                            coupleEl.setAttribute('data-id-2', s2.SeatID);
+                            coupleEl.setAttribute('data-row', row);
+                            coupleEl.innerHTML = `
+                                <span class="couple-label">
+                                    ${row}${s1.SeatNumber}-${s2.SeatNumber}
+                                </span>
+                            `;
 
-                        if (!s2) {
-                            // Solo seat in couple row (edge case)
+                            if (!isBooked) {
+                                coupleEl.onclick = () => handleCoupleSeat(coupleEl, s1.SeatID, s2.SeatID);
+
+                                const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
+                                const mult = s1.PriceMultiplier ? parseFloat(s1.PriceMultiplier) : 1.5;
+                                const seatPrice = basePrice * mult;
+                                addTooltipListeners(coupleEl, `Ghế Cặp Đôi ${row}${s1.SeatNumber}-${s2.SeatNumber}`, seatPrice);
+                            }
+                            rowDiv.appendChild(coupleEl);
+                            i++; // skip next
+                        } else {
                             const seatEl = makeSingleSeatEl(s1, false);
                             rowDiv.appendChild(seatEl);
-                            continue;
                         }
-
-                        const isBooked = s1.SeatStatus === 'booked' || s2.SeatStatus === 'booked';
-                        const isLocked = s1.SeatStatus === 'locked' || s2.SeatStatus === 'locked';
-
-                        const coupleEl = document.createElement('div');
-                        coupleEl.className = `seat couple${isBooked ? ' booked' : ''}${isLocked ? ' locked' : ''}`;
-                        coupleEl.setAttribute('data-id-1', s1.SeatID);
-                        coupleEl.setAttribute('data-id-2', s2.SeatID);
-                        coupleEl.setAttribute('data-row', row);
-                        coupleEl.innerHTML = `
-                            <span class="couple-label">
-                                ${row}${s1.SeatNumber}-${s2.SeatNumber}
-                            </span>
-                        `;
-
-                        if (!isBooked) {
-                            coupleEl.onclick = () => handleCoupleSeat(coupleEl, s1.SeatID, s2.SeatID);
-
-                            const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
-                            const seatPrice = basePrice * 1.5;
-                            addTooltipListeners(coupleEl, `Ghế Cặp Đôi ${row}${s1.SeatNumber}-${s2.SeatNumber}`, seatPrice);
-                        }
-                        rowDiv.appendChild(coupleEl);
-                    }
-                } else {
-                    const rowSeats = rowsMap[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
-                    rowSeats.forEach((s, idx) => {
-                        const total = rowSeats.length;
-                        const half = Math.floor(total / 2);
-                        if (total > 4 && idx === half) {
-                            const gap = document.createElement('div');
-                            gap.className = 'aisle-gap';
-                            rowDiv.appendChild(gap);
-                        }
-                        const seatEl = makeSingleSeatEl(s, false);
+                    } else {
+                        const seatEl = makeSingleSeatEl(s1, false);
                         rowDiv.appendChild(seatEl);
-                    });
+                    }
                 }
                 // Right label
                 const lblR = document.createElement('div');
@@ -2011,8 +2001,8 @@
                 el.onclick = () => handleSingleSeat(el, seat.SeatID);
 
                 const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
-                const multiplier = isVip ? 1.2 : 1.0;
-                const seatPrice = basePrice * multiplier;
+                const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : (isVip ? 1.2 : 1.0);
+                const seatPrice = basePrice * mult;
                 addTooltipListeners(el, `Ghế ${seat.SeatRow}${seat.SeatNumber} (${isVip ? 'VIP' : 'Thường'})`, seatPrice);
             }
             return el;
@@ -2303,7 +2293,8 @@
                     const pairNum = seat.SeatNumber % 2 === 0 ? seat.SeatNumber - 1 : seat.SeatNumber + 1;
                     const pairKey = `${seat.SeatRow}_${Math.min(seat.SeatNumber, pairNum)}-${Math.max(seat.SeatNumber, pairNum)}`;
                     if (!processedCouplePairs.has(pairKey)) {
-                        const seatPrice = basePrice * 1.5;
+                        const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : 1.5;
+                        const seatPrice = basePrice * mult;
                         total += seatPrice;
                         breakdown.couple.count++;
                         breakdown.couple.price += seatPrice;
@@ -2311,15 +2302,18 @@
                         processedCouplePairs.add(pairKey);
                     }
                 } else if (seat.SeatType === 'VIP') {
-                    const seatPrice = basePrice * 1.2;
+                    const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : 1.2;
+                    const seatPrice = basePrice * mult;
                     total += seatPrice;
                     breakdown.vip.count++;
                     breakdown.vip.price += seatPrice;
                     displayNames.push(`${seat.SeatRow}${seat.SeatNumber}`);
                 } else {
-                    total += basePrice;
+                    const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : 1.0;
+                    const seatPrice = basePrice * mult;
+                    total += seatPrice;
                     breakdown.normal.count++;
-                    breakdown.normal.price += basePrice;
+                    breakdown.normal.price += seatPrice;
                     displayNames.push(`${seat.SeatRow}${seat.SeatNumber}`);
                 }
             });
@@ -2383,17 +2377,11 @@
 
         function getCoupleRows() {
             const coupleRows = new Set();
-            const allRows = [...new Set(seatsList.map(s => s.SeatRow))].sort();
-
             seatsList.forEach(s => {
                 if (s.SeatType && s.SeatType.toLowerCase().includes('couple')) {
                     coupleRows.add(s.SeatRow);
                 }
             });
-            // Fallback: treat last row as couple
-            if (coupleRows.size === 0 && allRows.length > 0) {
-                coupleRows.add(allRows[allRows.length - 1]);
-            }
             return coupleRows;
         }
 

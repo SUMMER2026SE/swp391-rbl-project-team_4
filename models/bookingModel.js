@@ -1,12 +1,12 @@
 const { sql, getPool } = require('../config/db');
 
 function isCoupleSeat(seat) {
-  return (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) || seat.SeatRow === 'F';
+  return seat.SeatType && seat.SeatType.toLowerCase().includes('couple');
 }
 
 function getSeatMultiplier(seat) {
-  if (isCoupleSeat(seat)) return 0.75;
-  if (seat.SeatType === 'VIP') return 1.2;
+  if (isCoupleSeat(seat)) return parseFloat(seat.PriceMultiplier || 1.5) / 2;
+  if (seat.SeatType === 'VIP') return parseFloat(seat.PriceMultiplier || 1.2);
   return parseFloat(seat.PriceMultiplier || 1.0);
 }
 
@@ -137,11 +137,12 @@ class BookingModel {
 
         if (isCoupleSeat(seat)) {
           const pairKey = couplePairKey(seat);
+          const halfMult = parseFloat(seat.PriceMultiplier || 1.5) / 2;
           if (!couplePairsCharged.has(pairKey)) {
             couplePairsCharged.add(pairKey);
-            seatPrice = ticketPrice * 0.75;
+            seatPrice = ticketPrice * halfMult;
           } else {
-            seatPrice = ticketPrice * 0.75;
+            seatPrice = ticketPrice * halfMult;
           }
         } else {
           seatPrice = ticketPrice * getSeatMultiplier(seat);
