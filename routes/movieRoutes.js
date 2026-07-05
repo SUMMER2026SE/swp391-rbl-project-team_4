@@ -4,6 +4,7 @@
 const express     = require('express');
 const router      = express.Router();
 const movieCtrl   = require('../controllers/movieController');
+const { verifyToken } = require('../middleware/authMiddleware');
 
 // --- Public Routes (không cần đăng nhập) ---
 
@@ -37,5 +38,14 @@ router.get('/:id',                           movieCtrl.getMovieById);
 
 // GET /api/movies/:id/showtimes             — Lịch chiếu của phim (?date=YYYY-MM-DD)
 router.get('/:id/showtimes',                 movieCtrl.getShowtimesByMovie);
+
+// GET /api/movies/:id/reviews                - Danh sach danh gia phim
+router.get('/:id/reviews',                   movieCtrl.getMovieReviews);
+
+// GET /api/movies/:id/reviews/me             - Danh gia cua user hien tai
+router.get('/:id/reviews/me',                verifyToken, movieCtrl.getMyMovieReview);
+
+// POST /api/movies/:id/reviews               - Tao/cap nhat danh gia phim
+router.post('/:id/reviews',                  verifyToken, movieCtrl.saveMovieReview);
 
 module.exports = router;

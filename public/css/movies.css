@@ -831,3 +831,51 @@ body {
 .movies-container {
     grid-template-columns: 240px 1fr; /* clean sidebar sizing */
 }
+
+/* Hidden Utility */
+.hidden {
+    display: none !important;
+}
+
+/* Trailer Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    width: 90%;
+    max-width: 900px;
+    position: relative;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
+}
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+}
+.btn-close-modal {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 2.5rem;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+}

@@ -4,7 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/authMiddleware');
-const { getProfile, updateProfile, updatePassword } = require('../controllers/userController');
+const { getProfile, updateProfile, updatePassword, getRewards, redeemReward } = require('../controllers/userController');
 
 // Tất cả API ở đây đều yêu cầu đăng nhập (có token)
 router.use(verifyToken);
@@ -13,6 +13,17 @@ router.use(verifyToken);
 // GET /api/users/profile
 // ─────────────────────────────────────────────────────────────
 router.get('/profile', getProfile);
+
+// ─────────────────────────────────────────────────────────────
+// GET /api/users/rewards
+// ─────────────────────────────────────────────────────────────
+router.get('/rewards', getRewards);
+
+// ─────────────────────────────────────────────────────────────
+// POST /api/users/rewards/redeem
+// Body: { rewardId }
+// ─────────────────────────────────────────────────────────────
+router.post('/rewards/redeem', redeemReward);
 
 // ─────────────────────────────────────────────────────────────
 // PUT /api/users/profile

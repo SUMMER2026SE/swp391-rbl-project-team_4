@@ -139,6 +139,39 @@
                             </div>
                         </div>
                     </section>
+
+                    <section class="detail-section reviews-section">
+                        <div class="reviews-heading">
+                            <h2 class="section-title">Đánh giá phim</h2>
+                            <div class="reviews-summary">
+                                <span class="reviews-score" id="reviewAverage">0.0</span>
+                                <span class="reviews-stars" id="reviewStars">-----</span>
+                                <span class="reviews-count" id="reviewCount">Chưa có đánh giá</span>
+                            </div>
+                        </div>
+
+                        <div class="review-form-card" id="reviewFormCard">
+                            <div class="review-form-state" id="reviewFormState">Đang kiểm tra tài khoản...</div>
+                            <form id="reviewForm" class="review-form" style="display:none;">
+                                <div class="review-stars-input" id="reviewStarsInput" aria-label="Chọn điểm đánh giá">
+                                    <button type="button" data-rating="1">★</button>
+                                    <button type="button" data-rating="2">★</button>
+                                    <button type="button" data-rating="3">★</button>
+                                    <button type="button" data-rating="4">★</button>
+                                    <button type="button" data-rating="5">★</button>
+                                </div>
+                                <textarea id="reviewComment" maxlength="1000" placeholder="Chia sẻ cảm nhận của bạn về phim..."></textarea>
+                                <div class="review-form-actions">
+                                    <span id="reviewMessage"></span>
+                                    <button type="submit" class="btn-submit-review">Gửi đánh giá</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="reviews-list" id="reviewsList">
+                            <div class="review-empty">Đang tải đánh giá...</div>
+                        </div>
+                    </section>
                 </main>
 
                 <!-- Right Column: Sidebar -->
@@ -261,8 +294,163 @@
 
     <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=6"></script>
     <script>
+        let selectedReviewRating = 0;
+
+        function getAuthToken() {
+            return localStorage.getItem('token') || sessionStorage.getItem('token');
+        }
+
+        function escapeReviewText(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function renderStars(rating) {
+            const value = Math.max(0, Math.min(5, Math.round(Number(rating) || 0)));
+            return '★'.repeat(value) + '☆'.repeat(5 - value);
+        }
+
+        function setSelectedReviewRating(rating) {
+            selectedReviewRating = rating;
+            document.querySelectorAll('#reviewStarsInput button').forEach(btn => {
+                const value = parseInt(btn.dataset.rating, 10);
+                btn.classList.toggle('active', value <= selectedReviewRating);
+            });
+        }
+
+        function renderReviewList(reviews) {
+            const list = document.getElementById('reviewsList');
+            if (!list) return;
+
+            if (!reviews || reviews.length === 0) {
+                list.innerHTML = '<div class="review-empty">Chưa có đánh giá nào cho phim này.</div>';
+                return;
+            }
+
+            list.innerHTML = reviews.map(review => {
+                const date = new Date(review.UpdatedAt || review.CreatedAt).toLocaleDateString('vi-VN');
+                return `
+                    <div class="review-card">
+                        <div class="review-top">
+                            <div>
+                                <div class="review-author">${escapeReviewText(review.FullName)}</div>
+                                <div class="review-date">${date}</div>
+                            </div>
+                            <div class="review-rating">${renderStars(review.Rating)}</div>
+                        </div>
+                        <div class="review-comment">${escapeReviewText(review.Comment || 'Không có bình luận.')}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadMovieReviews(movieId) {
+            const response = await fetch(`/api/movies/${movieId}/reviews`);
+            const json = await response.json();
+            if (!json.success) return;
+
+            const summary = json.data.summary || {};
+            const avg = Number(summary.averageRating || 0);
+            const count = Number(summary.reviewCount || 0);
+            const averageEl = document.getElementById('reviewAverage');
+            const starsEl = document.getElementById('reviewStars');
+            const countEl = document.getElementById('reviewCount');
+            const heroScore = document.getElementById('heroScore');
+
+            if (averageEl) averageEl.textContent = avg ? avg.toFixed(1) : '0.0';
+            if (starsEl) starsEl.textContent = renderStars(avg);
+            if (countEl) countEl.textContent = count ? `${count} đánh giá` : 'Chưa có đánh giá';
+            if (heroScore) heroScore.textContent = avg ? `★ ${avg.toFixed(1)}/5` : '★ Chưa có đánh giá';
+
+            renderReviewList(json.data.reviews || []);
+        }
+
+        async function initReviewForm(movieId) {
+            const token = getAuthToken();
+            const state = document.getElementById('reviewFormState');
+            const form = document.getElementById('reviewForm');
+            const commentInput = document.getElementById('reviewComment');
+            const message = document.getElementById('reviewMessage');
+
+            document.querySelectorAll('#reviewStarsInput button').forEach(btn => {
+                btn.addEventListener('click', () => setSelectedReviewRating(parseInt(btn.dataset.rating, 10)));
+            });
+
+            if (!token) {
+                if (state) state.innerHTML = 'Đăng nhập để đánh giá phim sau khi mua vé.';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/movies/${movieId}/reviews/me`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const json = await response.json();
+                if (!json.success) throw new Error(json.message || 'Không thể kiểm tra quyền đánh giá.');
+
+                if (!json.data.canReview) {
+                    if (state) state.textContent = 'Bạn cần có vé đã thanh toán của phim này mới được đánh giá.';
+                    return;
+                }
+
+                if (state) state.style.display = 'none';
+                if (form) form.style.display = 'flex';
+                if (json.data.review) {
+                    setSelectedReviewRating(json.data.review.Rating);
+                    if (commentInput) commentInput.value = json.data.review.Comment || '';
+                    if (message) message.textContent = 'Bạn có thể cập nhật đánh giá của mình.';
+                } else {
+                    setSelectedReviewRating(5);
+                }
+            } catch (error) {
+                if (state) state.textContent = error.message || 'Không thể tải form đánh giá.';
+            }
+
+            if (form) {
+                form.addEventListener('submit', async event => {
+                    event.preventDefault();
+                    if (!selectedReviewRating) {
+                        if (message) message.textContent = 'Vui lòng chọn số sao.';
+                        return;
+                    }
+
+                    try {
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        if (submitBtn) submitBtn.disabled = true;
+                        if (message) message.textContent = 'Đang gửi đánh giá...';
+
+                        const response = await fetch(`/api/movies/${movieId}/reviews`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                rating: selectedReviewRating,
+                                comment: commentInput ? commentInput.value : ''
+                            })
+                        });
+                        const json = await response.json();
+                        if (!response.ok || !json.success) throw new Error(json.message || 'Không thể lưu đánh giá.');
+
+                        if (message) message.textContent = 'Đã lưu đánh giá.';
+                        await loadMovieReviews(movieId);
+                    } catch (error) {
+                        if (message) message.textContent = error.message || 'Gửi đánh giá thất bại.';
+                    } finally {
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        if (submitBtn) submitBtn.disabled = false;
+                    }
+                });
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             const userStr = (localStorage.getItem('user') || sessionStorage.getItem('user'));
             if (userStr) {
@@ -373,6 +561,13 @@
                             alert('Trailer chưa có sẵn cho phim này.');
                         }
                     });
+                }
+
+                try {
+                    await loadMovieReviews(movieId);
+                    await initReviewForm(movieId);
+                } catch (reviewError) {
+                    console.error('Không thể tải đánh giá:', reviewError);
                 }
             } catch (error) {
                 console.error('Lỗi tải thông tin phim:', error);

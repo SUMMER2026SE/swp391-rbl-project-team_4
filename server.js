@@ -9,6 +9,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const { getPool } = require('./config/db');
+const { startShowtimeReminderScheduler } = require('./services/showtimeReminderService');
 
 // ─── App & Server ────────────────────────────────────────────
 const app = express();
@@ -42,6 +43,8 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const voucherRoutes = require('./routes/voucherRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const newsRoutes = require('./routes/newsRoutes');
+const adminNewsCompatRoutes = require('./routes/adminNewsCompatRoutes');
 
 app.use('/api/auth', authRoutes);     // Đăng ký, Đăng nhập
 app.use('/api/users', userRoutes);    // Thông tin người dùng (Profile)
@@ -50,6 +53,8 @@ app.use('/api/bookings', bookingRoutes);  // Đặt vé, lịch sử, voucher
 app.use('/api/admin/vouchers', voucherRoutes); // Quản lý Voucher
 app.use('/api/admin', adminRoutes);    // Quản lý, thống kê (chỉ Super Admin)
 app.use('/api/chat', chatRoutes);      // AI Chatbot
+app.use('/api/news', newsRoutes);
+app.use('/admin', adminNewsCompatRoutes);
 
 // ─── Health-check ────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
@@ -98,6 +103,7 @@ server.listen(PORT, async () => {
   // Khởi tạo kết nối DB ngay khi server start
   try {
     await getPool();
+    startShowtimeReminderScheduler();
   } catch (err) {
     console.error('  ⚠️  Không thể kết nối DB. Kiểm tra lại config/db.js');
   }

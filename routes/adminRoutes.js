@@ -8,6 +8,7 @@ const multer = require('multer');
 const path = require('path');
 const adminCtrl = require('../controllers/adminController');
 const comboCtrl = require('../controllers/comboController');
+const newsCtrl = require('../controllers/newsController');
 const { verifyToken, isSuperAdmin } = require('../middleware/authMiddleware');
 
 const storage = multer.diskStorage({
@@ -41,6 +42,17 @@ router.put('/rooms/:id/seats', adminCtrl.saveSeats);
 
 // DELETE /api/admin/movies/:id      — Xóa (soft) phim
 router.delete('/movies/:id', adminCtrl.deleteMovie);
+
+// Movie review management
+router.get('/movie-reviews', adminCtrl.getMovieReviews);
+router.patch('/movie-reviews/:id/toggle', adminCtrl.toggleMovieReview);
+router.delete('/movie-reviews/:id', adminCtrl.deleteMovieReview);
+
+router.get('/genres', adminCtrl.getGenres);
+router.post('/genres', adminCtrl.createGenre);
+router.put('/genres/:id', adminCtrl.updateGenre);
+router.patch('/genres/:id/toggle', adminCtrl.toggleGenre);
+router.delete('/genres/:id', adminCtrl.deleteGenre);
 
 // ─── Showtime Management ─────────────────────────────────────
 // GET    /api/admin/showtimes       — Danh sách tất cả suất chiếu
@@ -118,8 +130,28 @@ router.delete('/combos/:id', comboCtrl.deleteCombo);
 router.patch('/combos/:id/toggle', comboCtrl.toggleComboStatus);
 
 // ─── Statistics ──────────────────────────────────────────────
+// ─── Cinema Management ──────────────────────────────────────
 // GET    /api/admin/cinemas           — Danh sách rạp chiếu
 router.get('/cinemas', adminCtrl.getCinemas);
+
+// POST   /api/admin/cinemas           — Thêm rạp mới
+router.post('/cinemas', adminCtrl.createCinema);
+
+// PUT    /api/admin/cinemas/:id       — Sửa rạp
+router.put('/cinemas/:id', adminCtrl.updateCinema);
+
+// DELETE /api/admin/cinemas/:id       — Xóa rạp
+router.delete('/cinemas/:id', adminCtrl.deleteCinema);
+
+// ─── Room Management ────────────────────────────────────────
+// POST   /api/admin/rooms             — Thêm phòng chiếu
+router.post('/rooms', adminCtrl.createRoom);
+
+// PUT    /api/admin/rooms/:id         — Sửa phòng chiếu
+router.put('/rooms/:id', adminCtrl.updateRoom);
+
+// DELETE /api/admin/rooms/:id         — Xóa phòng chiếu
+router.delete('/rooms/:id', adminCtrl.deleteRoom);
 
 // GET    /api/admin/stats/dashboard    — Tổng quan dashboard (hỗ trợ ?cinemaId=&period=)
 router.get('/stats/dashboard', adminCtrl.getDashboardStats);
@@ -129,6 +161,12 @@ router.get('/stats/recent-transactions', adminCtrl.getRecentTransactions);
 
 // GET    /api/admin/stats/export-pdf   — Xuất báo cáo PDF
 router.get('/stats/export-pdf', adminCtrl.exportPdf);
+
+// GET    /api/admin/stats/export-csv   — Xuất báo cáo CSV
+router.get('/stats/export-csv', adminCtrl.exportCsv);
+
+// GET    /api/admin/stats/export-excel — Xuất báo cáo Excel
+router.get('/stats/export-excel', adminCtrl.exportExcel);
 
 // GET    /api/admin/stats/revenue      — Thống kê doanh thu
 router.get('/stats/revenue', adminCtrl.getRevenueStats);
@@ -163,6 +201,13 @@ router.delete('/promotions/:id', adminCtrl.deletePromotion);
 
 // PATCH  /api/admin/promotions/:id/toggle  — Bật/tắt trạng thái
 router.patch('/promotions/:id/toggle', adminCtrl.togglePromotionActive);
+
+// News article management
+router.get('/news', newsCtrl.getAdminArticles);
+router.post('/news', upload.single('image'), newsCtrl.createArticle);
+router.put('/news/:id', upload.single('image'), newsCtrl.updateArticle);
+router.delete('/news/:id', newsCtrl.deleteArticle);
+router.patch('/news/:id/toggle', newsCtrl.toggleArticleActive);
 
 
 // ==========================================

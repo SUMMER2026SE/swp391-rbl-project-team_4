@@ -1024,6 +1024,7 @@ textarea.form-control { resize: vertical; }
     border: 1px solid var(--border); background: var(--bg-white);
     font-size: 0.82rem; font-weight: 700; color: var(--text2);
     transition: all var(--tr); text-align: center;
+    position: relative;
 }
 .room-btn:hover { border-color: var(--border2); color: var(--text); }
 .room-btn.active {
@@ -1031,6 +1032,55 @@ textarea.form-control { resize: vertical; }
 }
 .room-btn.add-btn { color: var(--text3); font-size: 1.1rem; }
 .room-btn.add-btn:hover { background: var(--bg); color: var(--text); }
+
+.room-actions {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: none;
+    gap: 4px;
+}
+.room-btn:hover .room-actions {
+    display: flex;
+}
+.room-actions span {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text2);
+    font-size: 0.6rem;
+    transition: all 0.2s ease;
+}
+.room-actions span:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.btn-icon-xs {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text2);
+    border: 1px solid var(--border);
+    background: var(--bg);
+    cursor: pointer;
+    transition: all var(--tr);
+    padding: 0;
+}
+.btn-icon-xs:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
 
 /* Main Workspace */
 .cin-workspace {

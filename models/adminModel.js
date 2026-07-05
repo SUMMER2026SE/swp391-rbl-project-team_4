@@ -1,10 +1,173 @@
 const { sql, getPool } = require('../config/db');
 
+let schemaReady = false;
+let genreSchemaReady = false;
+let reviewSchemaReady = false;
+
+async function ensureMovieReviewsTable() {
+  if (reviewSchemaReady) return;
+  const pool = await getPool();
+  await pool.request().query(`
+    IF OBJECT_ID('dbo.MovieReviews', 'U') IS NULL
+    BEGIN
+      CREATE TABLE dbo.MovieReviews (
+        ReviewID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        MovieID INT NOT NULL,
+        UserID INT NOT NULL,
+        Rating INT NOT NULL,
+        Comment NVARCHAR(1000) NULL,
+        IsVisible BIT NOT NULL CONSTRAINT DF_MovieReviews_IsVisible DEFAULT 1,
+        CreatedAt DATETIME NOT NULL CONSTRAINT DF_MovieReviews_CreatedAt DEFAULT GETDATE(),
+        UpdatedAt DATETIME NULL,
+        CONSTRAINT CK_MovieReviews_Rating CHECK (Rating BETWEEN 1 AND 5),
+        CONSTRAINT UQ_MovieReviews_Movie_User UNIQUE (MovieID, UserID),
+        CONSTRAINT FK_MovieReviews_Movies FOREIGN KEY (MovieID) REFERENCES dbo.Movies(MovieID),
+        CONSTRAINT FK_MovieReviews_Users FOREIGN KEY (UserID) REFERENCES dbo.Users(UserID)
+      );
+    END;
+
+    IF COL_LENGTH('dbo.MovieReviews', 'IsVisible') IS NULL
+    BEGIN
+      ALTER TABLE dbo.MovieReviews ADD IsVisible BIT NOT NULL CONSTRAINT DF_MovieReviews_IsVisible DEFAULT 1;
+    END;
+
+    IF COL_LENGTH('dbo.MovieReviews', 'CreatedAt') IS NULL
+    BEGIN
+      ALTER TABLE dbo.MovieReviews ADD CreatedAt DATETIME NOT NULL CONSTRAINT DF_MovieReviews_CreatedAt DEFAULT GETDATE();
+    END;
+
+    IF COL_LENGTH('dbo.MovieReviews', 'UpdatedAt') IS NULL
+    BEGIN
+      ALTER TABLE dbo.MovieReviews ADD UpdatedAt DATETIME NULL;
+    END;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM sys.indexes
+      WHERE name = 'IX_MovieReviews_MovieID_IsVisible'
+        AND object_id = OBJECT_ID('dbo.MovieReviews')
+    )
+    BEGIN
+      CREATE INDEX IX_MovieReviews_MovieID_IsVisible
+      ON dbo.MovieReviews (MovieID, IsVisible)
+      INCLUDE (Rating, CreatedAt, UpdatedAt);
+    END;
+  `);
+  reviewSchemaReady = true;
+}
+
+async function ensurePromotionsTable() {
+  if (schemaReady) return;
+  const pool = await getPool();
+  await pool.request().query(`
+    IF OBJECT_ID('dbo.Promotions', 'U') IS NULL
+    BEGIN
+      CREATE TABLE dbo.Promotions (
+        PromotionID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        Title NVARCHAR(255) NOT NULL,
+        Description NVARCHAR(1000) NULL,
+        BadgeLabel NVARCHAR(80) NULL,
+        ImageURL VARCHAR(500) NULL,
+        LinkURL VARCHAR(500) NULL,
+        IsFeatured BIT NOT NULL CONSTRAINT DF_Promotions_IsFeatured DEFAULT 0,
+        IsActive BIT NOT NULL CONSTRAINT DF_Promotions_IsActive DEFAULT 1,
+        SortOrder INT NOT NULL CONSTRAINT DF_Promotions_SortOrder DEFAULT 0,
+        CreatedAt DATETIME NOT NULL CONSTRAINT DF_Promotions_CreatedAt DEFAULT GETDATE(),
+        UpdatedAt DATETIME NULL
+      );
+    END;
+  `);
+  schemaReady = true;
+}
+
+async function ensureGenreTables() {
+  if (genreSchemaReady) return;
+  const pool = await getPool();
+  await pool.request().query(`
+    IF OBJECT_ID('dbo.Genres', 'U') IS NULL
+    BEGIN
+      CREATE TABLE dbo.Genres (
+        GenreID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        GenreName NVARCHAR(100) NOT NULL UNIQUE,
+        IsActive BIT NOT NULL CONSTRAINT DF_Genres_IsActive DEFAULT 1,
+        CreatedAt DATETIME NOT NULL CONSTRAINT DF_Genres_CreatedAt DEFAULT GETDATE()
+      );
+    END;
+
+    IF COL_LENGTH('dbo.Genres', 'IsActive') IS NULL
+    BEGIN
+      ALTER TABLE dbo.Genres ADD IsActive BIT NOT NULL CONSTRAINT DF_Genres_IsActive DEFAULT 1;
+    END;
+
+    IF OBJECT_ID('dbo.Movie_Genres', 'U') IS NULL
+    BEGIN
+      CREATE TABLE dbo.Movie_Genres (
+        MovieID INT NOT NULL,
+        GenreID INT NOT NULL,
+        CONSTRAINT PK_Movie_Genres PRIMARY KEY (MovieID, GenreID),
+        CONSTRAINT FK_MovieGenres_Movies FOREIGN KEY (MovieID) REFERENCES dbo.Movies(MovieID),
+        CONSTRAINT FK_MovieGenres_Genres FOREIGN KEY (GenreID) REFERENCES dbo.Genres(GenreID)
+      );
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres)
+    BEGIN
+      INSERT INTO dbo.Genres (GenreName)
+      VALUES
+        (N'Hành động'),
+        (N'Phiêu lưu'),
+        (N'Hài'),
+        (N'Tình cảm'),
+        (N'Tâm lý'),
+        (N'Kinh dị'),
+        (N'Hoạt hình'),
+        (N'Gia đình'),
+        (N'Khoa học viễn tưởng'),
+        (N'Tội phạm'),
+        (N'Tài liệu');
+    END;
+  `);
+  genreSchemaReady = true;
+}
+
+function parseGenreIds(value) {
+  if (Array.isArray(value)) value = value.join(',');
+  return String(value || '')
+    .split(',')
+    .map(id => parseInt(id, 10))
+    .filter((id, index, arr) => Number.isInteger(id) && id > 0 && arr.indexOf(id) === index);
+}
+
+async function syncMovieGenres(poolOrTransaction, movieId, genreIds) {
+  const ids = parseGenreIds(genreIds);
+  const requestFactory = () => poolOrTransaction.request();
+
+  await requestFactory()
+    .input('movieId', sql.Int, movieId)
+    .query('DELETE FROM Movie_Genres WHERE MovieID = @movieId');
+
+  for (const genreId of ids) {
+    await requestFactory()
+      .input('movieId', sql.Int, movieId)
+      .input('genreId', sql.Int, genreId)
+      .query(`
+        IF EXISTS (SELECT 1 FROM Genres WHERE GenreID = @genreId)
+        BEGIN
+          INSERT INTO Movie_Genres (MovieID, GenreID)
+          VALUES (@movieId, @genreId);
+        END
+      `);
+  }
+}
+
 class AdminModel {
   // --- MOVIE MANAGEMENT ---
   static async createMovie(data) {
+    await ensureGenreTables();
     const pool = await getPool();
-    const result = await pool.request()
+    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
+    try {
+      const result = await transaction.request()
       .input('title', sql.NVarChar, data.title || null)
       .input('description', sql.NVarChar, data.description || null)
       .input('director', sql.NVarChar, data.director || null)
@@ -13,17 +176,29 @@ class AdminModel {
       .input('posterURL', sql.VarChar, data.posterURL || null)
       .input('status', sql.VarChar, data.status || 'Coming Soon')
       .input('mainCast', sql.NVarChar, data.mainCast || null)
+      .input('trailerURL', sql.NVarChar, data.trailerURL || null)
       .query(`
-        INSERT INTO Movies (Title, Description, Director, Duration, AgeRating, PosterURL, Status, MainCast)
+        INSERT INTO Movies (Title, Description, Director, Duration, AgeRating, PosterURL, Status, MainCast, TrailerURL)
         OUTPUT INSERTED.*
-        VALUES (@title, @description, @director, @duration, @ageRating, @posterURL, @status, @mainCast)
+        VALUES (@title, @description, @director, @duration, @ageRating, @posterURL, @status, @mainCast, @trailerURL)
       `);
-    return result.recordset[0];
+      const movie = result.recordset[0];
+      await syncMovieGenres(transaction, movie.MovieID, data.genreIds);
+      await transaction.commit();
+      return movie;
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
   }
 
   static async updateMovie(movieId, data) {
+    await ensureGenreTables();
     const pool = await getPool();
-    const result = await pool.request()
+    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
+    try {
+      const result = await transaction.request()
       .input('movieId', sql.Int, movieId)
       .input('title', sql.NVarChar, data.title || null)
       .input('description', sql.NVarChar, data.description || null)
@@ -33,6 +208,7 @@ class AdminModel {
       .input('posterURL', sql.VarChar, data.posterURL || null)
       .input('status', sql.VarChar, data.status || null)
       .input('mainCast', sql.NVarChar, data.mainCast || null)
+      .input('trailerURL', sql.NVarChar, data.trailerURL !== undefined ? data.trailerURL : null)
       .query(`
         UPDATE Movies
         SET Title       = COALESCE(@title, Title),
@@ -42,11 +218,21 @@ class AdminModel {
             AgeRating   = COALESCE(@ageRating, AgeRating),
             PosterURL   = COALESCE(@posterURL, PosterURL),
             Status      = COALESCE(@status, Status),
-            MainCast    = COALESCE(@mainCast, MainCast)
+            MainCast    = COALESCE(@mainCast, MainCast),
+            TrailerURL  = @trailerURL
         OUTPUT INSERTED.*
         WHERE MovieID = @movieId
       `);
-    return result.recordset.length > 0 ? result.recordset[0] : null;
+      const movie = result.recordset.length > 0 ? result.recordset[0] : null;
+      if (movie && data.genreIds !== undefined) {
+        await syncMovieGenres(transaction, movieId, data.genreIds);
+      }
+      await transaction.commit();
+      return movie;
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
   }
 
   static async deleteMovie(movieId) {
@@ -54,6 +240,199 @@ class AdminModel {
     await pool.request()
       .input('movieId', sql.Int, movieId)
       .query(`UPDATE Movies SET Status = 'deleted' WHERE MovieID = @movieId`);
+  }
+
+  static async getMovieReviews({ movieId, status, rating, search } = {}) {
+    await ensureMovieReviewsTable();
+    const pool = await getPool();
+    const request = pool.request();
+
+    let filters = 'WHERE 1=1';
+    if (movieId) {
+      request.input('movieId', sql.Int, parseInt(movieId, 10));
+      filters += ' AND mr.MovieID = @movieId';
+    }
+    if (status === 'visible') {
+      filters += ' AND mr.IsVisible = 1';
+    } else if (status === 'hidden') {
+      filters += ' AND mr.IsVisible = 0';
+    }
+    if (rating) {
+      request.input('rating', sql.Int, parseInt(rating, 10));
+      filters += ' AND mr.Rating = @rating';
+    }
+    if (search) {
+      request.input('search', sql.NVarChar, `%${String(search).trim()}%`);
+      filters += ` AND (
+        m.Title LIKE @search
+        OR u.FullName LIKE @search
+        OR u.Email LIKE @search
+        OR mr.Comment LIKE @search
+      )`;
+    }
+
+    const result = await request.query(`
+      SELECT
+        COUNT(*) AS TotalReviews,
+        SUM(CASE WHEN mr.IsVisible = 1 THEN 1 ELSE 0 END) AS VisibleReviews,
+        SUM(CASE WHEN mr.IsVisible = 0 THEN 1 ELSE 0 END) AS HiddenReviews,
+        CAST(ROUND(ISNULL(AVG(CAST(CASE WHEN mr.IsVisible = 1 THEN mr.Rating END AS decimal(4,2))), 0), 1) AS decimal(3,1)) AS AverageRating
+      FROM MovieReviews mr
+      JOIN Movies m ON mr.MovieID = m.MovieID
+      JOIN Users u ON mr.UserID = u.UserID
+      ${filters};
+
+      SELECT
+        mr.ReviewID,
+        mr.MovieID,
+        m.Title AS MovieTitle,
+        m.PosterURL,
+        mr.UserID,
+        COALESCE(NULLIF(u.FullName, ''), u.Email, N'Khách hàng') AS FullName,
+        u.Email,
+        mr.Rating,
+        mr.Comment,
+        mr.IsVisible,
+        mr.CreatedAt,
+        mr.UpdatedAt
+      FROM MovieReviews mr
+      JOIN Movies m ON mr.MovieID = m.MovieID
+      JOIN Users u ON mr.UserID = u.UserID
+      ${filters}
+      ORDER BY COALESCE(mr.UpdatedAt, mr.CreatedAt) DESC, mr.ReviewID DESC;
+    `);
+
+    const summary = result.recordsets[0][0] || {};
+    return {
+      summary: {
+        totalReviews: Number(summary.TotalReviews || 0),
+        visibleReviews: Number(summary.VisibleReviews || 0),
+        hiddenReviews: Number(summary.HiddenReviews || 0),
+        averageRating: Number(summary.AverageRating || 0)
+      },
+      reviews: result.recordsets[1] || []
+    };
+  }
+
+  static async toggleMovieReview(reviewId) {
+    await ensureMovieReviewsTable();
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('reviewId', sql.Int, parseInt(reviewId, 10))
+      .query(`
+        UPDATE MovieReviews
+        SET IsVisible = CASE WHEN IsVisible = 1 THEN 0 ELSE 1 END,
+            UpdatedAt = GETDATE()
+        OUTPUT INSERTED.ReviewID, INSERTED.MovieID, INSERTED.UserID, INSERTED.Rating,
+               INSERTED.Comment, INSERTED.IsVisible, INSERTED.CreatedAt, INSERTED.UpdatedAt
+        WHERE ReviewID = @reviewId;
+      `);
+    return result.recordset[0] || null;
+  }
+
+  static async deleteMovieReview(reviewId) {
+    await ensureMovieReviewsTable();
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('reviewId', sql.Int, parseInt(reviewId, 10))
+      .query(`
+        DELETE FROM MovieReviews
+        OUTPUT DELETED.ReviewID
+        WHERE ReviewID = @reviewId;
+      `);
+    return result.recordset[0] || null;
+  }
+
+  static async getGenres({ includeInactive = true } = {}) {
+    await ensureGenreTables();
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('includeInactive', sql.Bit, includeInactive ? 1 : 0)
+      .query(`
+        SELECT
+          g.GenreID,
+          g.GenreName,
+          g.IsActive,
+          COUNT(mg.MovieID) AS MovieCount
+        FROM Genres g
+        LEFT JOIN Movie_Genres mg ON g.GenreID = mg.GenreID
+        WHERE @includeInactive = 1 OR g.IsActive = 1
+        GROUP BY g.GenreID, g.GenreName, g.IsActive
+        ORDER BY g.GenreName ASC
+      `);
+    return result.recordset;
+  }
+
+  static async createGenre(name) {
+    await ensureGenreTables();
+    const genreName = String(name || '').trim();
+    if (!genreName) throw new Error('Vui lòng nhập tên thể loại.');
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('genreName', sql.NVarChar, genreName)
+      .query(`
+        IF EXISTS (SELECT 1 FROM Genres WHERE GenreName = @genreName)
+        BEGIN
+          UPDATE Genres SET IsActive = 1 WHERE GenreName = @genreName;
+          SELECT TOP 1 GenreID, GenreName, IsActive FROM Genres WHERE GenreName = @genreName;
+        END
+        ELSE
+        BEGIN
+          INSERT INTO Genres (GenreName) OUTPUT INSERTED.GenreID, INSERTED.GenreName, INSERTED.IsActive VALUES (@genreName);
+        END
+      `);
+    return result.recordset[0];
+  }
+
+  static async updateGenre(genreId, name) {
+    await ensureGenreTables();
+    const genreName = String(name || '').trim();
+    if (!genreName) throw new Error('Vui lòng nhập tên thể loại.');
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('genreId', sql.Int, parseInt(genreId, 10))
+      .input('genreName', sql.NVarChar, genreName)
+      .query(`
+        UPDATE Genres
+        SET GenreName = @genreName
+        OUTPUT INSERTED.GenreID, INSERTED.GenreName, INSERTED.IsActive
+        WHERE GenreID = @genreId
+      `);
+    return result.recordset[0] || null;
+  }
+
+  static async toggleGenre(genreId) {
+    await ensureGenreTables();
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('genreId', sql.Int, parseInt(genreId, 10))
+      .query(`
+        UPDATE Genres
+        SET IsActive = CASE WHEN IsActive = 1 THEN 0 ELSE 1 END
+        OUTPUT INSERTED.GenreID, INSERTED.GenreName, INSERTED.IsActive
+        WHERE GenreID = @genreId
+      `);
+    return result.recordset[0] || null;
+  }
+
+  static async deleteGenre(genreId) {
+    await ensureGenreTables();
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('genreId', sql.Int, parseInt(genreId, 10))
+      .query(`
+        IF EXISTS (SELECT 1 FROM Movie_Genres WHERE GenreID = @genreId)
+        BEGIN
+          UPDATE Genres SET IsActive = 0 WHERE GenreID = @genreId;
+          SELECT CAST(0 AS bit) AS Deleted, CAST(1 AS bit) AS Deactivated;
+        END
+        ELSE
+        BEGIN
+          DELETE FROM Genres WHERE GenreID = @genreId;
+          SELECT CAST(1 AS bit) AS Deleted, CAST(0 AS bit) AS Deactivated;
+        END
+      `);
+    return result.recordset[0];
   }
 
   static async getRooms() {
@@ -515,11 +894,115 @@ class AdminModel {
   static async getCinemas() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT CinemaID, CinemaName, Address
+      SELECT CinemaID, CinemaName, Address, City
       FROM Cinemas
       ORDER BY CinemaName
     `);
     return result.recordset;
+  }
+
+  // --- CREATE CINEMA ---
+  static async createCinema(data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('name', sql.NVarChar, data.name)
+      .input('address', sql.NVarChar, data.address || null)
+      .input('city', sql.NVarChar, data.city || null)
+      .query(`
+        INSERT INTO Cinemas (CinemaName, Address, City)
+        OUTPUT INSERTED.*
+        VALUES (@name, @address, @city)
+      `);
+    return result.recordset[0];
+  }
+
+  // --- UPDATE CINEMA ---
+  static async updateCinema(cinemaId, data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, cinemaId)
+      .input('name', sql.NVarChar, data.name)
+      .input('address', sql.NVarChar, data.address || null)
+      .input('city', sql.NVarChar, data.city || null)
+      .query(`
+        UPDATE Cinemas
+        SET CinemaName = @name, Address = @address, City = @city
+        WHERE CinemaID = @id;
+        SELECT * FROM Cinemas WHERE CinemaID = @id;
+      `);
+    return result.recordset[0];
+  }
+
+  // --- DELETE CINEMA ---
+  static async deleteCinema(cinemaId) {
+    const pool = await getPool();
+    // Check for active showtimes
+    const check = await pool.request()
+      .input('id', sql.Int, cinemaId)
+      .query(`
+        SELECT COUNT(*) AS cnt FROM Showtimes st
+        JOIN Rooms r ON st.RoomID = r.RoomID
+        WHERE r.CinemaID = @id AND st.Status = 'active' AND st.EndTime > GETUTCDATE()
+      `);
+    if (check.recordset[0].cnt > 0) {
+      throw new Error('Không thể xóa rạp đang có suất chiếu hoạt động.');
+    }
+    // Delete seats, rooms, then cinema
+    await pool.request().input('id', sql.Int, cinemaId).query(`
+      DELETE FROM Seats WHERE RoomID IN (SELECT RoomID FROM Rooms WHERE CinemaID = @id);
+      DELETE FROM Rooms WHERE CinemaID = @id;
+      DELETE FROM Cinemas WHERE CinemaID = @id;
+    `);
+    return true;
+  }
+
+  // --- CREATE ROOM ---
+  static async createRoom(data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('cinemaId', sql.Int, data.cinemaId)
+      .input('name', sql.NVarChar, data.name)
+      .input('totalSeats', sql.Int, data.totalSeats || 0)
+      .query(`
+        INSERT INTO Rooms (CinemaID, RoomName, TotalSeats)
+        OUTPUT INSERTED.*
+        VALUES (@cinemaId, @name, @totalSeats)
+      `);
+    return result.recordset[0];
+  }
+
+  // --- UPDATE ROOM ---
+  static async updateRoom(roomId, data) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, roomId)
+      .input('name', sql.NVarChar, data.name)
+      .query(`
+        UPDATE Rooms SET RoomName = @name WHERE RoomID = @id;
+        SELECT r.*, c.CinemaName FROM Rooms r JOIN Cinemas c ON r.CinemaID = c.CinemaID WHERE r.RoomID = @id;
+      `);
+    return result.recordset[0];
+  }
+
+  // --- DELETE ROOM ---
+  static async deleteRoom(roomId) {
+    const pool = await getPool();
+    // Check for tickets
+    const check = await pool.request()
+      .input('id', sql.Int, roomId)
+      .query(`
+        SELECT COUNT(*) AS cnt FROM Tickets t
+        JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+        WHERE st.RoomID = @id AND t.Status IN ('confirmed', 'pending')
+      `);
+    if (check.recordset[0].cnt > 0) {
+      throw new Error('Không thể xóa phòng đang có vé bán.');
+    }
+    await pool.request().input('id', sql.Int, roomId).query(`
+      DELETE FROM Seats WHERE RoomID = @id;
+      DELETE FROM Rooms WHERE RoomID = @id;
+    `);
+    return true;
   }
 
   // --- STATISTICS ---
@@ -845,6 +1328,7 @@ class AdminModel {
   }
 
   static async getActivePromotions() {
+    await ensurePromotionsTable();
     const pool = await getPool();
     const result = await pool.request().query(`
       SELECT PromotionID, Title, Description, BadgeLabel, ImageURL, LinkURL,
@@ -857,6 +1341,7 @@ class AdminModel {
   }
 
   static async createPromotion(data) {
+    await ensurePromotionsTable();
     const pool = await getPool();
     const result = await pool.request()
       .input('title', sql.NVarChar, data.title)
@@ -876,6 +1361,7 @@ class AdminModel {
   }
 
   static async updatePromotion(id, data) {
+    await ensurePromotionsTable();
     const pool = await getPool();
     const result = await pool.request()
       .input('id', sql.Int, id)
@@ -905,6 +1391,7 @@ class AdminModel {
   }
 
   static async deletePromotion(id) {
+    await ensurePromotionsTable();
     const pool = await getPool();
     await pool.request()
       .input('id', sql.Int, id)
@@ -912,6 +1399,7 @@ class AdminModel {
   }
 
   static async togglePromotionActive(id) {
+    await ensurePromotionsTable();
     const pool = await getPool();
     const result = await pool.request()
       .input('id', sql.Int, id)
@@ -924,6 +1412,7 @@ class AdminModel {
       `);
     return result.recordset.length > 0 ? result.recordset[0] : null;
   }
+
 }
 
 module.exports = AdminModel;

@@ -5,10 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chọn Ghế | D-CINEMA</title>
-    <meta name="description" content="Chọn ghế xem phim tại D-CINEMA. Ghế thường, VIP và ghế cặp đôi. Đặt vé nhanh chóng.">
+    <meta name="description"
+        content="Chọn ghế xem phim tại D-CINEMA. Ghế thường, VIP và ghế cặp đôi. Đặt vé nhanh chóng.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         /* ─── CSS Variables ─── */
         :root {
@@ -37,57 +40,131 @@
 
         /* ─── Breadcrumb Banner ─── */
         .seat-breadcrumb {
-            background: linear-gradient(180deg, rgba(229,9,20,0.1) 0%, transparent 100%);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: linear-gradient(180deg, rgba(229, 9, 20, 0.1) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             padding: 12px 0;
         }
+
         .breadcrumb-inner {
-            max-width: 1400px; margin: 0 auto; padding: 0 20px;
-            display: flex; align-items: center; gap: 8px;
-            font-size: 0.82rem; color: #888;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: #888;
         }
-        .breadcrumb-inner a { color: #888; text-decoration: none; transition: color 0.2s; }
-        .breadcrumb-inner a:hover { color: #e50914; }
-        .breadcrumb-sep { color: #444; }
-        .breadcrumb-current { color: #e50914; font-weight: 600; }
-        .breadcrumb-cinema { color: #ccc; font-weight: 600; }
-        
+
+        .breadcrumb-inner a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb-inner a:hover {
+            color: #e50914;
+        }
+
+        .breadcrumb-sep {
+            color: #444;
+        }
+
+        .breadcrumb-current {
+            color: #e50914;
+            font-weight: 600;
+        }
+
+        .breadcrumb-cinema {
+            color: #ccc;
+            font-weight: 600;
+        }
+
         /* ─── Price breakdown ─── */
         .price-breakdown {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 10px; padding: 14px;
-            margin-top: 12px; display: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 12px;
+            display: none;
         }
-        .price-breakdown.visible { display: block; }
+
+        .price-breakdown.visible {
+            display: block;
+        }
+
         .price-breakdown-row {
-            display: flex; justify-content: space-between;
-            font-size: 0.8rem; color: #888; margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 6px;
         }
-        .price-breakdown-row:last-child { margin-bottom: 0; }
-        .price-breakdown-row .pbr-val { color: #ccc; font-weight: 600; }
+
+        .price-breakdown-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .price-breakdown-row .pbr-val {
+            color: #ccc;
+            font-weight: 600;
+        }
 
         /* ─── Animations ─── */
         @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
-        .sidebar-summary { animation: slideInRight 0.5s cubic-bezier(0.4,0,0.2,1); }
-        .seat-map { animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .sidebar-summary {
+            animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .seat-map {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
 
         /* ─── Showtime chip ─── */
         .showtime-chip {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(229,9,20,0.1); border: 1px solid rgba(229,9,20,0.25);
-            border-radius: 6px; padding: 5px 10px;
-            font-size: 0.78rem; font-weight: 700; color: #ff8080;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(229, 9, 20, 0.1);
+            border: 1px solid rgba(229, 9, 20, 0.25);
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #ff8080;
             margin-top: 8px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        html, body {
+        html,
+        body {
             font-family: var(--font);
             background: var(--bg-dark);
             color: var(--text);
@@ -95,7 +172,10 @@
             min-height: 100vh;
         }
 
-        a { text-decoration: none; color: inherit; }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
 
         /* ─── Navbar ─── */
         .navbar {
@@ -106,6 +186,7 @@
             backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
         }
+
         .nav-container {
             max-width: 1500px;
             margin: 0 auto;
@@ -114,13 +195,49 @@
             align-items: center;
             gap: 32px;
         }
-        .logo { display: flex; align-items: center; gap: 8px; }
-        .logo-d { font-size: 1.8rem; font-weight: 900; color: var(--primary); }
-        .logo-text { font-size: 1rem; font-weight: 800; letter-spacing: 2px; }
-        .nav-links { display: flex; gap: 28px; }
-        .nav-links a { color: #666; font-weight: 600; font-size: 0.9rem; transition: color 0.2s; }
-        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
-        .nav-actions { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-d {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .logo-text {
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            color: #666;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary);
+        }
+
+        .nav-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
         .btn-login {
             background: var(--primary);
             color: #fff;
@@ -130,15 +247,17 @@
             font-size: 0.85rem;
             transition: all 0.3s;
         }
+
         .btn-login:hover {
             background: var(--primary-hover);
             box-shadow: 0 4px 15px var(--primary-glow);
         }
+
         .nav-back-btn {
             display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border);
             color: var(--text-muted);
             padding: 8px 14px;
@@ -148,10 +267,11 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .nav-back-btn:hover {
             color: #fff;
-            border-color: rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         /* ─── Breadcrumb Progress ─── */
@@ -160,6 +280,7 @@
             border-bottom: 1px solid var(--border);
             padding: 14px 24px;
         }
+
         .steps-container {
             max-width: 1500px;
             margin: 0 auto;
@@ -167,6 +288,7 @@
             align-items: center;
             gap: 0;
         }
+
         .step-item {
             display: flex;
             align-items: center;
@@ -178,7 +300,11 @@
             color: var(--text-muted);
             padding: 0 20px 0 0;
         }
-        .step-item:first-child { padding-left: 0; }
+
+        .step-item:first-child {
+            padding-left: 0;
+        }
+
         .step-num {
             width: 26px;
             height: 26px;
@@ -192,19 +318,26 @@
             font-weight: 800;
             flex-shrink: 0;
         }
+
         .step-item.active {
             color: #fff;
         }
+
         .step-item.active .step-num {
             background: var(--primary);
             border-color: var(--primary);
             box-shadow: 0 0 12px var(--primary-glow);
         }
+
         .step-item.done .step-num {
             background: #16a34a;
             border-color: #16a34a;
         }
-        .step-item.done { color: #4ade80; }
+
+        .step-item.done {
+            color: #4ade80;
+        }
+
         .step-arrow {
             color: var(--border);
             font-size: 1.2rem;
@@ -221,9 +354,15 @@
             margin: 0 auto;
             gap: 0;
         }
+
         @media (max-width: 1100px) {
-            .page-wrapper { grid-template-columns: 1fr; }
-            .sidebar-summary { order: -1; }
+            .page-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-summary {
+                order: -1;
+            }
         }
 
         /* ─── Seat Layout Column ─── */
@@ -242,35 +381,40 @@
             perspective: 600px;
             position: relative;
         }
+
         .screen-bar {
-            height: 8px;
-            background: linear-gradient(90deg, transparent, rgba(229,9,20,0.6), #ff1a26, rgba(229,9,20,0.6), transparent);
+            height: 10px;
+            background: linear-gradient(90deg, transparent 5%, rgba(229, 9, 20, 0.2) 20%, #ff2a36 50%, rgba(229, 9, 20, 0.2) 80%, transparent 95%);
             border-radius: 50% / 100% 100% 0 0;
-            box-shadow: 0 4px 30px rgba(229, 9, 20, 0.6), 0 2px 10px rgba(229,9,20,0.3);
-            transform: rotateX(-15deg);
+            box-shadow: 0 6px 30px rgba(229, 9, 20, 0.85), 0 2px 15px rgba(255, 42, 54, 0.5);
+            transform: rotateX(-12deg);
             position: relative;
             z-index: 2;
         }
+
         .screen-glow {
-            width: 80%;
-            height: 140px;
-            background: linear-gradient(180deg, rgba(229,9,20,0.12) 0%, rgba(229,9,20,0.01) 85%, transparent 100%);
+            width: 85%;
+            height: 180px;
+            background: radial-gradient(ellipse at top, rgba(229, 9, 20, 0.2) 0%, rgba(229, 9, 20, 0.05) 50%, transparent 80%);
             margin: 0 auto;
             position: absolute;
-            left: 10%;
-            top: 8px;
+            left: 7.5%;
+            top: 10px;
             z-index: 1;
-            clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+            clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
             pointer-events: none;
-            opacity: 0.75;
+            opacity: 0.95;
+            filter: blur(10px);
         }
+
         .screen-label {
             margin-top: 18px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 800;
-            letter-spacing: 6px;
-            color: var(--text-muted);
+            letter-spacing: 8px;
+            color: rgba(255, 255, 255, 0.35);
             text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(229, 9, 20, 0.3);
         }
 
         /* Seat Map */
@@ -284,11 +428,13 @@
             width: fit-content;
             min-width: 100%;
         }
+
         .seat-row {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+
         .row-label {
             width: 28px;
             font-weight: 800;
@@ -300,172 +446,211 @@
 
         /* Base Seat Design */
         .seat {
-            width: 36px;
-            height: 34px;
-            border-radius: 8px 8px 4px 4px;
+            width: 38px;
+            height: 36px;
+            border-radius: 8px 8px 6px 6px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 800;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255,255,255,0.07);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             position: relative;
             flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
+
         /* Chair headrest */
         .seat::before {
             content: '';
             position: absolute;
             top: 2px;
-            left: 4px;
-            right: 4px;
-            height: 8px;
-            background: rgba(255,255,255,0.12);
-            border-radius: 2px;
+            left: 5px;
+            right: 5px;
+            height: 9px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
             transition: all 0.2s;
         }
+
         /* Chair cushion */
         .seat::after {
             content: '';
             position: absolute;
-            bottom: 3px;
-            left: 4px;
-            right: 4px;
-            top: 13px;
-            background: rgba(0,0,0,0.25);
-            border-radius: 2px;
-            border: 1px solid rgba(255,255,255,0.05);
+            bottom: 4px;
+            left: 5px;
+            right: 5px;
+            top: 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
             transition: all 0.2s;
+        }
+
+        /* Dimmed Invalid Seats */
+        .seat.dimmed {
+            opacity: 0.25 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
         }
 
         /* Normal Seat */
         .seat.normal {
-            background: linear-gradient(180deg, #5a6578, #3b424e);
+            background: linear-gradient(180deg, #475569, #1e293b);
             color: #cbd5e1;
         }
+
         .seat.normal:hover:not(.booked):not(.locked) {
-            background: linear-gradient(180deg, #7c8ba1, #4f5869);
-            transform: translateY(-3px) scale(1.08);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+            background: linear-gradient(180deg, #64748b, #334155);
+            transform: translateY(-4px) scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(100, 116, 139, 0.3);
             color: #fff;
+            border-color: rgba(255, 255, 255, 0.2);
         }
+
         .seat.normal:hover::before {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.28);
         }
 
         /* VIP Seat */
         .seat.vip {
-            background: linear-gradient(180deg, #c2610d, #8f4305);
+            background: linear-gradient(180deg, #e28a18, #8a4805);
             color: #fef08a;
-            border-color: rgba(252, 211, 77, 0.25);
+            border-color: rgba(252, 211, 77, 0.3);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4), 0 0 4px rgba(245, 158, 11, 0.15);
         }
+
         .seat.vip:hover:not(.booked):not(.locked) {
-            background: linear-gradient(180deg, #e07416, #aa5209);
-            transform: translateY(-3px) scale(1.08);
-            box-shadow: 0 6px 14px rgba(180, 83, 9, 0.55);
+            background: linear-gradient(180deg, #f59e0b, #b45309);
+            transform: translateY(-4px) scale(1.1);
+            box-shadow: 0 8px 20px rgba(180, 83, 9, 0.6), 0 0 15px rgba(245, 158, 11, 0.5);
             color: #fff;
+            border-color: rgba(252, 211, 77, 0.5);
         }
+
         .seat.vip::before {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
         }
 
         /* Couple Seat */
         .seat.couple {
-            width: 78px;
-            height: 34px;
-            border-radius: 9px 9px 4px 4px;
-            background: linear-gradient(180deg, #b81f5d, #7d0e3d);
+            width: 82px;
+            height: 36px;
+            border-radius: 9px 9px 6px 6px;
+            background: linear-gradient(180deg, #db2777, #7d0e3d);
             color: #fce7f3;
-            border-color: rgba(251, 207, 232, 0.25);
-            font-size: 0.65rem;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            border-color: rgba(251, 207, 232, 0.3);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 0 5px rgba(219, 39, 119, 0.15);
         }
+
         .seat.couple::before {
             content: '♥';
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             position: absolute;
             top: 2px;
             left: 50%;
             transform: translateX(-50%);
-            width: 14px;
-            height: 14px;
-            background: rgba(255,255,255,0.18);
+            width: 15px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #f472b6;
+            color: #fb7185;
+            transition: all 0.2s;
         }
+
         .seat.couple::after {
             content: '';
             position: absolute;
-            bottom: 3px;
-            left: 6px;
-            right: 6px;
+            bottom: 4px;
+            left: 7px;
+            right: 7px;
             top: 15px;
-            background: rgba(0,0,0,0.25);
-            border-radius: 3px;
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
         }
+
         .seat.couple:hover:not(.booked):not(.locked) {
-            background: linear-gradient(180deg, #d82c73, #9d174d);
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 6px 16px rgba(157, 23, 77, 0.65);
+            background: linear-gradient(180deg, #ec4899, #9d174d);
+            transform: translateY(-4px) scale(1.06);
+            box-shadow: 0 8px 24px rgba(157, 23, 77, 0.7), 0 0 15px rgba(219, 39, 119, 0.5);
             color: #fff;
+            border-color: rgba(251, 207, 232, 0.5);
         }
 
-        /* Selected */
+        .seat.couple:hover::before {
+            background: rgba(255, 255, 255, 0.3);
+            color: #f43f5e;
+        }
+
+        /* Selected Seat */
         .seat.selected {
-            background: linear-gradient(180deg, #ff1a26, #cc000a) !important;
+            background: linear-gradient(180deg, #ff2a36, #b90610) !important;
             color: #fff !important;
-            border-color: rgba(255,255,255,0.35) !important;
-            transform: translateY(-3px) scale(1.08) !important;
-            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.65) !important;
+            border-color: rgba(255, 255, 255, 0.45) !important;
+            transform: translateY(-4px) scale(1.1) !important;
+            box-shadow: 0 8px 24px rgba(229, 9, 20, 0.7), 0 0 15px rgba(229, 9, 20, 0.6) !important;
         }
+
         .seat.selected::before {
-            background: rgba(255,255,255,0.35) !important;
+            background: rgba(255, 255, 255, 0.4) !important;
         }
 
-        /* Booked */
+        /* Booked Seat */
         .seat.booked {
-            background: var(--seat-booked) !important;
-            color: #384252 !important;
+            background: linear-gradient(180deg, #1e293b, #0f172a) !important;
+            color: #334155 !important;
             cursor: not-allowed;
-            border-color: rgba(255,255,255,0.02) !important;
-            opacity: 0.35;
+            border-color: rgba(255, 255, 255, 0.02) !important;
+            opacity: 0.25;
             transform: none !important;
-            box-shadow: none !important;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6) !important;
         }
-        .seat.booked::before, .seat.booked::after { display: none !important; }
 
-        /* Locked by others */
+        .seat.booked::before,
+        .seat.booked::after {
+            display: none !important;
+        }
+
+        /* Locked Seat */
         .seat.locked {
-            background: rgba(37, 43, 51, 0.8) !important;
+            background: repeating-linear-gradient(45deg,
+                    #1a1d24,
+                    #1a1d24 4px,
+                    #2d3540 4px,
+                    #2d3540 8px) !important;
             color: #4b5563 !important;
             cursor: not-allowed;
             border: 1px dashed #ef4444 !important;
-            opacity: 0.7;
+            opacity: 0.6;
         }
 
         /* Aisle gap in row */
-        .aisle-gap { width: 22px; flex-shrink: 0; }
+        .aisle-gap {
+            width: 24px;
+            flex-shrink: 0;
+        }
 
         /* ─── Legend ─── */
         .legend {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 24px;
             justify-content: center;
-            background: rgba(255,255,255,0.02);
-            padding: 16px 28px;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            padding: 18px 36px;
             border-radius: 40px;
             border: 1px solid var(--border);
-            max-width: 720px;
+            max-width: 800px;
             margin: 0 auto;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
+
         .legend-item {
             display: flex;
             align-items: center;
@@ -474,18 +659,64 @@
             color: var(--text-muted);
             font-weight: 500;
         }
+
         .legend-box {
             width: 28px;
             height: 22px;
             border-radius: 4px;
             flex-shrink: 0;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .legend-box.normal { background: linear-gradient(180deg, #5a6578, #3b424e); }
-        .legend-box.vip { background: linear-gradient(180deg, #c2610d, #8f4305); }
-        .legend-box.couple { background: linear-gradient(180deg, #b81f5d, #7d0e3d); width: 56px; }
-        .legend-box.selected { background: linear-gradient(180deg, #ff1a26, #cc000a); }
-        .legend-box.booked { background: var(--seat-booked); opacity: 0.35; border: 1px solid #252a30; }
+
+        .legend-box.normal {
+            background: linear-gradient(180deg, #475569, #1e293b);
+        }
+
+        .legend-box.vip {
+            background: linear-gradient(180deg, #e28a18, #8a4805);
+        }
+
+        .legend-box.couple {
+            background: linear-gradient(180deg, #db2777, #7d0e3d);
+            width: 56px;
+        }
+
+        .legend-box.selected {
+            background: linear-gradient(180deg, #ff2a36, #b90610);
+        }
+
+        .legend-box.booked {
+            background: #1e293b;
+            opacity: 0.25;
+            border: 1px solid #252a30;
+        }
+
+        /* Row plate labels */
+        .row-label {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-align: center;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            transition: all 0.3s;
+        }
+
+        .seat-row:hover .row-label {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
 
         /* ─── Sidebar Summary ─── */
         .sidebar-summary {
@@ -500,9 +731,19 @@
             max-height: calc(100vh - 140px);
             overflow-y: auto;
         }
-        .sidebar-summary::-webkit-scrollbar { width: 4px; }
-        .sidebar-summary::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-summary::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .sidebar-summary::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-summary::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-summary::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
 
         /* Movie card */
         .movie-card-mini {
@@ -512,39 +753,53 @@
             border-bottom: 1px solid var(--border);
             margin-bottom: 22px;
         }
+
         .movie-poster-mini {
             width: 76px;
             height: 110px;
             object-fit: cover;
             border-radius: 8px;
             flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
+
         .movie-meta-mini {
             display: flex;
             flex-direction: column;
             gap: 6px;
             min-width: 0;
         }
+
         .movie-title-mini {
             font-size: 1rem;
             font-weight: 800;
             line-height: 1.3;
             color: #fff;
         }
+
         .badge-row {
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
         }
+
         .mini-badge {
             font-size: 0.7rem;
             font-weight: 700;
             padding: 3px 8px;
             border-radius: 4px;
         }
-        .mini-badge.age { background: var(--primary); color: #fff; }
-        .mini-badge.duration { background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid var(--border); }
+
+        .mini-badge.age {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .mini-badge.duration {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
 
         /* Info rows */
         .info-rows {
@@ -555,6 +810,7 @@
             border-bottom: 1px solid var(--border);
             margin-bottom: 22px;
         }
+
         .info-row {
             display: flex;
             justify-content: space-between;
@@ -562,17 +818,20 @@
             gap: 12px;
             font-size: 0.88rem;
         }
+
         .info-key {
             color: var(--text-muted);
             font-weight: 500;
             flex-shrink: 0;
         }
+
         .info-val {
             font-weight: 700;
             color: #fff;
             text-align: right;
             word-break: break-word;
         }
+
         .info-val.seats-val {
             color: var(--primary);
             max-width: 180px;
@@ -586,6 +845,7 @@
             border-bottom: 1px solid var(--border);
             margin-bottom: 20px;
         }
+
         .price-breakdown-title {
             font-size: 0.75rem;
             font-weight: 700;
@@ -594,14 +854,22 @@
             color: var(--text-muted);
             margin-bottom: 12px;
         }
+
         .price-row {
             display: flex;
             justify-content: space-between;
             font-size: 0.85rem;
             margin-bottom: 7px;
         }
-        .price-row .key { color: var(--text-muted); }
-        .price-row .val { font-weight: 600; color: #fff; }
+
+        .price-row .key {
+            color: var(--text-muted);
+        }
+
+        .price-row .val {
+            font-weight: 600;
+            color: #fff;
+        }
 
         /* Total */
         .total-row {
@@ -610,7 +878,12 @@
             align-items: center;
             padding: 16px 0 20px;
         }
-        .total-label { font-size: 1rem; font-weight: 700; }
+
+        .total-label {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
         .total-amount {
             font-size: 1.6rem;
             font-weight: 900;
@@ -635,17 +908,22 @@
             gap: 10px;
             letter-spacing: 0.5px;
         }
+
         .btn-continue:hover:not(:disabled) {
             background: linear-gradient(135deg, #f40612, #d00009);
             box-shadow: 0 8px 24px rgba(229, 9, 20, 0.45);
             transform: translateY(-2px);
         }
+
         .btn-continue:disabled {
             opacity: 0.4;
             cursor: not-allowed;
             transform: none;
         }
-        .btn-continue svg { flex-shrink: 0; }
+
+        .btn-continue svg {
+            flex-shrink: 0;
+        }
 
         /* Seat limit info */
         .seat-limit-info {
@@ -656,7 +934,8 @@
         }
 
         /* Loading / Error state */
-        .loading-state, .error-state {
+        .loading-state,
+        .error-state {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -665,6 +944,7 @@
             gap: 16px;
             text-align: center;
         }
+
         .spinner {
             width: 48px;
             height: 48px;
@@ -673,10 +953,346 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .error-state svg { color: var(--primary); }
-        .error-state h3 { color: var(--text-muted); }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-state svg {
+            color: var(--primary);
+        }
+
+        .error-state h3 {
+            color: var(--text-muted);
+        }
+
+        /* ─── Cinema Rules Banner ─── */
+        .cinema-rules-banner {
+            max-width: 850px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .cinema-rules-banner:hover {
+            border-color: rgba(245, 158, 11, 0.25);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), 0 0 20px rgba(245, 158, 11, 0.05);
+        }
+        
+        .banner-badge {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            color: #f59e0b;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #f59e0b;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .pulse-dot::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            border: 2px solid #f59e0b;
+            opacity: 0;
+            animation: pulse-ring 2s cubic-bezier(0.25, 0, 0, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.5);
+                opacity: 0.8;
+            }
+            80%, 100% {
+                transform: scale(1.8);
+                opacity: 0;
+            }
+        }
+
+        .banner-content {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            flex-wrap: wrap;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: #94a3b8;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .rule-icon {
+            color: #f59e0b;
+            font-size: 0.9rem;
+            text-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+        }
+
+        @media (max-width: 900px) {
+            .cinema-rules-banner {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 18px;
+                gap: 14px;
+            }
+            .banner-badge {
+                align-self: flex-start;
+            }
+            .banner-content {
+                gap: 12px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* Hiệu ứng làm mờ ghế không phù hợp */
+        .seat.filtered-out {
+            opacity: 0.15 !important;
+            filter: grayscale(80%) blur(0.5px);
+            pointer-events: none;
+        }
+
+        /* ─── Hiệu ứng động khi chọn ghế ─── */
+        @keyframes pulseAvailable {
+            0% {
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                border-color: rgba(255, 255, 255, 0.07);
+            }
+
+            50% {
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
+                border-color: rgba(255, 255, 255, 0.3);
+                transform: scale(1.03);
+            }
+
+            100% {
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                border-color: rgba(255, 255, 255, 0.07);
+            }
+        }
+
+        /* Hiệu ứng thở nhẹ cho tất cả ghế trống khi đang có ít nhất 1 ghế được chọn */
+        .selection-active .seat:not(.selected):not(.booked):not(.locked):not(.filtered-out) {
+            animation: pulseAvailable 2s infinite ease-in-out;
+        }
+
+        /* Icon ngôi sao cho ghế VIP */
+        .seat-star {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 0.55rem;
+            color: #fbbf24;
+            z-index: 10;
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+            line-height: 1;
+        }
+
+        .seat.vip .seat-num {
+            position: relative;
+            z-index: 10;
+            margin-top: 5px;
+        }
+
+        /* Vị trí nhãn ghế đôi tránh đè hình trái tim */
+        .couple-label {
+            position: relative;
+            z-index: 5;
+            margin-top: 10px;
+            font-size: 0.6rem;
+            letter-spacing: 0.5px;
+            font-weight: 800;
+        }
+
+        /* ─── 3D View Toggle Bar ─── */
+        .view-toggle-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .view-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            border: 1.5px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            transition: all 0.25s ease;
+        }
+
+        .view-toggle-btn.active {
+            background: linear-gradient(135deg, #e50914, #c00009);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(229, 9, 20, 0.4);
+        }
+
+        .view-toggle-btn:hover:not(.active) {
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        /* ─── 3D Canvas Container ─── */
+        #seat3DCanvas {
+            display: none;
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            background: radial-gradient(ellipse at 50% 100%, #1a0a1e 0%, #07090c 70%);
+            box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8), 0 10px 40px rgba(0, 0, 0, 0.5);
+            cursor: grab;
+            overflow: hidden;
+            margin-bottom: 30px;
+            min-height: 500px;
+        }
+
+        #seat3DCanvas.active {
+            display: block;
+        }
+
+        #seat3DCanvas canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 16px;
+        }
+
+        /* 3D Controls hint */
+        .hint-3d {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: -22px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .hint-3d.active {
+            display: block;
+        }
+
+        /* ─── Mobile Sticky Checkout Bar ─── */
+        .mobile-checkout-bar {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(18, 22, 26, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border);
+            padding: 14px 20px;
+            z-index: 1000;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .mobile-checkout-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-width: 60%;
+        }
+
+        .mobile-checkout-seats {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        .mobile-checkout-total {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .mobile-checkout-btn {
+            width: auto !important;
+            padding: 10px 20px !important;
+            font-size: 0.9rem !important;
+            border-radius: 6px !important;
+            height: 42px !important;
+            font-weight: 700 !important;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 1100px) {
+            .page-wrapper {
+                grid-template-columns: 1fr;
+                padding-bottom: 80px; /* Space for mobile bar */
+            }
+
+            .sidebar-summary {
+                order: 2; /* Sidebar comes after the seat map */
+                position: relative;
+                top: 0;
+                height: auto;
+                max-height: none;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                padding: 24px;
+            }
+
+            .mobile-checkout-bar {
+                display: flex;
+            }
+        }
     </style>
     <link rel="stylesheet" href="css/chatbot.css">
 </head>
@@ -691,7 +1307,7 @@
             </a>
             <button class="nav-back-btn" onclick="history.back()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M19 12H5M12 5l-7 7 7 7"/>
+                    <path d="M19 12H5M12 5l-7 7 7 7" />
                 </svg>
                 Quay lại
             </button>
@@ -758,31 +1374,84 @@
                 <div class="screen-label">Màn Hình</div>
             </div>
 
+            <!-- Quy tắc phòng chiếu chuẩn -->
+            <div class="cinema-rules-banner">
+                <div class="banner-badge">
+                    <span class="pulse-dot"></span>
+                    Quy Tắc Rạp Phim
+                </div>
+                <div class="banner-content">
+                    <div class="rule-item">
+                        <span class="rule-icon">✦</span>
+                        <span>Không chừa ghế trống đơn lẻ</span>
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-icon">✦</span>
+                        <span>Chọn các ghế liền kề nhau</span>
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-icon">✦</span>
+                        <span>Hàng Sweetbox luôn theo cặp</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="view-toggle-bar">
+                <button class="view-toggle-btn active" id="btn2DView" onclick="switchView('2d')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M3 9h18M9 21V9" />
+                    </svg>
+                    Sơ đồ 2D
+                </button>
+                <button class="view-toggle-btn" id="btn3DView" onclick="switchView('3d')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                    Xem 3D
+                </button>
+            </div>
+
             <!-- Seat availability -->
-            <div id="seatAvailability" style="text-align:center;margin-bottom:20px;font-size:0.85rem;color:var(--text-muted);"></div>
+            <div id="seatAvailability"
+                style="text-align:center;margin-bottom:20px;font-size:0.85rem;color:var(--text-muted);"></div>
 
             <!-- Zoom controls -->
-            <div class="zoom-controls-bar" style="display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 12px; max-width: 90%; margin-left: auto; margin-right: auto;">
-                <button class="nav-back-btn" onclick="zoomSeatMap(1.15)" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+            <div class="zoom-controls-bar"
+                style="display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 12px; max-width: 90%; margin-left: auto; margin-right: auto;">
+                <button class="nav-back-btn" onclick="zoomSeatMap(1.15)"
+                    style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
                     🔍 Phóng to
                 </button>
-                <button class="nav-back-btn" onclick="zoomSeatMap(0.85)" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+                <button class="nav-back-btn" onclick="zoomSeatMap(0.85)"
+                    style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
                     🔍 Thu nhỏ
                 </button>
-                <button class="nav-back-btn" onclick="resetZoom()" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+                <button class="nav-back-btn" onclick="resetZoom()"
+                    style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
                     🔄 Đặt lại
                 </button>
             </div>
 
-            <!-- Seat Map Viewport -->
-            <div id="seatMapViewport" style="overflow-x: auto; overflow-y: hidden; border: 1px solid var(--border); border-radius: 12px; padding: 40px 16px; margin-bottom: 30px; background: rgba(0,0,0,0.15); display: flex; justify-content: center; min-height: 400px; align-items: flex-start; scrollbar-width: thin;">
-                <div class="seat-map" id="seatMapContainer" style="transform-origin: center top; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);">
+            <!-- Seat Map Viewport (2D) -->
+            <div id="seatMapViewport"
+                style="overflow-x: auto; overflow-y: hidden; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 50px 24px; margin-bottom: 30px; background: radial-gradient(circle at 50% 10%, #15191e 0%, #080a0c 90%); display: flex; justify-content: center; min-height: 400px; align-items: flex-start; scrollbar-width: thin; box-shadow: inset 0 0 30px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.4);">
+                <div class="seat-map" id="seatMapContainer"
+                    style="transform-origin: center top; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);">
                     <div class="loading-state">
                         <div class="spinner"></div>
                         <p style="color: var(--text-muted);">Đang tải sơ đồ ghế ngồi...</p>
                     </div>
                 </div>
             </div>
+
+            <!-- 3D Seat Map Canvas -->
+            <div id="seat3DCanvas"></div>
+            <div class="hint-3d" id="hint3d">🖱️ Kéo để xoay &nbsp;|&nbsp; Cuộn để phóng to/thu nhỏ &nbsp;|&nbsp; 👆
+                Chọn ghế ở sơ đồ 2D — 3D tự động cập nhật</div>
 
             <!-- Legend -->
             <div class="legend">
@@ -812,14 +1481,18 @@
         <!-- Right: Booking Summary Sidebar -->
         <aside class="sidebar-summary">
             <!-- Countdown Timer -->
-            <div class="countdown-card" id="countdownCard" style="display: none; align-items: center; justify-content: center; gap: 10px; background: rgba(229,9,20,0.12); border: 1px solid rgba(229,9,20,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; animation: fadeIn 0.3s ease;">
+            <div class="countdown-card" id="countdownCard"
+                style="display: none; align-items: center; justify-content: center; gap: 10px; background: rgba(229,9,20,0.12); border: 1px solid rgba(229,9,20,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; animation: fadeIn 0.3s ease;">
                 <span style="font-size: 1.15rem; animation: pulse 1s infinite alternate;">⏱️</span>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #ff8080; letter-spacing: 0.5px;">GIỮ GHẾ TRONG: <span id="countdownTimer" style="font-size: 1.15rem; color: #fff; font-family: monospace; margin-left: 4px;">05:00</span></div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #ff8080; letter-spacing: 0.5px;">GIỮ GHẾ TRONG:
+                    <span id="countdownTimer"
+                        style="font-size: 1.15rem; color: #fff; font-family: monospace; margin-left: 4px;">05:00</span>
+                </div>
             </div>
             <!-- Movie info -->
             <div class="movie-card-mini">
                 <img id="moviePoster" src="images/default_poster.svg" alt="Poster phim" class="movie-poster-mini"
-                     onerror="this.src='images/default_poster.svg'">
+                    onerror="this.src='images/default_poster.svg'">
                 <div class="movie-meta-mini">
                     <h3 class="movie-title-mini" id="movieTitle">Đang tải...</h3>
                     <div class="badge-row">
@@ -873,16 +1546,29 @@
             <button class="btn-continue" id="btnContinue" disabled onclick="confirmSeats()">
                 Tiếp Tục
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                    <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
             </button>
             <p class="seat-limit-info">Tối đa 8 ghế mỗi lần đặt</p>
-        </aside>
+    </div>
+
+    <!-- Mobile Sticky Checkout Bar -->
+    <div class="mobile-checkout-bar" id="mobileCheckoutBar">
+        <div class="mobile-checkout-info">
+            <span class="mobile-checkout-seats" id="mobileSeats">Chưa chọn ghế</span>
+            <span class="mobile-checkout-total" id="mobileTotal">0 ₫</span>
+        </div>
+        <button class="btn-continue mobile-checkout-btn" id="mobileBtnContinue" disabled onclick="confirmSeats()">
+            Tiếp tục
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+        </button>
     </div>
 
     <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=6"></script>
     <script>
         // ──────────────────────────────────────────────
         //  URL Params
@@ -970,13 +1656,21 @@
             el.addEventListener('mouseenter', (e) => {
                 const tooltip = document.getElementById('seatTooltip');
                 if (tooltip) {
-                    tooltip.innerHTML = `${label}<br><span style="color:#f59e0b; font-weight:800; font-size:0.85rem;">${price.toLocaleString('vi-VN')} đ</span>`;
+                    if (el.classList.contains('booked')) {
+                        tooltip.style.display = 'none';
+                        return;
+                    }
+                    let content = `${label}<br><span style="color:#f59e0b; font-weight:800; font-size:0.85rem;">${price.toLocaleString('vi-VN')} đ</span>`;
+                    if (el.classList.contains('locked')) {
+                        content += ` <span style="color:#ef4444; font-size:0.75rem; font-weight:600;">(Đang giữ)</span>`;
+                    }
+                    tooltip.innerHTML = content;
                     tooltip.style.display = 'block';
                 }
             });
             el.addEventListener('mousemove', (e) => {
                 const tooltip = document.getElementById('seatTooltip');
-                if (tooltip) {
+                if (tooltip && tooltip.style.display !== 'none') {
                     tooltip.style.left = (e.pageX + 15) + 'px';
                     tooltip.style.top = (e.pageY + 15) + 'px';
                 }
@@ -1028,7 +1722,7 @@
                     const user = JSON.parse(userStr);
                     const btn = document.getElementById('btnLogin');
                     if (btn) { btn.textContent = user.fullName || 'Tài khoản'; btn.href = 'profile.html'; }
-                } catch (e) {}
+                } catch (e) { }
             }
         }
 
@@ -1101,6 +1795,9 @@
                     lockedByOthers.delete(seatId);
                     unmarkSeatEl(seatId);
                 }
+                if (typeof update3DSeatColors === 'function') {
+                    update3DSeatColors();
+                }
             });
 
             socket.on('seatHoldFailed', (data) => {
@@ -1132,6 +1829,7 @@
                     seatsList = json.data;
                     renderSeatGrid();
                     updateAvailability();
+                    updateSummary();
                 } else {
                     document.getElementById('seatMapContainer').innerHTML = `
                         <div class="error-state">
@@ -1188,20 +1886,34 @@
                 rowsMap[seat.SeatRow].push(seat);
             });
 
-            const sortedRows = Object.keys(rowsMap).sort();
-
-            // Determine which rows are couple rows
+            // Determine couple rows based on alphabetical order first
+            const alphabetRows = Object.keys(rowsMap).sort();
             const coupleRows = new Set();
-            sortedRows.forEach(row => {
+            alphabetRows.forEach(row => {
                 const seats = rowsMap[row];
                 if (seats.some(s => s.SeatType && s.SeatType.toLowerCase().includes('couple'))) {
                     coupleRows.add(row);
                 }
             });
-            // Fallback: if no explicit couple type, treat last row as couple
-            if (coupleRows.size === 0 && sortedRows.length > 0) {
-                coupleRows.add(sortedRows[sortedRows.length - 1]);
+            if (coupleRows.size === 0 && alphabetRows.length > 0) {
+                coupleRows.add(alphabetRows[alphabetRows.length - 1]);
             }
+
+            // Priority-based sort: Standard (3) > VIP (2) > Couple (1)
+            const getRowPriority = (row) => {
+                if (coupleRows.has(row)) return 1;
+                const seats = rowsMap[row] || [];
+                const hasVip = seats.some(s => s.SeatType === 'VIP');
+                if (hasVip) return 2;
+                return 3;
+            };
+
+            const sortedRows = [...alphabetRows].sort((a, b) => {
+                const prioA = getRowPriority(a);
+                const prioB = getRowPriority(b);
+                if (prioA !== prioB) return prioB - prioA;
+                return a.localeCompare(b);
+            });
 
             sortedRows.forEach(row => {
                 const rowDiv = document.createElement('div');
@@ -1232,7 +1944,7 @@
 
                         if (!s2) {
                             // Solo seat in couple row (edge case)
-                            const seatEl = makeSingleSeatEl(s1, true);
+                            const seatEl = makeSingleSeatEl(s1, false);
                             rowDiv.appendChild(seatEl);
                             continue;
                         }
@@ -1246,39 +1958,34 @@
                         coupleEl.setAttribute('data-id-2', s2.SeatID);
                         coupleEl.setAttribute('data-row', row);
                         coupleEl.innerHTML = `
-                            <span style="font-size:0.62rem;letter-spacing:0.5px;">
-                                ♥ ${row}${s1.SeatNumber}-${s2.SeatNumber}
+                            <span class="couple-label">
+                                ${row}${s1.SeatNumber}-${s2.SeatNumber}
                             </span>
                         `;
 
-                        if (!isBooked && !isLocked) {
+                        if (!isBooked) {
                             coupleEl.onclick = () => handleCoupleSeat(coupleEl, s1.SeatID, s2.SeatID);
-                            
+
                             const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
                             const seatPrice = basePrice * 1.5;
                             addTooltipListeners(coupleEl, `Ghế Cặp Đôi ${row}${s1.SeatNumber}-${s2.SeatNumber}`, seatPrice);
                         }
-
                         rowDiv.appendChild(coupleEl);
                     }
                 } else {
-                    // Normal / VIP row
                     const rowSeats = rowsMap[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
-                    const total = rowSeats.length;
-                    const half = Math.floor(total / 2);
-
-                    rowSeats.forEach((seat, idx) => {
-                        // Add aisle gap in middle of row
-                        if (idx === half && total > 4) {
+                    rowSeats.forEach((s, idx) => {
+                        const total = rowSeats.length;
+                        const half = Math.floor(total / 2);
+                        if (total > 4 && idx === half) {
                             const gap = document.createElement('div');
                             gap.className = 'aisle-gap';
                             rowDiv.appendChild(gap);
                         }
-                        const seatEl = makeSingleSeatEl(seat, false);
+                        const seatEl = makeSingleSeatEl(s, false);
                         rowDiv.appendChild(seatEl);
                     });
                 }
-
                 // Right label
                 const lblR = document.createElement('div');
                 lblR.className = 'row-label';
@@ -1288,6 +1995,7 @@
                 container.appendChild(rowDiv);
             });
         }
+
 
         function makeSingleSeatEl(seat, isInCoupleRow) {
             const isVip = seat.SeatType === 'VIP';
@@ -1300,11 +2008,16 @@
             el.setAttribute('data-id', seat.SeatID);
             el.setAttribute('data-row', seat.SeatRow);
             el.setAttribute('data-type', typeClass);
-            el.textContent = seat.SeatNumber;
 
-            if (!isBooked && !isLocked) {
+            if (isVip && !isBooked) {
+                el.innerHTML = `<span class="seat-star">★</span><span class="seat-num">${seat.SeatNumber}</span>`;
+            } else {
+                el.textContent = seat.SeatNumber;
+            }
+
+            if (!isBooked) {
                 el.onclick = () => handleSingleSeat(el, seat.SeatID);
-                
+
                 const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
                 const multiplier = isVip ? 1.2 : 1.0;
                 const seatPrice = basePrice * multiplier;
@@ -1314,16 +2027,149 @@
         }
 
         // ──────────────────────────────────────────────
+
+        //  Seat Selection Validation Logic (Cinema Standard)
+        //  Rule: No isolated (orphaned) single empty seat may exist
+        //        in any row segment where seats have been selected.
+        //        An empty seat is "isolated" when both sides are blocked:
+        //          - selected seat, booked/locked seat, row edge, or aisle gap
+        // ──────────────────────────────────────────────
+        function validateSeatSelection(proposedSet) {
+            if (proposedSet.size === 0) return { valid: true };
+
+            // Build row → sorted seats map
+            const rowsMap = {};
+            seatsList.forEach(s => {
+                if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = [];
+                rowsMap[s.SeatRow].push(s);
+            });
+
+            const coupleRows = getCoupleRows();
+
+            for (const row of Object.keys(rowsMap)) {
+                const rowSeats = [...rowsMap[row]].sort((a, b) => a.SeatNumber - b.SeatNumber);
+                const isCouple = coupleRows.has(row);
+
+                // Skip rows with no selections
+                if (!rowSeats.some(s => proposedSet.has(s.SeatID))) continue;
+
+                // Couple rows: must select whole pairs
+                if (isCouple) {
+                    for (let i = 0; i < rowSeats.length - 1; i += 2) {
+                        const s1 = rowSeats[i], s2 = rowSeats[i + 1];
+                        if (!s1 || !s2) continue;
+                        if (proposedSet.has(s1.SeatID) !== proposedSet.has(s2.SeatID)) {
+                            return { valid: false, message: `Ghế cặp đôi hàng ${row} phải chọn theo cặp (${row}${s1.SeatNumber}-${s2.SeatNumber}).` };
+                        }
+                    }
+                    continue;
+                }
+
+                // Single/VIP rows - split into segments at aisle
+                const total = rowSeats.length;
+                const aisleIdx = total > 4 ? Math.floor(total / 2) : -1;
+                const segments = [];
+                let seg = [];
+                for (let i = 0; i < total; i++) {
+                    if (i === aisleIdx) { segments.push(seg); seg = []; }
+                    seg.push(rowSeats[i]);
+                }
+                if (seg.length) segments.push(seg);
+
+                for (const segment of segments) {
+                    if (!segment.some(s => proposedSet.has(s.SeatID))) continue;
+                    const segLen = segment.length;
+
+                    // Rule 1: selected seats must be contiguous (no available gap between them)
+                    const selIdxs = segment.map((s,idx) => proposedSet.has(s.SeatID) ? idx : -1).filter(idx => idx !== -1);
+                    for (let i = selIdxs[0]; i <= selIdxs[selIdxs.length - 1]; i++) {
+                        const s = segment[i];
+                        if (!proposedSet.has(s.SeatID) && s.SeatStatus !== 'booked' && !lockedByOthers.has(s.SeatID)) {
+                            return { valid: false, message: `Ghế ${row}${s.SeatNumber} bị bỏ trống giữa ghế đã chọn — phải liền kề nhau!` };
+                        }
+                    }
+
+                    // Rule 2: No isolated (orphaned) single empty seat in segment
+                    for (let i = 0; i < segLen; i++) {
+                        const s = segment[i];
+                        if (proposedSet.has(s.SeatID)) continue;
+                        if (s.SeatStatus === 'booked' || lockedByOthers.has(s.SeatID)) continue;
+
+                        const leftBarrier  = i === 0        || proposedSet.has(segment[i-1].SeatID) || segment[i-1].SeatStatus === 'booked' || lockedByOthers.has(segment[i-1].SeatID);
+                        const rightBarrier = i === segLen-1 || proposedSet.has(segment[i+1].SeatID) || segment[i+1].SeatStatus === 'booked' || lockedByOthers.has(segment[i+1].SeatID);
+
+                        if (leftBarrier && rightBarrier) {
+                            return { valid: false, message: `Ghế ${row}${s.SeatNumber} sẽ bị cô lập (bỏ trống 1 ghế đơn). Hãy chọn thêm hoặc điều chỉnh!` };
+                        }
+                    }
+                }
+            }
+
+            return { valid: true };
+        }
+
+        function updateSeatDimming() {
+            if (!seatsList || seatsList.length === 0) return;
+
+            document.querySelectorAll('.seat').forEach(el => {
+                el.classList.remove('dimmed');
+            });
+
+            const coupleRows = getCoupleRows();
+
+            seatsList.forEach(seat => {
+                if (seat.SeatStatus === 'booked' || lockedByOthers.has(seat.SeatID)) return;
+                if (selectedSeats.has(seat.SeatID)) return;
+
+                const el = getSeatEl(seat.SeatID);
+                if (!el) return;
+
+                const proposedSet = new Set(selectedSeats);
+                if (coupleRows.has(seat.SeatRow)) {
+                    const pairNum = seat.SeatNumber % 2 === 0 ? seat.SeatNumber - 1 : seat.SeatNumber + 1;
+                    const pairSeat = seatsList.find(s => s.SeatRow === seat.SeatRow && s.SeatNumber === pairNum);
+                    proposedSet.add(seat.SeatID);
+                    if (pairSeat) proposedSet.add(pairSeat.SeatID);
+                } else {
+                    proposedSet.add(seat.SeatID);
+                }
+
+                const res = validateSeatSelection(proposedSet);
+                if (!res.valid) {
+                    el.classList.add('dimmed');
+                }
+            });
+        }
+
+        // ──────────────────────────────────────────────
         //  Seat Click Handlers
         // ──────────────────────────────────────────────
         function handleSingleSeat(el, seatId) {
-            if (el.classList.contains('booked') || el.classList.contains('locked')) return;
+            if (el.classList.contains('booked') || el.classList.contains('locked') || lockedByOthers.has(seatId)) return;
+
+            if (el.classList.contains('dimmed')) {
+                const proposedSet = new Set(selectedSeats);
+                proposedSet.add(seatId);
+                const valRes = validateSeatSelection(proposedSet);
+                showToast(valRes.message || 'Không thể chọn ghế này!', 'warn');
+                return;
+            }
+
+
 
             if (selectedSeats.has(seatId)) {
                 selectedSeats.delete(seatId);
                 el.classList.remove('selected');
                 if (socket) socket.emit('releaseSeat', { showtimeId, seatId });
             } else {
+                const proposedSet = new Set(selectedSeats);
+                proposedSet.add(seatId);
+                const valRes = validateSeatSelection(proposedSet);
+                if (!valRes.valid) {
+                    showToast(valRes.message, 'warn');
+                    return;
+                }
+
                 if (selectedSeats.size >= 8) {
                     showToast('Bạn chỉ được chọn tối đa 8 ghế!', 'warn');
                     return;
@@ -1338,7 +2184,18 @@
         }
 
         function handleCoupleSeat(el, seatId1, seatId2) {
-            if (el.classList.contains('booked') || el.classList.contains('locked')) return;
+            if (el.classList.contains('booked') || el.classList.contains('locked') || lockedByOthers.has(seatId1) || lockedByOthers.has(seatId2)) return;
+
+            if (el.classList.contains('dimmed')) {
+                const proposedSet = new Set(selectedSeats);
+                proposedSet.add(seatId1);
+                proposedSet.add(seatId2);
+                const valRes = validateSeatSelection(proposedSet);
+                showToast(valRes.message || 'Không thể chọn ghế này!', 'warn');
+                return;
+            }
+
+
 
             const alreadySelected = selectedSeats.has(seatId1) && selectedSeats.has(seatId2);
 
@@ -1351,6 +2208,15 @@
                     socket.emit('releaseSeat', { showtimeId, seatId: seatId2 });
                 }
             } else {
+                const proposedSet = new Set(selectedSeats);
+                proposedSet.add(seatId1);
+                proposedSet.add(seatId2);
+                const valRes = validateSeatSelection(proposedSet);
+                if (!valRes.valid) {
+                    showToast(valRes.message, 'warn');
+                    return;
+                }
+
                 if (selectedSeats.size >= 8) {
                     showToast('Bạn chỉ được chọn tối đa 8 ghế!', 'warn');
                     return;
@@ -1394,11 +2260,29 @@
             const breakdownSection = document.getElementById('priceBreakdown');
             const breakdownRows = document.getElementById('priceBreakdownRows');
 
+            const mobileSeats = document.getElementById('mobileSeats');
+            const mobileTotal = document.getElementById('mobileTotal');
+            const mobileBtnContinue = document.getElementById('mobileBtnContinue');
+
+            const container = document.getElementById('seatMapContainer');
+            if (container) {
+                if (selectedSeats.size > 0) {
+                    container.classList.add('selection-active');
+                } else {
+                    container.classList.remove('selection-active');
+                }
+            }
+
             if (selectedSeats.size === 0) {
                 seatsDisplay.textContent = 'Chưa chọn';
                 totalDisplay.textContent = '0 ₫';
                 btnContinue.disabled = true;
                 breakdownSection.style.display = 'none';
+
+                if (mobileSeats) mobileSeats.textContent = 'Chưa chọn';
+                if (mobileTotal) mobileTotal.textContent = '0 ₫';
+                if (mobileBtnContinue) mobileBtnContinue.disabled = true;
+                updateSeatDimming();
                 return;
             }
 
@@ -1452,6 +2336,10 @@
             totalDisplay.textContent = total.toLocaleString('vi-VN') + ' ₫';
             btnContinue.disabled = false;
 
+            if (mobileSeats) mobileSeats.textContent = displayNames.join(', ') || 'Chưa chọn';
+            if (mobileTotal) mobileTotal.textContent = total.toLocaleString('vi-VN') + ' ₫';
+            if (mobileBtnContinue) mobileBtnContinue.disabled = false;
+
             // Price breakdown
             let bdHtml = '';
             if (breakdown.normal.count > 0) {
@@ -1481,6 +2369,9 @@
             breakdownRows.innerHTML = bdHtml;
             breakdownSection.style.display = bdHtml ? 'block' : 'none';
             updateAvailability();
+            // Sync 3D view if active
+            if (typeof update3DSeatColors === 'function') update3DSeatColors();
+            updateSeatDimming();
         }
 
         function updateAvailability() {
@@ -1519,6 +2410,12 @@
         // ──────────────────────────────────────────────
         function confirmSeats() {
             if (selectedSeats.size === 0 || !showtimeData) return;
+
+            const validation = validateSeatSelection(selectedSeats);
+            if (!validation.valid) {
+                showToast(validation.message, 'warn');
+                return;
+            }
 
             const basePrice = showtimeData.Price || 0;
             const coupleRows = getCoupleRows();
@@ -1602,6 +2499,637 @@
             setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
         }
 
+        // ──────────────────────────────────────────────
+        //  2D/3D View Toggle
+        // ──────────────────────────────────────────────
+        let currentView = '2d';
+
+        function switchView(view) {
+            currentView = view;
+            const viewport2D = document.getElementById('seatMapViewport');
+            const zoomBar = document.querySelector('.zoom-controls-bar');
+            const canvas3D = document.getElementById('seat3DCanvas');
+            const hint3d = document.getElementById('hint3d');
+            const btn2D = document.getElementById('btn2DView');
+            const btn3D = document.getElementById('btn3DView');
+
+            if (view === '3d') {
+                viewport2D.style.display = 'none';
+                if (zoomBar) zoomBar.style.display = 'none';
+                canvas3D.classList.add('active');
+                hint3d.classList.add('active');
+                btn2D.classList.remove('active');
+                btn3D.classList.add('active');
+                init3DView();
+                // Smooth scroll the canvas into view
+                setTimeout(() => canvas3D.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+            } else {
+                viewport2D.style.display = 'flex';
+                if (zoomBar) zoomBar.style.display = 'flex';
+                canvas3D.classList.remove('active');
+                hint3d.classList.remove('active');
+                btn2D.classList.add('active');
+                btn3D.classList.remove('active');
+            }
+        }
+
+        // ──────────────────────────────────────────────
+        //  3D Seat Map - Three.js Engine
+        // ──────────────────────────────────────────────
+        let three3D = null; // singleton
+
+        function init3DView() {
+            const container = document.getElementById('seat3DCanvas');
+            if (!container) return;
+            if (!window.THREE) {
+                container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:560px;color:#aaa;">Không thể tải thư viện 3D.</div>';
+                return;
+            }
+            if (!seatsList || seatsList.length === 0) {
+                container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:560px;color:#888;">Chưa có dữ liệu ghế</div>';
+                return;
+            }
+
+            if (three3D && three3D.destroy) three3D.destroy();
+            three3D = null;
+            container.innerHTML = '';
+            container.style.height = '640px';
+            container.style.borderRadius = '18px';
+            container.style.overflow = 'hidden';
+            container.style.boxShadow = '0 0 60px rgba(30,80,200,0.25)';
+
+            // ============================================================
+            // SCENE
+            // ============================================================
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x05070d);
+            scene.fog = new THREE.FogExp2(0x05070d, 0.010);
+
+            // ============================================================
+            // PRE-CALCULATE SEAT LAYOUT DIMENSIONS
+            // (must be done BEFORE building scene so screen width matches)
+            // ============================================================
+            const rowsMap = {};
+            seatsList.forEach(s => {
+                if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = [];
+                rowsMap[s.SeatRow].push(s);
+            });
+            
+            const alphabetRows = Object.keys(rowsMap).sort();
+            const coupleRows = new Set();
+            alphabetRows.forEach(row => {
+                const seats = rowsMap[row];
+                if (seats.some(s => s.SeatType && s.SeatType.toLowerCase().includes('couple'))) {
+                    coupleRows.add(row);
+                }
+            });
+            if (coupleRows.size === 0 && alphabetRows.length > 0) {
+                coupleRows.add(alphabetRows[alphabetRows.length - 1]);
+            }
+
+            const getRowPriority = (row) => {
+                if (coupleRows.has(row)) return 1;
+                const seats = rowsMap[row] || [];
+                const hasVip = seats.some(s => s.SeatType === 'VIP');
+                if (hasVip) return 2;
+                return 3;
+            };
+
+            const sortedRows = [...alphabetRows].sort((a, b) => {
+                const prioA = getRowPriority(a);
+                const prioB = getRowPriority(b);
+                if (prioA !== prioB) return prioB - prioA;
+                return a.localeCompare(b);
+            });
+            const totalRows  = sortedRows.length;
+
+            const SEAT_STEP = 1.08;
+            const ROW_STEP  = 1.35;
+            const SCREEN_Z  = 0;
+            const FIRST_Z   = 10.0;
+
+            // Find max seats in any row
+            let maxSeatsInRow = 0;
+            sortedRows.forEach(row => {
+                maxSeatsInRow = Math.max(maxSeatsInRow, rowsMap[row].length);
+            });
+            // Seat cluster total width (including center aisle gap ~0.5)
+            const SEAT_CLUSTER_W = maxSeatsInRow * SEAT_STEP + 0.5;
+
+            // Screen dimensions — width matches seat cluster + comfortable padding
+            const SW = Math.max(16, SEAT_CLUSTER_W + 4.0);
+            const SH = 6.5;
+
+            // Wall half-width — give some breathing room past seats
+            const HALF_WALL = SW / 2 + 5.0;
+            const ROOM_DEPTH = FIRST_Z + totalRows * ROW_STEP + 12;
+
+            // ============================================================
+            // LIGHTS
+            // ============================================================
+            scene.add(new THREE.AmbientLight(0x111830, 1.4));
+
+            // Key: from screen (front-top)
+            const keyLight = new THREE.DirectionalLight(0xfff4e0, 1.8);
+            keyLight.position.set(0, 25, -10);
+            scene.add(keyLight);
+
+            // Fill: from back
+            const fillLight = new THREE.DirectionalLight(0x2244aa, 0.6);
+            fillLight.position.set(0, 10, 30);
+            scene.add(fillLight);
+
+            // Screen glow
+            const screenGlow = new THREE.PointLight(0x99bbff, 5.0, 40);
+            screenGlow.position.set(0, 7, 0.5);
+            scene.add(screenGlow);
+
+            // Ceiling strip lights — spread across seat width
+            const ceilL1 = new THREE.PointLight(0xffeedd, 1.2, 30);
+            ceilL1.position.set(-SEAT_CLUSTER_W * 0.3, 14, FIRST_Z + totalRows * ROW_STEP * 0.5);
+            scene.add(ceilL1);
+            const ceilL2 = new THREE.PointLight(0xffeedd, 1.2, 30);
+            ceilL2.position.set( SEAT_CLUSTER_W * 0.3, 14, FIRST_Z + totalRows * ROW_STEP * 0.5);
+            scene.add(ceilL2);
+
+            // Wall accent
+            const wallL = new THREE.PointLight(0xff1833, 1.0, 28);
+            wallL.position.set(-HALF_WALL + 1.5, 4, FIRST_Z + totalRows * ROW_STEP * 0.4);
+            scene.add(wallL);
+            const wallR = new THREE.PointLight(0x1155ff, 1.0, 28);
+            wallR.position.set( HALF_WALL - 1.5, 4, FIRST_Z + totalRows * ROW_STEP * 0.4);
+            scene.add(wallR);
+
+            // ============================================================
+            // CAMERA & RENDERER
+            // ============================================================
+            const CW = container.clientWidth || 900;
+            const CH = 640;
+            const camera = new THREE.PerspectiveCamera(46, CW / CH, 0.1, 300);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(CW, CH);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            container.appendChild(renderer.domElement);
+
+            // ============================================================
+            // CANVAS LABEL HELPER
+            // ============================================================
+            function makeTexture(text, opts) {
+                opts = opts || {};
+                const W = opts.w || 512, H = opts.h || 128;
+                const cv = document.createElement('canvas');
+                cv.width = W; cv.height = H;
+                const cx = cv.getContext('2d');
+                if (opts.bg) {
+                    cx.fillStyle = opts.bg;
+                    const r = H * 0.38;
+                    cx.beginPath();
+                    cx.roundRect(opts.padX||4, opts.padY||4, W-(opts.padX||4)*2, H-(opts.padY||4)*2, r);
+                    cx.fill();
+                }
+                if (opts.shadow) { cx.shadowColor = opts.shadow; cx.shadowBlur = 12; }
+                cx.font = 'bold ' + (opts.fs||56) + 'px Inter,Arial,sans-serif';
+                cx.fillStyle = opts.col || '#ffffff';
+                cx.textAlign = 'center';
+                cx.textBaseline = 'middle';
+                cx.fillText(text, W/2, H/2);
+                return new THREE.CanvasTexture(cv);
+            }
+
+            // ============================================================
+            // CINEMA SCREEN (width dynamically matched to seat cluster)
+            // ============================================================
+            const screenMesh = new THREE.Mesh(
+                new THREE.BoxGeometry(SW, SH, 0.18),
+                new THREE.MeshStandardMaterial({
+                    color: 0xc2dcff, emissive: 0x1a3d9a,
+                    emissiveIntensity: 1.4, roughness: 0.06,
+                })
+            );
+            screenMesh.position.set(0, 5.5, SCREEN_Z);
+            scene.add(screenMesh);
+
+            // Screen frame
+            const fMat = new THREE.MeshStandardMaterial({ color: 0x060810, roughness: 0.95 });
+            [
+                { w: SW+1.0, h: 0.5,     d: 0.3, x: 0,           y: 5.5+SH/2+0.25, z: SCREEN_Z },
+                { w: SW+1.0, h: 0.5,     d: 0.3, x: 0,           y: 5.5-SH/2-0.25, z: SCREEN_Z },
+                { w: 0.5,    h: SH+1.0,  d: 0.3, x:-(SW/2+0.25), y: 5.5,           z: SCREEN_Z },
+                { w: 0.5,    h: SH+1.0,  d: 0.3, x: (SW/2+0.25), y: 5.5,           z: SCREEN_Z },
+            ].forEach(({ w, h, d, x, y, z }) => {
+                const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), fMat.clone());
+                m.position.set(x,y,z); scene.add(m);
+            });
+
+            // "MÀN HÌNH" label
+            const screenLbl = new THREE.Mesh(
+                new THREE.PlaneGeometry(SW * 0.55, 1.6),
+                new THREE.MeshBasicMaterial({
+                    map: makeTexture('M\u00c0N H\u00ccNH', { w:768, h:192, fs:72, col:'#b8d8ff', shadow:'#0044cc' }),
+                    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+                })
+            );
+            screenLbl.position.set(0, 5.5, SCREEN_Z + 0.11);
+            scene.add(screenLbl);
+
+            // Stage/podium
+            const stage = new THREE.Mesh(
+                new THREE.BoxGeometry(SW+3, 1.5, 4.5),
+                new THREE.MeshStandardMaterial({ color: 0x0c0e18, roughness: 0.92 })
+            );
+            stage.position.set(0, 0.55, SCREEN_Z + 2.0);
+            scene.add(stage);
+
+            // ============================================================
+            // FLOOR — dark carpet
+            // ============================================================
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(HALF_WALL * 2 + 4, ROOM_DEPTH + 10),
+                new THREE.MeshStandardMaterial({ color: 0x100810, roughness: 0.98 })
+            );
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(0, -0.02, ROOM_DEPTH / 2);
+            scene.add(floor);
+
+            // Center aisle carpet runner
+            const carpet = new THREE.Mesh(
+                new THREE.PlaneGeometry(1.2, ROOM_DEPTH + 10),
+                new THREE.MeshStandardMaterial({ color: 0x180c0c, roughness: 1.0 })
+            );
+            carpet.rotation.x = -Math.PI / 2;
+            carpet.position.set(0, 0.01, ROOM_DEPTH / 2);
+            scene.add(carpet);
+
+            // ============================================================
+            // WALLS — sized to room
+            // ============================================================
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0x0a0d18, roughness: 0.9 });
+            const wL = new THREE.Mesh(new THREE.BoxGeometry(0.4, 18, ROOM_DEPTH + 8), wallMat.clone());
+            wL.position.set(-HALF_WALL, 9, ROOM_DEPTH / 2); scene.add(wL);
+            const wR = new THREE.Mesh(new THREE.BoxGeometry(0.4, 18, ROOM_DEPTH + 8), wallMat.clone());
+            wR.position.set( HALF_WALL, 9, ROOM_DEPTH / 2); scene.add(wR);
+            // Back wall and ceiling removed for open-top cinematic look
+
+            // Wall light strips
+            const stripMat  = new THREE.MeshStandardMaterial({ color: 0x220011, emissive: 0xff2244, emissiveIntensity: 0.7 });
+            const stripMatB = new THREE.MeshStandardMaterial({ color: 0x001122, emissive: 0x2244ff, emissiveIntensity: 0.7 });
+            for (let si = 0; si < 5; si++) {
+                const zPos = FIRST_Z + si * (totalRows * ROW_STEP / 5);
+                const sL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, 6), stripMat.clone());
+                sL.position.set(-HALF_WALL + 0.3, 3 + si * 2.2, zPos); scene.add(sL);
+                const sR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, 6), stripMatB.clone());
+                sR.position.set( HALF_WALL - 0.3, 3 + si * 2.2, zPos); scene.add(sR);
+            }
+
+            // ============================================================
+            // ENTRY DOORS — flush with left and right side walls
+            // ============================================================
+            // makeSideDoor: door embedded in side wall (panel thin in X, frame runs along Z)
+            // wallX = x position of wall center (±HALF_WALL)
+            // doorZ = z center of door along the wall
+            // side = -1 (left wall, faces +X inward) | +1 (right wall, faces -X inward)
+            function makeSideDoor(wallX, doorZ, label, glowColor, side) {
+                const doorW = 2.2;   // width along Z axis
+                const doorH = 4.0;   // height
+                const wallD = 0.4;   // wall thickness
+                const frameColor = glowColor;
+                const doorMat  = new THREE.MeshStandardMaterial({ color: 0x061810, roughness: 0.85 });
+                const frameMat = new THREE.MeshStandardMaterial({
+                    color: frameColor, emissive: frameColor,
+                    emissiveIntensity: 0.55, roughness: 0.3,
+                });
+
+                // Top bar — runs along Z (doorW wide), thin in X
+                const topBar = new THREE.Mesh(
+                    new THREE.BoxGeometry(wallD + 0.1, 0.30, doorW + 0.5),
+                    frameMat.clone()
+                );
+                topBar.position.set(wallX, doorH + 0.15, doorZ);
+                scene.add(topBar);
+
+                // Front post (lower Z)
+                const fPost = new THREE.Mesh(
+                    new THREE.BoxGeometry(wallD + 0.1, doorH, 0.24),
+                    frameMat.clone()
+                );
+                fPost.position.set(wallX, doorH / 2, doorZ - doorW / 2 - 0.12);
+                scene.add(fPost);
+
+                // Back post (higher Z)
+                const bPost = new THREE.Mesh(
+                    new THREE.BoxGeometry(wallD + 0.1, doorH, 0.24),
+                    frameMat.clone()
+                );
+                bPost.position.set(wallX, doorH / 2, doorZ + doorW / 2 + 0.12);
+                scene.add(bPost);
+
+                // Door panel — fills opening, thin in X flush with wall
+                const panel = new THREE.Mesh(
+                    new THREE.BoxGeometry(wallD * 0.6, doorH, doorW),
+                    doorMat
+                );
+                panel.position.set(wallX, doorH / 2, doorZ);
+                scene.add(panel);
+
+                // Glowing sign above door (runs along Z)
+                const signMat = new THREE.MeshStandardMaterial({
+                    color: glowColor, emissive: glowColor, emissiveIntensity: 1.8,
+                });
+                const sign = new THREE.Mesh(
+                    new THREE.BoxGeometry(wallD + 0.15, 0.50, doorW * 0.85),
+                    signMat
+                );
+                sign.position.set(wallX, doorH + 0.62, doorZ);
+                scene.add(sign);
+
+                // Text label on sign — faces inward
+                const signLbl = new THREE.Mesh(
+                    new THREE.PlaneGeometry(doorW * 0.80, 0.44),
+                    new THREE.MeshBasicMaterial({
+                        map: makeTexture(label, { w:512, h:128, fs:58, col:'#ffffff', shadow:'#000000', bg:'transparent' }),
+                        transparent: true, depthWrite: false, side: THREE.DoubleSide,
+                    })
+                );
+                signLbl.rotation.y = side * -Math.PI / 2;  // face inward
+                signLbl.position.set(wallX + side * (wallD * 0.35 + 0.05), doorH + 0.62, doorZ);
+                scene.add(signLbl);
+
+                // Point light for green glow
+                const dLight = new THREE.PointLight(glowColor, 2.0, 10);
+                dLight.position.set(wallX + side * 1.0, doorH + 1.2, doorZ);
+                scene.add(dLight);
+            }
+
+            // 2 entry doors — one on each side wall, at 30% depth of seating area
+            const entryZ = FIRST_Z + totalRows * ROW_STEP * 0.30;
+            makeSideDoor(-HALF_WALL, entryZ, 'L\u1ed0I V\u00c0O', 0x00dd44, -1);  // left wall, faces right (+X)
+            makeSideDoor( HALF_WALL, entryZ, 'L\u1ed0I V\u00c0O', 0x00dd44, +1);  // right wall, faces left (-X)
+
+            // ============================================================
+            // SEAT DATA
+            // ============================================================
+            const coupleRowSet = new Set();
+            const alphabetRowsForCoupleSet = Object.keys(rowsMap).sort();
+            alphabetRowsForCoupleSet.forEach(row => {
+                if (rowsMap[row].some(s => s.SeatType && s.SeatType.toLowerCase().includes('couple')))
+                    coupleRowSet.add(row);
+            });
+            if (coupleRowSet.size === 0 && alphabetRowsForCoupleSet.length > 0)
+                coupleRowSet.add(alphabetRowsForCoupleSet[alphabetRowsForCoupleSet.length - 1]);
+
+            // ============================================================
+            // COLORS
+            // ============================================================
+            const CLRS = {
+                normal:   [0x2a3850, 0x0a1428],
+                vip:      [0x8c2200, 0x3d0e00],
+                couple:   [0x7a0e42, 0x30081a],
+                selected: [0xe8001a, 0x990011],
+                booked:   [0x0c0f18, 0x000000],
+                locked:   [0x181e2c, 0x050810],
+            };
+
+            function getSeatCK(seat) {
+                if (selectedSeats.has(seat.SeatID)) return 'selected';
+                if (seat.SeatStatus === 'booked') return 'booked';
+                if (lockedByOthers.has(seat.SeatID)) return 'locked';
+                if (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) return 'couple';
+                if (seat.SeatType === 'VIP') return 'vip';
+                return 'normal';
+            }
+
+            function makeSeatMat(ck) {
+                return new THREE.MeshStandardMaterial({
+                    color: CLRS[ck][0], emissive: CLRS[ck][1],
+                    emissiveIntensity: ck === 'selected' ? 1.0 : 0.28,
+                    roughness: 0.50, metalness: 0.20,
+                });
+            }
+
+            const gBody  = new THREE.BoxGeometry(0.82, 0.36, 0.60);
+            const gBack  = new THREE.BoxGeometry(0.82, 0.68, 0.10);
+            const gArm   = new THREE.BoxGeometry(0.07, 0.30, 0.50);
+            const gCBody = new THREE.BoxGeometry(1.72, 0.36, 0.60);
+            const gCBack = new THREE.BoxGeometry(1.72, 0.68, 0.10);
+
+            const meshMap = {}, dataMap = {};
+
+            sortedRows.forEach((row, rowIdx) => {
+                const seats  = [...rowsMap[row]].sort((a,b) => a.SeatNumber - b.SeatNumber);
+                const nSeats = seats.length;
+                const rowW   = nSeats * SEAT_STEP;
+                const startX = -rowW / 2 + SEAT_STEP / 2;
+                const z      = FIRST_Z + rowIdx * ROW_STEP;
+                const y      = rowIdx * 0.18;   // stadium slope
+                const isCouple = coupleRowSet.has(row);
+
+                // ROW LABELS — both sides, always visible
+                const lblOffX = rowW / 2 + 1.8;
+                [-lblOffX, lblOffX].forEach(lx => {
+                    const pillW = 1.1, pillH = 0.6;
+                    const pillMat = new THREE.MeshStandardMaterial({
+                        color: 0x0a1835, emissive: 0x102060, emissiveIntensity: 0.7,
+                        roughness: 0.6, transparent: true, opacity: 0.88,
+                    });
+                    const pill = new THREE.Mesh(new THREE.BoxGeometry(pillW, pillH, 0.08), pillMat);
+                    pill.position.set(lx, y + 0.72, z);
+                    scene.add(pill);
+
+                    const borderMat = new THREE.MeshStandardMaterial({ color: 0x4488ff, emissive: 0x2255ff, emissiveIntensity: 1.2 });
+                    const bTop = new THREE.Mesh(new THREE.BoxGeometry(pillW, 0.04, 0.09), borderMat.clone());
+                    bTop.position.set(lx, y + 0.72 + pillH/2 - 0.02, z); scene.add(bTop);
+                    const bBot = new THREE.Mesh(new THREE.BoxGeometry(pillW, 0.04, 0.09), borderMat.clone());
+                    bBot.position.set(lx, y + 0.72 - pillH/2 + 0.02, z); scene.add(bBot);
+
+                    const lbl = new THREE.Mesh(
+                        new THREE.PlaneGeometry(pillW * 0.95, pillH * 0.9),
+                        new THREE.MeshBasicMaterial({
+                            map: makeTexture(row, { w:256, h:128, fs:96, col:'#ffffff', shadow:'#3399ff', bg:'transparent' }),
+                            transparent: true, depthWrite: false, side: THREE.DoubleSide,
+                        })
+                    );
+                    lbl.position.set(lx, y + 0.72, z + 0.05);
+                    scene.add(lbl);
+                });
+
+                // AISLE FLOOR DOTS
+                [-(rowW/2 + 0.5), rowW/2 + 0.5].forEach(dx => {
+                    const dot = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.10, 0.10, 0.04, 8),
+                        new THREE.MeshStandardMaterial({ color: 0xffcc44, emissive: 0xff9900, emissiveIntensity: 2.8 })
+                    );
+                    dot.position.set(dx, 0.05, z);
+                    scene.add(dot);
+                });
+
+                if (isCouple) {
+                    for (let i = 0; i < seats.length; i += 2) {
+                        const s1 = seats[i], s2 = seats[i+1];
+                        const gap = Math.floor(i/6) * 0.28;
+                        const px  = startX + i*SEAT_STEP + SEAT_STEP*0.5 + gap;
+                        const sel = selectedSeats.has(s1.SeatID)||(s2&&selectedSeats.has(s2.SeatID));
+                        const bkd = s1.SeatStatus==='booked'||(s2&&s2.SeatStatus==='booked');
+                        const ck  = sel ? 'selected' : bkd ? 'booked' : 'couple';
+                        const mat = makeSeatMat(ck);
+                        const body = new THREE.Mesh(gCBody, mat.clone());
+                        body.position.set(px, y+0.18, z); scene.add(body);
+                        const back = new THREE.Mesh(gCBack, mat.clone());
+                        back.position.set(px, y+0.56, z+0.26); scene.add(back);
+                        const ids = s2 ? [s1.SeatID, s2.SeatID] : [s1.SeatID];
+                        ids.forEach(id => { meshMap[id]={body,back}; dataMap[id]=s1; });
+                    }
+                } else {
+                    seats.forEach((seat, ci) => {
+                        const half = Math.floor(nSeats/2);
+                        const gap  = (ci >= half && nSeats > 4) ? 0.5 : 0;
+                        const x    = startX + ci*SEAT_STEP + gap;
+                        const ck   = getSeatCK(seat);
+                        const mat  = makeSeatMat(ck);
+
+                        const body = new THREE.Mesh(gBody, mat.clone());
+                        body.position.set(x, y+0.18, z); scene.add(body);
+                        const back = new THREE.Mesh(gBack, mat.clone());
+                        back.position.set(x, y+0.56, z+0.26); scene.add(back);
+
+                        if (ck !== 'booked') {
+                            [-0.42, 0.42].forEach(ax => {
+                                const arm = new THREE.Mesh(gArm,
+                                    new THREE.MeshStandardMaterial({
+                                        color: new THREE.Color(CLRS[ck][0]).multiplyScalar(0.48),
+                                        roughness: 0.7,
+                                    }));
+                                arm.position.set(x+ax, y+0.32, z+0.06); scene.add(arm);
+                            });
+                        }
+                        meshMap[seat.SeatID] = {body, back};
+                        dataMap[seat.SeatID] = seat;
+                    });
+                }
+            });
+
+            // ============================================================
+            // COLOR UPDATE API
+            // ============================================================
+            function applyColor(id) {
+                const seat = dataMap[id], m = meshMap[id];
+                if (!seat || !m) return;
+                const ck  = getSeatCK(seat);
+                const col = new THREE.Color(CLRS[ck][0]);
+                const emi = new THREE.Color(CLRS[ck][1]);
+                const ei  = ck === 'selected' ? 1.0 : 0.28;
+                [m.body, m.back].forEach(mesh => {
+                    if (!mesh) return;
+                    mesh.material.color.copy(col);
+                    mesh.material.emissive.copy(emi);
+                    mesh.material.emissiveIntensity = ei;
+                    mesh.material.needsUpdate = true;
+                });
+            }
+
+            let animFrameId;
+            three3D = {
+                updateColors() { Object.keys(meshMap).forEach(id => applyColor(parseInt(id))); },
+                destroy()      { cancelAnimationFrame(animFrameId); renderer.dispose(); }
+            };
+
+            // ============================================================
+            // ORBIT CAMERA — perfectly centered, balanced view
+            // ============================================================
+            const lastZ   = FIRST_Z + (totalRows - 1) * ROW_STEP;
+            // Target: horizontally centered (X=0), vertically mid-scene,
+            // depth between screen and mid-row
+            const centerZ = (SCREEN_Z + lastZ) * 0.45;
+            const TARGET  = new THREE.Vector3(0, 3.5, centerZ);
+
+            // phi=0.62  → ~35° down from horizon (more overhead, balanced view)
+            // theta=PI  → camera behind audience looking at screen (straight, no tilt)
+            // radius    → auto-fit based on scene depth so whole layout is visible
+            const autoRadius = Math.max(24, (lastZ - SCREEN_Z) * 0.88 + 8);
+            let sph = { theta: Math.PI, phi: 0.62, radius: autoRadius };
+
+            function updateCam() {
+                camera.position.set(
+                    TARGET.x + sph.radius * Math.sin(sph.phi) * Math.sin(sph.theta),
+                    TARGET.y + sph.radius * Math.cos(sph.phi),
+                    TARGET.z + sph.radius * Math.sin(sph.phi) * Math.cos(sph.theta)
+                );
+                camera.lookAt(TARGET);
+            }
+            updateCam();
+
+            // Mouse drag
+            let drag3D = false, prevM3D = {x:0,y:0};
+            renderer.domElement.style.cursor = 'grab';
+            renderer.domElement.addEventListener('mousedown', e => {
+                drag3D=true; prevM3D={x:e.clientX,y:e.clientY};
+                renderer.domElement.style.cursor='grabbing';
+            });
+            window.addEventListener('mousemove', e => {
+                if (!drag3D) return;
+                sph.theta -= (e.clientX-prevM3D.x)*0.005;
+                sph.phi = Math.max(0.12, Math.min(1.45, sph.phi+(e.clientY-prevM3D.y)*0.005));
+                prevM3D = {x:e.clientX,y:e.clientY};
+                updateCam();
+            });
+            window.addEventListener('mouseup', () => { drag3D=false; renderer.domElement.style.cursor='grab'; });
+
+            // Touch drag
+            let pt3D=null;
+            renderer.domElement.addEventListener('touchstart',e=>{
+                if(e.touches.length===1)pt3D={x:e.touches[0].clientX,y:e.touches[0].clientY};
+            },{passive:true});
+            renderer.domElement.addEventListener('touchmove',e=>{
+                if(e.touches.length===1&&pt3D){
+                    sph.theta-=(e.touches[0].clientX-pt3D.x)*0.005;
+                    sph.phi=Math.max(0.12,Math.min(1.45,sph.phi+(e.touches[0].clientY-pt3D.y)*0.005));
+                    pt3D={x:e.touches[0].clientX,y:e.touches[0].clientY};
+                    updateCam();
+                }
+            },{passive:true});
+            renderer.domElement.addEventListener('touchend',()=>{pt3D=null;},{passive:true});
+
+            // Scroll zoom
+            renderer.domElement.addEventListener('wheel',e=>{
+                e.preventDefault();
+                sph.radius=Math.max(8, Math.min(80, sph.radius+e.deltaY*0.05));
+                updateCam();
+            },{passive:false});
+
+            // Resize
+            window.addEventListener('resize',()=>{
+                if(currentView!=='3d')return;
+                const w=container.clientWidth;
+                renderer.setSize(w,CH); camera.aspect=w/CH;
+                camera.updateProjectionMatrix();
+            });
+
+            // ============================================================
+            // RENDER LOOP
+            // ============================================================
+            let t3=0;
+            function loop3D(){
+                animFrameId=requestAnimationFrame(loop3D);
+                t3+=0.012;
+                screenGlow.intensity = 4.8+Math.sin(t3)*0.8;
+                screenMesh.material.emissiveIntensity = 1.3+Math.sin(t3*1.3)*0.25;
+                wallL.intensity = 0.8+Math.sin(t3*0.7)*0.3;
+                wallR.intensity = 0.8+Math.sin(t3*0.7+1.0)*0.3;
+                renderer.render(scene,camera);
+            }
+            loop3D();
+        }
+
+        function update3DSeatColors() {
+            if (currentView === '3d') {
+                // Re-render the 3D scene so selected states are reflected
+                if (three3D) three3D.updateColors();
+            }
+        }
+
+        // Called after any seat selection change from 2D map
+
         const toastStyle = document.createElement('style');
         toastStyle.textContent = `
             @keyframes toastIn {
@@ -1612,8 +3140,10 @@
         document.head.appendChild(toastStyle);
     </script>
     <!-- Tooltip overlay -->
-    <div id="seatTooltip" style="position: absolute; display: none; background: #13171a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px 12px; font-size: 0.78rem; font-weight: 700; color: #fff; z-index: 9999; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.55); font-family: 'Inter', sans-serif; line-height: 1.4;"></div>
+    <div id="seatTooltip"
+        style="position: absolute; display: none; background: #13171a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px 12px; font-size: 0.78rem; font-weight: 700; color: #fff; z-index: 9999; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.55); font-family: 'Inter', sans-serif; line-height: 1.4;">
+    </div>
     <script src="js/chatbot.js"></script>
 </body>
-</html>
 
+</html>
