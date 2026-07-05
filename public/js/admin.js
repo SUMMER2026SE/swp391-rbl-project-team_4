@@ -976,6 +976,14 @@ function navigate(page, btn) {
     if (page === 'pricing' || page === 'settings') {
         loadSettings();
     }
+
+    if (page === 'fnb') {
+        loadFnB();
+    }
+
+    if (page === 'combos') {
+        loadCombos();
+    }
 }
 
 function switchTab(tab, btn) {
@@ -999,13 +1007,21 @@ function adminLogout() {
 ══════════════════════════ */
 let FNB_DATA = [];
 
-async function loadFnB() {
+async function loadFnB(search = '') {
     try {
         const res = await apiFetch('/api/admin/fnb');
         if (res.success) {
             FNB_DATA = res.data;
+            if (search) {
+                const term = search.toLowerCase();
+                FNB_DATA = FNB_DATA.filter(item => 
+                    item.Name.toLowerCase().includes(term) || 
+                    (item.Description && item.Description.toLowerCase().includes(term))
+                );
+            }
             renderFnB();
             loadFnBStats();
+            initDragAndDrop();
         }
     } catch (err) {
         console.error('Failed to load F&B:', err);
@@ -1013,108 +1029,91 @@ async function loadFnB() {
 }
 
 function renderFnB() {
-    const container = document.getElementById('fnbItemsContainer');
+    const container = document.getElementById('fnbTableBody');
     if (!container) return;
 
     if (FNB_DATA.length === 0) {
-        container.innerHTML = '<div style="padding:20px;color:#9ca3af;">Chưa có đồ ăn/nước uống nào.</div>';
+        container.innerHTML = '<tr><td colspan="7" style="padding:24px;color:#9ca3af;text-align:center;">Chưa có đồ ăn/nước uống nào.</td></tr>';
         return;
     }
 
-    // Render Master Combo (just using the first item for demo, or specifically finding a combo)
-    const masterCombo = FNB_DATA.find(i => i.Category === 'Combos') || FNB_DATA[0];
-    const otherItems = FNB_DATA.filter(i => i.FnBID !== masterCombo.FnBID);
-
-    const getActionBtns = (item) => `
-        <div style="position:absolute; top:10px; right:10px; display:flex; gap:5px; background:rgba(0,0,0,0.6); padding:4px; border-radius:6px; z-index:10;">
-            <button onclick='editFnB(${JSON.stringify(item).replace(/'/g, "&apos;")})' title="Sửa" style="background:none;border:none;color:#3b82f6;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-            <button onclick="toggleFnBAvailability(${item.FnBID})" title="${item.IsAvailable ? 'Ẩn' : 'Hiện'}" style="background:none;border:none;color:${item.IsAvailable ? '#10b981' : '#6b7280'};cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-            <button onclick="deleteFnB(${item.FnBID})" title="Xóa" style="background:none;border:none;color:#ef4444;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-        </div>
-    `;
-
-    let html = `
-        <div class="fnb-card-big" style="position:relative; opacity: ${masterCombo.IsAvailable ? 1 : 0.5};">
-            ${getActionBtns(masterCombo)}
-            <div class="fcb-img-wrap">
-                <img src="${masterCombo.ImageURL || 'images/default_poster.svg'}" alt="${masterCombo.Name}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-            </div>
-            <div class="fcb-info">
-                <span class="fcb-badge">NỔI BẬT</span>
-                <h3>${masterCombo.Name}</h3>
-                <div class="fcb-details">
-                    <div class="fcb-price-block">
-                        <span class="fcb-label">GIÁ</span>
-                        <span class="fcb-price">${masterCombo.Price.toLocaleString()}đ</span>
-                    </div>
-                    <div class="fcb-stock-block">
-                        <span class="fcb-label">TỒN KHO</span>
-                        <div class="fcb-progress-wrap">
-                            <span class="fcb-stock-val">${masterCombo.Stock}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="fnb-cards-grid">
-    `;
-
-    otherItems.forEach(item => {
-        let stockClass = 'moderate';
-        let stockLabel = 'Trung bình';
-        if (item.Stock > 500) { stockClass = 'high'; stockLabel = 'Dồi dào'; }
-        else if (item.Stock < 50) { stockClass = 'danger'; stockLabel = 'SẮP HẾT HÀNG'; }
-
+    let html = '';
+    FNB_DATA.forEach(item => {
         html += `
-            <div class="fnb-card-sm" style="position:relative; opacity: ${item.IsAvailable ? 1 : 0.5};">
-                ${getActionBtns(item)}
-                <div class="fc-sm-img-wrap" style="margin-top:10px;">
-                    <img src="${item.ImageURL || 'images/default_poster.svg'}" alt="${item.Name}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                </div>
-                <div class="fc-sm-info-block">
-                    <div class="fc-sm-top" style="padding-top:10px;">
-                        <h4>${item.Name}</h4>
-                        <span class="fc-sm-price text-red">${item.Price.toLocaleString()}đ</span>
+            <tr style="border-bottom: 1px solid var(--border); opacity: ${item.IsAvailable ? 1 : 0.5};">
+                <td style="padding: 12px 16px;">
+                    <div style="width: 50px; height: 50px; overflow: hidden; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: var(--bg);">
+                        <img src="${item.ImageURL || 'images/default_fnb.png'}" alt="${item.Name}" onerror="this.onerror=null; this.src='images/default_fnb.png'" style="max-height: 100%; max-width: 100%; object-fit: cover;">
                     </div>
-                    <div class="fc-sm-bottom">
-                        <div class="fc-sm-inv">
-                            <span class="fc-sm-label">TỒN KHO</span>
-                            <span class="fc-sm-val">${item.Stock} đơn vị</span>
-                        </div>
-                        <span class="inv-badge ${stockClass}">${stockLabel}</span>
+                </td>
+                <td style="padding: 12px 16px;">
+                    <div style="font-weight: 700; color: var(--text);">${item.Name}</div>
+                    <div style="font-size: 0.8rem; color: var(--text2); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.Description || ''}</div>
+                </td>
+                <td style="padding: 12px 16px;">
+                    <span style="font-size: 0.8rem; padding: 4px 8px; background: var(--bg); border-radius: 4px; color: var(--text2); font-weight: 500;">
+                        ${item.Category}
+                    </span>
+                </td>
+                <td style="padding: 12px 16px; font-weight: 700; color: var(--accent);">
+                    ${parseFloat(item.Price).toLocaleString('vi-VN')}đ
+                </td>
+                <td style="padding: 12px 16px; font-weight: 600;">
+                    ${item.Stock}
+                </td>
+                <td style="padding: 12px 16px;">
+                    <span class="inv-badge ${item.IsAvailable ? 'high' : 'danger'}" style="font-size:0.75rem; padding: 2px 6px; border-radius: 4px;">
+                        ${item.IsAvailable ? 'Hoạt động' : 'Tạm ẩn'}
+                    </span>
+                </td>
+                <td style="padding: 12px 16px; text-align: right;">
+                    <div style="display: inline-flex; gap: 8px;">
+                        <button type="button" onclick='editFnB(${item.FnBID})' title="Sửa" style="background:none;border:none;color:#3b82f6;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                        <button type="button" onclick="toggleFnBAvailability(${item.FnBID})" title="${item.IsAvailable ? 'Ẩn' : 'Hiện'}" style="background:none;border:none;color:${item.IsAvailable ? '#10b981' : '#6b7280'};cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                        <button type="button" onclick="deleteFnB(${item.FnBID})" title="Xóa" style="background:none;border:none;color:#ef4444;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                     </div>
-                </div>
-            </div>
+                </td>
+            </tr>
         `;
     });
 
-    html += `</div>`;
     container.innerHTML = html;
 }
 
-function editFnB(item) {
-    document.getElementById('fnbFormTitle').textContent = 'SỬA ĐỒ ĂN';
+function editFnB(id) {
+    const item = FNB_DATA.find(x => x.FnBID === id);
+    if (!item) return;
+    document.getElementById('fnbFormTitle').textContent = 'SỬA MẶT HÀNG';
     document.getElementById('fnbId').value = item.FnBID;
     document.getElementById('fnbName').value = item.Name;
     document.getElementById('fnbDesc').value = item.Description || '';
     document.getElementById('fnbPrice').value = item.Price;
     document.getElementById('fnbStock').value = item.Stock;
     document.getElementById('fnbCategory').value = item.Category;
-    document.getElementById('fnbImageURL').value = item.ImageURL || '';
+    document.getElementById('fnbImageUrl').value = item.ImageURL || '';
+    document.getElementById('fnbStatus').value = item.IsAvailable ? 'Active' : 'Inactive';
 
-    document.getElementById('btnSaveFnb').querySelector('#fnbBtnText').textContent = 'Cập nhật mặt hàng';
+    document.getElementById('fnbBtnText').textContent = 'Cập nhật mặt hàng';
     document.getElementById('btnCancelFnb').style.display = 'block';
 
-    // Cuộn lên form
+    const dropZoneText = document.getElementById('fnbDropZoneText');
+    if (dropZoneText) {
+        dropZoneText.textContent = item.ImageURL ? `Hình hiện tại: ${item.ImageURL.split('/').pop()}` : 'Chọn file hoặc kéo thả vào đây';
+    }
+
     document.querySelector('.fnb-form-side').scrollIntoView({ behavior: 'smooth' });
 }
 
 function cancelEditFnB() {
-    document.getElementById('fnbFormTitle').textContent = 'THÊM ĐỒ ĂN';
+    document.getElementById('fnbFormTitle').textContent = 'THÊM MẶT HÀNG MỚI';
     document.getElementById('addFnbForm').reset();
     document.getElementById('fnbId').value = '';
-    document.getElementById('btnSaveFnb').querySelector('#fnbBtnText').textContent = 'Thêm vào danh mục';
+    document.getElementById('fnbImageUrl').value = '';
+    document.getElementById('fnbStatus').value = 'Active';
+    document.getElementById('fnbBtnText').textContent = 'Thêm mặt hàng';
     document.getElementById('btnCancelFnb').style.display = 'none';
+    const dropZoneText = document.getElementById('fnbDropZoneText');
+    if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
 }
 
 async function deleteFnB(id) {
@@ -1171,50 +1170,290 @@ async function saveFnB() {
 
     const btn = document.getElementById('btnSaveFnb');
     const oldText = document.getElementById('fnbBtnText').textContent;
-    document.getElementById('fnbBtnText').textContent = 'Đang lưu...';
+    document.getElementById('fnbBtnText').textContent = 'Đang xử lý...';
     btn.disabled = true;
 
     try {
         const fnbId = document.getElementById('fnbId').value;
-        const payload = {
-            name: document.getElementById('fnbName').value,
-            description: document.getElementById('fnbDesc').value,
-            price: parseFloat(document.getElementById('fnbPrice').value),
-            stock: parseInt(document.getElementById('fnbStock').value),
-            category: document.getElementById('fnbCategory').value,
-            imageURL: document.getElementById('fnbImageURL').value,
-            isAvailable: true
-        };
+        const formData = new FormData();
+        formData.append('name', document.getElementById('fnbName').value.trim());
+        formData.append('description', document.getElementById('fnbDesc').value.trim());
+        formData.append('price', document.getElementById('fnbPrice').value);
+        formData.append('stock', document.getElementById('fnbStock').value);
+        formData.append('category', document.getElementById('fnbCategory').value);
+        formData.append('isAvailable', document.getElementById('fnbStatus').value === 'Active');
 
-        let res;
-        if (fnbId) {
-            // Update
-            res = await apiFetch(`/api/admin/fnb/${fnbId}`, {
-                method: 'PUT',
-                body: JSON.stringify(payload)
-            });
-        } else {
-            // Create
-            res = await apiFetch('/api/admin/fnb', {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
+        const imageFile = document.getElementById('fnbImage').files[0];
+        if (imageFile) {
+            formData.append('image', imageFile);
         }
 
-        if (res.success) {
-            alert(fnbId ? 'Cập nhật thành công!' : 'Thêm mặt hàng thành công!');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+        const url = fnbId ? `/api/admin/fnb/${fnbId}` : '/api/admin/fnb';
+        const method = fnbId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+            method,
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            alert(fnbId ? 'Cập nhật mặt hàng thành công!' : 'Thêm mặt hàng mới thành công!');
             cancelEditFnB();
             loadFnB();
         } else {
-            alert('Lỗi: ' + res.message);
+            alert('Lỗi: ' + data.message);
         }
     } catch (err) {
         console.error(err);
-        alert('Lỗi kết nối.');
+        alert('Lỗi kết nối máy chủ.');
     } finally {
         document.getElementById('fnbBtnText').textContent = oldText;
         btn.disabled = false;
     }
+}
+
+/* ══════════════════════════
+   COMBO MANAGEMENT
+   ══════════════════════════ */
+let COMBO_DATA = [];
+
+async function loadCombos(search = '') {
+    try {
+        const query = search ? `?search=${encodeURIComponent(search)}` : '';
+        const res = await apiFetch('/api/admin/combos' + query);
+        if (res.success) {
+            COMBO_DATA = res.data;
+            renderCombos();
+            initDragAndDrop();
+        }
+    } catch (err) {
+        console.error('Failed to load Combos:', err);
+    }
+}
+
+function renderCombos() {
+    const container = document.getElementById('comboTableBody');
+    if (!container) return;
+
+    if (COMBO_DATA.length === 0) {
+        container.innerHTML = '<tr><td colspan="7" style="padding:24px;color:#9ca3af;text-align:center;">Chưa có combo bắp nước nào.</td></tr>';
+        return;
+    }
+
+    let html = '';
+    COMBO_DATA.forEach(item => {
+        html += `
+            <tr style="border-bottom: 1px solid var(--border); opacity: ${item.Status === 'Active' ? 1 : 0.5};">
+                <td style="padding: 12px 16px;">
+                    <div style="width: 50px; height: 50px; overflow: hidden; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: var(--bg);">
+                        <img src="${item.ImageURL || 'images/default_fnb.png'}" alt="${item.ComboName}" onerror="this.onerror=null; this.src='images/default_fnb.png'" style="max-height: 100%; max-width: 100%; object-fit: cover;">
+                    </div>
+                </td>
+                <td style="padding: 12px 16px;">
+                    <div style="font-weight: 700; color: var(--text);">${item.ComboName}</div>
+                </td>
+                <td style="padding: 12px 16px; font-size: 0.8rem; color: var(--text2); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    ${item.Description || ''}
+                </td>
+                <td style="padding: 12px 16px; font-weight: 700; color: var(--accent);">
+                    ${parseFloat(item.Price).toLocaleString('vi-VN')}đ
+                </td>
+                <td style="padding: 12px 16px; font-weight: 600;">
+                    ${item.Stock !== undefined ? item.Stock : 100}
+                </td>
+                <td style="padding: 12px 16px;">
+                    <span class="inv-badge ${item.Status === 'Active' ? 'high' : 'danger'}" style="font-size:0.75rem; padding: 2px 6px; border-radius: 4px;">
+                        ${item.Status === 'Active' ? 'Hoạt động' : 'Tạm ẩn'}
+                    </span>
+                </td>
+                <td style="padding: 12px 16px; text-align: right;">
+                    <div style="display: inline-flex; gap: 8px;">
+                        <button type="button" onclick='editCombo(${item.ComboID})' title="Sửa" style="background:none;border:none;color:#3b82f6;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                        <button type="button" onclick="toggleComboStatus(${item.ComboID})" title="${item.Status === 'Active' ? 'Ẩn' : 'Hiện'}" style="background:none;border:none;color:${item.Status === 'Active' ? '#10b981' : '#6b7280'};cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                        <button type="button" onclick="deleteCombo(${item.ComboID})" title="Xóa" style="background:none;border:none;color:#ef4444;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+function editCombo(id) {
+    const item = COMBO_DATA.find(x => x.ComboID === id);
+    if (!item) return;
+    document.getElementById('comboFormTitle').textContent = 'SỬA COMBO';
+    document.getElementById('comboId').value = item.ComboID;
+    document.getElementById('comboName').value = item.ComboName;
+    document.getElementById('comboDesc').value = item.Description || '';
+    document.getElementById('comboPrice').value = item.Price;
+    document.getElementById('comboStock').value = item.Stock !== undefined ? item.Stock : 100;
+    document.getElementById('comboImageUrl').value = item.ImageURL || '';
+    document.getElementById('comboStatus').value = item.Status;
+
+    document.getElementById('comboBtnText').textContent = 'Cập nhật Combo';
+    document.getElementById('btnCancelCombo').style.display = 'block';
+
+    const dropZoneText = document.getElementById('comboDropZoneText');
+    if (dropZoneText) {
+        dropZoneText.textContent = item.ImageURL ? `Hình hiện tại: ${item.ImageURL.split('/').pop()}` : 'Chọn file hoặc kéo thả vào đây';
+    }
+
+    document.querySelector('#page-combos .fnb-form-side').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelEditCombo() {
+    document.getElementById('comboFormTitle').textContent = 'THÊM COMBO MỚI';
+    document.getElementById('addComboForm').reset();
+    document.getElementById('comboId').value = '';
+    document.getElementById('comboStock').value = '100';
+    document.getElementById('comboImageUrl').value = '';
+    document.getElementById('comboStatus').value = 'Active';
+    document.getElementById('comboBtnText').textContent = 'Thêm Combo mới';
+    document.getElementById('btnCancelCombo').style.display = 'none';
+    const dropZoneText = document.getElementById('comboDropZoneText');
+    if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
+}
+
+async function saveCombo() {
+    const form = document.getElementById('addComboForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    const btn = document.getElementById('btnSaveCombo');
+    const oldText = document.getElementById('comboBtnText').textContent;
+    document.getElementById('comboBtnText').textContent = 'Đang xử lý...';
+    btn.disabled = true;
+
+    try {
+        const comboId = document.getElementById('comboId').value;
+        const formData = new FormData();
+        formData.append('comboName', document.getElementById('comboName').value.trim());
+        formData.append('description', document.getElementById('comboDesc').value.trim());
+        formData.append('price', document.getElementById('comboPrice').value);
+        formData.append('stock', document.getElementById('comboStock').value);
+        formData.append('status', document.getElementById('comboStatus').value);
+
+        const imageFile = document.getElementById('comboImage').files[0];
+        if (imageFile) {
+            formData.append('image', imageFile);
+        }
+
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+        const url = comboId ? `/api/admin/combos/${comboId}` : '/api/admin/combos';
+        const method = comboId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+            method,
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            alert(comboId ? 'Cập nhật combo thành công!' : 'Tạo combo mới thành công!');
+            cancelEditCombo();
+            loadCombos();
+        } else {
+            alert('Lỗi: ' + data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Lỗi kết nối máy chủ.');
+    } finally {
+        document.getElementById('comboBtnText').textContent = oldText;
+        btn.disabled = false;
+    }
+}
+
+async function deleteCombo(id) {
+    if (!confirm('Bạn có chắc chắn muốn xóa combo này?')) return;
+    try {
+        const res = await apiFetch(`/api/admin/combos/${id}`, { method: 'DELETE' });
+        if (res.success) {
+            alert('Xóa combo thành công!');
+            loadCombos();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        console.error('deleteCombo error:', err);
+        alert('Lỗi kết nối máy chủ.');
+    }
+}
+
+async function toggleComboStatus(id) {
+    try {
+        const res = await apiFetch(`/api/admin/combos/${id}/toggle`, { method: 'PATCH' });
+        if (res.success) {
+            loadCombos();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        console.error('toggleComboStatus error:', err);
+        alert('Lỗi kết nối máy chủ.');
+    }
+}
+
+function handleFnbFileSelect(input) {
+    const file = input.files[0];
+    const text = document.getElementById('fnbDropZoneText');
+    if (file && text) {
+        text.textContent = `Đã chọn: ${file.name}`;
+    }
+}
+
+function handleComboFileSelect(input) {
+    const file = input.files[0];
+    const text = document.getElementById('comboDropZoneText');
+    if (file && text) {
+        text.textContent = `Đã chọn: ${file.name}`;
+    }
+}
+
+let dragDropInitialized = false;
+function initDragAndDrop() {
+    if (dragDropInitialized) return;
+    dragDropInitialized = true;
+
+    ['fnb', 'combo'].forEach(prefix => {
+        const dropZone = document.getElementById(`${prefix}DropZone`);
+        const fileInput = document.getElementById(`${prefix}Image`);
+        const textVal = document.getElementById(`${prefix}DropZoneText`);
+        if (!dropZone || !fileInput) return;
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--accent)';
+                dropZone.style.background = 'rgba(232,25,44,0.05)';
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--border)';
+                dropZone.style.background = 'var(--bg-white)';
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length) {
+                fileInput.files = files;
+                if (textVal) textVal.textContent = `Đã chọn: ${files[0].name}`;
+            }
+        }, false);
+    });
 }
 
 /* ══════════════════════════
@@ -1229,16 +1468,16 @@ function switchFnbTab(tab, btn) {
 
     // 2. Toggle visibility of layouts
     const fnbSubpage = document.getElementById('fnbSubpage');
-    const voucherSubpage = document.getElementById('voucherSubpage');
+    const comboSubpage = document.getElementById('comboSubpage');
 
     if (tab === 'fnb') {
         if (fnbSubpage) fnbSubpage.style.display = 'flex';
-        if (voucherSubpage) voucherSubpage.style.display = 'none';
+        if (comboSubpage) comboSubpage.style.display = 'none';
         loadFnB();
-    } else {
+    } else if (tab === 'combo') {
         if (fnbSubpage) fnbSubpage.style.display = 'none';
-        if (voucherSubpage) voucherSubpage.style.display = 'flex';
-        loadVouchers();
+        if (comboSubpage) comboSubpage.style.display = 'flex';
+        loadCombos();
     }
 }
 
@@ -2732,6 +2971,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMovies();
     loadRecentTransactions();
     loadFnB();
+    loadCombos();
     loadVouchers();
     loadStaff();
     loadRooms();

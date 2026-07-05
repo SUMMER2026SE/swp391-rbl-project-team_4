@@ -507,7 +507,20 @@ exports.createFnB = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc.' });
     }
 
-    const fnb = await AdminModel.createFnB(req.body);
+    let imageURL = 'images/default_fnb.png';
+    if (req.file) {
+      imageURL = 'images/' + req.file.filename;
+    } else if (req.body.imageURL) {
+      imageURL = req.body.imageURL;
+    }
+
+    const fnbData = {
+      ...req.body,
+      imageURL,
+      isAvailable: req.body.isAvailable !== 'false'
+    };
+
+    const fnb = await AdminModel.createFnB(fnbData);
     res.status(201).json({ success: true, message: 'Tạo mặt hàng thành công!', data: fnb });
   } catch (err) {
     console.error('[adminController] createFnB:', err.message);
@@ -517,7 +530,15 @@ exports.createFnB = async (req, res) => {
 
 exports.updateFnB = async (req, res) => {
   try {
-    const fnb = await AdminModel.updateFnB(parseInt(req.params.id), req.body);
+    const updateData = { ...req.body };
+    if (req.file) {
+      updateData.imageURL = 'images/' + req.file.filename;
+    }
+    if (updateData.isAvailable !== undefined) {
+      updateData.isAvailable = updateData.isAvailable !== 'false';
+    }
+
+    const fnb = await AdminModel.updateFnB(parseInt(req.params.id), updateData);
     if (!fnb) return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
     res.json({ success: true, message: 'Cập nhật mặt hàng thành công!', data: fnb });
   } catch (err) {
@@ -532,6 +553,9 @@ exports.deleteFnB = async (req, res) => {
     res.json({ success: true, message: 'Xóa mặt hàng thành công!' });
   } catch (err) {
     console.error('[adminController] deleteFnB:', err.message);
+    if (err.message.includes('REFERENCE constraint') || err.message.includes('conflict')) {
+      return res.status(409).json({ success: false, message: 'Mặt hàng này đã phát sinh giao dịch hóa đơn, không thể xóa. Hãy chuyển trạng thái hoạt động sang Tạm ẩn.' });
+    }
     if (err.message.includes('người mua')) {
       return res.status(409).json({ success: false, message: err.message });
     }

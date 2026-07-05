@@ -7,6 +7,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const adminCtrl = require('../controllers/adminController');
+const comboCtrl = require('../controllers/comboController');
 const newsCtrl = require('../controllers/newsController');
 const { verifyToken, isSuperAdmin } = require('../middleware/authMiddleware');
 
@@ -98,10 +99,10 @@ router.patch('/vouchers/:id/toggle', adminCtrl.toggleVoucherActive);
 router.get('/fnb', adminCtrl.getAllFnB);
 
 // POST   /api/admin/fnb                — Tạo mặt hàng F&B mới
-router.post('/fnb', adminCtrl.createFnB);
+router.post('/fnb', upload.single('image'), adminCtrl.createFnB);
 
 // PUT    /api/admin/fnb/:id            — Sửa mặt hàng F&B
-router.put('/fnb/:id', adminCtrl.updateFnB);
+router.put('/fnb/:id', upload.single('image'), adminCtrl.updateFnB);
 
 // DELETE /api/admin/fnb/:id            — Xóa mặt hàng F&B
 router.delete('/fnb/:id', adminCtrl.deleteFnB);
@@ -112,6 +113,23 @@ router.patch('/fnb/:id/toggle', adminCtrl.toggleFnBAvailability);
 // GET    /api/admin/fnb/stats          — Số liệu thống kê FnB
 router.get('/fnb/stats', adminCtrl.getFnBStats);
 
+// ─── Combo Management ──────────────────────────────────────────
+// GET    /api/admin/combos             — Danh sách combo
+router.get('/combos', comboCtrl.getAllCombos);
+
+// POST   /api/admin/combos             — Tạo combo mới (kèm upload ảnh)
+router.post('/combos', upload.single('image'), comboCtrl.createCombo);
+
+// PUT    /api/admin/combos/:id         — Sửa combo (kèm upload ảnh)
+router.put('/combos/:id', upload.single('image'), comboCtrl.updateCombo);
+
+// DELETE /api/admin/combos/:id         — Xóa (soft) combo
+router.delete('/combos/:id', comboCtrl.deleteCombo);
+
+// PATCH  /api/admin/combos/:id/toggle  — Bật/tắt trạng thái hoạt động của combo
+router.patch('/combos/:id/toggle', comboCtrl.toggleComboStatus);
+
+// ─── Statistics ──────────────────────────────────────────────
 // ─── Cinema Management ──────────────────────────────────────
 // GET    /api/admin/cinemas           — Danh sách rạp chiếu
 router.get('/cinemas', adminCtrl.getCinemas);

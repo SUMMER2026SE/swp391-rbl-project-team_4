@@ -56,6 +56,14 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
                 Đồ ăn & Nước
             </button>
+            <button class="sn" data-page="combos" onclick="navigate('combos',this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="18" y2="8"/><line x1="6" y1="12" x2="14" y2="12"/><line x1="6" y1="16" x2="10" y2="16"/></svg>
+                Quản lý Combo
+            </button>
+            <button class="sn" onclick="location.href='admin-voucher.html'">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                Khuyến Mãi & Voucher
+            </button>
             <button class="sn" data-page="staff" onclick="navigate('staff',this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 Nhân viên
@@ -694,264 +702,234 @@
     </div>
     <div class="page" id="page-fnb">
         <div class="content-scroll" style="padding: 30px 40px; display: flex; flex-direction: column; gap: 32px;">
-            <div class="fnb-header">
-                <h1 style="font-size: 1.6rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 8px;">QUẢN LÝ ĐỒ ĂN & VOUCHER</h1>
-                <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.5; max-width: 600px;">Quản lý kho hàng đồ ăn và chiến lược khuyến mãi.</p>
+            <div class="fnb-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 style="font-size: 1.6rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 8px;">QUẢN LÝ ĐỒ ĂN & NƯỚC UỐNG</h1>
+                    <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.5; max-width: 600px;">Quản lý kho hàng đồ ăn và nước uống bán lẻ tại rạp.</p>
+                </div>
+                <!-- Search input on top right -->
+                <div class="tb-search" style="border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); width: 250px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <input type="text" placeholder="Tìm kiếm đồ ăn..." id="fnbSearchInput" oninput="loadFnB(this.value)">
+                </div>
             </div>
             
-            <div class="fnb-tabs">
-                <button class="fnb-tab active" onclick="switchFnbTab('fnb', this)">KHO ĐỒ ĂN</button>
-                <button class="fnb-tab" onclick="switchFnbTab('voucher', this)">VOUCHER & KHUYẾ́N MÃI</button>
-            </div>
-
-            <!-- F&B Subpage -->
-            <div id="fnbSubpage" style="display: flex; flex-direction: column; gap: 32px; width: 100%;">
-                <div class="fnb-grid-layout">
-                    <!-- Left: Items -->
-                    <div class="fnb-items" id="fnbItemsContainer">
-                        <!-- Master Combo -->
-                        <div class="fnb-card-big">
-                            <div class="fcb-img-wrap">
-                                <img src="images/combo_mega.png" alt="Cinema Master Combo" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                            </div>
-                            <div class="fcb-info">
-                                <span class="fcb-badge">BÁN CHẠY</span>
-                                <h3>Cinema Master Combo</h3>
-                                <div class="fcb-details">
-                                    <div class="fcb-price-block">
-                                        <span class="fcb-label">GIÁ</span>
-                                        <span class="fcb-price">$24.00</span>
-                                    </div>
-                                    <div class="fcb-stock-block">
-                                        <span class="fcb-label">TỒN KHO</span>
-                                        <div class="fcb-progress-wrap">
-                                            <div class="fcb-progress"><div style="width: 82%; background: var(--accent);"></div></div>
-                                            <span class="fcb-stock-val">820</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <button class="fcb-edit" title="Edit Item">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                            </button>
-                        </div>
-
-                        <!-- Small Cards Grid -->
-                        <div class="fnb-cards-grid">
-                            <div class="fnb-card-sm" style="border-color: rgba(232,25,44,0.4);">
-                                <div class="fc-sm-top">
-                                    <h4>Caramel Glaze Bucket</h4>
-                                    <span class="fc-sm-price text-red">$12.50</span>
-                                </div>
-                                <div class="fc-sm-bottom">
-                                    <div class="fc-sm-inv">
-                                        <span class="fc-sm-label">TỒN KHO</span>
-                                        <span class="fc-sm-val">142 đơn vị</span>
-                                    </div>
-                                    <span class="inv-badge moderate">Trung bình</span>
-                                </div>
-                            </div>
-                            <div class="fnb-card-sm" style="border-color: #fcd34d;">
-                                <div class="fc-sm-top">
-                                    <h4>Midnight Cola Large</h4>
-                                    <span class="fc-sm-price text-red">$6.00</span>
-                                </div>
-                                <div class="fc-sm-bottom">
-                                    <div class="fc-sm-inv">
-                                        <span class="fc-sm-label">TỒN KHO</span>
-                                        <span class="fc-sm-val">2,400 đơn vị</span>
-                                    </div>
-                                    <span class="inv-badge high">Dồi dào</span>
-                                </div>
-                            </div>
-                            <div class="fnb-card-sm" style="border: 2px solid var(--accent); box-shadow: 0 4px 12px rgba(232,25,44,0.1);">
-                                <div class="fc-sm-top">
-                                    <h4>Nachos Grande Tray</h4>
-                                    <span class="fc-sm-price text-red">$14.00</span>
-                                </div>
-                                <div class="fc-sm-bottom">
-                                    <div class="fc-sm-inv">
-                                        <span class="fc-sm-label">TỒN KHO</span>
-                                        <span class="fc-sm-val">14 đơn vị</span>
-                                    </div>
-                                    <span class="inv-badge danger">SẮP HẾ́T HÀNG</span>
-                                </div>
-                            </div>
-                            <div class="fnb-card-sm" style="border-color: #93c5fd;">
-                                <div class="fc-sm-top">
-                                    <h4>Artisanal Pretzel</h4>
-                                    <span class="fc-sm-price text-red">$9.00</span>
-                                </div>
-                                <div class="fc-sm-bottom">
-                                    <div class="fc-sm-inv">
-                                        <span class="fc-sm-label">TỒN KHO</span>
-                                        <span class="fc-sm-val">88 đơn vị</span>
-                                    </div>
-                                    <span class="inv-badge moderate">Trung bình</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right: Form -->
-                    <div class="fnb-form-side">
-                        <div class="fnb-form-card">
-                            <h2 id="fnbFormTitle">THÊM ĐỒ ĂN</h2>
-                            <form id="addFnbForm">
-                                <input type="hidden" id="fnbId">
-                                <div class="ff-group">
-                                    <label>TÊN MẶT HÀNG</label>
-                                    <input type="text" id="fnbName" placeholder="VD: Nachos Đặc biệt" required>
-                                </div>
-                                <div class="ff-group">
-                                    <label>MÔ TẢ (Tùy chọn)</label>
-                                    <input type="text" id="fnbDesc" placeholder="Mô tả ngắn gọn...">
-                                </div>
-                                <div class="ff-group">
-                                    <label>ĐƯỜNG DẪN ẢNH (URL)</label>
-                                    <input type="text" id="fnbImageURL" placeholder="VD: images/combo1.png">
-                                </div>
-                                <div class="ff-row">
-                                    <div class="ff-group" style="flex:1;">
-                                        <label>GIÁ (VNĐ)</label>
-                                        <input type="number" id="fnbPrice" placeholder="0" required>
-                                    </div>
-                                    <div class="ff-group" style="flex:1;">
-                                        <label>SỐ LƯỢNG KHO</label>
-                                        <input type="number" id="fnbStock" placeholder="100" required>
-                                    </div>
-                                </div>
-                                <div class="ff-group">
-                                    <label>DANH MỤC</label>
-                                    <div class="ff-select-wrap">
-                                        <select id="fnbCategory">
-                                            <option>Bắp rang & Snack</option>
-                                            <option>Nước uống</option>
-                                            <option>Combos</option>
-                                        </select>
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                                    </div>
-                                </div>
-                                <div style="display:flex;gap:10px;margin-top:10px;">
-                                    <button type="button" onclick="cancelEditFnB()" class="btn-outline-red" id="btnCancelFnb" style="display:none;flex:1;padding:12px;">Hủy sửa</button>
-                                    <button type="button" onclick="saveFnB()" class="btn-solid-red" id="btnSaveFnb" style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px; padding: 12px;">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                        <span id="fnbBtnText">Thêm vào danh mục</span>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+            <div class="fnb-grid-layout">
+                <!-- Left: Items Table -->
+                <div class="fnb-items" style="flex: 1; background: var(--bg-white); border-radius: var(--radius); border: 1px solid var(--border); padding: 24px; overflow-x: auto;">
+                    <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border); color: var(--text2); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                                <th style="padding: 12px 16px;">Hình ảnh</th>
+                                <th style="padding: 12px 16px;">Tên Mặt Hàng</th>
+                                <th style="padding: 12px 16px;">Danh mục</th>
+                                <th style="padding: 12px 16px;">Đơn giá</th>
+                                <th style="padding: 12px 16px;">Tồn kho</th>
+                                <th style="padding: 12px 16px;">Trạng thái</th>
+                                <th style="padding: 12px 16px; text-align: right;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fnbTableBody">
+                            <tr>
+                                <td colspan="7" style="padding: 24px; text-align: center; color: var(--text2);">Đang tải danh sách đồ ăn & nước...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- Bottom KPIs -->
-                <div class="fnb-kpis">
-                    <div class="fkpi-card">
-                        <div class="fkpi-icon" style="background: rgba(232,25,44,0.1); color: var(--accent);">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                        </div>
-                        <div class="fkpi-info">
-                            <div class="fkpi-label">TOTAL DOANH THU ĐỒ ĂN</div>
-                            <div class="fkpi-val" id="fnbKpiRevenue">0 đ</div>
-                        </div>
-                    </div>
-                    <div class="fkpi-card">
-                        <div class="fkpi-icon" style="background: rgba(217,119,6,0.1); color: #d97706;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-                        </div>
-                        <div class="fkpi-info">
-                            <div class="fkpi-label">SỐ LƯỢNG ĐÃ BÁN</div>
-                            <div class="fkpi-val" id="fnbKpiVouchers">0</div>
-                        </div>
-                    </div>
-                    <div class="fkpi-card">
-                        <div class="fkpi-icon" style="background: rgba(37,99,235,0.1); color: #2563eb;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                        </div>
-                        <div class="fkpi-info">
-                            <div class="fkpi-label">CẢNH BÁO TỒN KHO THẤP</div>
-                            <div class="fkpi-val text-red" id="fnbKpiLowStock">0 Mặt hàng</div>
-                        </div>
-                    </div>
-                    <div class="fkpi-card">
-                        <div class="fkpi-icon" style="background: var(--bg); color: var(--text2);">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-                        </div>
-                        <div class="fkpi-info">
-                            <div class="fkpi-label">TỔNG SỐ MÓN ĂN</div>
-                            <div class="fkpi-val" id="fnbKpiTotal">0</div>
-                        </div>
+                <!-- Right: Form -->
+                <div class="fnb-form-side" style="width: 380px; flex-shrink: 0;">
+                    <div class="fnb-form-card" style="border-left: 4px solid var(--accent); background: var(--bg-white); border-radius: var(--radius); padding: 32px; border: 1px solid var(--border); box-shadow: var(--shadow-xs);">
+                        <h2 id="fnbFormTitle" style="font-size: 1.1rem; font-weight: 800; color: var(--text); margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.02em;">| THÊM MẶT HÀNG MỚI</h2>
+                        <form id="addFnbForm" enctype="multipart/form-data">
+                            <input type="hidden" id="fnbId">
+                            <div class="ff-group" style="margin-bottom: 16px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">TÊN MẶT HÀNG *</label>
+                                <input type="text" id="fnbName" placeholder="VD: Nachos Đặc biệt" required style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text);">
+                            </div>
+                            <div class="ff-group" style="margin-bottom: 16px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">MÔ TẢ CHI TIẾT</label>
+                                <textarea id="fnbDesc" placeholder="Mô tả ngắn gọn sản phẩm..." style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text); min-height: 80px; font-family: inherit; resize: vertical;"></textarea>
+                            </div>
+                            <div class="ff-row" style="display: flex; gap: 12px; margin-bottom: 16px;">
+                                <div class="ff-group" style="flex: 1;">
+                                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">GIÁ (VNĐ) *</label>
+                                    <input type="number" id="fnbPrice" placeholder="0" min="0" required style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text);">
+                                </div>
+                                <div class="ff-group" style="flex: 1;">
+                                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">TỒN KHO *</label>
+                                    <input type="number" id="fnbStock" placeholder="100" min="0" required style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text);">
+                                </div>
+                            </div>
+                            <div class="ff-group" style="margin-bottom: 16px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">DANH MỤC *</label>
+                                <div class="ff-select-wrap" style="position: relative; width: 100%;">
+                                    <select id="fnbCategory" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text); appearance: none;">
+                                        <option value="Bắp rang & Snack">Bắp rang & Snack</option>
+                                        <option value="Nước uống">Nước uống</option>
+                                    </select>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; pointer-events: none; color: var(--text2);"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                            <div class="ff-group" style="margin-bottom: 16px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">HÌNH ẢNH MẶT HÀNG</label>
+                                <div id="fnbDropZone" style="border: 2px dashed var(--border); border-radius: var(--radius); padding: 24px; text-align: center; cursor: pointer; background: var(--bg-white); transition: border-color 0.2s;" onclick="document.getElementById('fnbImage').click()">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 8px; color: var(--text2);"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                                    <span id="fnbDropZoneText" style="font-size: 0.85rem; color: var(--text2); display: block;">Chọn file hoặc kéo thả vào đây</span>
+                                    <input type="file" id="fnbImage" accept="image/*" style="display: none;" onchange="handleFnbFileSelect(this)">
+                                </div>
+                                <input type="hidden" id="fnbImageUrl">
+                            </div>
+                            <div class="ff-group" style="margin-bottom: 16px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">TRẠNG THÁI HOẠT ĐỘNG</label>
+                                <div class="ff-select-wrap" style="position: relative; width: 100%;">
+                                    <select id="fnbStatus" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text); appearance: none;">
+                                        <option value="Active">Hoạt động (Active)</option>
+                                        <option value="Inactive">Tạm ẩn (Inactive)</option>
+                                    </select>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; pointer-events: none; color: var(--text2);"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:10px;margin-top:24px;">
+                                <button type="button" onclick="cancelEditFnB()" class="btn-outline-red" id="btnCancelFnb" style="display:none;flex:1;padding:12px; border-radius: var(--radius);">Hủy sửa</button>
+                                <button type="button" onclick="saveFnB()" class="btn-solid-red" id="btnSaveFnb" style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px; padding: 12px; border-radius: var(--radius);">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                                    <span id="fnbBtnText">Thêm mặt hàng</span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
 
-            <!-- Voucher Subpage -->
-            <div id="voucherSubpage" style="display: none; flex-direction: column; gap: 32px; width: 100%;">
-                <div class="fnb-grid-layout">
-                    <!-- Left: Vouchers list -->
-                    <div class="fnb-items" id="voucherItemsContainer">
-                        <!-- Filled dynamically by JS -->
+            <!-- Bottom KPIs -->
+            <div class="fnb-kpis">
+                <div class="fkpi-card">
+                    <div class="fkpi-icon" style="background: rgba(232,25,44,0.1); color: var(--accent);">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
                     </div>
+                    <div class="fkpi-info">
+                        <div class="fkpi-label">TOTAL DOANH THU ĐỒ ĂN</div>
+                        <div class="fkpi-val" id="fnbKpiRevenue">0 đ</div>
+                    </div>
+                </div>
+                <div class="fkpi-card">
+                    <div class="fkpi-icon" style="background: rgba(217,119,6,0.1); color: #d97706;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                    </div>
+                    <div class="fkpi-info">
+                        <div class="fkpi-label">SỐ LƯỢNG ĐÃ BÁN</div>
+                        <div class="fkpi-val" id="fnbKpiVouchers">0</div>
+                    </div>
+                </div>
+                <div class="fkpi-card">
+                    <div class="fkpi-icon" style="background: rgba(37,99,235,0.1); color: #2563eb;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    </div>
+                    <div class="fkpi-info">
+                        <div class="fkpi-label">CẢNH BÁO TỒN KHO THẤP</div>
+                        <div class="fkpi-val text-red" id="fnbKpiLowStock">0 Mặt hàng</div>
+                    </div>
+                </div>
+                <div class="fkpi-card">
+                    <div class="fkpi-icon" style="background: var(--bg); color: var(--text2);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                    </div>
+                    <div class="fkpi-info">
+                        <div class="fkpi-label">TỔNG SỐ MÓN ĂN</div>
+                        <div class="fkpi-val" id="fnbKpiTotal">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <!-- Right: Voucher Form -->
-                    <div class="fnb-form-side">
-                        <div class="fnb-form-card">
-                            <h2 id="voucherFormTitle">THÊM VOUCHER</h2>
-                            <form id="addVoucherForm">
-                                <input type="hidden" id="voucherId">
-                                <div class="ff-group">
-                                    <label>MÃ VOUCHER</label>
-                                    <input type="text" id="voucherCode" placeholder="VD: GIAM20K" style="text-transform: uppercase;" required>
+    <div class="page" id="page-combos">
+        <div class="content-scroll" style="padding: 30px 40px; display: flex; flex-direction: column; gap: 32px;">
+            <div class="fnb-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 style="font-size: 1.6rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 8px;">QUẢN LÝ COMBO BẮP NƯỚC</h1>
+                    <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.5; max-width: 600px;">Quản lý danh sách các gói combo bắp nước, chỉnh sửa giá và cập nhật hình ảnh hiển thị.</p>
+                </div>
+                <!-- Search input on top right -->
+                <div class="tb-search" style="border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); width: 250px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <input type="text" placeholder="Tìm kiếm combo..." id="comboSearchInput" oninput="loadCombos(this.value)">
+                </div>
+            </div>
+
+            <div class="fnb-grid-layout">
+                <!-- Left: Combos Table -->
+                <div class="fnb-items" style="flex: 1; background: var(--bg-white); border-radius: var(--radius); border: 1px solid var(--border); padding: 24px; overflow-x: auto;">
+                    <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border); color: var(--text2); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                                <th style="padding: 12px 16px;">Hình ảnh</th>
+                                <th style="padding: 12px 16px;">Tên Combo</th>
+                                <th style="padding: 12px 16px;">Mô tả</th>
+                                <th style="padding: 12px 16px;">Đơn giá</th>
+                                <th style="padding: 12px 16px;">Tồn kho</th>
+                                <th style="padding: 12px 16px;">Trạng thái</th>
+                                <th style="padding: 12px 16px; text-align: right;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comboTableBody">
+                            <tr>
+                                <td colspan="7" style="padding: 24px; text-align: center; color: var(--text2);">Đang tải danh sách combo...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Right: Combo Form -->
+                <div class="fnb-form-side" style="width: 380px; flex-shrink: 0;">
+                    <div class="fnb-form-card" style="border-left: 4px solid var(--accent); background: var(--bg-white); border-radius: var(--radius); padding: 32px; border: 1px solid var(--border); box-shadow: var(--shadow-xs);">
+                        <h2 id="comboFormTitle" style="font-size: 1.1rem; font-weight: 800; color: var(--text); margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.02em;">| THÊM COMBO MỚI</h2>
+                        <form id="addComboForm" enctype="multipart/form-data">
+                            <input type="hidden" id="comboId">
+                            <div class="ff-group" style="margin-bottom: 16px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">TÊN COMBO *</label>
+                                <input type="text" id="comboName" placeholder="VD: Combo Big Boy" required style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text);">
+                            </div>
+                            <div class="ff-group" style="margin-bottom: 16px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">MÔ TẢ CHI TIẾT</label>
+                                <textarea id="comboDesc" placeholder="1 Bắp ngọt lớn + 2 Pepsi vừa..." style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text); min-height: 100px; font-family: inherit; resize: vertical;"></textarea>
+                            </div>
+                            <div class="ff-group" style="margin-bottom: 16px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">ĐƠN GIÁ (VND) *</label>
+                                <input type="number" id="comboPrice" placeholder="0" min="0" required style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text);">
+                            </div>
+                            <div class="ff-group" style="margin-bottom: 16px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">TỒN KHO *</label>
+                                <input type="number" id="comboStock" placeholder="100" min="0" required style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text);">
+                            </div>
+                            <div class="ff-group" style="margin-bottom: 16px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">HÌNH ẢNH COMBO</label>
+                                <div id="comboDropZone" style="border: 2px dashed var(--border); border-radius: var(--radius); padding: 24px; text-align: center; cursor: pointer; background: var(--bg-white); transition: border-color 0.2s;" onclick="document.getElementById('comboImage').click()">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 8px; color: var(--text2);"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                                    <span id="comboDropZoneText" style="font-size: 0.85rem; color: var(--text2); display: block;">Chọn file hoặc kéo thả vào đây</span>
+                                    <input type="file" id="comboImage" accept="image/*" style="display: none;" onchange="handleComboFileSelect(this)">
                                 </div>
-                                <div class="ff-group">
-                                    <label>LOẠI GIẢM GIÁ</label>
-                                    <div class="ff-select-wrap">
-                                        <select id="voucherDiscountType" onchange="toggleVoucherFields()">
-                                            <option value="percent">Phần trăm (%)</option>
-                                            <option value="fixed">Số tiền cố định (đ)</option>
-                                        </select>
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                                    </div>
+                                <input type="hidden" id="comboImageUrl">
+                            </div>
+                            <div class="ff-group" style="margin-bottom: 16px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; display: block;">TRẠNG THÁI HOẠT ĐỘNG</label>
+                                <div class="ff-select-wrap" style="position: relative; width: 100%;">
+                                    <select id="comboStatus" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text); appearance: none;">
+                                        <option value="Active">Hoạt động (Active)</option>
+                                        <option value="Inactive">Tạm ẩn (Inactive)</option>
+                                    </select>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; pointer-events: none; color: var(--text2);"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
-                                <div class="ff-row">
-                                    <div class="ff-group" style="flex:1;">
-                                        <label>GIÁ TRỊ GIẢM</label>
-                                        <input type="number" id="voucherDiscountValue" placeholder="0" required>
-                                    </div>
-                                    <div class="ff-group" style="flex:1;">
-                                        <label>ĐƠN TỐI THIỂU (đ)</label>
-                                        <input type="number" id="voucherMinOrderValue" placeholder="0" value="0" required>
-                                    </div>
-                                </div>
-                                <div class="ff-row">
-                                    <div class="ff-group" style="flex:1;">
-                                        <label id="lblMaxDiscount">GIẢM TỐI ĐA (đ)</label>
-                                        <input type="number" id="voucherMaxDiscount" placeholder="Không giới hạn">
-                                    </div>
-                                    <div class="ff-group" style="flex:1;">
-                                        <label>LƯỢT DÙNG TỐI ĐA</label>
-                                        <input type="number" id="voucherUsageLimit" placeholder="Không giới hạn">
-                                    </div>
-                                </div>
-                                <div class="ff-row">
-                                    <div class="ff-group" style="flex:1;">
-                                        <label>NGÀY BẮT ĐẦU</label>
-                                        <input type="date" id="voucherStartDate" required>
-                                    </div>
-                                    <div class="ff-group" style="flex:1;">
-                                        <label>NGÀY KẾT THÚC</label>
-                                        <input type="date" id="voucherEndDate" required>
-                                    </div>
-                                </div>
-                                <div style="display:flex;gap:10px;margin-top:10px;">
-                                    <button type="button" onclick="cancelEditVoucher()" class="btn-outline-red" id="btnCancelVoucher" style="display:none;flex:1;padding:12px;">Hủy sửa</button>
-                                    <button type="button" onclick="saveVoucher()" class="btn-solid-red" id="btnSaveVoucher" style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px; padding: 12px;">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                        <span id="voucherBtnText">Tạo Voucher</span>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                            </div>
+                            <div style="display:flex;gap:10px;margin-top:24px;">
+                                <button type="button" onclick="cancelEditCombo()" class="btn-outline-red" id="btnCancelCombo" style="display:none;flex:1;padding:12px; border-radius: var(--radius);">Hủy sửa</button>
+                                <button type="button" onclick="saveCombo()" class="btn-solid-red" id="btnSaveCombo" style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px; padding: 12px; border-radius: var(--radius);">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                                    <span id="comboBtnText">Thêm Combo mới</span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
