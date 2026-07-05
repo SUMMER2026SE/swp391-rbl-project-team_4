@@ -1485,7 +1485,7 @@ window.filterStCinema = function(cinemaId) {
     const cid = parseInt(cinemaId);
     const filteredRooms = ROOM_DATA.filter(r => r.CinemaID === cid);
     roomSel.innerHTML = '<option value="">-- Chọn phòng --</option>' +
-        filteredRooms.map(r => `<option value="${r.RoomID}">${r.RoomName}</option>`).join('');
+        filteredRooms.map(r => `<option value="${r.RoomID}">${r.RoomType && r.RoomType !== '2D Standard' ? '[' + r.RoomType + '] ' : ''}${r.RoomName}</option>`).join('');
     roomSel.disabled = false;
 };
 
@@ -1989,8 +1989,22 @@ function updateBuilderStats() {
     const bar = document.getElementById('seatStatsBar');
     if (bar && currentBuilderRoomId) {
         const room = (typeof ROOM_DATA !== 'undefined') ? ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId) : null;
+        
+        let typeSelectHtml = '';
+        if (room) {
+            const types = ['2D Standard', '3D', 'IMAX', '4DX', 'ScreenX'];
+            const currentType = room.RoomType || '2D Standard';
+            const options = types.map(t => `<option value="${t}" ${t === currentType ? 'selected' : ''}>${t}</option>`).join('');
+            typeSelectHtml = `
+            <span style="color:#4b5563;">|</span>
+            <select id="builderRoomTypeSelect" style="background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:2px 5px; font-size:0.75rem;">
+                ${options}
+            </select>`;
+        }
+
         bar.innerHTML = `
             <span style="color:#fff;font-weight:700;">${room ? room.RoomName : 'Phong da chon'}</span>
+            ${typeSelectHtml}
             <span style="color:#4b5563;">|</span>
             <span>Thuong: <strong style="color:#64748b;">${normal}</strong></span>
             <span style="color:#4b5563;">|</span>
@@ -2254,13 +2268,20 @@ window.saveSeatLayout = async function() {
         return;
     }
     const payload = builderSeats.filter(s => s.SeatType !== 'None');
+    
+    let roomType = null;
+    const typeSelect = document.getElementById('builderRoomTypeSelect');
+    if (typeSelect) {
+        roomType = typeSelect.value;
+    }
+
     const saveBtn = document.querySelector('#page-cinema .btn-solid-red');
     const oldHtml = saveBtn ? saveBtn.innerHTML : '';
     if (saveBtn) { saveBtn.innerHTML = '&#8987; Dang luu...'; saveBtn.disabled = true; }
     try {
         const res = await apiFetch(`/api/admin/rooms/${currentBuilderRoomId}/seats`, {
             method: 'PUT',
-            body: JSON.stringify({ seats: payload })
+            body: JSON.stringify({ seats: payload, roomType: roomType })
         });
         if (res.success) {
             const container = document.getElementById('adminToastContainer');

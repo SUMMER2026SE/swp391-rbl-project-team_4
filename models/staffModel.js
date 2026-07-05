@@ -6,7 +6,7 @@ class StaffModel {
     const result = await pool.request().query(`
       SELECT st.ShowtimeID, st.StartTime, st.EndTime, st.Price, st.Status,
              m.Title AS MovieTitle, m.Duration,
-             r.RoomName,
+             r.RoomName, r.RoomType,
              c.CinemaName
       FROM   Showtimes st
       JOIN   Movies  m ON st.MovieID = m.MovieID
@@ -208,7 +208,7 @@ class StaffModel {
              u.FullName AS CustomerName, u.Phone AS CustomerPhone,
              m.Title AS MovieTitle,
              st.StartTime, st.EndTime,
-             r.RoomName,
+             r.RoomName, r.RoomType,
              c.CinemaName,
              s.SeatRow, s.SeatNumber, s.SeatType
       FROM   Tickets t

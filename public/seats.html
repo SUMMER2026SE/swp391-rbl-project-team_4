@@ -1749,7 +1749,7 @@
             document.getElementById('movieAge').textContent = showtimeData.AgeRating || 'ALL';
             document.getElementById('movieDuration').textContent = showtimeData.Duration ? `${showtimeData.Duration} phút` : '--';
             document.getElementById('infoCinema').textContent = showtimeData.CinemaName || '--';
-            document.getElementById('infoRoom').textContent = showtimeData.RoomName || '--';
+            document.getElementById('infoRoom').textContent = showtimeData.RoomName ? (showtimeData.RoomType && showtimeData.RoomType !== '2D Standard' ? `[${showtimeData.RoomType}] ${showtimeData.RoomName}` : showtimeData.RoomName) : '--';
 
             const start = new Date(showtimeData.StartTime);
             document.getElementById('infoTime').textContent = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -2441,7 +2441,7 @@
                 genre: showtimeData.MainCast || '',
                 date: start.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }),
                 time: start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-                hall: `${showtimeData.RoomName} — ${showtimeData.CinemaName}`,
+                hall: `${showtimeData.RoomName ? (showtimeData.RoomType && showtimeData.RoomType !== '2D Standard' ? `[${showtimeData.RoomType}] ` + showtimeData.RoomName : showtimeData.RoomName) : '--'} — ${showtimeData.CinemaName}`,
                 seats: displayNames.join(', '),
                 seatIds: Array.from(selectedSeats),
                 seatDetails,

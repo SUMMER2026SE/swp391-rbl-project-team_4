@@ -481,7 +481,7 @@
                         </div>
                         <div class="info-row">
                             <span class="info-key">Phòng chiếu</span>
-                            <span class="info-val">${data.roomName}</span>
+                            <span class="info-val">${data.roomName ? (data.roomType && data.roomType !== '2D Standard' ? `[${data.roomType}] ${data.roomName}` : data.roomName) : '--'}</span>
                         </div>
                         <div class="info-row">
                             <span class="info-key">Thời gian chiếu</span>

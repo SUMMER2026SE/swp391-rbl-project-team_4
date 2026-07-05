@@ -541,7 +541,7 @@ class BookingModel {
         SELECT t.TicketID, t.BookedAt, t.Status, t.TotalAmount, t.PaymentMethod,
                m.Title AS MovieTitle, m.PosterURL,
                st.StartTime, st.EndTime,
-               r.RoomName,
+               r.RoomName, r.RoomType,
                c.CinemaName,
                s.SeatRow, s.SeatNumber, s.SeatType,
                v.Code AS VoucherCode
@@ -569,7 +569,7 @@ class BookingModel {
                t.TotalAmount, t.PaymentMethod, t.QRCode,
                m.Title AS MovieTitle, m.PosterURL, m.Duration,
                st.StartTime, st.EndTime,
-               r.RoomName,
+               r.RoomName, r.RoomType,
                c.CinemaName, c.Address,
                s.SeatRow, s.SeatNumber, s.SeatType,
                v.Code AS VoucherCode

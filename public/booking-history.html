@@ -533,7 +533,7 @@
                             PosterURL: t.PosterURL,
                             StartTime: t.StartTime,
                             CinemaName: t.CinemaName,
-                            RoomName: t.RoomName,
+                            RoomName: t.RoomType && t.RoomType !== '2D Standard' ? `[${t.RoomType}] ${t.RoomName}` : t.RoomName,
                             Status: t.Status,
                             TotalAmount: 0,
                             Seats: [],

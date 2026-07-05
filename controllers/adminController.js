@@ -69,12 +69,12 @@ exports.getSeatsByRoom = async (req, res) => {
 exports.saveSeats = async (req, res) => {
   try {
     const roomId = parseInt(req.params.id);
-    const { seats } = req.body;
+    const { seats, roomType } = req.body;
     if (!seats || !Array.isArray(seats)) {
       return res.status(400).json({ success: false, message: 'Dữ liệu ghế không hợp lệ.' });
     }
     
-    await AdminModel.saveSeats(roomId, seats);
+    await AdminModel.saveSeats(roomId, seats, roomType);
     res.json({ success: true, message: 'Lưu sơ đồ ghế thành công!' });
   } catch (err) {
     console.error('[adminController] saveSeats:', err.message);
