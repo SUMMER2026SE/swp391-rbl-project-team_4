@@ -984,6 +984,15 @@ function navigate(page, btn) {
     if (page === 'combos') {
         loadCombos();
     }
+
+    if (page === 'voucher') {
+        if (typeof loadVouchers === 'function') {
+            loadVouchers();
+        }
+        if (typeof initVoucherForm === 'function') {
+            initVoucherForm();
+        }
+    }
 }
 
 function switchTab(tab, btn) {
