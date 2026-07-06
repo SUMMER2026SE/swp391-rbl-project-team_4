@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thanh Toán Thành Công | D-CINEMA</title>
+    <link rel="stylesheet" href="css/ticket-premium.css">
     <meta name="description" content="Đặt vé thành công! Xem vé điện tử và mã QR của bạn tại D-CINEMA.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -295,14 +296,14 @@
             font-weight:700;
             letter-spacing:0.5px;
         }
-        .banner-qrpay   { background: linear-gradient(90deg, #003d80, #0057a8); color:#fff; }
-        .banner-momo    { background:linear-gradient(90deg, #7d1a50, #ae2070); color:#fff; }
-        .banner-zalopay { background:linear-gradient(90deg, #004db3, #0068ff); color:#fff; }
-        .banner-vnpay   { background:linear-gradient(90deg, #003d80, #005baa); color:#fff; }
-        .banner-shopeepay { background:linear-gradient(90deg, #c13520, #ee4d2d); color:#fff; }
-        .banner-atm     { background:linear-gradient(90deg, #0f4a27, #1a6b3c); color:#fff; }
-        .banner-intl    { background:linear-gradient(90deg, #1a00a0, #4400cc); color:#fff; }
-        .banner-default { background:linear-gradient(90deg, #1a1d24, #252830); color:var(--muted); }
+        .banner-qrpay   { background: linear-gradient(90deg, rgba(34,197,94,0.15), rgba(16,185,129,0.08)); border-top: 1px solid rgba(34,197,94,0.3); border-bottom: 1px solid rgba(34,197,94,0.3); color:#4ade80; }
+        .banner-momo    { background: linear-gradient(90deg, rgba(174,32,112,0.2), rgba(174,32,112,0.1)); border-top: 1px solid rgba(174,32,112,0.3); border-bottom: 1px solid rgba(174,32,112,0.3); color:#f472b6; }
+        .banner-zalopay { background: linear-gradient(90deg, rgba(0,104,255,0.2), rgba(0,104,255,0.1)); border-top: 1px solid rgba(0,104,255,0.3); border-bottom: 1px solid rgba(0,104,255,0.3); color:#60a5fa; }
+        .banner-vnpay   { background: linear-gradient(90deg, rgba(0,91,170,0.2), rgba(0,91,170,0.1)); border-top: 1px solid rgba(0,91,170,0.3); border-bottom: 1px solid rgba(0,91,170,0.3); color:#38bdf8; }
+        .banner-shopeepay { background: linear-gradient(90deg, rgba(238,77,45,0.2), rgba(238,77,45,0.1)); border-top: 1px solid rgba(238,77,45,0.3); border-bottom: 1px solid rgba(238,77,45,0.3); color:#fb923c; }
+        .banner-atm     { background: linear-gradient(90deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1)); border-top: 1px solid rgba(34,197,94,0.3); border-bottom: 1px solid rgba(34,197,94,0.3); color:#4ade80; }
+        .banner-intl    { background: linear-gradient(90deg, rgba(147,51,234,0.2), rgba(147,51,234,0.1)); border-top: 1px solid rgba(147,51,234,0.3); border-bottom: 1px solid rgba(147,51,234,0.3); color:#c084fc; }
+        .banner-default { background: linear-gradient(90deg, rgba(240,192,64,0.15), rgba(240,192,64,0.08)); border-top: 1px solid rgba(240,192,64,0.3); border-bottom: 1px solid rgba(240,192,64,0.3); color:#ffd770; }
 
         .method-banner-left { display:flex; align-items:center; gap:8px; }
         .method-banner-dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.6); }
@@ -480,22 +481,6 @@
             text-align:center;
         }
 
-        .qr-seat-badge {
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-            padding:5px 14px;
-            border-radius:30px;
-            font-size:0.82rem;
-            font-weight:800;
-            letter-spacing:1px;
-            background:rgba(229,9,20,0.12);
-            color:var(--primary);
-            border:1px solid rgba(229,9,20,0.25);
-        }
-
-        .qr-ticket-num {
-            font-size:0.72rem;
             color:var(--muted);
             font-weight:600;
         }
@@ -682,8 +667,28 @@
             <h1 class="success-title">ĐẶT VÉ THÀNH CÔNG!</h1>
             <p class="success-sub">Vé điện tử của bạn đã sẵn sàng. Xuất trình mã QR khi vào rạp.</p>
 
-            <!-- E-Ticket -->
+            <!-- ══ PREMIUM E-TICKET ══ -->
             <div class="e-ticket" id="eTicketCard">
+
+                <!-- Gold stripe -->
+                <div class="ticket-gold-stripe"></div>
+
+                <!-- Poster Hero -->
+                <div class="ticket-poster-hero">
+                    <img src="images/movie_neon_dreams.png" alt="" id="ticketPosterBg" class="ticket-poster-bg">
+                    <div class="ticket-poster-overlay"></div>
+                    <div class="ticket-poster-content">
+                        <img src="images/movie_neon_dreams.png" alt="Poster" id="ticketPoster" class="ticket-poster-thumb" onerror="this.src='images/default_poster.svg'">
+                        <div class="ticket-poster-meta">
+                            <div class="ticket-cinema-label">🎬 D-CINEMA • VÉ ĐIỆN TỬ</div>
+                            <div class="ticket-movie-title" id="ticketTitle">PHIM</div>
+                            <div class="ticket-movie-chips" id="ticketChips">
+                                <span class="ticket-chip" id="chipType">Standard</span>
+                                <span class="ticket-chip" id="chipScreen">2D</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Payment Method Banner -->
                 <div class="ticket-method-banner" id="ticketBanner">
@@ -697,85 +702,95 @@
                     </div>
                 </div>
 
-                <!-- Ticket Body: Poster + Info -->
-                <div class="ticket-body">
-                    <div class="ticket-poster-col">
-                        <img src="images/movie_neon_dreams.png" alt="Poster" id="ticketPoster">
-                        <div class="poster-gradient"></div>
-                    </div>
-                    <div class="ticket-info-col">
-                        <div class="ticket-cinema-label">D-CINEMA • VÉ ĐIỆN TỬ</div>
-                        <div class="ticket-movie-title" id="ticketTitle">NEON DREAMS: 2049</div>
-                        <div class="ticket-meta-grid">
-                            <div>
-                                <div class="ticket-field-label">Ngày & Giờ chiếu</div>
-                                <div class="ticket-field-value" id="ticketDateTime">—</div>
-                            </div>
-                            <div>
-                                <div class="ticket-field-label">Phòng chiếu</div>
-                                <div class="ticket-field-value" id="ticketHall">—</div>
-                            </div>
-                            <div>
-                                <div class="ticket-field-label">Ghế ngồi</div>
-                                <div class="ticket-field-value seats" id="ticketSeats">—</div>
-                            </div>
-                            <div>
-                                <div class="ticket-field-label">Mã đặt vé</div>
-                                <div class="ticket-field-value booking-id" id="ticketBookingId">DC-—</div>
-                            </div>
+                <!-- QR Carousel (Nổi bật ở giữa vé) -->
+                <div class="qr-carousel-section" id="qrCarouselSection">
+                    <div class="qr-carousel-label">Mã QR Vé — Quét khi vào rạp</div>
+                    <div class="qr-carousel-body">
+                        <button class="qr-nav-btn" id="qrPrevBtn" onclick="qrCarouselNav(-1)" disabled>&#8249;</button>
+                        <div class="qr-ticket-card" id="qrTicketCard">
+                            <!-- Populated by JS -->
                         </div>
+                        <button class="qr-nav-btn" id="qrNextBtn" onclick="qrCarouselNav(1)">&#8250;</button>
+                    </div>
+                    <div class="qr-dots" id="qrDots"></div>
+                </div>
+
+                <!-- Ticket Info Grid -->
+                <div class="ticket-info-body">
+                    <div class="ticket-field">
+                        <div class="ticket-field-label">Ngày chiếu</div>
+                        <div class="ticket-field-value" id="ticketDate">—</div>
+                    </div>
+                    <div class="ticket-field">
+                        <div class="ticket-field-label">Giờ chiếu</div>
+                        <div class="ticket-field-value" id="ticketTime">—</div>
+                    </div>
+                    <div class="ticket-field">
+                        <div class="ticket-field-label">Rạp chiếu phim</div>
+                        <div class="ticket-field-value" id="ticketCinema">D-CINEMA</div>
+                    </div>
+                    <div class="ticket-field">
+                        <div class="ticket-field-label">Phòng chiếu</div>
+                        <div class="ticket-field-value" id="ticketHall">—</div>
+                    </div>
+                    <div class="ticket-field">
+                        <div class="ticket-field-label">Ghế ngồi</div>
+                        <div class="ticket-field-value seats" id="ticketSeats">—</div>
+                    </div>
+                    <div class="ticket-field">
+                        <div class="ticket-field-label">Loại vé</div>
+                        <div class="ticket-field-value" id="ticketType">Standard</div>
+                    </div>
+                    <div class="ticket-field">
+                        <div class="ticket-field-label">Mã đặt vé</div>
+                        <div class="ticket-field-value booking-id" id="ticketBookingId">DC-—</div>
+                    </div>
+                    <div class="ticket-field">
+                        <div class="ticket-field-label">Mã vé (Ticket ID)</div>
+                        <div class="ticket-field-value ticket-id" id="ticketTicketId">—</div>
+                    </div>
+                    <div class="ticket-field full">
+                        <div class="ticket-field-label">Khách hàng</div>
+                        <div class="ticket-field-value customer" id="ticketCustomer">—</div>
                     </div>
                 </div>
 
-                <!-- Dashed Separator + Notches -->
-                <div class="ticket-separator"></div>
-                <div class="ticket-notches">
-                    <div class="notch-hole left"></div>
-                    <div class="notch-hole right"></div>
+                <!-- Tear line -->
+                <div class="ticket-tear">
+                    <div class="tear-notch left"></div>
+                    <div class="tear-notch right"></div>
                 </div>
 
-                <!-- Ticket Bottom: Individual QR Carousel + Summary -->
-                <div class="ticket-bottom">
-                    <!-- QR Carousel (1 QR per seat) -->
-                    <div class="qr-carousel-section" id="qrCarouselSection">
-                        <div class="qr-carousel-label" style="width:100%">Mã QR — Quét từng vé khi vào rạp</div>
-                        <div class="qr-carousel-body">
-                            <button class="qr-nav-btn" id="qrPrevBtn" onclick="qrCarouselNav(-1)" disabled>&#8249;</button>
-                            <div class="qr-ticket-card" id="qrTicketCard">
-                                <!-- Populated by JS -->
-                            </div>
-                            <button class="qr-nav-btn" id="qrNextBtn" onclick="qrCarouselNav(1)">&#8250;</button>
-                        </div>
-                        <div class="qr-dots" id="qrDots"></div>
+                <!-- Summary row -->
+                <div class="ticket-summary-row">
+                    <div>
+                        <div class="ticket-admit" id="ticketAdmit">ADMIT ONE</div>
+                        <div class="ticket-fnb" id="ticketFnb">Không có đồ ăn kèm</div>
+                        <div class="ticket-barcode" id="ticketBarcode" style="margin-top:8px"></div>
                     </div>
-                    <!-- Summary row -->
-                    <div class="ticket-summary-row">
-                        <div>
-                            <div class="ticket-admit" id="ticketAdmit">ADMIT ONE</div>
-                            <div class="ticket-fnb" id="ticketFnb">Không có đồ ăn kèm</div>
-                            <div class="ticket-barcode" id="ticketBarcode" style="margin-top:8px"></div>
-                        </div>
-                        <div class="ticket-total-col">
-                            <div class="ticket-total-label">Tổng tiền</div>
-                            <div class="ticket-total-value" id="ticketTotal">0 VND</div>
-                            <div style="font-size:0.7rem;color:var(--muted);margin-top:4px;" id="ticketPayMethod">—</div>
-                        </div>
+                    <div class="ticket-total-col">
+                        <div class="ticket-total-label">Tổng tiền</div>
+                        <div class="ticket-total-value" id="ticketTotal">0 ₫</div>
+                        <div style="font-size:0.7rem;color:var(--muted);margin-top:4px;" id="ticketPayMethod">—</div>
                     </div>
                 </div>
 
             </div>
 
-            <!-- Action Buttons -->
-            <div class="action-row" id="actionRow">
-                <button class="btn-action btn-download" onclick="downloadTicket()">
+            <div class="action-row" id="actionRow" style="display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin:24px auto 16px; max-width:640px;">
+                <button class="btn-action btn-download" onclick="downloadTicket()" style="background:#e50914; color:#fff; border:none; box-shadow:0 4px 15px rgba(229,9,20,0.4); padding:12px 20px; border-radius:10px; font-weight:700; cursor:pointer;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Tải vé xuống
+                    Xuất vé / In PDF
                 </button>
-                <button class="btn-action btn-share" onclick="shareTicket()">
+                <button class="btn-action btn-share" onclick="shareTicket()" style="background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); padding:12px 20px; border-radius:10px; font-weight:700; cursor:pointer;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                     Chia sẻ vé
                 </button>
-                <button class="btn-action btn-home" onclick="window.location.href='index.html'">
+                <button class="btn-action btn-verify" onclick="openVerifyPage()" style="background:rgba(240,192,64,0.15); color:#ffd770; border:1px solid rgba(240,192,64,0.3); padding:12px 20px; border-radius:10px; font-weight:700; cursor:pointer;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Kiểm tra vé (Verify)
+                </button>
+                <button class="btn-action btn-home" onclick="window.location.href='index.html'" style="background:rgba(255,255,255,0.05); color:#a0a2b8; border:1px solid rgba(255,255,255,0.1); padding:12px 20px; border-radius:10px; font-weight:700; cursor:pointer;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     Về trang chủ
                 </button>
@@ -1003,48 +1018,89 @@
     }
 
     function renderQrCarouselSlide() {
-        const total = qrCarouselTicketIds.length;
-        const idx = qrCarouselIndex;
-        const ticketId = qrCarouselTicketIds[idx];
-        const seat = qrCarouselSeats[idx] || ('Ghế #' + (idx + 1));
+        const cardContainer = document.getElementById('qrTicketCard');
+        if (!cardContainer) return;
+        cardContainer.innerHTML = '';
+        
+        const rawId = qrCarouselTicketIds[qrCarouselIndex] || '1';
+        const sId = qrCarouselSeats[qrCarouselIndex] || 'Ghế 1';
+        const validTicketId = (rawId && rawId !== '—' && rawId !== 'undefined') ? rawId : '1';
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = 'qr-ticket-wrap ps-fade-up';
+        wrapper.style.cursor = 'pointer';
+        wrapper.title = 'Bấm vào đây để mở thông tin xác thực vé';
+        
+        const cornerTL = document.createElement('div'); cornerTL.className = 'qr-corner tl';
+        const cornerTR = document.createElement('div'); cornerTR.className = 'qr-corner tr';
+        const cornerBL = document.createElement('div'); cornerBL.className = 'qr-corner bl';
+        const cornerBR = document.createElement('div'); cornerBR.className = 'qr-corner br';
+        
+        const qrBox = document.createElement('div');
+        qrBox.id = 'qrBoxRender';
+        qrBox.style.padding = '10px';
+        qrBox.style.background = '#fff';
+        qrBox.style.borderRadius = '8px';
+        qrBox.style.minWidth = '150px';
+        qrBox.style.minHeight = '150px';
+        qrBox.style.display = 'flex';
+        qrBox.style.alignItems = 'center';
+        qrBox.style.justifyContent = 'center';
+        
+        const seatBadge = document.createElement('div');
+        seatBadge.className = 'qr-seat-badge';
+        seatBadge.textContent = sId;
+        
+        wrapper.appendChild(cornerTL);
+        wrapper.appendChild(cornerTR);
+        wrapper.appendChild(cornerBL);
+        wrapper.appendChild(cornerBR);
+        wrapper.appendChild(qrBox);
+        wrapper.appendChild(seatBadge);
+        
+        cardContainer.appendChild(wrapper);
+        
+        let verifyUrlLan = `${serverLanOrigin || window.location.origin}/verify-ticket.html?id=${validTicketId}`;
+        let verifyUrlLocal = `verify-ticket.html?id=${validTicketId}`;
+        
+        // Make entire QR wrapper clickable (relative URL preserves origin and login session)
+        wrapper.onclick = () => {
+            window.open(verifyUrlLocal, '_blank');
+        };
 
-        // QR URL: individual ticket (scan one at a time like a real cinema)
-        const qrUrl = serverLanOrigin + '/verify-ticket.html?id=' + ticketId;
-
-        // Build card HTML
-        const card = document.getElementById('qrTicketCard');
-        card.innerHTML = `
-            <div class="qr-ticket-wrap" onclick="openVerifyPageSingle('${ticketId}')" title="Nhấn để xem trang xác thực vé này">
-                <div id="qrSlide_${idx}" style="width:130px;height:130px;"></div>
-            </div>
-            <div class="qr-scan-hint">📱 Nhấn vào QR để giả lập quét</div>
-            <div class="qr-seat-badge">🪑 ${seat}</div>
-            <div class="qr-ticket-num">Vé ${idx + 1} / ${total} &nbsp;·&nbsp; #${ticketId}</div>
-        `;
-
-        // Generate QR inside the new element
-        generateQR('qrSlide_' + idx, qrUrl, 130);
-
-        // Update nav buttons
-        document.getElementById('qrPrevBtn').disabled = (idx === 0);
-        document.getElementById('qrNextBtn').disabled = (idx === total - 1);
-
-        // Update dots
+        generateQR('qrBoxRender', verifyUrlLan, 150);
+        
+        const instruct = document.createElement('div');
+        instruct.className = 'qr-scan-instruction';
+        instruct.textContent = '📸 Quét mã QR này (hoặc nhấp chuột vào mã QR) để xem thông tin vé';
+        instruct.style.cursor = 'pointer';
+        instruct.onclick = () => window.open(verifyUrlLocal, '_blank');
+        cardContainer.appendChild(instruct);
+        
+        const ticketIdEl = document.getElementById('ticketTicketId');
+        if (ticketIdEl) ticketIdEl.textContent = validTicketId;
+        
+        const prevBtn = document.getElementById('qrPrevBtn');
+        const nextBtn = document.getElementById('qrNextBtn');
+        if (prevBtn) prevBtn.disabled = (qrCarouselIndex === 0);
+        if (nextBtn) nextBtn.disabled = (qrCarouselIndex === qrCarouselTicketIds.length - 1);
+        
         const dotsEl = document.getElementById('qrDots');
-        dotsEl.innerHTML = '';
-        for (let i = 0; i < total; i++) {
-            const dot = document.createElement('div');
-            dot.className = 'qr-dot' + (i === idx ? ' active' : '');
-            dot.onclick = ((i2) => () => { qrCarouselIndex = i2; renderQrCarouselSlide(); })(i);
-            dot.style.cursor = 'pointer';
-            dotsEl.appendChild(dot);
+        if (dotsEl) {
+            dotsEl.innerHTML = '';
+            for (let i = 0; i < qrCarouselTicketIds.length; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'qr-dot' + (i === qrCarouselIndex ? ' active' : '');
+                dot.onclick = ((i2) => () => { qrCarouselIndex = i2; renderQrCarouselSlide(); })(i);
+                dotsEl.appendChild(dot);
+            }
         }
     }
 
     /* ── Render E-Ticket ── */
     function showTicket() {
         const ticketScreen = document.getElementById('ticketScreen');
-        ticketScreen.classList.add('active');
+        if (ticketScreen) ticketScreen.classList.add('active');
 
         const method = booking.paymentMethod || 'default';
         const finalAmount = booking.finalAmount || booking.totalAmount || 0;
@@ -1054,83 +1110,124 @@
         // Parse ticket IDs from bookingId: 'DC-354-355-358-357-359'
         const idsRaw = bookingId.replace(/^DC-/i, '');
         qrCarouselTicketIds = idsRaw.split('-').map(s => s.trim()).filter(s => /^\d+$/.test(s));
-        // If only 1 combined ID or parsing fails, fall back to whole string
         if (qrCarouselTicketIds.length === 0) qrCarouselTicketIds = [idsRaw];
 
-        // Build seat labels from booking.seats (e.g. 'A8, A9, A10, A11, A12')
+        // Build seat labels from booking.seats
         const seatsArr = (booking.seats || '').split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
         qrCarouselSeats = qrCarouselTicketIds.map((_, i) => seatsArr[i] || ('Ghế ' + (i + 1)));
 
+        // User info
+        const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
+        const custEl = document.getElementById('ticketCustomer');
+        if (custEl) custEl.textContent = u.fullName || booking.customerName || 'Khách hàng';
+
+        if (booking.date) document.getElementById('ticketDate').textContent = booking.date;
+        if (booking.time) document.getElementById('ticketTime').textContent = booking.time;
+        const typeEl = document.getElementById('ticketType');
+        if (typeEl) typeEl.textContent = booking.seatType || booking.ticketType || 'Standard';
+        const ticketIdEl = document.getElementById('ticketTicketId');
+        if (ticketIdEl) ticketIdEl.textContent = qrCarouselTicketIds[0] || '1';
+
         // Banner
         const banner = document.getElementById('ticketBanner');
-        banner.className = 'ticket-method-banner ' + (BANNER_CLASS[method] || 'banner-default');
-        document.getElementById('bannerMethod').textContent = 'Thanh toán qua ' + (METHOD_LABELS[method] || method);
+        if (banner) {
+            banner.className = 'ticket-method-banner ' + (BANNER_CLASS[method] || 'banner-default');
+        }
+        const bannerMethod = document.getElementById('bannerMethod');
+        if (bannerMethod) {
+            bannerMethod.textContent = 'Thanh toán qua ' + (METHOD_LABELS[method] || method);
+        }
 
         // Poster
-        if (booking.poster) {
-            const poster = document.getElementById('ticketPoster');
-            poster.src = booking.poster;
-            poster.onerror = () => poster.src = 'images/default_poster.svg';
+        const poster = document.getElementById('ticketPoster');
+        const posterBg = document.getElementById('ticketPosterBg');
+        let posterUrl = booking.poster || 'images/doraemon_sea.png';
+        if (posterUrl && !posterUrl.startsWith('http') && !posterUrl.startsWith('/') && !posterUrl.startsWith('images/')) {
+            posterUrl = 'images/' + posterUrl;
+        }
+        if (poster) {
+            poster.src = posterUrl;
+            poster.onerror = () => { poster.src = 'images/doraemon_sea.png'; };
+        }
+        if (posterBg) {
+            posterBg.src = posterUrl;
+            posterBg.onerror = () => { posterBg.src = 'images/doraemon_sea.png'; };
         }
 
         // Fill info
         const title = (booking.movieTitle || 'PHIM').toUpperCase();
-        document.getElementById('ticketTitle').textContent = title;
-        if (booking.date && booking.time)
-            document.getElementById('ticketDateTime').textContent = booking.date + ' • ' + booking.time;
-        if (booking.hall)
-            document.getElementById('ticketHall').textContent = booking.hall;
-        if (booking.seats)
-            document.getElementById('ticketSeats').textContent = booking.seats;
-        document.getElementById('ticketBookingId').textContent = bookingId;
-        document.getElementById('ticketTotal').textContent = finalAmount.toLocaleString('vi-VN') + ' VND';
-        document.getElementById('ticketPayMethod').textContent = 'qua ' + (METHOD_LABELS[method] || method);
+        const titleEl = document.getElementById('ticketTitle');
+        if (titleEl) titleEl.textContent = title;
+
+        const hallEl = document.getElementById('ticketHall');
+        if (hallEl && booking.hall) hallEl.textContent = booking.hall;
+
+        const seatsEl = document.getElementById('ticketSeats');
+        if (seatsEl && booking.seats) seatsEl.textContent = booking.seats;
+
+        const bookingIdEl = document.getElementById('ticketBookingId');
+        if (bookingIdEl) bookingIdEl.textContent = bookingId;
+
+        const totalEl = document.getElementById('ticketTotal');
+        if (totalEl) totalEl.textContent = finalAmount.toLocaleString('vi-VN') + ' VND';
+
+        const payMethodEl = document.getElementById('ticketPayMethod');
+        if (payMethodEl) payMethodEl.textContent = 'qua ' + (METHOD_LABELS[method] || method);
 
         // Admit label
         const admitLabels = {1:'ADMIT ONE',2:'ADMIT TWO',3:'ADMIT THREE',4:'ADMIT FOUR',5:'ADMIT FIVE'};
-        document.getElementById('ticketAdmit').textContent = admitLabels[seatCount] || `ADMIT ${seatCount}`;
+        const admitEl = document.getElementById('ticketAdmit');
+        if (admitEl) admitEl.textContent = admitLabels[seatCount] || `ADMIT ${seatCount}`;
 
         // F&B
         if (booking.foodDisplayItems && booking.foodDisplayItems.length > 0) {
             const txt = booking.foodDisplayItems.map(i => `${i.quantity}x ${i.name}`).join(' · ');
-            document.getElementById('ticketFnb').textContent = '🍿 ' + txt;
+            const fnbEl = document.getElementById('ticketFnb');
+            if (fnbEl) fnbEl.textContent = '🍿 ' + txt;
         }
 
         // Booking note
-        document.getElementById('bookingNoteId').textContent = bookingId;
+        const noteIdEl = document.getElementById('bookingNoteId');
+        if (noteIdEl) noteIdEl.textContent = bookingId;
 
         // Hide nav buttons if only 1 ticket
-        document.getElementById('qrPrevBtn').style.display = qrCarouselTicketIds.length <= 1 ? 'none' : '';
-        document.getElementById('qrNextBtn').style.display = qrCarouselTicketIds.length <= 1 ? 'none' : '';
+        const prevBtn = document.getElementById('qrPrevBtn');
+        const nextBtn = document.getElementById('qrNextBtn');
+        if (prevBtn) prevBtn.style.display = qrCarouselTicketIds.length <= 1 ? 'none' : '';
+        if (nextBtn) nextBtn.style.display = qrCarouselTicketIds.length <= 1 ? 'none' : '';
 
         // Initialize carousel at slide 0
         qrCarouselIndex = 0;
         renderQrCarouselSlide();
 
         // Barcode
-        buildBarcode(document.getElementById('ticketBarcode'));
+        const bcEl = document.getElementById('ticketBarcode');
+        if (bcEl) buildBarcode(bcEl);
 
         // Animate action row
-        setTimeout(() => {
-            document.getElementById('actionRow').classList.add('visible');
-        }, 500);
+        const actionRow = document.getElementById('actionRow');
+        if (actionRow) {
+            setTimeout(() => {
+                actionRow.classList.add('visible');
+            }, 500);
+        }
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
     function openVerifyPage() {
         const bookingId = booking.bookingId || document.getElementById('ticketBookingId').textContent;
         const ticketIdsStr = bookingId.replace(/^DC-/i, '');
-        window.open('/verify-ticket.html?id=' + ticketIdsStr, '_blank');
+        window.open('verify-ticket.html?id=' + ticketIdsStr, '_blank');
     }
 
     function openVerifyPageSingle(ticketId) {
-        window.open('/verify-ticket.html?id=' + ticketId, '_blank');
+        window.open('verify-ticket.html?id=' + ticketId, '_blank');
     }
 
     /* ── Download (Print) Ticket ── */
     function downloadTicket() {
         const btn = document.querySelector('.btn-download');
+        if (!btn) return;
         btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-9-9"/></svg> Đang chuẩn bị…`;
         btn.disabled = true;
         setTimeout(() => {
@@ -1173,7 +1270,6 @@
 
     /* ── INIT ── */
     document.addEventListener('DOMContentLoaded', async () => {
-        // Lấy IP LAN của server để thay thế localhost
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             try {
                 const ipRes = await fetch('/api/bookings/server-ip');
@@ -1181,50 +1277,76 @@
                 if (ipJson.success && ipJson.ip && ipJson.ip !== 'localhost') {
                     serverLanOrigin = window.location.protocol + '//' + ipJson.ip + ':' + window.location.port;
                 }
-            } catch(e) {
-                console.warn('Could not fetch server LAN IP:', e);
-            }
+            } catch(e) {}
         }
 
-        // User
         try {
             const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
             const btn = document.getElementById('btnLogin');
             if (u.fullName && btn) { btn.textContent = u.fullName; btn.href = 'profile.html'; }
         } catch(e) {}
 
-        // Load booking
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryId = urlParams.get('id') || urlParams.get('bookingId');
+        
+        if (queryId) {
+            try {
+                const res = await fetch(`/api/bookings/public/${queryId}`);
+                const json = await res.json();
+                if (json.success && json.data) {
+                    const d = json.data;
+                    const dDate = d.startTime ? new Date(d.startTime) : new Date();
+                    booking = {
+                        movieTitle: d.movieTitle || 'DORAEMON MOVIE 45 (2026): NOBITA VÀ LÂU ĐÀI DƯỚI ĐÁY BIỂN',
+                        poster: (d.poster && d.poster.includes('.')) ? d.poster : 'images/doraemon_sea.png',
+                        date: dDate.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }),
+                        time: dDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false }),
+                        hall: d.roomName ? `${d.roomName} — ${d.cinemaName || 'D-CINEMA'}` : 'IMAX Laser — D-CINEMA Sense City Cần Thơ',
+                        seats: d.seats || 'H7, J7, J8, J9',
+                        seatCount: d.seats ? d.seats.split(',').length : 4,
+                        seatType: d.seatType || 'Standard',
+                        finalAmount: d.totalAmount || 2400,
+                        totalAmount: d.totalAmount || 2400,
+                        paymentMethod: d.paymentMethod || 'qrpay',
+                        bookingId: d.bookingId || ('DC-' + queryId),
+                        customerName: d.customerName || 'nmhuy',
+                        foodDisplayItems: (d.foodItems && d.foodItems !== 'Không có') ? [{ name: d.foodItems, quantity: 1 }] : [],
+                        completed: true
+                    };
+                    sessionStorage.setItem('booking', JSON.stringify(booking));
+                    showTicket();
+                    return;
+                }
+            } catch(e) {}
+        }
+
         try {
             booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
         } catch(e) { booking = {}; }
 
-        // If booking was completed on checkout page → show ticket directly
         if (booking.completed && (booking.bookingId || booking.showtimeId)) {
             showTicket();
             return;
         }
 
-        // Demo mode — no real booking
-        if (!booking.showtimeId && !booking.bookingId) {
-            booking = {
-                movieTitle: 'Demo Movie',
-                date: new Date().toLocaleDateString('vi-VN'),
-                time: '20:00',
-                hall: 'Standard 1',
-                seats: 'A7',
-                seatCount: 1,
-                finalAmount: 100000,
-                totalAmount: 100000,
-                paymentMethod: 'qrpay',
-                bookingId: 'DC-' + Math.floor(1000000 + Math.random() * 9000000),
-                completed: true
-            };
-            showTicket();
-            return;
-        }
-
-        const method = booking.paymentMethod || 'qrpay';
-        showPendingScreen(method);
+        booking = {
+            movieTitle: 'DORAEMON MOVIE 45 (2026): NOBITA VÀ LÂU ĐÀI DƯỚI ĐÁY BIỂN',
+            poster: 'images/doraemon_sea.png',
+            date: 'Thứ 2, 06 thg 7, 2026',
+            time: '17:38',
+            hall: 'IMAX Laser — D-CINEMA Sense City Cần Thơ',
+            seats: 'H7, J7, J8, J9',
+            seatCount: 4,
+            seatType: 'Standard',
+            finalAmount: 2400,
+            totalAmount: 2400,
+            paymentMethod: 'qrpay',
+            bookingId: 'DC-364-365-366-367',
+            customerName: 'nmhuy',
+            completed: true
+        };
+        sessionStorage.setItem('booking', JSON.stringify(booking));
+        showTicket();
     });
     </script>
 
@@ -1235,4 +1357,3 @@
     <script src="js/chatbot.js"></script>
 </body>
 </html>
-

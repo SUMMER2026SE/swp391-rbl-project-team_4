@@ -4,512 +4,818 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xác Thực Vé Điện Tử | D-CINEMA</title>
+    <meta name="description" content="Trang xác thực vé điện tử D-CINEMA. Quét mã QR để kiểm tra thông tin vé của bạn.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/ticket-premium.css">
     <style>
-        :root {
-            --bg: #0c0d10;
-            --card: #13151a;
-            --card-light: #1a1d24;
-            --border: #252830;
-            --border-light: #2e3240;
-            --primary: #e50914;
-            --primary-glow: rgba(229, 9, 20, 0.3);
-            --green: #22c55e;
-            --green-glow: rgba(34, 197, 94, 0.2);
-            --gold: #f0a500;
-            --gold-glow: rgba(240, 165, 0, 0.2);
-            --red: #ef4444;
-            --red-glow: rgba(239, 68, 68, 0.2);
-            --text: #f4f4f5;
-            --muted: #8a8f9a;
-            --font: 'Outfit', sans-serif;
-        }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        /* ── Page-specific layout ── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; scroll-behavior: smooth; }
 
         body {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text);
+            font-family: var(--tp-font);
+            background: var(--tp-bg);
+            color: var(--tp-text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            padding: 24px 16px;
             -webkit-font-smoothing: antialiased;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        .header-logo {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 1.6rem;
-            font-weight: 900;
-            letter-spacing: 0.5px;
-            margin-bottom: 24px;
-            text-transform: uppercase;
+        /* ── Cinematic background ── */
+        .cinema-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .cinema-bg-gradient {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,192,64,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(140,70,200,0.05) 0%, transparent 60%),
+                linear-gradient(180deg, #080810 0%, #0a0b15 100%);
+        }
+        .cinema-bg-stars {
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(circle, rgba(255,255,255,0.6) 1px, transparent 1px),
+                radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px);
+            background-size: 120px 120px, 80px 80px;
+            background-position: 0 0, 40px 40px;
+            opacity: 0.25;
         }
 
-        .logo-d {
-            color: var(--primary);
-            text-shadow: 0 0 10px var(--primary-glow);
-        }
-
-        .logo-text {
-            color: var(--text);
-        }
-
-        .verify-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 24px;
+        /* ── Main content wrapper ── */
+        .vt-wrap {
+            position: relative;
+            z-index: 1;
             width: 100%;
             max-width: 500px;
-            overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            animation: cardSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-        }
-
-        @keyframes cardSlideIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.96); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* Status Banner */
-        .status-section {
-            padding: 40px 24px 30px;
+            padding: 24px 16px 60px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
-            text-align: center;
-            position: relative;
+            gap: 0;
         }
 
-        .status-glow-outer {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
+        /* ── Logo header ── */
+        .vt-header {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.8rem;
-            margin-bottom: 8px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .status-title {
-            font-size: 1.5rem;
-            font-weight: 850;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
-        }
-
-        .status-time {
-            font-size: 0.82rem;
-            color: var(--muted);
-        }
-
-        /* Confirmed State */
-        .verify-card.confirmed .status-glow-outer {
-            background: radial-gradient(circle, var(--green-glow), transparent 70%);
-            border: 3px solid var(--green);
-            color: var(--green);
-            animation: pulseGreen 2s infinite;
-        }
-        .verify-card.confirmed .status-title {
-            color: var(--green);
-        }
-
-        /* Pending State */
-        .verify-card.pending .status-glow-outer {
-            background: radial-gradient(circle, var(--gold-glow), transparent 70%);
-            border: 3px solid var(--gold);
-            color: var(--gold);
-            animation: pulseGold 2s infinite;
-        }
-        .verify-card.pending .status-title {
-            color: var(--gold);
-        }
-
-        /* Error State */
-        .verify-card.error .status-glow-outer {
-            background: radial-gradient(circle, var(--red-glow), transparent 70%);
-            border: 3px solid var(--red);
-            color: var(--red);
-            animation: pulseRed 2s infinite;
-        }
-        .verify-card.error .status-title {
-            color: var(--red);
-        }
-
-        @keyframes pulseGreen {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-            50% { box-shadow: 0 0 0 16px rgba(34, 197, 94, 0); }
-        }
-        @keyframes pulseGold {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(240, 165, 0, 0.4); }
-            50% { box-shadow: 0 0 0 16px rgba(240, 165, 0, 0); }
-        }
-        @keyframes pulseRed {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            50% { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); }
-        }
-
-        /* Details Section */
-        .details-section {
-            background: var(--card-light);
-            border-top: 1px solid var(--border);
-            padding: 30px 24px;
-        }
-
-        .section-header {
-            font-size: 0.78rem;
-            font-weight: 800;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
             gap: 8px;
+            margin-bottom: 28px;
+            animation: tp-fade-up 0.5s ease both;
+        }
+        .vt-logo-emblem {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #f0c040, #c89a20);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 16px rgba(240,192,64,0.4);
+        }
+        .vt-logo-text {
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .vt-logo-d { color: #e50914; }
+        .vt-logo-rest { color: var(--tp-text); }
+        .vt-logo-tag {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--tp-text3);
+            text-transform: uppercase;
+            margin-left: 2px;
+            align-self: flex-end;
+            margin-bottom: 4px;
         }
 
-        .section-header::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border-light);
-        }
-
-        .info-grid {
+        /* ── Loading screen ── */
+        .vt-loading {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 80px 20px;
+            width: 100%;
+        }
+        .vt-loading-text {
+            font-size: 0.9rem;
+            color: var(--tp-text3);
+            font-weight: 600;
+            animation: tp-blink 1.5s ease infinite;
         }
 
-        .info-row {
+        /* ── Main ticket card ── */
+        .vt-ticket-card {
+            width: 100%;
+            background: linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--tp-border2);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px rgba(240,192,64,0.08),
+                0 20px 80px rgba(0,0,0,0.7),
+                0 4px 20px rgba(0,0,0,0.3);
+            animation: tp-scale-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        /* Gold stripe at very top */
+        .vt-gold-stripe {
+            height: 3px;
+            background: linear-gradient(90deg, #c89a20 0%, #ffd770 40%, #f0c040 60%, #c89a20 100%);
+        }
+
+        /* ── Poster / Hero section ── */
+        .vt-poster-hero {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+        .vt-poster-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            filter: blur(3px) brightness(0.4) saturate(1.2);
+            transform: scale(1.05);
+        }
+        .vt-poster-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(8,8,16,0.2) 0%,
+                rgba(8,8,16,0.6) 60%,
+                rgba(8,8,16,0.95) 100%
+            );
+        }
+        .vt-poster-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            font-size: 0.92rem;
+            align-items: flex-end;
+            gap: 16px;
+            padding: 16px 20px;
+        }
+        .vt-poster-thumb {
+            width: 80px;
+            height: 116px;
+            border-radius: 10px;
+            object-fit: cover;
+            object-position: top;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.8), 0 0 0 2px rgba(240,192,64,0.3);
+            flex-shrink: 0;
+        }
+        .vt-poster-meta {
+            flex: 1;
+            padding-bottom: 4px;
+        }
+        .vt-cinema-label {
+            font-size: 0.62rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--tp-gold);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .vt-movie-title {
+            font-size: 1.25rem;
+            font-weight: 900;
+            line-height: 1.2;
+            color: var(--tp-text);
+            margin-bottom: 6px;
+        }
+        .vt-movie-meta {
+            font-size: 0.72rem;
+            color: var(--tp-text2);
+            font-weight: 500;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .vt-meta-chip {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--tp-border);
+            border-radius: 4px;
+            padding: 2px 7px;
+        }
+
+        /* ── Status section ── */
+        .vt-status-section {
+            padding: 24px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            text-align: center;
+            border-bottom: 1px solid var(--tp-border);
+        }
+
+        .vt-status-icon {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem;
+            position: relative;
+        }
+        .vt-status-icon.valid {
+            background: radial-gradient(circle, rgba(34,197,94,0.15), transparent 70%);
+            border: 2.5px solid var(--tp-green);
+            color: var(--tp-green);
+            animation: tp-pulse-valid 2.5s ease-in-out infinite;
+        }
+        .vt-status-icon.used {
+            background: rgba(150,150,170,0.08);
+            border: 2.5px solid #6070a0;
+            color: #9090b0;
+        }
+        .vt-status-icon.expired {
+            background: radial-gradient(circle, rgba(249,115,22,0.12), transparent 70%);
+            border: 2.5px solid var(--tp-orange);
+            color: var(--tp-orange);
+        }
+        .vt-status-icon.cancelled {
+            background: radial-gradient(circle, rgba(239,68,68,0.12), transparent 70%);
+            border: 2.5px solid var(--tp-red);
+            color: var(--tp-red);
+        }
+
+        @keyframes tp-pulse-valid {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            50%       { box-shadow: 0 0 0 18px rgba(34,197,94,0); }
+        }
+
+        .vt-status-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+        }
+        .vt-status-title.valid    { color: var(--tp-green); }
+        .vt-status-title.used     { color: #9090b0; }
+        .vt-status-title.expired  { color: var(--tp-orange); }
+        .vt-status-title.cancelled { color: var(--tp-red); }
+
+        .vt-status-sub {
+            font-size: 0.82rem;
+            color: var(--tp-text2);
+            max-width: 280px;
             line-height: 1.5;
         }
 
-        .info-key {
-            color: var(--muted);
-            font-weight: 500;
-            min-width: 120px;
-            padding-right: 12px;
-        }
-
-        .info-val {
-            text-align: right;
-            font-weight: 700;
-            color: var(--text);
-            word-break: break-word;
-        }
-
-        .info-val.highlight {
-            color: var(--gold);
-        }
-
-        .info-val.booking-id {
-            color: var(--primary);
-            font-family: monospace;
-            font-size: 1rem;
-            letter-spacing: 0.5px;
-        }
-
-        /* Movie display block */
-        .movie-display-block {
+        /* Seat spotlight (only for valid) */
+        .vt-seat-spotlight {
             display: flex;
-            gap: 16px;
-            margin-bottom: 24px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-light);
-            border-radius: 16px;
-            padding: 16px;
-        }
-
-        .movie-poster {
-            width: 70px;
-            height: 100px;
-            border-radius: 8px;
-            object-fit: cover;
-            flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .movie-text-info {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .movie-title {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--text);
-            line-height: 1.3;
-        }
-
-        .movie-duration {
-            font-size: 0.78rem;
-            color: var(--muted);
-            font-weight: 600;
-        }
-
-        /* Loading animation */
-        .loading-container {
-            display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 60px 24px;
+            gap: 10px;
+            padding: 10px 22px;
+            background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.06));
+            border: 1.5px solid rgba(34,197,94,0.35);
+            border-radius: 50px;
+            margin-top: 4px;
+        }
+        .vt-seat-emoji { font-size: 1.4rem; }
+        .vt-seat-number {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--tp-green);
+            letter-spacing: 2px;
+        }
+
+        /* ── Details panels ── */
+        .vt-details-wrap {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
             gap: 20px;
         }
 
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .vt-panel {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid var(--tp-border);
+            border-radius: var(--tp-r-md);
+            padding: 16px;
+            position: relative;
+        }
+        .vt-panel-gold {
+            border-color: rgba(240,192,64,0.25);
+            background: linear-gradient(135deg, rgba(240,192,64,0.05), rgba(240,192,64,0.02));
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        /* ── Info grid ── */
+        .vt-info-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
         }
 
-        .loading-text {
-            font-size: 0.92rem;
-            color: var(--muted);
-            font-weight: 600;
-            animation: pulseText 1.5s infinite ease-in-out;
+        /* ── QR section in verify page ── */
+        .vt-no-qr-notice {
+            font-size: 0.8rem;
+            color: var(--tp-text3);
+            text-align: center;
+            line-height: 1.6;
+            padding: 10px;
         }
 
-        @keyframes pulseText {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
+        /* ── Scan time watermark ── */
+        .vt-scan-time {
+            font-size: 0.7rem;
+            color: var(--tp-text3);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 4px;
         }
 
-        .btn-done {
+        /* ── Action button ── */
+        .vt-btn {
             width: 100%;
-            padding: 14px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-light);
-            color: var(--text);
+            padding: 14px 24px;
             border-radius: 12px;
-            font-size: 0.9rem;
+            font-size: 0.92rem;
             font-weight: 700;
-            text-align: center;
+            font-family: var(--tp-font);
+            cursor: pointer;
+            border: none;
+            outline: none;
+            transition: all 0.22s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .vt-btn-primary {
+            background: linear-gradient(135deg, #e50914, #c00812);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(229,9,20,0.3);
+        }
+        .vt-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(229,9,20,0.45); }
+
+        .vt-btn-ghost {
+            background: transparent;
+            color: var(--tp-text2);
+            border: 1px solid var(--tp-border2);
+        }
+        .vt-btn-ghost:hover { background: var(--tp-border); color: var(--tp-text); }
+
+        /* ── Security footer ── */
+        .vt-security-footer {
             margin-top: 24px;
-            transition: all 0.2s;
-            display: block;
+            text-align: center;
+            font-size: 0.68rem;
+            color: var(--tp-text3);
+            line-height: 1.6;
+            max-width: 360px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            animation: tp-fade-up 0.6s ease 0.5s both;
+        }
+        .vt-security-icon { font-size: 0.9rem; color: var(--tp-gold); }
+
+        /* ── D-CINEMA watermark ── */
+        .vt-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 4rem;
+            font-weight: 900;
+            letter-spacing: 6px;
+            color: rgba(240,192,64,0.03);
+            text-transform: uppercase;
+            pointer-events: none;
+            white-space: nowrap;
+            user-select: none;
         }
 
-        .btn-done:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: var(--muted);
+        /* ── Booking ID mono ── */
+        .vt-booking-id-block {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 16px;
+            background: rgba(240,192,64,0.06);
+            border: 1px dashed rgba(240,192,64,0.25);
+            border-radius: 10px;
+        }
+        .vt-booking-id-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--tp-text3);
+        }
+        .vt-booking-id-value {
+            font-family: var(--tp-font-mono);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--tp-gold);
+            letter-spacing: 1px;
         }
 
-        .footer-note {
-            font-size: 0.75rem;
-            color: #4a4f5a;
+        /* ── Payment status pill ── */
+        .vt-pay-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .vt-pay-pill.paid {
+            background: rgba(34,197,94,0.12);
+            color: var(--tp-green);
+            border: 1px solid rgba(34,197,94,0.3);
+        }
+        .vt-pay-pill.pending {
+            background: rgba(240,192,64,0.10);
+            color: var(--tp-gold);
+            border: 1px solid rgba(240,192,64,0.3);
+        }
+
+        /* Error state */
+        .vt-error-section {
+            padding: 48px 24px 36px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
             text-align: center;
-            margin-top: 24px;
-            line-height: 1.5;
-            max-width: 400px;
+        }
+        .vt-error-icon {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(239,68,68,0.12), transparent 70%);
+            border: 2.5px solid var(--tp-red);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem;
+            color: var(--tp-red);
+        }
+        .vt-error-title {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: var(--tp-red);
+        }
+        .vt-error-msg {
+            font-size: 0.85rem;
+            color: var(--tp-text2);
+            line-height: 1.6;
+            max-width: 280px;
+        }
+
+        /* Mobile safe area */
+        @media (max-width: 480px) {
+            .vt-wrap { padding: 16px 12px 48px; }
+            .vt-poster-hero { height: 180px; }
+            .vt-movie-title { font-size: 1.1rem; }
+            .vt-poster-thumb { width: 68px; height: 98px; }
         }
     </style>
 </head>
 <body>
 
-    <header class="header-logo">
-        <span class="logo-d">D</span><span class="logo-text">-CINEMA</span>
-    </header>
-
-    <main class="verify-card" id="verifyCard">
-        <!-- Default Loading -->
-        <div class="loading-container" id="loadingView">
-            <div class="spinner"></div>
-            <div class="loading-text">Đang kết nối hệ thống kiểm vé...</div>
-        </div>
-
-        <!-- Rendered results will go here -->
-    </main>
-
-    <div class="footer-note">
-        Hệ thống soát vé tự động D-CINEMA. Mã QR này chỉ có giá trị xác nhận check-in trực tiếp tại quầy soát vé.
+    <!-- ── Cinematic background ── -->
+    <div class="cinema-bg">
+        <div class="cinema-bg-gradient"></div>
+        <div class="cinema-bg-stars"></div>
     </div>
 
+    <main class="vt-wrap">
+
+        <!-- Top Header with Back Button -->
+        <header class="vt-header no-print" style="display:flex; justify-content:space-between; align-items:center; width:100%; max-width:480px; margin:0 auto 16px;">
+            <button onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.href='payment-success.html' + (id ? '?id=' + id : '');" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:30px; color:#fff; font-size:0.82rem; font-weight:700; cursor:pointer; backdrop-filter:blur(8px); transition:all 0.2s;" onmouseover="this.style.background='rgba(240,192,64,0.2)';this.style.borderColor='#ffd770';this.style.color='#ffd770';" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#fff';">
+                ← Quay lại trang vé
+            </button>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <div class="vt-logo-emblem">🎬</div>
+                <div class="vt-logo-text">
+                    <span class="vt-logo-d">D</span><span class="vt-logo-rest">-CINEMA</span>
+                </div>
+            </div>
+            <span class="vt-logo-tag">e-Ticket</span>
+        </header>
+
+        <!-- Main card (populated by JS) -->
+        <div id="vt-card" class="vt-ticket-card" style="display:none;"></div>
+
+        <!-- Loading state -->
+        <div class="vt-loading" id="vt-loading">
+            <div class="tp-spinner"></div>
+            <div class="vt-loading-text">Đang xác thực vé của bạn…</div>
+        </div>
+
+        <!-- Security footer -->
+        <div class="vt-security-footer no-print">
+            <span class="vt-security-icon">🔒</span>
+            Hệ thống xác thực vé tự động D-CINEMA<br>
+            Thông tin vé được bảo mật và không thể giả mạo.
+        </div>
+
+    </main>
+
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const params = new URLSearchParams(window.location.search);
-            const ticketIds = params.get('id');
+    document.addEventListener('DOMContentLoaded', async () => {
+        const params    = new URLSearchParams(window.location.search);
+        const ticketIds = params.get('id');
+        const card      = document.getElementById('vt-card');
+        const loading   = document.getElementById('vt-loading');
 
-            const card = document.getElementById('verifyCard');
-            const loading = document.getElementById('loadingView');
+        if (!ticketIds) {
+            loading.style.display = 'none';
+            showError('Thiếu thông tin vé', 'Mã QR không hợp lệ hoặc đã hết hạn. Vui lòng quét lại hoặc liên hệ quầy vé.');
+            return;
+        }
 
-            if (!ticketIds) {
-                renderError('Thiếu thông tin vé', 'Mã QR không hợp lệ hoặc thiếu thông số định danh vé.');
+        try {
+            const res  = await fetch(`/api/bookings/public/${ticketIds}`);
+            const json = await res.json();
+
+            loading.style.display = 'none';
+
+            if (!res.ok || !json.success) {
+                showError('Không tìm thấy vé', json.message || 'Mã vé này không tồn tại hoặc đã bị huỷ trên hệ thống D-CINEMA.');
                 return;
             }
 
-            try {
-                // Fetch public ticket details
-                const res = await fetch(`/api/bookings/public/${ticketIds}`);
-                const json = await res.json();
+            renderTicket(json.data);
 
-                if (!res.ok || !json.success) {
-                    renderError('Không tìm thấy vé', json.message || 'Mã vé này không tồn tại hoặc đã bị hủy trên hệ thống.');
-                    return;
-                }
-
-                renderTicket(json.data);
-
-            } catch (err) {
-                console.error('Error verifying ticket:', err);
-                renderError('Lỗi kết nối', 'Không thể kết nối với máy chủ D-CINEMA. Vui lòng thử lại.');
-            }
-        });
-
-        function renderError(title, message) {
-            const card = document.getElementById('verifyCard');
-            card.className = 'verify-card error';
-            card.innerHTML = `
-                <div class="status-section">
-                    <div class="status-glow-outer">❌</div>
-                    <h1 class="status-title">${title}</h1>
-                    <p class="status-time" style="color:var(--red); font-weight:600; margin-top:4px;">XÁC THỰC THẤT BẠI</p>
-                </div>
-                <div class="details-section">
-                    <div class="section-header">Chi tiết lỗi</div>
-                    <div class="info-grid">
-                        <div class="info-row">
-                            <span class="info-key">Lý do</span>
-                            <span class="info-val" style="color: var(--red);">${message}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-key">Thời gian quét</span>
-                            <span class="info-val">${new Date().toLocaleString('vi-VN')}</span>
-                        </div>
-                    </div>
-                    <button class="btn-done" onclick="window.close()">Đóng cửa sổ</button>
-                </div>
-            `;
+        } catch (err) {
+            console.error('[VerifyTicket] Error:', err);
+            loading.style.display = 'none';
+            showError('Lỗi kết nối', 'Không thể kết nối với máy chủ D-CINEMA. Vui lòng kiểm tra mạng và thử lại.');
         }
+    });
 
-        function renderTicket(data) {
-            const card = document.getElementById('verifyCard');
-            const isConfirmed = data.status === 'confirmed';
-            card.className = 'verify-card ' + (isConfirmed ? 'confirmed' : 'pending');
+    /* ────────────────────────────────────────── */
+    function getStatusConfig(rawStatus) {
+        const s = (rawStatus || 'pending').toLowerCase();
+        if (s === 'confirmed')  return { cls: 'valid',     icon: '✓',  title: 'VÉ HỢP LỆ',        sub: 'Vui lòng vào rạp, chúc bạn xem phim vui vẻ! 🎬', badgeCls: 'tp-status-valid',     badgeText: '● VÉ HỢP LỆ' };
+        if (s === 'used')       return { cls: 'used',      icon: '✓',  title: 'ĐÃ SỬ DỤNG',       sub: 'Vé này đã được quét vào rạp.', badgeCls: 'tp-status-used',      badgeText: '● ĐÃ SỬ DỤNG' };
+        if (s === 'expired')    return { cls: 'expired',   icon: '⏰', title: 'ĐÃ HẾT HẠN',       sub: 'Suất chiếu đã kết thúc. Vé không còn hiệu lực.', badgeCls: 'tp-status-expired',   badgeText: '● HẾT HẠN' };
+        if (s === 'cancelled')  return { cls: 'cancelled', icon: '✗',  title: 'ĐÃ HUỶ',           sub: 'Vé đã bị huỷ. Vui lòng liên hệ quầy vé để được hỗ trợ.', badgeCls: 'tp-status-cancelled', badgeText: '● ĐÃ HUỶ' };
+        /* pending */           return { cls: 'expired',   icon: '⏳', title: 'CHỜ THANH TOÁN',   sub: 'Giao dịch chưa được xác nhận. Vui lòng hoàn tất thanh toán.', badgeCls: 'tp-status-expired', badgeText: '● CHỜ THANH TOÁN' };
+    }
 
-            const statusIcon = isConfirmed ? '✓' : '⏳';
-            const statusLabel = isConfirmed ? 'VÉ HỢP LỆ — CHECK IN' : 'VÉ CHỜ THANH TOÁN';
-            const statusSub = isConfirmed ? 'Vui lòng vào rạp, chúc xem phim vui vẻ! 🎬' : 'Chưa nhận được chuyển khoản';
+    function getPaymentMethodLabel(m) {
+        const map = {
+            qrpay: 'QR Pay (VietQR / MB Bank)',
+            momo: 'Ví MoMo',
+            zalopay: 'ZaloPay',
+            vnpay: 'VNPAY-QR',
+            shopeepay: 'ShopeePay',
+            atm: 'Thẻ ATM nội địa',
+            intl: 'Thẻ quốc tế',
+        };
+        return map[(m || '').toLowerCase()] || (m || '—');
+    }
 
-            // Format showtime
-            const start = new Date(data.startTime);
-            const dateStr = start.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
-            const timeStr = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    function formatDate(isoStr) {
+        if (!isoStr) return '—';
+        const d = new Date(isoStr);
+        const days = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+        const day  = days[d.getDay()];
+        const dd   = String(d.getDate()).padStart(2,'0');
+        const mm   = String(d.getMonth()+1).padStart(2,'0');
+        const yyyy = d.getFullYear();
+        return `${day}, ${dd}/${mm}/${yyyy}`;
+    }
+    function formatTime(isoStr) {
+        if (!isoStr) return '—';
+        const d = new Date(isoStr);
+        return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
 
-            // Seat highlight (works for single or multiple seats)
-            const seatDisplay = data.seats || '—';
+    /* ────────────────────────────────────────── */
+    function renderTicket(data) {
+        const card   = document.getElementById('vt-card');
+        const status = getStatusConfig(data.status);
+        const isValid = data.status === 'confirmed';
+        const isPaid  = data.status === 'confirmed' || data.status === 'used';
 
-            card.innerHTML = `
-                <div class="status-section">
-                    <div class="status-glow-outer">${statusIcon}</div>
-                    <h1 class="status-title">${statusLabel}</h1>
-                    <p class="status-time">${statusSub}</p>
-                    ${isConfirmed ? `
-                    <div style="display:inline-flex;align-items:center;gap:10px;padding:10px 24px;border-radius:40px;background:rgba(34,197,94,0.12);border:2px solid var(--green);margin-top:6px;">
-                        <span style="font-size:1.6rem;">🪑</span>
-                        <span style="font-size:1.4rem;font-weight:900;color:var(--green);letter-spacing:2px;">${seatDisplay}</span>
-                    </div>` : ''}
+        const posterSrc  = data.poster || 'images/default_poster.svg';
+        const seatLabel  = data.seats  || '—';
+        const dateStr    = formatDate(data.startTime);
+        const startStr   = formatTime(data.startTime);
+        const endStr     = formatTime(data.endTime);
+        const timeRange  = (data.startTime && data.endTime) ? `${startStr} → ${endStr}` : startStr;
+        const totalFmt   = data.totalAmount ? parseFloat(data.totalAmount).toLocaleString('vi-VN') + ' ₫' : '—';
+        const ticketType = data.ticketType || data.seatType || 'Standard';
+        const branch     = data.cinemaAddress || data.cinemaName || '—';
+        const scanNow    = new Date().toLocaleString('vi-VN');
+        const payLabel   = getPaymentMethodLabel(data.paymentMethod);
+        const roomDisplay = data.roomType && data.roomType !== '2D Standard'
+            ? `[${data.roomType}] ${data.roomName || '—'}`
+            : (data.roomName || '—');
+
+        card.innerHTML = `
+            <!-- Gold top stripe -->
+            <div class="vt-gold-stripe"></div>
+
+            <!-- Movie poster hero -->
+            <div class="vt-poster-hero">
+                <img src="${posterSrc}" class="vt-poster-bg" alt="" onerror="this.src='images/default_poster.svg'">
+                <div class="vt-poster-overlay"></div>
+                <div class="vt-poster-content">
+                    <img src="${posterSrc}" class="vt-poster-thumb" alt="${data.movieTitle || ''}" onerror="this.src='images/default_poster.svg'">
+                    <div class="vt-poster-meta">
+                        <div class="vt-cinema-label">🎬 D-CINEMA • VÉ ĐIỆN TỬ</div>
+                        <div class="vt-movie-title">${data.movieTitle || 'UNKNOWN MOVIE'}</div>
+                        <div class="vt-movie-meta">
+                            ${data.duration ? `<span class="vt-meta-chip">⏱ ${data.duration} phút</span>` : ''}
+                            <span class="vt-meta-chip">${ticketType}</span>
+                            ${data.roomType ? `<span class="vt-meta-chip">${data.roomType}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status section -->
+            <div class="vt-status-section tp-anim-fade-up">
+                <div class="vt-status-icon ${status.cls}">${status.icon}</div>
+                <div class="vt-status-title ${status.cls}">${status.title}</div>
+                <div class="vt-status-sub">${status.sub}</div>
+                ${isValid ? `
+                <div class="vt-seat-spotlight">
+                    <span class="vt-seat-emoji">🪑</span>
+                    <span class="vt-seat-number">${seatLabel}</span>
+                </div>` : ''}
+            </div>
+
+            <!-- Details wrap -->
+            <div class="vt-details-wrap tp-anim-fade-up tp-delay-1">
+
+                <!-- Booking ID block -->
+                <div class="vt-booking-id-block">
+                    <div>
+                        <div class="vt-booking-id-label">Mã đặt vé</div>
+                        <div class="vt-booking-id-value">${data.bookingId || '—'}</div>
+                    </div>
+                    <span class="tp-status-badge ${status.badgeCls}">
+                        <span class="tp-badge-dot"></span>
+                        ${data.status === 'confirmed' ? 'HỢP LỆ' : data.status === 'used' ? 'ĐÃ DÙNG' : data.status === 'expired' ? 'HẾT HẠN' : data.status === 'cancelled' ? 'ĐÃ HUỶ' : 'CHỜ XỬ LÝ'}
+                    </span>
                 </div>
 
-                <div class="details-section">
-                    <!-- Movie Block -->
-                    <div class="movie-display-block">
-                        <img src="${data.poster || 'images/default_poster.svg'}" alt="Poster" class="movie-poster" onerror="this.src='images/default_poster.svg'">
-                        <div class="movie-text-info">
-                            <h2 class="movie-title">${data.movieTitle}</h2>
-                            <p class="movie-duration">⏱ ${data.duration ? data.duration + ' phút' : '120 phút'} · Phụ đề tiếng Việt</p>
+                <!-- Showtime info panel -->
+                <div class="vt-panel tp-anim-fade-up tp-delay-2">
+                    <div class="vt-watermark">D-CINEMA</div>
+                    <div class="tp-section-label"><span class="tp-section-icon">📅</span>Thông tin suất chiếu</div>
+                    <div class="vt-info-grid">
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Ngày chiếu</span>
+                            <span class="tp-info-val gold">${dateStr}</span>
+                        </div>
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Giờ chiếu</span>
+                            <span class="tp-info-val gold">${timeRange}</span>
+                        </div>
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Phòng chiếu</span>
+                            <span class="tp-info-val">${roomDisplay}</span>
+                        </div>
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Ghế</span>
+                            <span class="tp-info-val gold">${seatLabel}</span>
+                        </div>
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Loại vé</span>
+                            <span class="tp-info-val">${ticketType}</span>
                         </div>
                     </div>
-
-                    <!-- Client Info -->
-                    <div class="section-header">Thông tin khách hàng</div>
-                    <div class="info-grid" style="margin-bottom: 24px;">
-                        <div class="info-row">
-                            <span class="info-key">Họ và tên</span>
-                            <span class="info-val">${data.customerName}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-key">Số điện thoại</span>
-                            <span class="info-val">${data.customerPhone}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-key">Email</span>
-                            <span class="info-val" style="font-size: 0.85rem; font-weight: 500;">${data.customerEmail}</span>
-                        </div>
-                    </div>
-
-                    <!-- Ticket Details -->
-                    <div class="section-header">Chi tiết vé xem phim</div>
-                    <div class="info-grid">
-                        <div class="info-row">
-                            <span class="info-key">Mã đặt vé</span>
-                            <span class="info-val booking-id">${data.bookingId}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-key">Cụm rạp</span>
-                            <span class="info-val">${data.cinemaName}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-key">Phòng chiếu</span>
-                            <span class="info-val">${data.roomName ? (data.roomType && data.roomType !== '2D Standard' ? `[${data.roomType}] ${data.roomName}` : data.roomName) : '--'}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-key">Thời gian chiếu</span>
-                            <span class="info-val highlight">${timeStr} — ${dateStr}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-key">Ghế đã chọn</span>
-                            <span class="info-val highlight" style="font-size: 1.2rem; font-weight:900; letter-spacing: 1.5px;">${seatDisplay}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-key">Đồ ăn kèm</span>
-                            <span class="info-val">${data.foodItems}</span>
-                        </div>
-                        <div class="info-row" style="border-top: 1px dashed var(--border-light); padding-top: 12px; margin-top: 4px;">
-                            <span class="info-key" style="font-weight: 700; color: var(--text);">Tổng tiền</span>
-                            <span class="info-val" style="font-size: 1.2rem; color: var(--primary);">${parseFloat(data.totalAmount).toLocaleString('vi-VN')} VND</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-key">Hình thức thanh toán</span>
-                            <span class="info-val" style="font-size: 0.82rem; text-transform: uppercase;">${data.paymentMethod === 'qrpay' ? 'QR PAY (VIETQR)' : data.paymentMethod}</span>
-                        </div>
-                    </div>
-
-                    <button class="btn-done" onclick="window.location.href='index.html'">Quay lại trang chủ</button>
                 </div>
-            `;
-        }
 
+                <!-- Cinema panel -->
+                <div class="vt-panel tp-anim-fade-up tp-delay-2">
+                    <div class="tp-section-label"><span class="tp-section-icon">🏛️</span>Địa điểm</div>
+                    <div class="vt-info-grid">
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Cụm rạp</span>
+                            <span class="tp-info-val">${data.cinemaName || '—'}</span>
+                        </div>
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Địa chỉ</span>
+                            <span class="tp-info-val muted">${data.cinemaAddress || '—'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer panel -->
+                <div class="vt-panel tp-anim-fade-up tp-delay-3">
+                    <div class="tp-section-label"><span class="tp-section-icon">👤</span>Khách hàng</div>
+                    <div class="vt-info-grid">
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Họ và tên</span>
+                            <span class="tp-info-val">${data.customerName || '—'}</span>
+                        </div>
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Email</span>
+                            <span class="tp-info-val muted">${data.customerEmail || '—'}</span>
+                        </div>
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Điện thoại</span>
+                            <span class="tp-info-val">${data.customerPhone || '—'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment panel -->
+                <div class="vt-panel vt-panel-gold tp-anim-fade-up tp-delay-4">
+                    <div class="tp-section-label"><span class="tp-section-icon">💳</span>Thanh toán</div>
+                    <div class="vt-info-grid">
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Tổng tiền</span>
+                            <span class="tp-info-val gold">${totalFmt}</span>
+                        </div>
+                        ${data.foodItems && data.foodItems !== 'Không có' ? `
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Đồ ăn kèm</span>
+                            <span class="tp-info-val muted">🍿 ${data.foodItems}</span>
+                        </div>` : ''}
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Hình thức</span>
+                            <span class="tp-info-val muted">${payLabel}</span>
+                        </div>
+                        <div class="tp-info-row">
+                            <span class="tp-info-key">Trạng thái</span>
+                            <span>
+                                <span class="vt-pay-pill ${isPaid ? 'paid' : 'pending'}">
+                                    ${isPaid ? '✓ ĐÃ THANH TOÁN' : '⏳ CHỜ THANH TOÁN'}
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scan timestamp -->
+                <div class="vt-scan-time tp-anim-fade-up tp-delay-4">
+                    🕐 Quét lúc: ${scanNow}
+                </div>
+
+                <!-- Actions -->
+                <div class="tp-anim-fade-up tp-delay-5" style="display:flex; gap:10px;">
+                    <button class="vt-btn vt-btn-ghost" onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.href='payment-success.html' + (id ? '?id=' + id : '');" style="flex:1;">
+                        ← Quay lại trang vé
+                    </button>
+                    <button class="vt-btn vt-btn-ghost" onclick="window.location.href='index.html'" style="flex:1;">
+                        🏠 Trang chủ
+                    </button>
+                </div>
+
+            </div>
+        `;
+
+        card.style.display = 'block';
+    }
+
+    /* ────────────────────────────────────────── */
+    function showError(title, message) {
+        const card = document.getElementById('vt-card');
+        card.innerHTML = `
+            <div class="vt-gold-stripe"></div>
+            <div class="vt-error-section tp-anim-scale-in">
+                <div class="vt-error-icon">✗</div>
+                <div class="vt-error-title">${title}</div>
+                <div class="vt-error-msg">${message}</div>
+                <div class="vt-scan-time" style="margin-top:8px;">
+                    🕐 ${new Date().toLocaleString('vi-VN')}
+                </div>
+            </div>
+            <div class="vt-details-wrap">
+                <button class="vt-btn vt-btn-ghost" onclick="window.close()">Đóng cửa sổ</button>
+                <button class="vt-btn vt-btn-ghost" style="margin-top:8px;" onclick="window.location.href='index.html'">
+                    🏠 Về trang chủ
+                </button>
+            </div>
+        `;
+        card.style.display = 'block';
+    }
     </script>
 </body>
 </html>
