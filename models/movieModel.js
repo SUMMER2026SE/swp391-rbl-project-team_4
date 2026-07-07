@@ -235,7 +235,6 @@ class MovieModel {
         LEFT   JOIN Tickets t ON t.SeatID = s.SeatID AND t.ShowtimeID = @showtimeId
                               AND t.Status IN ('confirmed', 'pending')
         WHERE  st.ShowtimeID = @showtimeId
-          AND  s.SeatType != 'None'
         ORDER BY s.SeatRow, s.SeatNumber
       `);
     return result.recordset;

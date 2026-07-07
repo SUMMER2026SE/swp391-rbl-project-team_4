@@ -238,7 +238,8 @@ exports.saveSeats = async (req, res) => {
     res.json({ success: true, message: 'Lưu sơ đồ ghế thành công!' });
   } catch (err) {
     console.error('[adminController] saveSeats:', err.message);
-    res.status(500).json({ success: false, message: 'Lỗi server khi lưu sơ đồ ghế.' });
+    const status = err.message.includes('đang có vé đặt') ? 400 : 500;
+    res.status(status).json({ success: false, message: err.message || 'Lỗi server khi lưu sơ đồ ghế.' });
   }
 };
 
