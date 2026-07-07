@@ -474,7 +474,7 @@ class AdminModel {
 
       // 1. Get currently booked seats for this room to avoid deleting/modifying booked seats.
       const bookedSeatsResult = await request.query(`
-        SELECT DISTINCT s.SeatID
+        SELECT DISTINCT s.SeatID, s.SeatRow, s.SeatNumber
         FROM Seats s
         JOIN Tickets t ON t.SeatID = s.SeatID
         JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
@@ -482,7 +482,21 @@ class AdminModel {
           AND t.Status IN ('confirmed', 'pending', 'used')
       `);
 
-      const bookedSeatIds = bookedSeatsResult.recordset.map(r => r.SeatID);
+      const bookedSeats = bookedSeatsResult.recordset;
+      const bookedSeatIds = bookedSeats.map(r => r.SeatID);
+
+      // Validate: Check if any booked seat is missing from the incoming layout array OR changed to 'None'
+      const invalidSeats = [];
+      for (const bs of bookedSeats) {
+        const matchingInputSeat = seatsArray.find(s => s.SeatRow === bs.SeatRow && s.SeatNumber === bs.SeatNumber);
+        if (!matchingInputSeat || matchingInputSeat.SeatType === 'None') {
+          invalidSeats.push(`${bs.SeatRow}${bs.SeatNumber}`);
+        }
+      }
+
+      if (invalidSeats.length > 0) {
+        throw new Error(`Không thể xóa hoặc đặt thành ô trống các ghế đang có vé đặt: ${invalidSeats.join(', ')}`);
+      }
 
       // 2. Clear existing seats that are NOT currently booked in upcoming showtimes
       if (bookedSeatIds.length > 0) {

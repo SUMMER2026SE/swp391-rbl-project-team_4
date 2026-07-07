@@ -2919,17 +2919,24 @@ window.renderSeatMatrix = function() {
 
             if (sType === 'Couple') {
                 const c2 = c + 1;
-                const num2 = (c2 <= maxCol) ? c2 : c;
-                const lbl = (c2 <= maxCol) ? `${rowChar}${c}-${num2}` : `${rowChar}${c}`;
-                
-                html += `<button class="seat-btn couple"
-                    onclick="toggleCoupleSeat('${rowChar}', ${c}, this)"
-                    data-row="${rowChar}" data-col1="${c}" data-col2="${num2}"
-                    title="Ghế cặp đôi ${lbl}">
-                    <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${lbl}</span>
-                </button>`;
-                
-                if (c2 <= maxCol) c++; // skip next column if it was part of the pair
+                const seat2 = builderSeats.find(s => s.SeatRow === rowChar && s.SeatNumber === c2);
+                if (c2 <= maxCol && seat2 && seat2.SeatType === 'Couple') {
+                    const lbl = `${rowChar}${c}-${c2}`;
+                    html += `<button class="seat-btn couple"
+                        onclick="toggleCoupleSeat('${rowChar}', ${c}, this)"
+                        data-row="${rowChar}" data-col1="${c}" data-col2="${c2}"
+                        title="Ghế cặp đôi ${lbl}">
+                        <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${lbl}</span>
+                    </button>`;
+                    c++; // skip next column if it was part of the pair
+                } else {
+                    html += `<button class="seat-btn couple"
+                        onclick="toggleSeat('${rowChar}', ${c}, this)"
+                        data-row="${rowChar}" data-col="${c}"
+                        title="Ghế cặp đôi ${rowChar}${c}">
+                        <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${rowChar}${c}</span>
+                    </button>`;
+                }
             } else {
                 let sClass = 'blocked';
                 let inner = `<span style="color:rgba(255,255,255,0.04);position:relative;z-index:2;">${c}</span>`;
@@ -2998,8 +3005,14 @@ window.toggleCoupleSeat = function(rowChar, col1, btn) {
         [col1, col2].forEach((cn, idx) => {
             if (cn > maxCol) return;
             let s = builderSeats.find(x => x.SeatRow === rowChar && x.SeatNumber === cn);
-            if (!s) { s = { SeatRow: rowChar, SeatNumber: cn, SeatType: 'Couple', PriceMultiplier: 1.5 }; builderSeats.push(s); }
-            else { s.SeatType = 'Couple'; s.PriceMultiplier = 1.5; }
+            const mult = tool === 'VIP' ? 1.2 : (tool === 'Couple' ? 1.5 : 1.0);
+            if (!s) {
+                s = { SeatRow: rowChar, SeatNumber: cn, SeatType: tool, PriceMultiplier: mult };
+                builderSeats.push(s);
+            } else {
+                s.SeatType = tool;
+                s.PriceMultiplier = mult;
+            }
         });
     }
     renderSeatMatrix();
@@ -3013,6 +3026,22 @@ window.adminZoomOut = function() { adminBuilderZoom = Math.max(0.45, adminBuilde
 window.addSeatRow = function() { maxRow++; renderSeatMatrix(); };
 window.addSeatCol = function() { maxCol++; renderSeatMatrix(); };
 
+window.removeSeatRow = function() {
+    if (maxRow > 1) {
+        maxRow--;
+        builderSeats = builderSeats.filter(s => (s.SeatRow.charCodeAt(0) - 64) <= maxRow);
+        renderSeatMatrix();
+    }
+};
+
+window.removeSeatCol = function() {
+    if (maxCol > 1) {
+        maxCol--;
+        builderSeats = builderSeats.filter(s => s.SeatNumber <= maxCol);
+        renderSeatMatrix();
+    }
+};
+
 window.clearSeatMap = function() {
     if (!confirm('Ban co chac muon lam moi toan bo so do (xoa trang)?')) return;
     builderSeats = [];
@@ -3022,8 +3051,8 @@ window.clearSeatMap = function() {
 /* ─── Customer Preview Modal ─── */
 window.previewCustomerView = function() {
     if (!currentBuilderRoomId) { alert('Vui long chon mot phong!'); return; }
-    const validSeats = builderSeats.filter(s => s.SeatType !== 'None');
-    if (validSeats.length === 0) { alert('Phong nay chua co ghe nao!'); return; }
+    const physicalSeats = builderSeats.filter(s => s.SeatType !== 'None');
+    if (physicalSeats.length === 0) { alert('Phong nay chua co ghe nao!'); return; }
 
     const room = (typeof ROOM_DATA !== 'undefined') ? ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId) : null;
     const roomName = room ? room.RoomName : 'Phong chieu';
@@ -3040,6 +3069,7 @@ window.previewCustomerView = function() {
 
     // Build preview using same logic as seats.html
     const rowsMap = {};
+    const validSeats = builderSeats;
     validSeats.forEach(s => { if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = []; rowsMap[s.SeatRow].push(s); });
     const allRows = Object.keys(rowsMap).sort();
     const coupleRowSet = new Set(validSeats.filter(s => s.SeatType === 'Couple').map(s => s.SeatRow));
@@ -3073,7 +3103,9 @@ window.previewCustomerView = function() {
             // Center aisle gap
             if (total > 4 && i === half) seatsHtml += `<div style="width:20px;"></div>`;
             
-            if (s.SeatType === 'Couple') {
+            if (s.SeatType === 'None') {
+                seatsHtml += `<div style="width:36px;height:34px;visibility:hidden;pointer-events:none;flex-shrink:0;"></div>`;
+            } else if (s.SeatType === 'Couple') {
                 const s2 = rowSeats[i + 1];
                 if (s2 && s2.SeatType === 'Couple' && s2.SeatNumber === s.SeatNumber + 1) {
                     const lbl = `${row}${s.SeatNumber}-${s2.SeatNumber}`;
@@ -3136,7 +3168,7 @@ window.saveSeatLayout = async function() {
         alert('Vui long chon mot phong truoc khi luu.');
         return;
     }
-    const payload = builderSeats.filter(s => s.SeatType !== 'None');
+    const payload = builderSeats;
     
     let roomType = null;
     const typeSelect = document.getElementById('builderRoomTypeSelect');
@@ -3160,7 +3192,7 @@ window.saveSeatLayout = async function() {
                 toast.textContent = '&#10003; Da luu so do ghe thanh cong! (' + payload.length + ' ghe)';
                 container.appendChild(toast);
                 setTimeout(() => toast.remove(), 4000);
-            } else { alert('Luu so do ghe thanh cong!'); }
+            } else { showToast('Luu so do ghe thanh cong!'); }
             await loadRooms();
             renderCinemaSidebar();
             const cRoom = ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId);
@@ -3172,10 +3204,10 @@ window.saveSeatLayout = async function() {
                     if (rEl) window.selectRoomForBuilder(currentBuilderRoomId, rEl);
                 }, 100);
             }
-        } else { alert('Loi: ' + (res.message || 'Khong xac dinh')); }
+        } else { showToast('Loi: ' + (res.message || 'Khong xac dinh'), 'error'); }
     } catch(err) {
         console.error(err);
-        alert('Loi ket noi khi luu so do.');
+        showToast('Loi ket noi khi luu so do.', 'error');
     } finally {
         if (saveBtn) { saveBtn.innerHTML = oldHtml || '&#128190; Luu bo cuc'; saveBtn.disabled = false; }
     }
@@ -3503,7 +3535,9 @@ function renderQsSeatMap() {
             // Center aisle gap
             if (total > 4 && i === half) html += `<div style="width:18px;flex-shrink:0;"></div>`;
 
-            if (seat.SeatType === 'Couple') {
+            if (seat.SeatType === 'None') {
+                html += `<div style="width:33px;height:31px;visibility:hidden;pointer-events:none;flex-shrink:0;"></div>`;
+            } else if (seat.SeatType === 'Couple') {
                 const s1 = seat;
                 const s2 = rowSeats[i + 1];
                 if (s2 && s2.SeatType === 'Couple' && s2.SeatNumber === s1.SeatNumber + 1) {

@@ -241,6 +241,7 @@ class MovieModel {
     return result.recordset;
   }
 
+
   static async getCinemas() {
     const pool = await getPool();
     const result = await pool.request().query(`
