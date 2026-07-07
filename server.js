@@ -103,6 +103,8 @@ server.listen(PORT, async () => {
   // Khởi tạo kết nối DB ngay khi server start
   try {
     await getPool();
+    const { autoShiftShowtimes } = require('./services/showtimeService');
+    await autoShiftShowtimes();
     startShowtimeReminderScheduler();
   } catch (err) {
     console.error('  ⚠️  Không thể kết nối DB. Kiểm tra lại config/db.js');

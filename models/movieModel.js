@@ -326,7 +326,7 @@ class MovieModel {
       WHERE  r.CinemaID = @cinemaId
         AND  CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date
         AND  st.Status  = 'active'
-        AND  st.StartTime > GETUTCDATE()
+        AND  st.StartTime > GETDATE()
         ${movieFilter}
       ORDER BY m.Title, st.StartTime ASC
     `);
