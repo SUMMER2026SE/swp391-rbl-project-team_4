@@ -116,14 +116,10 @@ class MovieModel {
               FROM Movie_Genres mg
               WHERE mg.MovieID = m.MovieID) AS GenreIDs,
              COALESCE((SELECT STRING_AGG(Format, ', ') 
-                       FROM (SELECT DISTINCT CASE 
-                               WHEN r.RoomName LIKE '%3D%' THEN '3D'
-                               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
-                               ELSE '2D'
-                             END AS Format 
+                       FROM (SELECT DISTINCT r.RoomType AS Format
                              FROM Showtimes st 
                              JOIN Rooms r ON st.RoomID = r.RoomID 
-                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
+                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D Standard') AS Formats
       FROM   Movies m
       WHERE  m.Status = 'Coming Soon'
       ORDER BY m.MovieID ASC
@@ -161,14 +157,10 @@ class MovieModel {
               FROM Movie_Genres mg
               WHERE mg.MovieID = m.MovieID) AS GenreIDs,
              COALESCE((SELECT STRING_AGG(Format, ', ') 
-                       FROM (SELECT DISTINCT CASE 
-                               WHEN r.RoomName LIKE '%3D%' THEN '3D'
-                               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
-                               ELSE '2D'
-                             END AS Format 
+                       FROM (SELECT DISTINCT r.RoomType AS Format
                              FROM Showtimes st 
                              JOIN Rooms r ON st.RoomID = r.RoomID 
-                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
+                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D Standard') AS Formats
       FROM   Movies m
       ${whereClause}
       ORDER BY m.MovieID DESC
@@ -192,14 +184,10 @@ class MovieModel {
                 FROM Movie_Genres mg
                 WHERE mg.MovieID = m.MovieID) AS GenreIDs,
                COALESCE((SELECT STRING_AGG(Format, ', ') 
-                         FROM (SELECT DISTINCT CASE 
-                                 WHEN r.RoomName LIKE '%3D%' THEN '3D'
-                                 WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
-                                 ELSE '2D'
-                               END AS Format 
+                         FROM (SELECT DISTINCT r.RoomType AS Format
                                FROM Showtimes st 
                                JOIN Rooms r ON st.RoomID = r.RoomID 
-                               WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D') AS Formats
+                               WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D Standard') AS Formats
         FROM   Movies m
         WHERE  m.MovieID = @movieId
       `);
@@ -224,7 +212,7 @@ class MovieModel {
              CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
              CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
              COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
-             r.RoomID, r.RoomName, r.TotalSeats,
+             r.RoomID, r.RoomName, r.TotalSeats, r.RoomType,
              c.CinemaID, c.CinemaName, c.Address
       FROM   Showtimes st
       JOIN   Rooms   r ON st.RoomID   = r.RoomID
@@ -255,6 +243,7 @@ class MovieModel {
     return result.recordset;
   }
 
+
   static async getCinemas() {
     const pool = await getPool();
     const result = await pool.request().query(`
@@ -274,7 +263,7 @@ class MovieModel {
                CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
                CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
                COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
-               r.RoomID, r.RoomName, r.TotalSeats,
+               r.RoomID, r.RoomName, r.TotalSeats, r.RoomType,
                c.CinemaID, c.CinemaName, c.Address,
                m.MovieID, m.Title, m.Duration, m.AgeRating, m.PosterURL, m.MainCast
         FROM   Showtimes st
@@ -306,7 +295,7 @@ class MovieModel {
              CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
              CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
              COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
-             r.RoomID, r.RoomName, r.TotalSeats,
+             r.RoomID, r.RoomName, r.TotalSeats, r.RoomType,
              m.MovieID, m.Title, m.Duration, m.AgeRating, m.PosterURL, m.MainCast,
              (SELECT STRING_AGG(g.GenreName, ', ') 
               FROM Movie_Genres mg 

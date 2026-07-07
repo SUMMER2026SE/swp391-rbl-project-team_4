@@ -5,13 +5,16 @@ const RewardModel = require('./rewardModel');
 const RefundModel = require('./refundModel');
 
 function isCoupleSeat(seat) {
-  return (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) || seat.SeatRow === 'F';
+  return seat.SeatType && seat.SeatType.toLowerCase().includes('couple');
 }
 
 function getSeatMultiplier(seat) {
+  if (seat.PriceMultiplier && parseFloat(seat.PriceMultiplier) !== 1.0) {
+    return parseFloat(seat.PriceMultiplier);
+  }
   if (isCoupleSeat(seat)) return parseFloat(SettingsModel.cache['COUPLE_MULTIPLIER']) || 1.5;
   if (seat.SeatType === 'VIP') return parseFloat(SettingsModel.cache['VIP_MULTIPLIER']) || 1.2;
-  return parseFloat(seat.PriceMultiplier || 1.0);
+  return 1.0;
 }
 
 function couplePairKey(seat) {
@@ -153,11 +156,12 @@ class BookingModel {
 
         if (isCoupleSeat(seat)) {
           const pairKey = couplePairKey(seat);
+          const halfMult = parseFloat(seat.PriceMultiplier || 1.5) / 2;
           if (!couplePairsCharged.has(pairKey)) {
             couplePairsCharged.add(pairKey);
-            seatPrice = ticketPrice * 0.75;
+            seatPrice = ticketPrice * halfMult;
           } else {
-            seatPrice = ticketPrice * 0.75;
+            seatPrice = ticketPrice * halfMult;
           }
         } else {
           seatPrice = ticketPrice * getSeatMultiplier(seat);
@@ -666,7 +670,7 @@ class BookingModel {
                m.Title AS MovieTitle, m.PosterURL,
                CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
                CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
-               r.RoomName,
+               r.RoomName, r.RoomType,
                c.CinemaName,
                s.SeatRow, s.SeatNumber, s.SeatType,
                v.Code AS VoucherCode,
@@ -707,7 +711,7 @@ class BookingModel {
                m.Title AS MovieTitle, m.PosterURL, m.Duration,
                CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
                CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
-               r.RoomName,
+               r.RoomName, r.RoomType,
                c.CinemaName, c.Address,
                s.SeatRow, s.SeatNumber, s.SeatType,
                v.Code AS VoucherCode,

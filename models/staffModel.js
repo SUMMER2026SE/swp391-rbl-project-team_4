@@ -7,7 +7,7 @@ class StaffModel {
     const result = await pool.request().query(`
       SELECT st.ShowtimeID, st.StartTime, st.EndTime, st.Price, st.Status,
              m.Title AS MovieTitle, m.Duration,
-             r.RoomName,
+             r.RoomName, r.RoomType,
              c.CinemaName
       FROM   Showtimes st
       JOIN   Movies  m ON st.MovieID = m.MovieID
@@ -47,18 +47,45 @@ class StaffModel {
       }
       const ticketPrice = stResult.recordset[0].Price;
 
-      // --- Kiểm tra ghế còn trống ---
+      // --- Kiểm tra ghế còn trống và tính tiền ---
+      let ticketTotal = 0;
+      const couplePairsCharged = new Set();
+      
       for (const seatId of seatIds) {
         const sReq = transaction.request();
         sReq.input('seatId', sql.Int, seatId);
         sReq.input('showtimeId', sql.Int, showtimeId);
         const sCheck = await sReq.query(`
-          SELECT TicketID FROM Tickets WITH (UPDLOCK)
-          WHERE SeatID = @seatId AND ShowtimeID = @showtimeId AND Status IN ('confirmed','pending','refund_requested')
+          SELECT s.SeatRow, s.SeatNumber, s.SeatType, s.PriceMultiplier, t.TicketID 
+          FROM Seats s WITH (UPDLOCK)
+          LEFT JOIN Tickets t WITH (UPDLOCK) ON t.SeatID = s.SeatID AND t.ShowtimeID = @showtimeId AND t.Status IN ('confirmed','pending','refund_requested')
+          WHERE s.SeatID = @seatId
         `);
-        if (sCheck.recordset.length > 0) {
+        if (sCheck.recordset.length === 0) {
+          throw new Error(`Ghế ID ${seatId} không tồn tại.`);
+        }
+        if (sCheck.recordset[0].TicketID) {
           throw new Error(`Ghế ID ${seatId} đã được đặt.`);
         }
+        
+        const seat = sCheck.recordset[0];
+        let seatPrice;
+        if (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) {
+           const pairNum = seat.SeatNumber % 2 === 0 ? seat.SeatNumber - 1 : seat.SeatNumber + 1;
+           const pairKey = `${seat.SeatRow}_${Math.min(seat.SeatNumber, pairNum)}`;
+           const halfMult = parseFloat(seat.PriceMultiplier || 1.5) / 2;
+           if (!couplePairsCharged.has(pairKey)) {
+             couplePairsCharged.add(pairKey);
+             seatPrice = ticketPrice * halfMult;
+           } else {
+             seatPrice = ticketPrice * halfMult;
+           }
+        } else if (seat.SeatType === 'VIP') {
+           seatPrice = ticketPrice * parseFloat(seat.PriceMultiplier || 1.2);
+        } else {
+           seatPrice = ticketPrice * parseFloat(seat.PriceMultiplier || 1.0);
+        }
+        ticketTotal += seatPrice;
       }
 
       // --- Tính F&B ---
@@ -72,7 +99,7 @@ class StaffModel {
         }
       }
 
-      let totalAmount = ticketPrice * seatIds.length + fnbTotal;
+      let totalAmount = ticketTotal + fnbTotal;
 
       // --- Voucher ---
       let voucherId = null;
@@ -207,7 +234,7 @@ class StaffModel {
              u.FullName AS CustomerName, u.Phone AS CustomerPhone,
              m.Title AS MovieTitle,
              st.StartTime, st.EndTime,
-             r.RoomName,
+             r.RoomName, r.RoomType,
              c.CinemaName,
              s.SeatRow, s.SeatNumber, s.SeatType
       FROM   Tickets t

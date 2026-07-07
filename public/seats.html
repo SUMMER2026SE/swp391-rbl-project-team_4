@@ -1757,7 +1757,7 @@
             document.getElementById('movieAge').textContent = showtimeData.AgeRating || 'ALL';
             document.getElementById('movieDuration').textContent = showtimeData.Duration ? `${showtimeData.Duration} phút` : '--';
             document.getElementById('infoCinema').textContent = showtimeData.CinemaName || '--';
-            document.getElementById('infoRoom').textContent = showtimeData.RoomName || '--';
+            document.getElementById('infoRoom').textContent = showtimeData.RoomName ? (showtimeData.RoomType && showtimeData.RoomType !== '2D Standard' ? `[${showtimeData.RoomType}] ${showtimeData.RoomName}` : showtimeData.RoomName) : '--';
 
             const start = new Date(showtimeData.StartTime);
             document.getElementById('infoTime').textContent = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -1925,66 +1925,56 @@
                 lblL.textContent = row;
                 rowDiv.appendChild(lblL);
 
-                const isCouple = coupleRows.has(row);
+                const rowSeats = rowsMap[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
+                const total = rowSeats.length;
+                const half = Math.floor(total / 2);
 
-                if (isCouple) {
-                    // Couple row: seats are paired (1-2), (3-4), etc.
-                    const rowSeats = rowsMap[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
-                    for (let i = 0; i < rowSeats.length; i += 2) {
-                        const s1 = rowSeats[i];
+                for (let i = 0; i < total; i++) {
+                    const s1 = rowSeats[i];
+                    if (!s1) continue;
+
+                    // Center aisle gap
+                    if (total > 4 && i === half) {
+                        const gap = document.createElement('div');
+                        gap.className = 'aisle-gap';
+                        rowDiv.appendChild(gap);
+                    }
+
+                    if (s1.SeatType && s1.SeatType.toLowerCase().includes('couple')) {
                         const s2 = rowSeats[i + 1];
-                        if (!s1) continue;
+                        if (s2 && s2.SeatType && s2.SeatType.toLowerCase().includes('couple') && s2.SeatNumber === s1.SeatNumber + 1) {
+                            const isBooked = s1.SeatStatus === 'booked' || s2.SeatStatus === 'booked';
+                            const isLocked = s1.SeatStatus === 'locked' || s2.SeatStatus === 'locked';
 
-                        // Add small aisle gap every 3 pair
-                        if (i > 0 && i % 6 === 0) {
-                            const gap = document.createElement('div');
-                            gap.className = 'aisle-gap';
-                            rowDiv.appendChild(gap);
-                        }
+                            const coupleEl = document.createElement('div');
+                            coupleEl.className = `seat couple${isBooked ? ' booked' : ''}${isLocked ? ' locked' : ''}`;
+                            coupleEl.setAttribute('data-id-1', s1.SeatID);
+                            coupleEl.setAttribute('data-id-2', s2.SeatID);
+                            coupleEl.setAttribute('data-row', row);
+                            coupleEl.innerHTML = `
+                                <span class="couple-label">
+                                    ${row}${s1.SeatNumber}-${s2.SeatNumber}
+                                </span>
+                            `;
 
-                        if (!s2) {
-                            // Solo seat in couple row (edge case)
+                            if (!isBooked) {
+                                coupleEl.onclick = () => handleCoupleSeat(coupleEl, s1.SeatID, s2.SeatID);
+
+                                const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
+                                const mult = s1.PriceMultiplier ? parseFloat(s1.PriceMultiplier) : 1.5;
+                                const seatPrice = basePrice * mult;
+                                addTooltipListeners(coupleEl, `Ghế Cặp Đôi ${row}${s1.SeatNumber}-${s2.SeatNumber}`, seatPrice);
+                            }
+                            rowDiv.appendChild(coupleEl);
+                            i++; // skip next
+                        } else {
                             const seatEl = makeSingleSeatEl(s1, false);
                             rowDiv.appendChild(seatEl);
-                            continue;
                         }
-
-                        const isBooked = s1.SeatStatus === 'booked' || s2.SeatStatus === 'booked';
-                        const isLocked = s1.SeatStatus === 'locked' || s2.SeatStatus === 'locked';
-
-                        const coupleEl = document.createElement('div');
-                        coupleEl.className = `seat couple${isBooked ? ' booked' : ''}${isLocked ? ' locked' : ''}`;
-                        coupleEl.setAttribute('data-id-1', s1.SeatID);
-                        coupleEl.setAttribute('data-id-2', s2.SeatID);
-                        coupleEl.setAttribute('data-row', row);
-                        coupleEl.innerHTML = `
-                            <span class="couple-label">
-                                ${row}${s1.SeatNumber}-${s2.SeatNumber}
-                            </span>
-                        `;
-
-                        if (!isBooked) {
-                            coupleEl.onclick = () => handleCoupleSeat(coupleEl, s1.SeatID, s2.SeatID);
-
-                            const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
-                            const seatPrice = basePrice * 1.5;
-                            addTooltipListeners(coupleEl, `Ghế Cặp Đôi ${row}${s1.SeatNumber}-${s2.SeatNumber}`, seatPrice);
-                        }
-                        rowDiv.appendChild(coupleEl);
-                    }
-                } else {
-                    const rowSeats = rowsMap[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
-                    rowSeats.forEach((s, idx) => {
-                        const total = rowSeats.length;
-                        const half = Math.floor(total / 2);
-                        if (total > 4 && idx === half) {
-                            const gap = document.createElement('div');
-                            gap.className = 'aisle-gap';
-                            rowDiv.appendChild(gap);
-                        }
-                        const seatEl = makeSingleSeatEl(s, false);
+                    } else {
+                        const seatEl = makeSingleSeatEl(s1, false);
                         rowDiv.appendChild(seatEl);
-                    });
+                    }
                 }
                 // Right label
                 const lblR = document.createElement('div');
@@ -1998,6 +1988,14 @@
 
 
         function makeSingleSeatEl(seat, isInCoupleRow) {
+            if (seat.SeatType === 'None') {
+                const el = document.createElement('div');
+                el.className = 'seat none';
+                el.style.visibility = 'hidden';
+                el.style.pointerEvents = 'none';
+                return el;
+            }
+
             const isVip = seat.SeatType === 'VIP';
             const isBooked = seat.SeatStatus === 'booked';
             const isLocked = seat.SeatStatus === 'locked';
@@ -2019,8 +2017,8 @@
                 el.onclick = () => handleSingleSeat(el, seat.SeatID);
 
                 const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
-                const multiplier = isVip ? 1.2 : 1.0;
-                const seatPrice = basePrice * multiplier;
+                const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : (isVip ? 1.2 : 1.0);
+                const seatPrice = basePrice * mult;
                 addTooltipListeners(el, `Ghế ${seat.SeatRow}${seat.SeatNumber} (${isVip ? 'VIP' : 'Thường'})`, seatPrice);
             }
             return el;
@@ -2044,35 +2042,40 @@
                 rowsMap[s.SeatRow].push(s);
             });
 
-            const coupleRows = getCoupleRows();
-
             for (const row of Object.keys(rowsMap)) {
                 const rowSeats = [...rowsMap[row]].sort((a, b) => a.SeatNumber - b.SeatNumber);
-                const isCouple = coupleRows.has(row);
 
                 // Skip rows with no selections
                 if (!rowSeats.some(s => proposedSet.has(s.SeatID))) continue;
 
-                // Couple rows: must select whole pairs
-                if (isCouple) {
-                    for (let i = 0; i < rowSeats.length - 1; i += 2) {
-                        const s1 = rowSeats[i], s2 = rowSeats[i + 1];
-                        if (!s1 || !s2) continue;
-                        if (proposedSet.has(s1.SeatID) !== proposedSet.has(s2.SeatID)) {
-                            return { valid: false, message: `Ghế cặp đôi hàng ${row} phải chọn theo cặp (${row}${s1.SeatNumber}-${s2.SeatNumber}).` };
+                // 1. Couple validation: must select whole pairs
+                for (let i = 0; i < rowSeats.length - 1; i++) {
+                    const s1 = rowSeats[i];
+                    if (s1.SeatType && s1.SeatType.toLowerCase().includes('couple')) {
+                        const s2 = rowSeats[i + 1];
+                        if (s2 && s2.SeatType && s2.SeatType.toLowerCase().includes('couple') && s2.SeatNumber === s1.SeatNumber + 1) {
+                            if (proposedSet.has(s1.SeatID) !== proposedSet.has(s2.SeatID)) {
+                                return { valid: false, message: `Ghế cặp đôi hàng ${row} phải chọn theo cặp (${row}${s1.SeatNumber}-${row}${s2.SeatNumber}).` };
+                            }
+                            i++; // skip next since it's the pair
                         }
                     }
-                    continue;
                 }
 
-                // Single/VIP rows - split into segments at aisle
+                // 2. Split into segments at aisle or 'None' seats
                 const total = rowSeats.length;
                 const aisleIdx = total > 4 ? Math.floor(total / 2) : -1;
                 const segments = [];
                 let seg = [];
                 for (let i = 0; i < total; i++) {
-                    if (i === aisleIdx) { segments.push(seg); seg = []; }
-                    seg.push(rowSeats[i]);
+                    const s = rowSeats[i];
+                    if (i === aisleIdx || s.SeatType === 'None') {
+                        if (seg.length) segments.push(seg);
+                        seg = [];
+                    }
+                    if (s.SeatType !== 'None') {
+                        seg.push(s);
+                    }
                 }
                 if (seg.length) segments.push(seg);
 
@@ -2089,11 +2092,12 @@
                         }
                     }
 
-                    // Rule 2: No isolated (orphaned) single empty seat in segment
+                    // Rule 2: No isolated (orphaned) single empty seat in segment (skip for Couple seats)
                     for (let i = 0; i < segLen; i++) {
                         const s = segment[i];
                         if (proposedSet.has(s.SeatID)) continue;
                         if (s.SeatStatus === 'booked' || lockedByOthers.has(s.SeatID)) continue;
+                        if (s.SeatType && s.SeatType.toLowerCase().includes('couple')) continue;
 
                         const leftBarrier  = i === 0        || proposedSet.has(segment[i-1].SeatID) || segment[i-1].SeatStatus === 'booked' || lockedByOthers.has(segment[i-1].SeatID);
                         const rightBarrier = i === segLen-1 || proposedSet.has(segment[i+1].SeatID) || segment[i+1].SeatStatus === 'booked' || lockedByOthers.has(segment[i+1].SeatID);
@@ -2115,17 +2119,15 @@
                 el.classList.remove('dimmed');
             });
 
-            const coupleRows = getCoupleRows();
-
             seatsList.forEach(seat => {
-                if (seat.SeatStatus === 'booked' || lockedByOthers.has(seat.SeatID)) return;
+                if (seat.SeatStatus === 'booked' || lockedByOthers.has(seat.SeatID) || seat.SeatType === 'None') return;
                 if (selectedSeats.has(seat.SeatID)) return;
 
                 const el = getSeatEl(seat.SeatID);
                 if (!el) return;
 
                 const proposedSet = new Set(selectedSeats);
-                if (coupleRows.has(seat.SeatRow)) {
+                if (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) {
                     const pairNum = seat.SeatNumber % 2 === 0 ? seat.SeatNumber - 1 : seat.SeatNumber + 1;
                     const pairSeat = seatsList.find(s => s.SeatRow === seat.SeatRow && s.SeatNumber === pairNum);
                     proposedSet.add(seat.SeatID);
@@ -2290,9 +2292,6 @@
             let total = 0;
             const breakdown = { normal: { count: 0, price: 0 }, vip: { count: 0, price: 0 }, couple: { count: 0, price: 0 } };
 
-            // Determine couple rows
-            const coupleRows = getCoupleRows();
-
             const displayNames = [];
             const seatsArr = seatsList.filter(s => selectedSeats.has(s.SeatID));
 
@@ -2306,28 +2305,34 @@
             // Group couple seats
             const processedCouplePairs = new Set();
             seatsArr.forEach(seat => {
-                if (coupleRows.has(seat.SeatRow)) {
+                if (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) {
                     // Find pair
                     const pairNum = seat.SeatNumber % 2 === 0 ? seat.SeatNumber - 1 : seat.SeatNumber + 1;
-                    const pairKey = `${seat.SeatRow}_${Math.min(seat.SeatNumber, pairNum)}-${Math.max(seat.SeatNumber, pairNum)}`;
+                    const minNum = Math.min(seat.SeatNumber, pairNum);
+                    const maxNum = Math.max(seat.SeatNumber, pairNum);
+                    const pairKey = `${seat.SeatRow}_${minNum}-${maxNum}`;
                     if (!processedCouplePairs.has(pairKey)) {
-                        const seatPrice = basePrice * 1.5;
+                        const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : 1.5;
+                        const seatPrice = basePrice * mult;
                         total += seatPrice;
                         breakdown.couple.count++;
                         breakdown.couple.price += seatPrice;
-                        displayNames.push(`Cặp ${seat.SeatRow}${Math.min(seat.SeatNumber, pairNum)}-${Math.max(seat.SeatNumber, pairNum)}`);
+                        displayNames.push(`Cặp ${seat.SeatRow}${minNum}-${maxNum}`);
                         processedCouplePairs.add(pairKey);
                     }
                 } else if (seat.SeatType === 'VIP') {
-                    const seatPrice = basePrice * 1.2;
+                    const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : 1.2;
+                    const seatPrice = basePrice * mult;
                     total += seatPrice;
                     breakdown.vip.count++;
                     breakdown.vip.price += seatPrice;
                     displayNames.push(`${seat.SeatRow}${seat.SeatNumber}`);
                 } else {
-                    total += basePrice;
+                    const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : 1.0;
+                    const seatPrice = basePrice * mult;
+                    total += seatPrice;
                     breakdown.normal.count++;
-                    breakdown.normal.price += basePrice;
+                    breakdown.normal.price += seatPrice;
                     displayNames.push(`${seat.SeatRow}${seat.SeatNumber}`);
                 }
             });
@@ -2377,9 +2382,10 @@
         function updateAvailability() {
             const el = document.getElementById('seatAvailability');
             if (!el || !seatsList.length) return;
-            const booked = seatsList.filter(s => s.SeatStatus === 'booked').length;
-            const locked = seatsList.filter(s => s.SeatStatus === 'locked').length + lockedByOthers.size;
-            const available = seatsList.length - seatsList.filter(s => s.SeatStatus === 'booked').length - locked;
+            const physicalSeats = seatsList.filter(s => s.SeatType !== 'None');
+            const booked = physicalSeats.filter(s => s.SeatStatus === 'booked').length;
+            const locked = physicalSeats.filter(s => s.SeatStatus === 'locked').length + lockedByOthers.size;
+            const available = physicalSeats.length - booked - locked;
             el.innerHTML = `
                 <span style="color:#4ade80;font-weight:700;">${Math.max(0, available)} ghế trống</span>
                 <span style="margin:0 8px;color:#444;">|</span>
@@ -2391,17 +2397,11 @@
 
         function getCoupleRows() {
             const coupleRows = new Set();
-            const allRows = [...new Set(seatsList.map(s => s.SeatRow))].sort();
-
             seatsList.forEach(s => {
                 if (s.SeatType && s.SeatType.toLowerCase().includes('couple')) {
                     coupleRows.add(s.SeatRow);
                 }
             });
-            // Fallback: treat last row as couple
-            if (coupleRows.size === 0 && allRows.length > 0) {
-                coupleRows.add(allRows[allRows.length - 1]);
-            }
             return coupleRows;
         }
 
@@ -2418,7 +2418,6 @@
             }
 
             const basePrice = showtimeData.Price || 0;
-            const coupleRows = getCoupleRows();
             let ticketTotal = 0;
             const seatDetails = [];
             const displayNames = [];
@@ -2431,20 +2430,23 @@
             });
 
             seatsArr.forEach(seat => {
-                if (coupleRows.has(seat.SeatRow)) {
+                if (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) {
                     const pairNum = seat.SeatNumber % 2 === 0 ? seat.SeatNumber - 1 : seat.SeatNumber + 1;
-                    const pairKey = `${seat.SeatRow}_${Math.min(seat.SeatNumber, pairNum)}-${Math.max(seat.SeatNumber, pairNum)}`;
+                    const minNum = Math.min(seat.SeatNumber, pairNum);
+                    const maxNum = Math.max(seat.SeatNumber, pairNum);
+                    const pairKey = `${seat.SeatRow}_${minNum}-${maxNum}`;
                     if (!processedCouplePairs.has(pairKey)) {
-                        const seatPrice = basePrice * 1.5;
+                        const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : 1.5;
+                        const seatPrice = basePrice * mult;
                         ticketTotal += seatPrice;
                         processedCouplePairs.add(pairKey);
-                        const name = `Cặp ${seat.SeatRow}${Math.min(seat.SeatNumber, pairNum)}-${Math.max(seat.SeatNumber, pairNum)}`;
+                        const name = `Cặp ${seat.SeatRow}${minNum}-${maxNum}`;
                         displayNames.push(name);
                         seatDetails.push({ seatId: seat.SeatID, name, type: 'Couple', price: seatPrice });
                     }
                 } else {
                     const isVip = seat.SeatType === 'VIP';
-                    const mult = isVip ? 1.2 : 1.0;
+                    const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : (isVip ? 1.2 : 1.0);
                     const seatPrice = basePrice * mult;
                     ticketTotal += seatPrice;
                     const name = `${seat.SeatRow}${seat.SeatNumber}`;
@@ -2461,7 +2463,7 @@
                 genre: showtimeData.MainCast || '',
                 date: start.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }),
                 time: start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-                hall: `${showtimeData.RoomName} — ${showtimeData.CinemaName}`,
+                hall: `${showtimeData.RoomName ? (showtimeData.RoomType && showtimeData.RoomType !== '2D Standard' ? `[${showtimeData.RoomType}] ` + showtimeData.RoomName : showtimeData.RoomName) : '--'} — ${showtimeData.CinemaName}`,
                 seats: displayNames.join(', '),
                 seatIds: Array.from(selectedSeats),
                 seatDetails,
@@ -2967,6 +2969,7 @@
                 if (isCouple) {
                     for (let i = 0; i < seats.length; i += 2) {
                         const s1 = seats[i], s2 = seats[i+1];
+                        if (s1.SeatType === 'None') continue; // skip spacer
                         const gap = Math.floor(i/6) * 0.28;
                         const px  = startX + i*SEAT_STEP + SEAT_STEP*0.5 + gap;
                         const sel = selectedSeats.has(s1.SeatID)||(s2&&selectedSeats.has(s2.SeatID));
@@ -2982,6 +2985,7 @@
                     }
                 } else {
                     seats.forEach((seat, ci) => {
+                        if (seat.SeatType === 'None') return; // skip spacer
                         const half = Math.floor(nSeats/2);
                         const gap  = (ci >= half && nSeats > 4) ? 0.5 : 0;
                         const x    = startX + ci*SEAT_STEP + gap;

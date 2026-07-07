@@ -771,7 +771,7 @@
                             MovieTitle: t.MovieTitle,
                             PosterURL: t.PosterURL,
                             StartTime: t.StartTime,
-                            RoomName: t.RoomName,
+                            RoomName: t.RoomType && t.RoomType !== '2D Standard' ? `[${t.RoomType}] ${t.RoomName}` : t.RoomName,
                             Status: t.Status,
                             RefundStatus: t.RefundStatus,
                             RefundRequestStatus: t.RefundRequestStatus,
