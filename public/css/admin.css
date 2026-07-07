@@ -1088,57 +1088,107 @@ textarea.form-control { resize: vertical; }
     background: #060810;
 }
 .cw-toolbar {
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 12px;
-    padding: 16px 24px;
-    background: rgba(10,12,20,0.97);
+    display: flex; flex-direction: column;
+    background: rgba(8,10,18,0.98);
     border-bottom: 1px solid rgba(255,255,255,0.07);
     backdrop-filter: blur(12px);
 }
-.btn-group-toggle { display: flex; background: rgba(255,255,255,0.04); border-radius: var(--radius-sm); padding: 3px; border: 1px solid rgba(255,255,255,0.08); gap: 2px; }
-.bgt-btn { width: 34px; height: 34px; border-radius: 6px; color: rgba(255,255,255,0.45); display: flex; align-items: center; justify-content: center; transition: all var(--tr); }
-.bgt-btn.active { background: rgba(255,255,255,0.12); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
-.cw-legend-toggles { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.cl-toggle {
-    display: flex; align-items: center; gap: 7px;
-    font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.7);
-    cursor: pointer; transition: all 0.2s;
-    padding: 5px 10px; border-radius: 8px;
-    border: 1px solid transparent;
+.cw-toolbar-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 10px 20px;
+    flex-wrap: nowrap;
 }
-.cl-toggle:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+.cw-toolbar-row--legend {
+    padding: 8px 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    background: rgba(0,0,0,0.18);
+}
+
+/* Button groups */
+.cw-tools-left { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+.btn-group-toggle { display: flex; background: rgba(255,255,255,0.04); border-radius: 8px; padding: 3px; border: 1px solid rgba(255,255,255,0.08); gap: 2px; flex-shrink: 0; }
+
+/* Base button inside btn-group-toggle */
+.bgt-btn {
+    min-width: 34px; height: 32px;
+    padding: 0 10px; gap: 5px;
+    border-radius: 6px;
+    color: rgba(255,255,255,0.55);
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.02em;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.bgt-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.9); }
+.bgt-btn.active, .bgt-btn:active { background: rgba(255,255,255,0.13); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+/* Icon-only square button */
+.bgt-btn.bgt-icon-only { width: 32px; padding: 0; }
+/* Danger variant */
+.bgt-btn.bgt-danger { color: rgba(239,68,68,0.7); }
+.bgt-btn.bgt-danger:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+/* Seat type legend row */
+.cw-legend-toggles { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+.cw-legend-label {
+    font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.35);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-right: 4px; flex-shrink: 0;
+}
+.cl-toggle {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.79rem; font-weight: 700; color: rgba(255,255,255,0.6);
+    cursor: pointer; transition: all 0.18s;
+    padding: 5px 11px; border-radius: 20px;
+    border: 1px solid transparent;
+    flex-shrink: 0; user-select: none;
+}
+.cl-toggle:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); }
 .cl-toggle input { display: none; }
-.cl-toggle:has(input:checked) { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); color: #fff; }
+.cl-toggle:has(input:checked) { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; }
+
 /* Seat color swatches */
 .cbox {
-    width: 22px; height: 18px; border-radius: 4px 4px 3px 3px;
+    width: 20px; height: 16px; border-radius: 3px 3px 2px 2px;
     display: inline-block; border: 1px solid rgba(255,255,255,0.12);
     box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
     flex-shrink: 0;
 }
 .cbox.standard { background: linear-gradient(180deg, #475569, #1e293b); border-color: rgba(100,116,139,0.4); }
 .cbox.vip      { background: linear-gradient(180deg, #e28a18, #8a4805); border-color: rgba(252,211,77,0.3); }
+.cbox.couple   { background: linear-gradient(180deg, #db2777, #7d0e3d); border-color: rgba(219,39,119,0.4); box-shadow: 0 0 8px rgba(219,39,119,0.35), inset 0 1px 0 rgba(255,255,255,0.15); width: 34px; }
 .cbox.blocked  { background: rgba(30,35,44,0.7); border: 1px dashed rgba(255,255,255,0.1); }
 
-.cw-tools-right { display: flex; gap: 10px; }
+/* Right action buttons */
+.cw-tools-right { display: flex; gap: 8px; flex-shrink: 0; }
 .btn-outline-red {
-    padding: 8px 16px;
-    border: 1.5px solid rgba(229,9,20,0.55);
-    color: rgba(255,255,255,0.8);
-    border-radius: var(--radius-sm);
-    font-size: 0.82rem; font-weight: 700;
-    background: rgba(229,9,20,0.06);
-    transition: all var(--tr);
+    padding: 7px 14px;
+    border: 1.5px solid rgba(229,9,20,0.5);
+    color: rgba(255,255,255,0.75);
+    border-radius: 8px;
+    font-size: 0.79rem; font-weight: 700;
+    background: rgba(229,9,20,0.05);
+    transition: all 0.18s; white-space: nowrap;
 }
-.btn-outline-red:hover { background: rgba(229,9,20,0.16); border-color: var(--accent); color: #fff; }
+.btn-outline-red:hover { background: rgba(229,9,20,0.15); border-color: var(--accent); color: #fff; }
+.btn-preview {
+    padding: 7px 14px;
+    border: 1.5px solid rgba(59,130,246,0.5);
+    color: rgba(148,184,255,0.85);
+    border-radius: 8px;
+    font-size: 0.79rem; font-weight: 700;
+    background: rgba(59,130,246,0.06);
+    transition: all 0.18s; white-space: nowrap;
+}
+.btn-preview:hover { background: rgba(59,130,246,0.15); border-color: #3b82f6; color: #93c5fd; }
 .btn-solid-red {
-    padding: 8px 18px;
+    padding: 7px 16px;
     background: linear-gradient(135deg, #e8192c, #c0102a);
-    color: #fff; border-radius: var(--radius-sm);
-    font-size: 0.82rem; font-weight: 700;
-    border: 1px solid rgba(255,255,255,0.15);
-    transition: all var(--tr);
+    color: #fff; border-radius: 8px;
+    font-size: 0.79rem; font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.12);
+    transition: all 0.18s;
     box-shadow: 0 2px 8px rgba(229,9,20,0.3);
+    white-space: nowrap;
 }
 .btn-solid-red:hover { background: linear-gradient(135deg, #ff2a38, #d01225); box-shadow: 0 4px 16px rgba(232,25,44,0.5); }
 

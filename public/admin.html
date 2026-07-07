@@ -407,37 +407,48 @@
             <!-- Main Workspace -->
             <div class="cin-workspace" id="cinemaWorkspace" style="display: none;">
                 <div class="cw-toolbar">
-                    <div class="cw-tools-left">
-                        <div class="btn-group-toggle">
-                            <button class="bgt-btn active" title="Chế độ xem sơ đồ"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
-                            <button class="bgt-btn" onclick="addSeatRow()" title="Thêm hàng ghế"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> +Hàng</button>
-                            <button class="bgt-btn" onclick="removeSeatRow()" title="Bớt hàng ghế" style="margin-left:2px; color:#ef4444;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg> -Hàng</button>
-                            <button class="bgt-btn" onclick="addSeatCol()" title="Thêm cột ghế" style="margin-left:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> +Cột</button>
-                            <button class="bgt-btn" onclick="removeSeatCol()" title="Bớt cột ghế" style="margin-left:2px; color:#ef4444;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg> -Cột</button>
+                    <!-- Row 1: Grid controls + Action buttons -->
+                    <div class="cw-toolbar-row">
+                        <div class="cw-tools-left">
+                            <div class="btn-group-toggle">
+                                <button class="bgt-btn bgt-icon-only active" title="Chế độ xem sơ đồ"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
+                            </div>
+                            <div class="btn-group-toggle">
+                                <button class="bgt-btn" onclick="addSeatRow()" title="Thêm hàng ghế"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> +Hàng</button>
+                                <button class="bgt-btn bgt-danger" onclick="removeSeatRow()" title="Bớt hàng ghế"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg> −Hàng</button>
+                            </div>
+                            <div class="btn-group-toggle">
+                                <button class="bgt-btn" onclick="addSeatCol()" title="Thêm cột ghế"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> +Cột</button>
+                                <button class="bgt-btn bgt-danger" onclick="removeSeatCol()" title="Bớt cột ghế"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg> −Cột</button>
+                            </div>
+                        </div>
+                        <div class="cw-tools-right">
+                            <button class="btn-outline-red" onclick="clearSeatMap()" title="Xóa toàn bộ và bắt đầu lại">🔄 Làm mới</button>
+                            <button class="btn-preview" onclick="previewCustomerView()" title="Xem trước như khách hàng">👁 Xem trước</button>
+                            <button class="btn-solid-red" onclick="saveSeatLayout()">💾 Lưu bố cục</button>
                         </div>
                     </div>
-                    <div class="cw-legend-toggles">
-                        <label class="cl-toggle" title="Ghế thường - giá cơ bản">
-                            <input type="radio" name="seat_tool" value="Normal" checked>
-                            <span class="cbox standard"></span>Thường
-                        </label>
-                        <label class="cl-toggle" title="Ghế VIP - giá x1.2">
-                            <input type="radio" name="seat_tool" value="VIP">
-                            <span class="cbox vip"></span>VIP ★
-                        </label>
-                        <label class="cl-toggle" title="Ghế cặp đôi - giá x1.5 (chọn theo cặp)">
-                            <input type="radio" name="seat_tool" value="Couple">
-                            <span class="cbox" style="background:linear-gradient(180deg,#db2777,#7d0e3d);box-shadow:0 0 8px rgba(219,39,119,0.5);width:44px;"></span>Couple ♥
-                        </label>
-                        <label class="cl-toggle" title="Xóa ghế (ô trống)">
-                            <input type="radio" name="seat_tool" value="None">
-                            <span class="cbox blocked"></span>Xóa
-                        </label>
-                    </div>
-                    <div class="cw-tools-right">
-                        <button class="btn-outline-red" onclick="clearSeatMap()" title="Xóa toàn bộ và bắt đầu lại">🔄 Làm mới</button>
-                        <button class="btn-outline-red" onclick="previewCustomerView()" title="Xem trước như khách hàng" style="border-color:#3b82f6;color:#3b82f6;">👁 Xem trước</button>
-                        <button class="btn-solid-red" onclick="saveSeatLayout()">💾 Lưu bố cục</button>
+                    <!-- Row 2: Seat type legend -->
+                    <div class="cw-toolbar-row cw-toolbar-row--legend">
+                        <div class="cw-legend-toggles">
+                            <span class="cw-legend-label">Loại ghế:</span>
+                            <label class="cl-toggle" title="Ghế thường - giá cơ bản">
+                                <input type="radio" name="seat_tool" value="Normal" checked>
+                                <span class="cbox standard"></span>Thường
+                            </label>
+                            <label class="cl-toggle" title="Ghế VIP - giá x1.2">
+                                <input type="radio" name="seat_tool" value="VIP">
+                                <span class="cbox vip"></span>VIP ★
+                            </label>
+                            <label class="cl-toggle" title="Ghế cặp đôi - giá x1.5">
+                                <input type="radio" name="seat_tool" value="Couple">
+                                <span class="cbox couple"></span>Couple ♥
+                            </label>
+                            <label class="cl-toggle" title="Xóa ghế (ô trống)">
+                                <input type="radio" name="seat_tool" value="None">
+                                <span class="cbox blocked"></span>Xóa
+                            </label>
+                        </div>
                     </div>
                 </div>
 
