@@ -216,11 +216,13 @@ class MovieModel {
     let dateFilter = '';
     if (date) {
       request.input('date', sql.Date, date);
-      dateFilter = 'AND CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date';
+      dateFilter = 'AND CAST(st.StartTime AS DATE) = @date';
     }
 
     const result = await request.query(`
-      SELECT st.ShowtimeID, st.StartTime, st.EndTime,
+      SELECT st.ShowtimeID,
+             CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
+             CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
              COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
              r.RoomID, r.RoomName, r.TotalSeats,
              c.CinemaID, c.CinemaName, c.Address
@@ -245,7 +247,7 @@ class MovieModel {
         FROM   Seats s
         JOIN   Showtimes st ON s.RoomID = st.RoomID
         LEFT   JOIN Tickets t ON t.SeatID = s.SeatID AND t.ShowtimeID = @showtimeId
-                              AND t.Status IN ('confirmed', 'pending')
+                              AND t.Status IN ('confirmed', 'pending', 'refund_requested')
         WHERE  st.ShowtimeID = @showtimeId
           AND  s.SeatType != 'None'
         ORDER BY s.SeatRow, s.SeatNumber
@@ -268,7 +270,9 @@ class MovieModel {
     const result = await pool.request()
       .input('showtimeId', sql.Int, parseInt(showtimeId))
       .query(`
-        SELECT st.ShowtimeID, st.StartTime, st.EndTime,
+        SELECT st.ShowtimeID,
+               CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
+               CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
                COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
                r.RoomID, r.RoomName, r.TotalSeats,
                c.CinemaID, c.CinemaName, c.Address,
@@ -298,7 +302,9 @@ class MovieModel {
     }
 
     const result = await request.query(`
-      SELECT st.ShowtimeID, st.StartTime, st.EndTime,
+      SELECT st.ShowtimeID,
+             CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
+             CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
              COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
              r.RoomID, r.RoomName, r.TotalSeats,
              m.MovieID, m.Title, m.Duration, m.AgeRating, m.PosterURL, m.MainCast,
@@ -312,21 +318,21 @@ class MovieModel {
                 AND NOT EXISTS (
                   SELECT 1 FROM Tickets tk
                   WHERE tk.SeatID = s.SeatID AND tk.ShowtimeID = st.ShowtimeID
-                    AND tk.Status IN ('confirmed', 'pending')
+                    AND tk.Status IN ('confirmed', 'pending', 'refund_requested')
                 )
              ) AS AvailableSeats,
              (SELECT COUNT(*)
               FROM Tickets tk
-              WHERE tk.ShowtimeID = st.ShowtimeID AND tk.Status IN ('confirmed', 'pending')
+              WHERE tk.ShowtimeID = st.ShowtimeID AND tk.Status IN ('confirmed', 'pending', 'refund_requested')
              ) AS TicketsSold
       FROM   Showtimes st
       JOIN   Rooms   r ON st.RoomID   = r.RoomID
       JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
       JOIN   Movies  m ON st.MovieID  = m.MovieID
       WHERE  r.CinemaID = @cinemaId
-        AND  CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date
+        AND  CAST(st.StartTime AS DATE) = @date
         AND  st.Status  = 'active'
-        AND  st.StartTime > GETUTCDATE()
+        AND  st.StartTime > GETDATE()
         ${movieFilter}
       ORDER BY m.Title, st.StartTime ASC
     `);
