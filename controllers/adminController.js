@@ -3,6 +3,7 @@
 //  Dành cho: Quản lý (Role: Admin, Manager)
 // ============================================================
 const AdminModel = require('../models/adminModel');
+const RefundModel = require('../models/refundModel');
 const PDFDocument = require('pdfkit');
 
 function formatReportDate(value) {
@@ -928,6 +929,40 @@ exports.deleteGenre = async (req, res) => {
   }
 };
 
+exports.getRefundRequests = async (req, res) => {
+  try {
+    const data = await RefundModel.getAdminRefunds(req.query || {});
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[adminController] getRefundRequests:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server khi tải danh sách hoàn tiền.' });
+  }
+};
+
+exports.updateRefundRequest = async (req, res) => {
+  try {
+    const action = req.body && req.body.action;
+    const data = await RefundModel.updateRefundStatus(req.params.id, req.user.userId, action, req.body || {});
+    const messages = {
+      approve: 'Đã duyệt yêu cầu hoàn tiền.',
+      reject: 'Đã từ chối yêu cầu hoàn tiền.',
+      complete: 'Đã ghi nhận hoàn tiền thành công.'
+    };
+    res.json({ success: true, message: messages[String(action || '').toLowerCase()] || 'Đã cập nhật yêu cầu hoàn tiền.', data });
+  } catch (err) {
+    console.error('[adminController] updateRefundRequest:', err.message);
+    const known =
+      err.message.includes('không hợp lệ') ||
+      err.message.includes('Không tìm thấy') ||
+      err.message.includes('Chỉ') ||
+      err.message.includes('không thể') ||
+      err.message.includes('Không thể') ||
+      err.message.includes('Vui lòng') ||
+      err.message.includes('đã');
+    res.status(known ? 400 : 500).json({ success: false, message: known ? err.message : 'Lỗi server khi cập nhật hoàn tiền.' });
+  }
+};
+
 exports.exportCsv = async (req, res) => {
   try {
     const report = await buildReportData(req.query);
@@ -998,6 +1033,25 @@ exports.getRevenueChartData = async (req, res) => {
       labels.push(labels.shift());
       ticketData.push(ticketData.shift());
       fnbData.push(fnbData.shift());
+
+      const today = new Date();
+      const weekDays = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(today);
+        d.setDate(today.getDate() - 6 + i);
+        return d;
+      });
+      labels = weekDays.map(d => d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }));
+      ticketData = new Array(7).fill(0);
+      fnbData = new Array(7).fill(0);
+
+      data.forEach(t => {
+        const bookedKey = new Date(t.BookedAt).toISOString().slice(0, 10);
+        const index = weekDays.findIndex(d => d.toISOString().slice(0, 10) === bookedKey);
+        if (index >= 0) {
+          ticketData[index] += t.TotalAmount || 0;
+          fnbData[index] += t.FnBRevenue || 0;
+        }
+      });
 
     } else if (period === 'month') {
       const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
