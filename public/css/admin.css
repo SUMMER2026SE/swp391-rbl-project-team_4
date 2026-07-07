@@ -1085,93 +1085,253 @@ textarea.form-control { resize: vertical; }
 /* Main Workspace */
 .cin-workspace {
     flex: 1; display: flex; flex-direction: column; min-width: 0;
+    background: #060810;
 }
 .cw-toolbar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 28px; background: var(--bg-white);
-    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap; gap: 12px;
+    padding: 16px 24px;
+    background: rgba(10,12,20,0.97);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    backdrop-filter: blur(12px);
 }
-.btn-group-toggle { display: flex; background: var(--bg); border-radius: var(--radius-sm); padding: 4px; border: 1px solid var(--border); }
-.bgt-btn { width: 36px; height: 36px; border-radius: 6px; color: var(--text2); display: flex; align-items: center; justify-content: center; transition: all var(--tr); }
-.bgt-btn.active { background: var(--bg-white); color: var(--text); box-shadow: var(--shadow-xs); }
-.cw-legend-toggles { display: flex; align-items: center; gap: 20px; }
-.cl-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 600; color: var(--text); cursor: pointer; }
+.btn-group-toggle { display: flex; background: rgba(255,255,255,0.04); border-radius: var(--radius-sm); padding: 3px; border: 1px solid rgba(255,255,255,0.08); gap: 2px; }
+.bgt-btn { width: 34px; height: 34px; border-radius: 6px; color: rgba(255,255,255,0.45); display: flex; align-items: center; justify-content: center; transition: all var(--tr); }
+.bgt-btn.active { background: rgba(255,255,255,0.12); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+.cw-legend-toggles { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.cl-toggle {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.7);
+    cursor: pointer; transition: all 0.2s;
+    padding: 5px 10px; border-radius: 8px;
+    border: 1px solid transparent;
+}
+.cl-toggle:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
 .cl-toggle input { display: none; }
-.cbox { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 2px solid transparent; }
-.cbox.standard { border-color: var(--up); background: #fff; }
-.cl-toggle input:checked + .cbox.standard { background: var(--up); }
-.cbox.vip { border-color: var(--yellow); background: #fff; }
-.cl-toggle input:checked + .cbox.vip { background: var(--yellow); }
-.cbox.blocked { border-color: var(--border2); background: var(--bg); }
-.cl-toggle input:checked + .cbox.blocked { background: var(--border2); }
+.cl-toggle:has(input:checked) { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); color: #fff; }
+/* Seat color swatches */
+.cbox {
+    width: 22px; height: 18px; border-radius: 4px 4px 3px 3px;
+    display: inline-block; border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+    flex-shrink: 0;
+}
+.cbox.standard { background: linear-gradient(180deg, #475569, #1e293b); border-color: rgba(100,116,139,0.4); }
+.cbox.vip      { background: linear-gradient(180deg, #e28a18, #8a4805); border-color: rgba(252,211,77,0.3); }
+.cbox.blocked  { background: rgba(30,35,44,0.7); border: 1px dashed rgba(255,255,255,0.1); }
 
-.cw-tools-right { display: flex; gap: 12px; }
-.btn-outline-red { padding: 9px 18px; border: 1.5px solid var(--accent); color: var(--accent); border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 700; background: #fff; transition: all var(--tr); }
-.btn-outline-red:hover { background: var(--accent-bg); }
-.btn-solid-red { padding: 9px 18px; background: var(--accent); color: #fff; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 700; transition: all var(--tr); }
-.btn-solid-red:hover { background: var(--accent2); box-shadow: 0 4px 12px rgba(232,25,44,0.3); }
+.cw-tools-right { display: flex; gap: 10px; }
+.btn-outline-red {
+    padding: 8px 16px;
+    border: 1.5px solid rgba(229,9,20,0.55);
+    color: rgba(255,255,255,0.8);
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem; font-weight: 700;
+    background: rgba(229,9,20,0.06);
+    transition: all var(--tr);
+}
+.btn-outline-red:hover { background: rgba(229,9,20,0.16); border-color: var(--accent); color: #fff; }
+.btn-solid-red {
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #e8192c, #c0102a);
+    color: #fff; border-radius: var(--radius-sm);
+    font-size: 0.82rem; font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: all var(--tr);
+    box-shadow: 0 2px 8px rgba(229,9,20,0.3);
+}
+.btn-solid-red:hover { background: linear-gradient(135deg, #ff2a38, #d01225); box-shadow: 0 4px 16px rgba(232,25,44,0.5); }
 
+/* ──────── CINEMA SEAT BUILDER — Premium Dark Theme ──────── */
 .cw-canvas-area {
     flex: 1; position: relative; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: stretch; justify-content: center;
 }
 .cw-canvas-scroll {
     width: 100%; height: 100%; overflow: auto;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: flex-start; justify-content: center;
+    background: radial-gradient(ellipse at 50% 0%, #0d111a 0%, #060810 80%);
 }
 .cw-canvas {
-    background: var(--bg-white); border-radius: 20px;
-    padding: 40px 60px; box-shadow: var(--shadow-sm);
-    display: flex; flex-direction: column; align-items: center; gap: 30px;
-    margin: auto; transform-origin: center;
-}
-.screen-indicator {
-    width: 80%; text-align: center; font-size: 0.72rem; font-weight: 800; color: var(--accent);
-    letter-spacing: 0.15em; border-top: 6px solid rgba(232,25,44,0.2); padding-top: 10px;
-    position: relative;
-}
-.screen-indicator::before {
-    content: ''; position: absolute; top: -6px; left: 0; right: 0;
-    height: 6px; background: linear-gradient(to right, transparent, rgba(232,25,44,0.3), transparent);
+    background: transparent;
+    padding: 40px 60px 60px;
+    display: flex; flex-direction: column; align-items: center; gap: 24px;
+    margin: auto; transform-origin: center top;
 }
 
-.seat-matrix { display: flex; flex-direction: column; gap: 8px; }
-.seat-row { display: flex; gap: 8px; justify-content: center; }
-.seat-btn {
-    width: 32px; height: 32px; border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.6rem; font-weight: 700; color: var(--text2);
-    border: 1.5px solid transparent; background: var(--bg-white);
-    transition: all 0.1s;
+/* Cinema Screen */
+.screen-indicator {
+    width: 88%; text-align: center; font-size: 0.7rem; font-weight: 800;
+    color: rgba(255,255,255,0.5); letter-spacing: 0.22em;
+    border: none; padding-top: 22px; position: relative;
+    margin-bottom: 10px;
 }
-.seat-btn:hover:not(:disabled) { transform: scale(1.1); z-index: 2; box-shadow: var(--shadow-xs); }
-.seat-btn.standard { border-color: var(--up); }
-.seat-btn.standard:hover { background: var(--up); color: #fff; }
-.seat-btn.vip { border-color: var(--yellow); }
-.seat-btn.vip:hover { background: var(--yellow); color: #fff; }
-.seat-btn.blocked { background: var(--bg); border-color: var(--bg); color: var(--text3); }
+.screen-indicator::before {
+    content: ''; position: absolute; top: 0; left: 5%; right: 5%;
+    height: 10px;
+    background: linear-gradient(90deg, transparent 3%, rgba(229,9,20,0.18) 15%,
+        #ff2a36 50%, rgba(229,9,20,0.18) 85%, transparent 97%);
+    border-radius: 50% / 100% 100% 0 0;
+    box-shadow: 0 6px 30px rgba(229,9,20,0.75), 0 2px 15px rgba(255,42,54,0.45);
+}
+.screen-indicator::after {
+    content: ''; position: absolute; top: 10px; left: 7.5%; width: 85%; height: 120px;
+    background: radial-gradient(ellipse at top, rgba(229,9,20,0.18) 0%,
+        rgba(229,9,20,0.05) 55%, transparent 80%);
+    clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+    pointer-events: none; filter: blur(10px);
+}
+
+/* Seat Matrix Container */
+.seat-matrix {
+    display: flex; flex-direction: column; gap: 10px;
+    user-select: none; align-items: center;
+}
+.seat-row {
+    display: flex; align-items: center; gap: 9px; justify-content: center;
+}
+
+/* Row Label — cinema-style round badge */
+.row-label-admin {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; color: #6b7280; font-size: 0.75rem;
+    flex-shrink: 0;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    transition: all 0.25s;
+}
+.seat-row:hover .row-label-admin {
+    color: #fff; border-color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08);
+}
+
+/* Aisle gap */
+.aisle-gap-admin {
+    width: 20px; flex-shrink: 0;
+}
+
+/* ── Base Seat Button — real cinema chair appearance ── */
+.seat-btn {
+    width: 36px; height: 34px;
+    border-radius: 8px 8px 6px 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 800;
+    cursor: pointer; position: relative; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+    overflow: visible;
+}
+/* Headrest */
+.seat-btn::before {
+    content: ''; position: absolute; top: 2px; left: 5px; right: 5px;
+    height: 9px; background: rgba(255,255,255,0.14);
+    border-radius: 3px; transition: all 0.2s;
+}
+/* Cushion */
+.seat-btn::after {
+    content: ''; position: absolute;
+    bottom: 4px; left: 5px; right: 5px; top: 14px;
+    background: rgba(0,0,0,0.28); border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.04); transition: all 0.2s;
+}
+.seat-btn span { position: relative; z-index: 2; }
+
+/* Standard Seat */
+.seat-btn.standard {
+    background: linear-gradient(180deg, #475569, #1e293b);
+    color: #cbd5e1; border-color: rgba(100,116,139,0.3);
+}
+.seat-btn.standard:hover {
+    background: linear-gradient(180deg, #64748b, #334155);
+    transform: translateY(-4px) scale(1.12);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.7), 0 0 12px rgba(100,116,139,0.35);
+    color: #fff; border-color: rgba(255,255,255,0.25);
+}
+
+/* VIP Seat */
+.seat-btn.vip {
+    background: linear-gradient(180deg, #e28a18, #8a4805);
+    color: #fef08a; border-color: rgba(252,211,77,0.3);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.5), 0 0 5px rgba(245,158,11,0.18);
+}
+.seat-btn.vip::before { background: rgba(255,255,255,0.22); }
+.seat-btn.vip:hover {
+    background: linear-gradient(180deg, #f59e0b, #b45309);
+    transform: translateY(-4px) scale(1.12);
+    box-shadow: 0 8px 20px rgba(180,83,9,0.6), 0 0 16px rgba(245,158,11,0.55);
+    color: #fff; border-color: rgba(252,211,77,0.5);
+}
+
+/* Couple Seat */
+.seat-btn.couple {
+    width: 78px; height: 34px;
+    border-radius: 9px 9px 6px 6px;
+    background: linear-gradient(180deg, #db2777, #7d0e3d);
+    color: #fce7f3; border-color: rgba(251,207,232,0.3);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5), 0 0 6px rgba(219,39,119,0.18);
+    font-size: 0.58rem;
+}
+.seat-btn.couple::before {
+    content: '♥'; font-size: 0.6rem;
+    position: absolute; top: 2px; left: 50%; transform: translateX(-50%);
+    width: 14px; height: 14px; background: rgba(255,255,255,0.18);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    color: #fb7185;
+}
+.seat-btn.couple::after {
+    left: 7px; right: 7px;
+}
+.seat-btn.couple:hover {
+    background: linear-gradient(180deg, #ec4899, #9d174d);
+    transform: translateY(-4px) scale(1.07);
+    box-shadow: 0 8px 24px rgba(157,23,77,0.7), 0 0 16px rgba(219,39,119,0.55);
+    color: #fff; border-color: rgba(251,207,232,0.5);
+}
+
+/* Blocked / Empty seat */
+.seat-btn.blocked {
+    background: rgba(30,35,44,0.5);
+    border: 1px dashed rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.08);
+    box-shadow: none;
+    cursor: default;
+}
+.seat-btn.blocked::before, .seat-btn.blocked::after { display: none; }
+.seat-btn.blocked:hover { transform: none; box-shadow: none; }
+
 .seat-btn:disabled, .seat-btn.none { opacity: 0; pointer-events: none; }
 
 .zoom-controls {
-    position: absolute; bottom: 30px; right: 30px;
+    position: absolute; bottom: 24px; right: 24px;
     display: flex; flex-direction: column; gap: 8px;
+    z-index: 10;
 }
 .zoom-controls button {
     width: 40px; height: 40px; border-radius: 50%;
-    background: var(--bg-white); border: 1px solid var(--border);
+    background: rgba(10,14,25,0.85);
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(8px);
     display: flex; align-items: center; justify-content: center;
-    color: var(--text2); box-shadow: var(--shadow-xs); transition: all var(--tr);
+    color: rgba(255,255,255,0.5);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    transition: all var(--tr);
 }
-.zoom-controls button:hover { color: var(--accent); border-color: var(--accent); }
+.zoom-controls button:hover { color: #fff; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); }
 
 .cw-footer {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 28px; background: var(--bg-white); border-top: 1px solid var(--border);
+    flex-wrap: wrap; gap: 12px;
+    padding: 14px 24px;
+    background: rgba(8,10,18,0.98);
+    border-top: 1px solid rgba(255,255,255,0.07);
 }
-.cwf-legends { display: flex; align-items: center; gap: 20px; }
-.cwf-litem { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; color: var(--text2); }
-.cwf-stats { font-size: 0.85rem; color: var(--text2); font-weight: 600; }
-.cwf-stats strong { color: var(--accent); font-weight: 800; font-size: 1rem; }
+.cwf-legends { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.cwf-litem { display: flex; align-items: center; gap: 7px; font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.55); }
+.cwf-stats { font-size: 0.82rem; color: rgba(255,255,255,0.45); font-weight: 600; }
+.cwf-stats strong { font-weight: 800; font-size: 0.95rem; }
 
 /* ──────────────── F&B AND VOUCHER PAGE ──────────────── */
 .fnb-tabs {

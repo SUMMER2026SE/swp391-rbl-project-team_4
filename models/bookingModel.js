@@ -4,7 +4,7 @@ const SettingsModel = require('./settingsModel');
 const RewardModel = require('./rewardModel');
 
 function isCoupleSeat(seat) {
-  return (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) || seat.SeatRow === 'F';
+  return seat.SeatType && seat.SeatType.toLowerCase().includes('couple');
 }
 
 function getSeatMultiplier(seat) {
@@ -152,11 +152,12 @@ class BookingModel {
 
         if (isCoupleSeat(seat)) {
           const pairKey = couplePairKey(seat);
+          const halfMult = parseFloat(seat.PriceMultiplier || 1.5) / 2;
           if (!couplePairsCharged.has(pairKey)) {
             couplePairsCharged.add(pairKey);
-            seatPrice = ticketPrice * 0.75;
+            seatPrice = ticketPrice * halfMult;
           } else {
-            seatPrice = ticketPrice * 0.75;
+            seatPrice = ticketPrice * halfMult;
           }
         } else {
           seatPrice = ticketPrice * getSeatMultiplier(seat);
@@ -654,7 +655,7 @@ class BookingModel {
         SELECT t.TicketID, t.BookedAt, t.Status, t.TotalAmount, t.PaymentMethod,
                m.Title AS MovieTitle, m.PosterURL,
                st.StartTime, st.EndTime,
-               r.RoomName,
+               r.RoomName, r.RoomType,
                c.CinemaName,
                s.SeatRow, s.SeatNumber, s.SeatType,
                v.Code AS VoucherCode
@@ -682,7 +683,7 @@ class BookingModel {
                t.TotalAmount, t.PaymentMethod, t.QRCode,
                m.Title AS MovieTitle, m.PosterURL, m.Duration,
                st.StartTime, st.EndTime,
-               r.RoomName,
+               r.RoomName, r.RoomType,
                c.CinemaName, c.Address,
                s.SeatRow, s.SeatNumber, s.SeatType,
                v.Code AS VoucherCode,
