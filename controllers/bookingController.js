@@ -748,20 +748,22 @@ exports.getPublicBookingDetails = async (req, res) => {
 exports.getServerIP = (req, res) => {
   try {
     const interfaces = os.networkInterfaces();
-    let ipAddress = 'localhost';
-
+    let candidates = [];
     for (const devName in interfaces) {
+      if (/virtual|vmware|vbox|vethernet|pseudo/i.test(devName)) continue;
+      
       const iface = interfaces[devName];
       for (let i = 0; i < iface.length; i++) {
         const alias = iface[i];
         if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
-          ipAddress = alias.address;
-          break;
+          const isWifi = /wi-fi|wifi|wireless|wlan/i.test(devName);
+          candidates.push({ devName, ip: alias.address, isWifi });
         }
       }
-      if (ipAddress !== 'localhost') break;
     }
-
+    
+    candidates.sort((a, b) => (b.isWifi ? 1 : 0) - (a.isWifi ? 1 : 0));
+    const ipAddress = candidates.length > 0 ? candidates[0].ip : 'localhost';
     res.json({ success: true, ip: ipAddress });
   } catch (err) {
     console.error('[bookingController] getServerIP:', err.message);

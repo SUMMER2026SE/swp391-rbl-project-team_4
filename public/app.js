@@ -622,7 +622,7 @@ const app = {
 
             // 4. Format checkbox filter (logical OR within formats)
             if (selectedFormats.length > 0) {
-                const movieFormats = movie.Formats ? movie.Formats.split(',').map(f => f.trim()) : ['2D'];
+                const movieFormats = movie.Formats ? movie.Formats.split(',').map(f => f.trim()) : ['2D Standard'];
                 const matchesFormat = selectedFormats.some(f => movieFormats.includes(f));
                 if (!matchesFormat) return false;
             }

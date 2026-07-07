@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/chatbot.css">
 </head>
 <body>
 
@@ -408,21 +409,39 @@
                 <div class="cw-toolbar">
                     <div class="cw-tools-left">
                         <div class="btn-group-toggle">
-                            <button class="bgt-btn active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
-                            <button class="bgt-btn" onclick="addSeatRow()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Hàng</button>
-                            <button class="bgt-btn" onclick="addSeatCol()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Cột</button>
+                            <button class="bgt-btn active" title="Chế độ xem sơ đồ"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
+                            <button class="bgt-btn" onclick="addSeatRow()" title="Thêm hàng ghế"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> +Hàng</button>
+                            <button class="bgt-btn" onclick="addSeatCol()" title="Thêm cột ghế"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> +Cột</button>
                         </div>
                     </div>
                     <div class="cw-legend-toggles">
-                        <label class="cl-toggle"><input type="radio" name="seat_tool" value="Normal" checked><span class="cbox standard"></span>Thường</label>
-                        <label class="cl-toggle"><input type="radio" name="seat_tool" value="VIP"><span class="cbox vip"></span>VIP</label>
-                        <label class="cl-toggle"><input type="radio" name="seat_tool" value="Couple"><span class="cbox" style="background:#ec4899;box-shadow:0 0 8px rgba(236,72,153,0.4)"></span>Couple</label>
-                        <label class="cl-toggle"><input type="radio" name="seat_tool" value="None"><span class="cbox blocked"></span>Xóa</label>
+                        <label class="cl-toggle" title="Ghế thường - giá cơ bản">
+                            <input type="radio" name="seat_tool" value="Normal" checked>
+                            <span class="cbox standard"></span>Thường
+                        </label>
+                        <label class="cl-toggle" title="Ghế VIP - giá x1.2">
+                            <input type="radio" name="seat_tool" value="VIP">
+                            <span class="cbox vip"></span>VIP ★
+                        </label>
+                        <label class="cl-toggle" title="Ghế cặp đôi - giá x1.5 (chọn theo cặp)">
+                            <input type="radio" name="seat_tool" value="Couple">
+                            <span class="cbox" style="background:linear-gradient(180deg,#db2777,#7d0e3d);box-shadow:0 0 8px rgba(219,39,119,0.5);width:44px;"></span>Couple ♥
+                        </label>
+                        <label class="cl-toggle" title="Xóa ghế (ô trống)">
+                            <input type="radio" name="seat_tool" value="None">
+                            <span class="cbox blocked"></span>Xóa
+                        </label>
                     </div>
                     <div class="cw-tools-right">
-                        <button class="btn-outline-red" onclick="clearSeatMap()">Làm mới</button>
-                        <button class="btn-solid-red" onclick="saveSeatLayout()">Lưu bố cục</button>
+                        <button class="btn-outline-red" onclick="clearSeatMap()" title="Xóa toàn bộ và bắt đầu lại">🔄 Làm mới</button>
+                        <button class="btn-outline-red" onclick="previewCustomerView()" title="Xem trước như khách hàng" style="border-color:#3b82f6;color:#3b82f6;">👁 Xem trước</button>
+                        <button class="btn-solid-red" onclick="saveSeatLayout()">💾 Lưu bố cục</button>
                     </div>
+                </div>
+
+                <!-- Seat count stats bar -->
+                <div id="seatStatsBar" style="display:flex; gap:20px; padding:10px 24px; background:rgba(0,0,0,0.3); border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.8rem; font-weight:600; align-items:center; flex-wrap:wrap;">
+                    <span style="color:#6b7280;">Chưa chọn phòng để thiết kế sơ đồ ghế</span>
                 </div>
 
                 <div class="cw-canvas-area">
@@ -435,20 +454,23 @@
                         </div>
                     </div>
                     <div class="zoom-controls">
-                        <button><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button>
-                        <button><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button>
+                        <button onclick="adminZoomIn()" title="Phóng to"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button>
+                        <button onclick="adminZoomOut()" title="Thu nhỏ"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button>
                     </div>
                 </div>
 
                 <div class="cw-footer">
                     <div class="cwf-legends">
-                        <span class="cwf-litem"><span class="cbox standard"></span> Thường</span>
-                        <span class="cwf-litem"><span class="cbox vip"></span> VIP</span>
-                        <span class="cwf-litem"><span class="cbox" style="background:#ec4899;"></span> Couple</span>
-                        <span class="cwf-litem"><span class="cbox blocked"></span> Trống</span>
+                        <span class="cwf-litem" style="color:#94a3b8;"><span class="cbox standard"></span> Thường</span>
+                        <span class="cwf-litem" style="color:#fbbf24;"><span class="cbox vip"></span> VIP (+20%)</span>
+                        <span class="cwf-litem" style="color:#f472b6;"><span class="cbox" style="background:linear-gradient(180deg,#db2777,#7d0e3d);width:44px;"></span> Cặp đôi (+50%)</span>
+                        <span class="cwf-litem" style="color:#4b5563;"><span class="cbox blocked"></span> Ô trống</span>
                     </div>
-                    <div class="cwf-stats">
-                        Đã chọn: <strong>0</strong> / 120 Tổng ghế
+                    <div class="cwf-stats" id="builderStats">
+                        Tổng ghế: <strong id="totalSeatCount">0</strong>
+                        &nbsp;|&nbsp; Thường: <strong id="normalSeatCount" style="color:#64748b;">0</strong>
+                        &nbsp;|&nbsp; VIP: <strong id="vipSeatCount" style="color:#f59e0b;">0</strong>
+                        &nbsp;|&nbsp; Cặp đôi: <strong id="coupleSeatCount" style="color:#ec4899;">0</strong>
                     </div>
                 </div>
             </div>
@@ -1421,15 +1443,19 @@
         </div>
 
         <!-- Cột 2: Chọn ghế -->
-        <div class="qs-col" style="flex: 2; min-width: 300px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; padding: 0 20px;">
+        <div class="qs-col" style="flex: 2; min-width: 300px; border-left: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); padding: 0 20px;">
             <h3 style="margin-bottom: 15px; font-size: 1rem; color: var(--text-dark);">2. Chọn Ghế</h3>
-            <div id="qsSeatMapContainer" style="background: #111827; border-radius: 8px; padding: 20px; text-align: center; min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <p style="color: #9ca3af;">Vui lòng chọn suất chiếu trước</p>
-            </div>
-            <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: center; font-size: 0.85rem;">
-                <span style="display:flex;align-items:center;gap:5px;"><div style="width:16px;height:16px;background:#374151;border-radius:4px;"></div> Trống</span>
-                <span style="display:flex;align-items:center;gap:5px;"><div style="width:16px;height:16px;background:#e8192c;border-radius:4px;"></div> Đã bán</span>
-                <span style="display:flex;align-items:center;gap:5px;"><div style="width:16px;height:16px;background:#10b981;border-radius:4px;"></div> Đang chọn</span>
+            <div id="qsSeatMapContainer" style="
+                background: radial-gradient(ellipse at 50% 0%, #0d111a 0%, #060810 80%);
+                border-radius: 12px;
+                padding: 24px 16px;
+                text-align: center;
+                min-height: 300px;
+                overflow-x: auto;
+                border: 1px solid rgba(255,255,255,0.06);
+                box-shadow: inset 0 2px 20px rgba(0,0,0,0.5);
+            ">
+                <p style="color: #4b5563; padding-top: 80px;">Vui lòng chọn suất chiếu trước</p>
             </div>
         </div>
 
@@ -1654,6 +1680,14 @@
 @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
 </style>
 
+    <script src="js/chatbot.js"></script>
+
+    <!-- Admin Toast Container -->
+    <div id="adminToastContainer" style="
+        position: fixed; bottom: 28px; right: 28px;
+        display: flex; flex-direction: column; gap: 10px;
+        z-index: 8000; pointer-events: none; max-width: 340px;
+    "></div>
 <!-- Cinema Modal Overlay & Modal -->
 <div id="cinemaModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;" onclick="closeCinemaModal()"></div>
 <div id="cinemaModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:401;background:var(--surface);border-radius:12px;padding:32px;width:480px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,0.4);">

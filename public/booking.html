@@ -1476,8 +1476,8 @@
                     const endT = new Date(st.EndTime);
                     const endStr = endT.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',hour12:false});
                     const price = (st.Price || 0).toLocaleString('vi-VN');
-                    const room = st.RoomName || 'Cinema';
-                    const isVip = room.toLowerCase().includes('vip') || room.toLowerCase().includes('imax');
+                    const room = st.RoomName ? (st.RoomType && st.RoomType !== '2D Standard' ? '['+st.RoomType+'] '+st.RoomName : st.RoomName) : 'Cinema';
+                    const isVip = (st.RoomType && (st.RoomType.includes('IMAX') || st.RoomType.includes('VIP'))) || room.toLowerCase().includes('vip') || room.toLowerCase().includes('imax');
                     const available = st.AvailableSeats != null ? st.AvailableSeats : (st.TotalSeats || 0) - (st.TicketsSold || 0);
                     const fewSeats = available > 0 && available <= 15;
 
@@ -1565,7 +1565,7 @@
                 const price = (st.Price||0).toLocaleString('vi-VN');
                 return `<button class="slot" onclick="closeMovieModal();goToSeats(${st.ShowtimeID})" style="min-width:76px;">
                     <div class="slot-time">${timeStr}</div>
-                    <div class="slot-meta"><span class="slot-price">${price}đ</span><span class="slot-room">${st.RoomName||'Cinema'}</span></div>
+                    <div class="slot-meta"><span class="slot-price">${price}đ</span><span class="slot-room">${st.RoomName ? (st.RoomType && st.RoomType !== '2D Standard' ? '['+st.RoomType+'] '+st.RoomName : st.RoomName) : 'Cinema'}</span></div>
                 </button>`;
             }).join('');
             document.getElementById('modalSlots').innerHTML = slotsHTML || '<span style="color:var(--muted);font-size:0.85rem;">Không có suất chiếu.</span>';

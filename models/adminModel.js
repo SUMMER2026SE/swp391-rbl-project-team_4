@@ -438,7 +438,7 @@ class AdminModel {
   static async getRooms() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT r.RoomID, r.RoomName, r.TotalSeats, r.CinemaID,
+      SELECT r.RoomID, r.RoomName, r.TotalSeats, r.RoomType, r.CinemaID,
              c.CinemaName, c.Address
       FROM   Rooms r
       JOIN   Cinemas c ON r.CinemaID = c.CinemaID
@@ -460,7 +460,7 @@ class AdminModel {
     return result.recordset;
   }
 
-  static async saveSeats(roomId, seatsArray) {
+  static async saveSeats(roomId, seatsArray, roomType) {
     const pool = await getPool();
     const transaction = new sql.Transaction(pool);
     await transaction.begin();
@@ -468,6 +468,9 @@ class AdminModel {
     try {
       const request = new sql.Request(transaction);
       request.input('roomId', sql.Int, roomId);
+      if (roomType) {
+          request.input('roomType', sql.NVarChar, roomType);
+      }
 
       // 1. Get currently booked seats for this room to avoid deleting/modifying booked seats.
       const bookedSeatsResult = await request.query(`
@@ -496,7 +499,6 @@ class AdminModel {
         // If seat has a SeatID and it's in the booked list, update its type/multiplier safely (or skip)
         // For simplicity, we just try to insert new seats (ones without an ID or ones that were deleted).
         // A robust logic would check if the seat exists.
-
         const reqSeat = new sql.Request(transaction);
         reqSeat.input('roomId', sql.Int, roomId);
         reqSeat.input('seatRow', sql.VarChar, seat.SeatRow);
@@ -517,12 +519,21 @@ class AdminModel {
         `);
       }
 
-      // 4. Update the room's TotalSeats count
-      await request.query(`
-        UPDATE Rooms 
-        SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None')
-        WHERE RoomID = @roomId
-      `);
+      // 4. Update the room's TotalSeats count and RoomType
+      if (roomType) {
+        await request.query(`
+          UPDATE Rooms 
+          SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None'),
+              RoomType = @roomType
+          WHERE RoomID = @roomId
+        `);
+      } else {
+        await request.query(`
+          UPDATE Rooms 
+          SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None')
+          WHERE RoomID = @roomId
+        `);
+      }
 
       await transaction.commit();
       return true;
