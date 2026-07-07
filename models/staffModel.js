@@ -54,7 +54,7 @@ class StaffModel {
         sReq.input('showtimeId', sql.Int, showtimeId);
         const sCheck = await sReq.query(`
           SELECT TicketID FROM Tickets WITH (UPDLOCK)
-          WHERE SeatID = @seatId AND ShowtimeID = @showtimeId AND Status IN ('confirmed','pending')
+          WHERE SeatID = @seatId AND ShowtimeID = @showtimeId AND Status IN ('confirmed','pending','refund_requested')
         `);
         if (sCheck.recordset.length > 0) {
           throw new Error(`Ghế ID ${seatId} đã được đặt.`);
