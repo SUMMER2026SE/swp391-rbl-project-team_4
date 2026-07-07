@@ -48,6 +48,10 @@ router.get('/movie-reviews', adminCtrl.getMovieReviews);
 router.patch('/movie-reviews/:id/toggle', adminCtrl.toggleMovieReview);
 router.delete('/movie-reviews/:id', adminCtrl.deleteMovieReview);
 
+// Refund request management
+router.get('/refunds', adminCtrl.getRefundRequests);
+router.patch('/refunds/:id', adminCtrl.updateRefundRequest);
+
 router.get('/genres', adminCtrl.getGenres);
 router.post('/genres', adminCtrl.createGenre);
 router.put('/genres/:id', adminCtrl.updateGenre);
