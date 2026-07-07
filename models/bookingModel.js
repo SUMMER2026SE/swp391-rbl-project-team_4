@@ -2,6 +2,7 @@ const { sql, getPool } = require('../config/db');
 
 const SettingsModel = require('./settingsModel');
 const RewardModel = require('./rewardModel');
+const RefundModel = require('./refundModel');
 
 function isCoupleSeat(seat) {
   return (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) || seat.SeatRow === 'F';
@@ -84,7 +85,7 @@ class BookingModel {
           FROM Tickets 
           WHERE UserID = @userId 
             AND VoucherID = @voucherId 
-            AND Status IN ('confirmed', 'used', 'pending')
+            AND Status IN ('confirmed', 'used', 'pending', 'refund_requested')
         `);
       if (checkUsed.recordset[0].cnt > 0) {
         voucher.alreadyUsed = true;
@@ -135,7 +136,7 @@ class BookingModel {
         const seatCheckReq = transaction.request();
         seatCheckReq.input('sid', sql.Int, seatId);
         seatCheckReq.input('stid', sql.Int, showtimeId);
-        const seatCheck = await seatCheckReq.query(`SELECT TicketID FROM Tickets WITH (UPDLOCK) WHERE SeatID = @sid AND ShowtimeID = @stid AND Status IN ('confirmed','pending')`);
+        const seatCheck = await seatCheckReq.query(`SELECT TicketID FROM Tickets WITH (UPDLOCK) WHERE SeatID = @sid AND ShowtimeID = @stid AND Status IN ('confirmed','pending','refund_requested')`);
         if (seatCheck.recordset.length > 0) {
           throw new Error(`Ghế ID ${seatId} đã được đặt.`);
         }
@@ -236,7 +237,7 @@ class BookingModel {
             FROM Tickets 
             WHERE UserID = @userId 
               AND VoucherID = @voucherId 
-              AND Status IN ('confirmed', 'used', 'pending')
+              AND Status IN ('confirmed', 'used', 'pending', 'refund_requested')
           `);
           if (checkUsedResult.recordset[0].cnt > 0) {
             throw new Error('Bạn đã sử dụng voucher này rồi. Mỗi khách hàng chỉ được sử dụng mã này 1 lần.');
@@ -526,7 +527,15 @@ class BookingModel {
     return result.recordset;
   }
 
-  static async cancelConfirmedBooking(ticketId, userId) {
+  static async cancelConfirmedBooking(ticketId, userId, refundInfo = {}) {
+    return RefundModel.requestRefund(userId, [ticketId], refundInfo);
+  }
+
+  static async requestRefund(userId, ticketIds, refundInfo = {}) {
+    return RefundModel.requestRefund(userId, ticketIds, refundInfo);
+  }
+
+  static async cancelConfirmedBookingImmediate(ticketId, userId) {
     const pool = await getPool();
     const result = await pool.request()
       .input('ticketId', sql.Int, ticketId)
@@ -647,17 +656,24 @@ class BookingModel {
   }
 
   static async getMyBookings(userId) {
+    await RefundModel.ensureSchema();
     const pool = await getPool();
     const result = await pool.request()
       .input('userId', sql.Int, userId)
       .query(`
         SELECT t.TicketID, t.BookedAt, t.Status, t.TotalAmount, t.PaymentMethod,
+               t.RefundStatus, t.RefundRequestedAt, t.CancelReason, t.CancelledAt, t.RefundedAt,
                m.Title AS MovieTitle, m.PosterURL,
-               st.StartTime, st.EndTime,
+               CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
+               CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
                r.RoomName,
                c.CinemaName,
                s.SeatRow, s.SeatNumber, s.SeatType,
-               v.Code AS VoucherCode
+               v.Code AS VoucherCode,
+               rr.RefundID, rr.Status AS RefundRequestStatus, rr.Reason AS RefundReason,
+               rr.BankName, rr.BankAccountNumber, rr.BankAccountHolder,
+               rr.AdminNote, rr.RefundTransactionCode, rr.RequestedAt AS RefundRequestCreatedAt,
+               rr.ProcessedAt AS RefundProcessedAt, rr.CompletedAt AS RefundCompletedAt
         FROM   Tickets t
         JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
         JOIN   Movies    m  ON st.MovieID   = m.MovieID
@@ -665,6 +681,12 @@ class BookingModel {
         JOIN   Cinemas   c  ON r.CinemaID   = c.CinemaID
         JOIN   Seats     s  ON t.SeatID     = s.SeatID
         LEFT   JOIN Vouchers v ON t.VoucherID = v.VoucherID
+        OUTER APPLY (
+          SELECT TOP 1 *
+          FROM RefundRequests rr
+          WHERE rr.TicketID = t.TicketID
+          ORDER BY rr.RequestedAt DESC, rr.RefundID DESC
+        ) rr
         WHERE  t.UserID = @userId
         ORDER BY t.BookedAt DESC
       `);
@@ -672,6 +694,7 @@ class BookingModel {
   }
 
   static async getBookingDetail(ticketId) {
+    await RefundModel.ensureSchema();
     const pool = await getPool();
     
     // Ticket info
@@ -680,13 +703,19 @@ class BookingModel {
       .query(`
         SELECT t.TicketID, t.UserID, t.BookedAt, t.Status, t.TicketPrice,
                t.TotalAmount, t.PaymentMethod, t.QRCode,
+               t.RefundStatus, t.RefundRequestedAt, t.CancelReason, t.CancelledAt, t.RefundedAt,
                m.Title AS MovieTitle, m.PosterURL, m.Duration,
-               st.StartTime, st.EndTime,
+               CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
+               CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
                r.RoomName,
                c.CinemaName, c.Address,
                s.SeatRow, s.SeatNumber, s.SeatType,
                v.Code AS VoucherCode,
-               u.Email AS UserEmail, u.FullName AS UserFullName
+               u.Email AS UserEmail, u.FullName AS UserFullName,
+               rr.RefundID, rr.Status AS RefundRequestStatus, rr.Reason AS RefundReason,
+               rr.BankName, rr.BankAccountNumber, rr.BankAccountHolder,
+               rr.AdminNote, rr.RefundTransactionCode, rr.RequestedAt AS RefundRequestCreatedAt,
+               rr.ProcessedAt AS RefundProcessedAt, rr.CompletedAt AS RefundCompletedAt
         FROM   Tickets t
         JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
         JOIN   Movies    m  ON st.MovieID   = m.MovieID
@@ -695,6 +724,12 @@ class BookingModel {
         JOIN   Seats     s  ON t.SeatID     = s.SeatID
         LEFT   JOIN Vouchers v ON t.VoucherID = v.VoucherID
         JOIN   Users     u  ON t.UserID     = u.UserID
+        OUTER APPLY (
+          SELECT TOP 1 *
+          FROM RefundRequests rr
+          WHERE rr.TicketID = t.TicketID
+          ORDER BY rr.RequestedAt DESC, rr.RefundID DESC
+        ) rr
         WHERE  t.TicketID = @ticketId
       `);
 
