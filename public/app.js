@@ -97,6 +97,16 @@ const app = {
         `).join('');
     },
     openTrailer(url) {
+        if (!url || url === 'null' || url === 'undefined' || url.trim() === '') {
+            alert('Trailer chưa có sẵn cho phim này.');
+            return;
+        }
+
+        let cleanUrl = url.trim();
+        if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://') && !cleanUrl.startsWith('//')) {
+            cleanUrl = 'https://' + cleanUrl;
+        }
+
         let modal = document.getElementById('trailerModal');
         if (!modal) {
             modal = document.createElement('div');
@@ -113,35 +123,33 @@ const app = {
             document.body.appendChild(modal);
         }
 
-        let embedUrl = url;
-        if (!url) {
-            embedUrl = '';
-        } else if (url.includes('youtube.com/embed/')) {
-            embedUrl = url;
+        let embedUrl = cleanUrl;
+        if (cleanUrl.includes('youtube.com/embed/')) {
+            embedUrl = cleanUrl;
         } else {
             try {
                 let videoId = '';
-                if (url.includes('youtube.com/watch')) {
-                    const urlParams = new URLSearchParams(new URL(url.search ? url : url.replace('#', '?')).search);
-                    videoId = urlParams.get('v') || new URL(url).searchParams.get('v');
+                if (cleanUrl.includes('youtube.com/watch')) {
+                    const urlObj = new URL(cleanUrl);
+                    videoId = urlObj.searchParams.get('v');
                     if (!videoId) {
-                        // Fallback regex
-                        const match = url.match(/[?&]v=([^&]+)/);
+                        const match = cleanUrl.match(/[?&]v=([^&]+)/);
                         if (match) videoId = match[1];
                     }
-                } else if (url.includes('youtu.be/')) {
-                    videoId = url.split('youtu.be/')[1].split('?')[0];
-                } else if (url.includes('youtube.com/v/')) {
-                    videoId = url.split('youtube.com/v/')[1].split('?')[0];
+                } else if (cleanUrl.includes('youtu.be/')) {
+                    videoId = cleanUrl.split('youtu.be/')[1].split('?')[0];
+                } else if (cleanUrl.includes('youtube.com/v/')) {
+                    videoId = cleanUrl.split('youtube.com/v/')[1].split('?')[0];
+                } else if (cleanUrl.includes('youtube.com/shorts/')) {
+                    videoId = cleanUrl.split('youtube.com/shorts/')[1].split('?')[0];
                 }
                 if (videoId) {
                     embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
                 }
             } catch (e) {
                 console.error("Error parsing YouTube URL:", e);
-                // Fallback to simple replace
-                if (url.includes('youtube.com/watch?v=')) {
-                    embedUrl = url.replace('watch?v=', 'embed/');
+                if (cleanUrl.includes('youtube.com/watch?v=')) {
+                    embedUrl = cleanUrl.replace('watch?v=', 'embed/');
                     const ampersandPos = embedUrl.indexOf('&');
                     if (ampersandPos !== -1) {
                         embedUrl = embedUrl.substring(0, ampersandPos);
@@ -401,8 +409,9 @@ const app = {
     },
 
     async loadDynamicMovies() {
-        // 1. For index.html (Now Showing) -> .movie-grid
-        const nowShowingGrid = document.querySelector('.movie-grid');
+        // 1. For index.html (Now Showing) -> #now-showing .movie-grid
+        const nowShowingGrid = document.querySelector('#now-showing .movie-grid');
+        const imaxGrid = document.querySelector('#imax .movie-grid');
         if (nowShowingGrid) {
             try {
                 const res = await fetch(`${API_BASE}/api/movies/now-showing`);
@@ -415,6 +424,7 @@ const app = {
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                                 <div class="poster-overlay">
                                     <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                    <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
                                     <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">ĐẶT VÉ</button>
                                 </div>
                             </div>
@@ -425,6 +435,32 @@ const app = {
                             </div>
                         </div>
                     `).join('');
+
+                    if (imaxGrid) {
+                        const imaxMovies = json.data.filter(movie => movie.Formats && movie.Formats.includes('IMAX'));
+                        if (imaxMovies.length > 0) {
+                            imaxGrid.innerHTML = imaxMovies.map(movie => `
+                                <div class="movie-card">
+                                    <div class="movie-poster">
+                                        <span class="age-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                                        <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                                        <div class="poster-overlay">
+                                            <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                            <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
+                                            <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">ĐẶT VÉ</button>
+                                        </div>
+                                    </div>
+                                    <div class="movie-info">
+                                        <h3 class="movie-title">${movie.Title}</h3>
+                                        <div class="movie-genre">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                        <div class="movie-rating">★ 8.5</div>
+                                    </div>
+                                </div>
+                            `).join('');
+                        } else {
+                            imaxGrid.innerHTML = '<p style="color:#9ca3af;padding:20px;grid-column: 1/-1;text-align:center;">Hiện tại không có phim chiếu định dạng IMAX.</p>';
+                        }
+                    }
                 }
             } catch (err) {
                 console.error('Failed to load now showing movies:', err);
@@ -443,17 +479,14 @@ const app = {
                             <div class="movie-poster">
                                 <span class="coming-badge">SẮP CHIẾU</span>
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
-                            </div>
-                            <div class="movie-info-large">
-                                <h3 class="movie-title-large">${movie.Title}</h3>
-                                <div class="movie-meta-large">
-                                    <span>${movie.Genres ? movie.Genres : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</span>
-                                    <span class="movie-date">Sắp chiếu</span>
+                                <div class="poster-overlay">
+                                    <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                    <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
                                 </div>
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.MainCast ? movie.MainCast : 'Khoa học viễn tưởng'} • ${movie.Duration} phút</div>
+                                <div class="movie-genre">${movie.Genres ? movie.Genres : 'Khoa học viễn tưởng'} | ${movie.Duration} phút</div>
                                 <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">Sắp chiếu</div>
                             </div>
                         </div>
@@ -471,6 +504,9 @@ const app = {
                 const res = await fetch(`${API_BASE}/api/movies`);
                 const json = await res.json();
                 if (json.success && json.data) {
+                    window.allMoviesData = json.data;
+                    app.renderMoviesGrid(json.data);
+                    app.initMovieFilters();
                     this.allMovies = json.data;
                     
                     // Parse query parameters to pre-fill filters
@@ -499,6 +535,36 @@ const app = {
                 console.error('Failed to load all movies:', err);
             }
         }
+    },
+
+    renderMoviesGrid(movies) {
+        const allMoviesGrid = document.querySelector('.movies-grid');
+        if (!allMoviesGrid) return;
+        
+        if (!movies || movies.length === 0) {
+            allMoviesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">Không tìm thấy phim phù hợp.</div>';
+            return;
+        }
+
+        allMoviesGrid.innerHTML = movies.map(movie => `
+            <div class="movie-card">
+                <div class="movie-poster">
+                    <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                    <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                    <div class="movie-overlay">
+                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                        <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
+                    </div>
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title" title="${movie.Title}">${movie.Title}</h3>
+                    <div class="movie-rating">
+                        <span class="stars">★ 8.5</span>
+                        <span class="genres">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     },
 
     switchMovieStatusTab(status) {
@@ -584,6 +650,7 @@ const app = {
                     <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                     <div class="movie-overlay">
                         <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                        <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
                     </div>
                 </div>
                 <div class="movie-info">
@@ -595,12 +662,223 @@ const app = {
                 </div>
             </div>
         `).join('');
+    },
+
+    initMovieFilters() {
+        const checkboxes = document.querySelectorAll('.filter-item input[type="checkbox"]');
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+
+        const applyFilters = () => {
+            if (!window.allMoviesData) return;
+            
+            let filtered = [...window.allMoviesData];
+
+            // 1. Filter by Search
+            if (searchInput && searchInput.value) {
+                const q = searchInput.value.toLowerCase();
+                filtered = filtered.filter(m => m.Title.toLowerCase().includes(q));
+            }
+
+            // 2. Filter by Genres
+            const selectedGenres = Array.from(document.querySelectorAll('input[name="genre"]:checked')).map(cb => cb.value);
+            if (selectedGenres.length > 0) {
+                filtered = filtered.filter(m => {
+                    const genreStr = m.Genres || m.MainCast || "";
+                    if (!genreStr) return false;
+                    
+                    const mGenres = genreStr.split(',').map(g => g.trim().toLowerCase());
+                    
+                    return selectedGenres.some(selected => {
+                        const s = selected.toLowerCase();
+                        // Either exact match in array, or substring match in the full string
+                        return mGenres.includes(s) || genreStr.toLowerCase().includes(s);
+                    });
+                });
+            }
+
+            // 3. Filter by Formats
+            const selectedFormats = Array.from(document.querySelectorAll('input[name="format"]:checked')).map(cb => cb.value);
+            if (selectedFormats.length > 0) {
+                filtered = filtered.filter(m => {
+                    if (!m.Formats) return false;
+                    const mFormats = m.Formats.split(',').map(f => f.trim());
+                    return selectedFormats.some(f => mFormats.includes(f));
+                });
+            }
+
+            // 4. Sort
+            if (sortSelect) {
+                const sortMode = sortSelect.value;
+                if (sortMode === 'title') {
+                    filtered.sort((a, b) => a.Title.localeCompare(b.Title));
+                } else if (sortMode === 'newest') {
+                    filtered.sort((a, b) => b.MovieID - a.MovieID);
+                }
+                // popular, rating could be added if data supports it
+            }
+
+            app.renderMoviesGrid(filtered);
+        };
+
+        checkboxes.forEach(cb => cb.addEventListener('change', applyFilters));
+        if (searchInput) searchInput.addEventListener('input', applyFilters);
+        if (sortSelect) sortSelect.addEventListener('change', applyFilters);
+    },
+
+    // --- Load Cinemas for Navbar ---
+    async loadCinemasNavbar() {
+        const dropdown = document.getElementById('cinemaDropdown');
+        if (!dropdown) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/movies/cinemas`);
+            const json = await res.json();
+            if (json.success && json.data) {
+                dropdown.innerHTML = json.data.map(c => `
+                    <a href="booking.html?cinemaId=${c.CinemaID}">${c.CinemaName}</a>
+                `).join('');
+            }
+        } catch (e) {
+            console.error("Error loading cinemas navbar:", e);
+        }
+    },
+    // --- Promotions (Tin tức & Khuyến mãi) ---
+    async loadPromotions() {
+        const grid = document.getElementById('promotionsGrid');
+        if (!grid) return;
+
+        try {
+            // Lấy cả Khuyến mãi và Tin tức
+            const [promoRes, newsRes] = await Promise.all([
+                fetch(`${API_BASE}/api/movies/promotions`),
+                fetch(`${API_BASE}/api/news`)
+            ]);
+            const promoJson = await promoRes.json();
+            const newsJson = await newsRes.json();
+
+            let combined = [];
+
+            if (promoJson.success && promoJson.data) {
+                combined = combined.concat(promoJson.data.map(p => ({
+                    id: p.PromotionID,
+                    type: 'promo',
+                    title: p.Title,
+                    description: p.Description,
+                    badge: p.BadgeLabel,
+                    img: p.ImageURL,
+                    link: p.LinkURL || '#',
+                    isFeatured: p.IsFeatured,
+                    sortOrder: p.SortOrder,
+                    date: p.CreatedAt
+                })));
+            }
+
+            if (newsJson.success && newsJson.data) {
+                combined = combined.concat(newsJson.data.map(n => ({
+                    id: n.ArticleID,
+                    type: 'news',
+                    title: n.Title,
+                    description: n.Summary,
+                    badge: n.BadgeLabel || (n.Type === 'events' ? 'Sự kiện' : 'Tin tức'),
+                    img: n.ImageURL,
+                    link: 'news-events.html',
+                    isFeatured: n.IsFeatured,
+                    sortOrder: n.SortOrder,
+                    date: n.PublishedAt
+                })));
+            }
+
+            if (combined.length === 0) {
+                grid.innerHTML = '<p style="color:#999;padding:20px;text-align:center;">Chưa có tin tức & khuyến mãi nào.</p>';
+                return;
+            }
+
+            // Ưu tiên Nổi bật, sau đó đến Thứ tự hiển thị, sau đó mới đến ngày mới nhất
+            combined.sort((a, b) => {
+                if (a.isFeatured && !b.isFeatured) return -1;
+                if (!a.isFeatured && b.isFeatured) return 1;
+                if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+                return new Date(b.date) - new Date(a.date);
+            });
+
+            const featured = combined.find(p => p.isFeatured) || combined[0];
+            const normals  = combined.filter(p => p !== featured).slice(0, 4); // Hiển thị thêm 4 thẻ phụ
+
+            let html = '';
+
+            // Featured card
+            html += `
+                <div class="promo-card promo-featured">
+                    <div class="promo-image">
+                        ${featured.badge ? `<div class="promo-badge">${featured.badge}</div>` : ''}
+                        <img src="${featured.img || 'images/default_poster.svg'}"
+                             alt="${featured.title}"
+                             onerror="this.onerror=null;this.src='images/default_poster.svg'">
+                    </div>
+                    <div class="promo-content">
+                        <h3>${featured.title}</h3>
+                        <p>${featured.description || ''}</p>
+                        <a href="${featured.link}" class="btn-promo">Tìm Hiểu Thêm</a>
+                    </div>
+                </div>`;
+
+            // Normal cards
+            normals.forEach(p => {
+                html += `
+                <div class="promo-card promo-normal">
+                    ${p.badge ? `<div class="promo-badge-overlay">${p.badge}</div>` : ''}
+                    <img src="${p.img || 'images/default_poster.svg'}"
+                         alt="${p.title}"
+                         onerror="this.onerror=null;this.src='images/default_poster.svg'">
+                    <div class="promo-overlay-content">
+                        <h3>${p.title}</h3>
+                        <p>${p.description || ''}</p>
+                    </div>
+                </div>`;
+            });
+
+            grid.innerHTML = html;
+        } catch (err) {
+            console.warn('[app] loadPromotions failed, showing fallback:', err.message);
+            // Fallback to static cards if API not available
+            grid.innerHTML = `
+                <div class="promo-card promo-featured">
+                    <div class="promo-image">
+                        <div class="promo-badge">MEMBER EXCLUSIVE</div>
+                        <img src="images/combo_popcorn.png" alt="Unlimited Popcorn Thursdays">
+                    </div>
+                    <div class="promo-content">
+                        <h3>Unlimited Popcorn Thursdays</h3>
+                        <p>Tham gia chương trình Star Rewards ngay hôm nay và nhận bỏng ngô không giới hạn mỗi thứ năm với mọi lần mua vé.</p>
+                        <a href="#" class="btn-promo">Tìm Hiểu Thêm</a>
+                    </div>
+                </div>
+                <div class="promo-card promo-normal">
+                    <div class="promo-badge-overlay">GROUP DISCOUNTS</div>
+                    <img src="images/promo_student.png" alt="Group Discounts">
+                    <div class="promo-overlay-content">
+                        <h3>Group Discounts</h3>
+                        <p>Tiết kiệm 20% cho đặt chỗ 10 vé trở lên</p>
+                    </div>
+                </div>
+                <div class="promo-card promo-normal">
+                    <div class="promo-badge-overlay">EXPERIENCE</div>
+                    <img src="images/promo_imax_weekend.png" alt="IMAX Weekend">
+                    <div class="promo-overlay-content">
+                        <h3>IMAX Weekend</h3>
+                        <p>Trải nghiệm phim ở định dạng lớn nhất có thể</p>
+                    </div>
+                </div>`;
+        }
     }
 };
+
 
 document.addEventListener('DOMContentLoaded', () => {
     app.initSocket();
     app.loadDynamicMovies();
+    app.loadPromotions();
+    app.loadCinemasNavbar();
 
     const searchInput = document.getElementById('searchInput');
     const isMoviesPage = !!document.querySelector('.movies-grid');
@@ -624,3 +902,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+

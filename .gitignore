@@ -124,3 +124,5 @@ dist
 # (If you don't want to commit uploaded posters/avatars)
 uploads/*
 !uploads/.gitkeep
+.env
+config/db.js

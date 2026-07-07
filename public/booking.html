@@ -52,6 +52,9 @@
 
         /* ── NAVBAR ── */
         .navbar {
+            position:absolute; top:0; left:0; width:100%; z-index:300;
+            background:transparent;
+            border-bottom:none;
             position:sticky; top:0; z-index:300;
             background:rgba(9,10,15,0.8);
             backdrop-filter:blur(20px) saturate(180%);
@@ -163,6 +166,8 @@
 
         /* ── HERO STRIP ── */
         .booking-hero {
+            background:linear-gradient(180deg, rgba(229,9,20,0.1) 0%, transparent 100%);
+            padding:108px 0 36px;
             background: radial-gradient(ellipse at 50% 0%, rgba(229, 9, 20, 0.15) 0%, transparent 70%);
             padding:50px 0 42px;
             border-bottom:1px solid var(--border);
@@ -339,6 +344,52 @@
         }
         .genre-chip:hover { border-color:rgba(255, 255, 255, 0.2); color:#fff; background:rgba(255, 255, 255, 0.06); }
         .genre-chip.active { background:rgba(59,130,246,0.12); border-color:#3b82f6; color:#60a5fa; box-shadow:0 0 12px rgba(59,130,246,0.2); }
+
+        /* Cinema Top Banner */
+        .cinema-top-banner-wrapper {
+            width: 100%;
+            display: none;
+        }
+        .cinema-top-banner-wrapper.show { display: block; }
+        .cinema-top-banner {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            overflow: hidden;
+            animation: fadeIn 0.4s ease;
+        }
+        .ctb-carousel {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+        }
+        .ctb-slide {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.65);
+            position: absolute;
+            top: 0; left: 0;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .ctb-slide.active {
+            opacity: 1;
+        }
+        .ctb-info {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            padding: 80px 0 30px 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%);
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .ctb-info-inner {
+            max-width: 1440px; margin: 0 auto; padding: 0 32px;
+            width: 100%;
+        }
+        .ctb-info h2 { font-size: 2.2rem; font-weight: 900; color: #fff; margin: 0; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+        .ctb-info p { font-size: 1.05rem; color: rgba(255,255,255,0.85); margin: 0; display: flex; align-items: center; gap: 8px; }
+        .ctb-info p svg { color: var(--primary); }
 
         /* ── RIGHT: SHOWTIMES ── */
         .showtimes-col { min-height:400px; }
@@ -735,8 +786,10 @@
                         <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" class="active" id="nav-rap">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Khuyến mãi</a>
+                <a href="booking.html" id="nav-rap" class="active">Rạp</a>
+                <a href="promotions.html" id="nav-promo">Promotions</a>
+                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="nav-search" id="navSearch">
@@ -765,6 +818,26 @@
             <div class="step-item"><div class="step-circle">3</div> Chọn Ghế</div>
             <div class="step-line"></div>
             <div class="step-item"><div class="step-circle">4</div> Thanh Toán</div>
+        </div>
+    </div>
+
+    <!-- Cinema Top Banner Wrapper -->
+    <div class="cinema-top-banner-wrapper" id="cinemaTopBannerWrapper">
+        <div class="cinema-top-banner">
+            <div class="ctb-carousel" id="ctbCarousel">
+                <img src="images/cinema_seating_banner.png" class="ctb-slide active" alt="Cinema Seating">
+                <img src="images/bannerghe2.jpg" class="ctb-slide" alt="Cinema Seating 2">
+                <img src="images/bannerghe3.jpg" class="ctb-slide" alt="Cinema Seating 3">
+            </div>
+            <div class="ctb-info">
+                <div class="ctb-info-inner">
+                    <h2 id="ctbName">Chọn một rạp để xem lịch chiếu</h2>
+                    <p id="ctbAddress">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <span id="ctbAddressText">Địa chỉ rạp sẽ hiển thị ở đây</span>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -834,6 +907,12 @@
                     <div class="genre-chip" data-genre="comedy">Hài</div>
                     <div class="genre-chip" data-genre="scifi">Sci-Fi</div>
                     <div class="genre-chip" data-genre="animation">Hoạt hình</div>
+                    <div class="genre-chip" data-genre="drama">Tâm lý</div>
+                    <div class="genre-chip" data-genre="adventure">Phiêu lưu</div>
+                    <div class="genre-chip" data-genre="music">Ca Nhạc</div>
+                    <div class="genre-chip" data-genre="mystery">Ly Kì</div>
+                    <div class="genre-chip" data-genre="family">Gia đình</div>
+                    <div class="genre-chip" data-genre="thriller">Giật Gân</div>
                 </div>
             </div>
 
@@ -984,7 +1063,7 @@
     <div class="toast" id="toastEl"></div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=6"></script>
     <script>
     (function() {
         'use strict';
@@ -1019,6 +1098,7 @@
             const params = new URLSearchParams(window.location.search);
             movieIdFilter = params.get('movieId') || null;
             if (params.get('city')) selectedCity = params.get('city');
+            if (params.get('cinemaId')) selectedCinemaId = parseInt(params.get('cinemaId'));
 
             // Auth
             initAuth();
@@ -1050,7 +1130,22 @@
                 searchQuery = searchEl.value.toLowerCase().trim();
                 renderFiltered();
             });
+
+            // Init Top Banner Carousel
+            initBannerCarousel();
         });
+
+        /* ── BANNER CAROUSEL ── */
+        function initBannerCarousel() {
+            const slides = document.querySelectorAll('.ctb-slide');
+            if (!slides.length) return;
+            let currentIndex = 0;
+            setInterval(() => {
+                slides[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % slides.length;
+                slides[currentIndex].classList.add('active');
+            }, 10000); // 10 seconds
+        }
 
         /* ── AUTH ── */
         function initAuth() {
@@ -1105,6 +1200,14 @@
                 const json = await res.json();
                 if (json.success && json.data) {
                     allCinemas = json.data;
+
+                    if (selectedCinemaId) {
+                        const targetCinema = allCinemas.find(c => c.CinemaID === selectedCinemaId);
+                        if (targetCinema) {
+                            selectedCity = targetCinema.City;
+                        }
+                    }
+
                     buildCityTabs(allCinemas);
                 }
             } catch(e) {
@@ -1136,7 +1239,16 @@
                     b.classList.toggle('active', b.textContent === selectedCity);
                 });
             } else {
-                selectedCity = cities[0];
+                if (cities.includes('Hồ Chí Minh')) {
+                    selectedCity = 'Hồ Chí Minh';
+                } else {
+                    selectedCity = cities[0];
+                }
+                
+                // activate the right button for default city
+                container.querySelectorAll('.city-btn').forEach(b => {
+                    b.classList.toggle('active', b.textContent === selectedCity);
+                });
             }
             populateBranches(selectedCity);
         }
@@ -1161,7 +1273,13 @@
             });
 
             if (filtered.length) {
-                selectedCinemaId = filtered[0].CinemaID;
+                if (selectedCinemaId && filtered.some(c => c.CinemaID === selectedCinemaId)) {
+                    sel.value = selectedCinemaId;
+                } else {
+                    const defaultCinema = filtered.find(c => c.CinemaID === 1);
+                    selectedCinemaId = defaultCinema ? defaultCinema.CinemaID : filtered[0].CinemaID;
+                    sel.value = selectedCinemaId;
+                }
                 updateCinemaCard(selectedCinemaId);
                 loadShowtimes();
             }
@@ -1183,6 +1301,16 @@
             // update branch strip
             document.getElementById('branchName').textContent = c.CinemaName;
             document.getElementById('branchAddr').textContent = (c.Address || '') + (c.City ? ', ' + c.City : '');
+
+            // update top banner
+            const bannerWrapper = document.getElementById('cinemaTopBannerWrapper');
+            if (bannerWrapper) {
+                bannerWrapper.classList.add('show');
+                const hero = document.querySelector('.booking-hero');
+                if (hero) hero.style.display = 'none';
+                document.getElementById('ctbName').textContent = c.CinemaName;
+                document.getElementById('ctbAddressText').textContent = (c.Address || '') + (c.City ? ', ' + c.City : '');
+            }
         }
 
         /* ── LOAD MOVIE INFO ── */
@@ -1253,6 +1381,12 @@
                     comedy:    ['hài','comedy'],
                     scifi:     ['sci-fi','khoa học','viễn tưởng','science'],
                     animation: ['hoạt hình','animation'],
+                    drama:     ['tâm lý','drama'],
+                    adventure: ['phiêu lưu','adventure'],
+                    music:     ['ca nhạc','music'],
+                    mystery:   ['ly kì','mystery'],
+                    family:    ['gia đình','family'],
+                    thriller:  ['giật gân','thriller'],
                 };
                 const kws = genreKeywords[selectedGenre] || [];
                 if (kws.length) {
@@ -1378,7 +1512,7 @@
                             <span class="tag tag-pg">${movie.AgeRating || 'ALL'}</span>
                             <span class="tag tag-now">Đang chiếu</span>
                             ${movie.Duration ? `<span class="tag tag-dur">⏱ ${movie.Duration} phút</span>` : ''}
-                            ${movie.MainCast ? `<span class="tag tag-genre">${movie.MainCast.split(',')[0].trim()}</span>` : ''}
+                            ${movie.Genre ? `<span class="tag tag-genre">${movie.Genre.split(',')[0].trim()}</span>` : ''}
                         </div>
                         <div class="movie-title" onclick="openMovieModal(${movie.MovieID})">${movie.Title}</div>
                         ${movie.MainCast ? `<div class="movie-cast">Diễn viên: ${movie.MainCast}</div>` : ''}
@@ -1420,7 +1554,8 @@
             document.getElementById('modalMeta').innerHTML = `
                 <span class="tag tag-pg">${movie.AgeRating || 'ALL'}</span>
                 ${movie.Duration ? `<span class="tag tag-dur">⏱ ${movie.Duration} phút</span>` : ''}
-                <span class="tag tag-now">Đang chiếu</span>`;
+                <span class="tag tag-now">Đang chiếu</span>
+                ${movie.Genre ? `<span class="tag tag-genre">${movie.Genre}</span>` : ''}`;
 
             // Slots
             const slots = rawData.filter(r => r.MovieID === movieId);

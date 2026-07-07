@@ -75,7 +75,7 @@ body {
 }
 .nav-links a {
     color: var(--text2);
-    text-decoration: none;
+    text-decoration: none !important;
     font-size: 0.92rem;
     font-weight: 500;
     transition: color var(--transition);
@@ -84,14 +84,6 @@ body {
 }
 .nav-links a:hover,
 .nav-links a.active { color: var(--text); }
-.nav-links a.active::after {
-    content: '';
-    position: absolute;
-    bottom: -2px; left: 0; right: 0;
-    height: 2px;
-    background: var(--accent);
-    border-radius: 2px;
-}
 
 /* Nav right */
 .nav-right {

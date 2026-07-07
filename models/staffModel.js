@@ -1,4 +1,5 @@
 const { sql, getPool } = require('../config/db');
+const RewardModel = require('./rewardModel');
 
 class StaffModel {
   static async getTodayShowtimes() {
@@ -107,14 +108,22 @@ class StaffModel {
         const vReq = transaction.request();
         vReq.input('code', sql.NVarChar, voucherCode.trim().toUpperCase());
         const vResult = await vReq.query(`
-          SELECT VoucherID, DiscountType, DiscountValue, MaxDiscount, MinOrderValue
-          FROM Vouchers WITH (UPDLOCK) 
-          WHERE Code = @code AND IsActive = 1
-            AND StartDate <= GETUTCDATE() AND EndDate >= GETUTCDATE()
-            AND (UsageLimit IS NULL OR UsedCount < UsageLimit)
+          SELECT v.VoucherID, v.DiscountType, v.DiscountValue, v.MaxDiscount, v.MinOrderValue,
+                 uv.UserID AS OwnerUserID, uv.IsUsed AS UserVoucherUsed
+          FROM Vouchers v WITH (UPDLOCK)
+          LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID
+          WHERE v.Code = @code AND v.IsActive = 1
+            AND v.StartDate <= GETUTCDATE() AND v.EndDate >= GETUTCDATE()
+            AND (v.UsageLimit IS NULL OR v.UsedCount < v.UsageLimit)
         `);
         if (vResult.recordset.length > 0) {
           const v = vResult.recordset[0];
+          if (v.OwnerUserID && v.OwnerUserID !== customerId) {
+            throw new Error('Voucher này thuộc tài khoản khác.');
+          }
+          if (v.OwnerUserID && v.UserVoucherUsed) {
+            throw new Error('Voucher đổi điểm này đã được sử dụng.');
+          }
           voucherId = v.VoucherID;
           if (totalAmount >= (v.MinOrderValue || 0)) {
             discountAmount = v.DiscountType === 'percent'
@@ -169,7 +178,23 @@ class StaffModel {
         if (vuResult.rowsAffected[0] === 0) {
            throw new Error('Voucher đã hết lượt sử dụng.');
         }
+
+        if (customerId) {
+          await transaction.request()
+            .input('voucherId', sql.Int, voucherId)
+            .input('userId', sql.Int, customerId)
+            .query(`
+              UPDATE UserVouchers
+              SET IsUsed = 1,
+                  UsedAt = GETDATE()
+              WHERE VoucherID = @voucherId
+                AND UserID = @userId
+                AND IsUsed = 0
+            `);
+        }
       }
+
+      const awardedPoints = await RewardModel.awardPointsForTickets(transaction, createdTickets);
 
       await transaction.commit();
 
@@ -183,6 +208,7 @@ class StaffModel {
         paymentMethod,
         status:        'confirmed',
         soldBy:        staffId,
+        awardedPoints,
       };
     } catch (err) {
       await transaction.rollback();

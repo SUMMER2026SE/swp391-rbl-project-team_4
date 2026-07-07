@@ -3,10 +3,44 @@
 //  Dành cho: Khách hàng đã đăng nhập (Role: Customer trở lên)
 // ============================================================
 const BookingModel = require('../models/bookingModel');
-const { getPool }  = require('../config/db');
+const { getPool } = require('../config/db');
+const { sendBookingEmail } = require('../services/emailService');
 // Socket.IO helper: push real-time payment_confirmed về đúng checkout tab của khách
 const { emitPaymentConfirmed } = require('../sockets/socketManager');
 const os = require('os');
+
+async function sendBookingConfirmationEmails(ticketIds, source = 'booking') {
+  for (const ticketId of ticketIds) {
+    try {
+      const ticketDetail = await BookingModel.getBookingDetail(ticketId);
+      if (!ticketDetail || !ticketDetail.UserEmail) {
+        console.warn(`[${source}] Skip booking email for ticket ${ticketId}: missing user email.`);
+        continue;
+      }
+
+      const foodStr = Array.isArray(ticketDetail.foodItems) && ticketDetail.foodItems.length > 0
+        ? ticketDetail.foodItems.map(f => `${f.Quantity}x ${f.Name}`).join(', ')
+        : '';
+      const ticketCode = ticketDetail.QRCode || ticketId.toString();
+      const totalAmount = Number(ticketDetail.TotalAmount || 0).toLocaleString('vi-VN') + 'đ';
+
+      await sendBookingEmail(ticketDetail.UserEmail, {
+        customerName: ticketDetail.UserFullName || 'Khach hang',
+        movieTitle: ticketDetail.MovieTitle,
+        cinemaName: ticketDetail.CinemaName,
+        roomName: ticketDetail.RoomName,
+        showtime: new Date(ticketDetail.StartTime).toLocaleString('vi-VN'),
+        seats: `${ticketDetail.SeatRow}${ticketDetail.SeatNumber}`,
+        food: foodStr,
+        totalAmount,
+        ticketCode,
+        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ticketCode)}`
+      });
+    } catch (emailErr) {
+      console.error(`[${source}] Failed to send booking email for ticket ${ticketId}:`, emailErr.message);
+    }
+  }
+}
 
 // ─────────────────────────────────────────────────────────────
 //  GET /api/bookings/food-beverages
@@ -24,7 +58,7 @@ exports.getFoodBeverages = async (req, res) => {
 exports.getPaymentQRImages = async (req, res) => {
   try {
     let data = await BookingModel.getPaymentQRImages();
-    
+
     // Đọc đè cấu hình ngân hàng từ file .env nếu có để dễ quản trị
     data = data.map(item => {
       if (item.PaymentMethod === 'qrpay') {
@@ -56,21 +90,21 @@ exports.getPaymentQRImages = async (req, res) => {
     res.json({
       success: true,
       data: [
-        { 
-          PaymentMethod: 'qrpay', 
-          ImagePath: '/images/qr_vietqr_mb.png', 
-          DisplayName: `QR Pay (VietQR / ${sepayBankCode})`, 
-          AccountName: process.env.SEPAY_ACCOUNT_NAME || 'NGUYEN MINH HUY', 
-          AccountNumber: process.env.SEPAY_BANK_ACCOUNT || '0949391487', 
+        {
+          PaymentMethod: 'qrpay',
+          ImagePath: '/images/qr_vietqr_mb.png',
+          DisplayName: `QR Pay (VietQR / ${sepayBankCode})`,
+          AccountName: process.env.SEPAY_ACCOUNT_NAME || 'NGUYEN MINH HUY',
+          AccountNumber: process.env.SEPAY_BANK_ACCOUNT || '0949391487',
           BankName: `${sepayBankCode} Bank`,
           BankCode: sepayBankCode
         },
-        { 
-          PaymentMethod: 'momo',  
-          ImagePath: '/images/qr_momo.png',      
-          DisplayName: 'Ví MoMo',           
-          AccountName: process.env.MOMO_ACCOUNT_NAME || 'NGUYEN MINH HUY', 
-          AccountNumber: process.env.MOMO_BANK_ACCOUNT || '0949391487', 
+        {
+          PaymentMethod: 'momo',
+          ImagePath: '/images/qr_momo.png',
+          DisplayName: 'Ví MoMo',
+          AccountName: process.env.MOMO_ACCOUNT_NAME || 'NGUYEN MINH HUY',
+          AccountNumber: process.env.MOMO_BANK_ACCOUNT || '0949391487',
           BankName: 'MoMo',
           BankCode: 'MOMO'
         }
@@ -113,6 +147,13 @@ exports.validateVoucher = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Bạn đã sử dụng voucher này rồi. Mỗi khách hàng chỉ được sử dụng mã này 1 lần.',
+      });
+    }
+
+    if (voucher.notOwned) {
+      return res.status(403).json({
+        success: false,
+        message: 'Voucher này thuộc tài khoản khác.',
       });
     }
 
@@ -177,7 +218,8 @@ exports.createBooking = async (req, res) => {
       err.message.includes('không hợp lệ') ||
       err.message.includes('không đủ số lượng') ||
       err.message.includes('đã ngừng bán') ||
-      err.message.includes('không được hỗ trợ')
+      err.message.includes('không được hỗ trợ') ||
+      err.message.includes('Voucher')
     ) {
       return res.status(409).json({ success: false, message: err.message });
     }
@@ -260,11 +302,11 @@ exports.checkBookingStatus = async (req, res) => {
           const totalRequired = await BookingModel.getBookingTotalAmount(ids);
 
           console.log(`[SePay Polling Check] Checking transaction history for note: ${expectedNote}, required amount: ${totalRequired}`);
-          
+
           const response = await fetch('https://userapi.sepay.vn/v2/transactions?per_page=30', {
             headers: { 'Authorization': `Bearer ${sepayApiKey}` }
           });
-          
+
           if (response.ok) {
             const result = await response.json();
             const transactionsList = result.transactions || result.data || [];
@@ -272,14 +314,14 @@ exports.checkBookingStatus = async (req, res) => {
               const match = transactionsList.find(tx => {
                 const txContent = tx.transaction_content || '';
                 const txAmount = parseFloat(tx.amount_in || 0);
-                
+
                 return txContent.toUpperCase().includes(expectedNote.toUpperCase()) &&
-                       txAmount >= totalRequired;
+                  txAmount >= totalRequired;
               });
 
               if (match) {
                 console.log(`[SePay Polling Check] ✅ Match found! Transaction ID: ${match.id || match.reference_number}. Confirming booking with transaction log.`);
-                
+
                 const gateway = match.bank_brand_name || 'SePay';
                 const transactionDate = match.transaction_date ? new Date(match.transaction_date) : new Date();
                 const accountNumber = match.account_number || '';
@@ -309,12 +351,14 @@ exports.checkBookingStatus = async (req, res) => {
                   } catch (emitErr) {
                     console.warn('[Polling] emitPaymentConfirmed failed (non-critical):', emitErr.message);
                   }
+
+                  await sendBookingConfirmationEmails(ids, 'Polling');
                 } catch (dbErr) {
                   if (dbErr.code === 'DUPLICATE_TRANSACTION') {
                     console.log(`[SePay Polling Check] Giao dịch trùng lặp đã được xử lý thành công trước đó.`);
                     hasBeenPaid = true;
                     // Vẫn emit để đảm bảo client redirect nếu chưa nhận được event trước
-                    try { emitPaymentConfirmed(ids, { source: 'polling-duplicate' }); } catch (_) {}
+                    try { emitPaymentConfirmed(ids, { source: 'polling-duplicate' }); } catch (_) { }
                   } else {
                     console.error('[SePay Polling Check DB Error]:', dbErr.message);
                   }
@@ -477,6 +521,39 @@ exports.receivePaymentWebhook = async (req, res) => {
         console.warn('[Webhook] emitPaymentConfirmed failed (non-critical):', emitErr.message);
       }
 
+      // 📧 GỬI EMAIL XÁC NHẬN VÉ ĐIỆN TỬ
+      try {
+        for (const ticketId of ticketIds) {
+          const ticketDetail = await BookingModel.getBookingDetail(ticketId);
+          if (ticketDetail && ticketDetail.UserEmail) {
+
+            // Format food items if any
+            let foodStr = '';
+            if (ticketDetail.foodItems && ticketDetail.foodItems.length > 0) {
+              foodStr = ticketDetail.foodItems.map(f => `${f.Quantity}x ${f.Name}`).join(', ');
+            }
+
+            const bookingInfo = {
+              customerName: ticketDetail.UserFullName || 'Khách hàng',
+              movieTitle: ticketDetail.MovieTitle,
+              cinemaName: ticketDetail.CinemaName,
+              roomName: ticketDetail.RoomName,
+              showtime: new Date(ticketDetail.StartTime).toLocaleString('vi-VN'),
+              seats: `${ticketDetail.SeatRow}${ticketDetail.SeatNumber}`,
+              food: foodStr,
+              totalAmount: ticketDetail.TotalAmount.toLocaleString('vi-VN') + 'đ',
+              ticketCode: ticketDetail.QRCode || ticketId.toString(),
+              qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticketDetail.QRCode}`
+            };
+
+            await sendBookingEmail(ticketDetail.UserEmail, bookingInfo);
+          }
+        }
+      } catch (emailErr) {
+        console.error('[Webhook] Lỗi khi gửi email vé:', emailErr.message);
+      }
+
+
       return res.json({
         success: true,
         message: `Xác nhận thanh toán thành công cho vé [${ticketIds.join(', ')}].`,
@@ -525,7 +602,7 @@ exports.getPendingWebhooks = async (req, res) => {
     for (const t of tickets) {
       const timeStr = t.BookedAt instanceof Date ? t.BookedAt.toISOString().slice(0, 16) : String(t.BookedAt);
       const key = `${t.CustomerName}_${t.MovieTitle}_${timeStr}`;
-      
+
       if (!bookingsMap[key]) {
         bookingsMap[key] = {
           customerName: t.CustomerName,
@@ -672,7 +749,6 @@ exports.getServerIP = (req, res) => {
   try {
     const interfaces = os.networkInterfaces();
     let candidates = [];
-    
     for (const devName in interfaces) {
       if (/virtual|vmware|vbox|vethernet|pseudo/i.test(devName)) continue;
       
@@ -692,5 +768,31 @@ exports.getServerIP = (req, res) => {
   } catch (err) {
     console.error('[bookingController] getServerIP:', err.message);
     res.json({ success: false, ip: 'localhost' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+//  POST /api/bookings/:ticketId/request-cancel
+// ─────────────────────────────────────────────────────────────
+exports.requestCancelBooking = async (req, res) => {
+  try {
+    const ticketId = parseInt(req.params.ticketId);
+    if (isNaN(ticketId)) {
+      return res.status(400).json({ success: false, message: 'TicketID không hợp lệ.' });
+    }
+
+    await BookingModel.cancelConfirmedBooking(ticketId, req.user.userId);
+
+    res.json({ success: true, message: 'Hủy vé thành công.' });
+  } catch (err) {
+    console.error('[bookingController] requestCancelBooking:', err.message);
+    if (
+      err.message.includes('Không tìm thấy') ||
+      err.message.includes('Chỉ có thể hủy') ||
+      err.message.includes('Chỉ được phép hủy')
+    ) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    res.status(500).json({ success: false, message: 'Lỗi server khi hủy vé.' });
   }
 };

@@ -70,6 +70,45 @@ exports.getMovieById = async (req, res) => {
 //  GET /api/movies/:id/showtimes
 //  Lịch chiếu của một bộ phim (filter theo ngày: ?date=2024-12-25)
 // ─────────────────────────────────────────────────────────────
+exports.getMovieReviews = async (req, res) => {
+  try {
+    const data = await MovieModel.getMovieReviews(req.params.id);
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[movieController] getMovieReviews:', err.message);
+    res.status(500).json({ success: false, message: 'Loi server.' });
+  }
+};
+
+exports.getMyMovieReview = async (req, res) => {
+  try {
+    const data = await MovieModel.getMyMovieReview(req.params.id, req.user.userId);
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[movieController] getMyMovieReview:', err.message);
+    res.status(500).json({ success: false, message: 'Loi server.' });
+  }
+};
+
+exports.saveMovieReview = async (req, res) => {
+  try {
+    const review = await MovieModel.saveMovieReview(req.params.id, req.user.userId, req.body || {});
+    res.json({ success: true, message: 'Da luu danh gia.', data: review });
+  } catch (err) {
+    console.error('[movieController] saveMovieReview:', err.message);
+    if (err.code === 'INVALID_RATING' || err.code === 'COMMENT_TOO_LONG' || err.code === 'INVALID_MOVIE') {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    if (err.message && err.message.includes('MOVIE_NOT_FOUND')) {
+      return res.status(404).json({ success: false, message: 'Khong tim thay phim.' });
+    }
+    if (err.message && err.message.includes('TICKET_REQUIRED')) {
+      return res.status(403).json({ success: false, message: 'Ban can co ve da thanh toan cua phim nay moi duoc danh gia.' });
+    }
+    res.status(500).json({ success: false, message: 'Loi server.' });
+  }
+};
+
 exports.getShowtimesByMovie = async (req, res) => {
   try {
     const { date } = req.query;
@@ -145,3 +184,20 @@ exports.getShowtimes = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+
+// ─────────────────────────────────────────────────────────────
+//  GET /api/movies/promotions
+//  Lấy danh sách khuyến mãi đang hoạt động (public, không cần auth)
+// ─────────────────────────────────────────────────────────────
+const AdminModel = require('../models/adminModel');
+
+exports.getPublicPromotions = async (req, res) => {
+  try {
+    const data = await AdminModel.getActivePromotions();
+    res.json({ success: true, count: data.length, data });
+  } catch (err) {
+    console.error('[movieController] getPublicPromotions:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+

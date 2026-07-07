@@ -42,8 +42,7 @@ img { display: block; max-width: 100%; }
 .nav-links { display: flex; gap: 28px; }
 .nav-links a { color: var(--text-muted-dark); font-weight: 600; font-size: 0.9rem; transition: color var(--transition); position: relative; }
 .nav-links a:hover, .nav-links a.active { color: var(--primary); }
-.nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--primary); transition: width var(--transition); }
-.nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+
 .nav-actions { margin-left: auto; display: flex; align-items: center; gap: 16px; }
 .search-box { display: flex; align-items: center; gap: 8px; background: var(--bg-light); border: 1px solid var(--border-light); border-radius: 24px; padding: 8px 16px; transition: border-color var(--transition); }
 .search-box:focus-within { border-color: var(--primary); background: var(--bg-white); }

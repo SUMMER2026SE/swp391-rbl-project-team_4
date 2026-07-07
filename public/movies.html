@@ -28,6 +28,8 @@
                 </div>
                 <a href="booking.html" id="nav-rap">Rạp</a>
                 <a href="promotions.html" id="nav-promo">Promotions</a>
+                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -113,6 +115,11 @@
                             <input type="checkbox" name="genre" value="Gia đình">
                             <span class="filter-checkbox"></span>
                             <span class="filter-label">Gia đình</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="genre" value="Giật Gân">
+                            <span class="filter-checkbox"></span>
+                            <span class="filter-label">Giật Gân</span>
                         </label>
                     </div>
                 </div>
@@ -253,7 +260,7 @@
 
     <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=6"></script>
     <script>
         // Pagination
         function previousPage() {

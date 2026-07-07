@@ -95,23 +95,13 @@ img { display: block; max-width: 100%; }
     transition: color var(--transition);
     position: relative;
     letter-spacing: 0.3px;
+    text-decoration: none !important;
 }
 
 .nav-links a:hover { color: var(--text-light); }
 
 .nav-links a.active {
     color: var(--text-light);
-}
-
-.nav-links a.active::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: var(--primary);
-    border-radius: 2px;
 }
 
 .nav-actions {

@@ -5,8 +5,167 @@
 const AdminModel = require('../models/adminModel');
 const PDFDocument = require('pdfkit');
 
+function formatReportDate(value) {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function csvCell(value) {
+  if (value === null || value === undefined) return '';
+  const text = value instanceof Date ? formatReportDate(value) : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function rowsToCsv(rows) {
+  return rows.map(row => row.map(csvCell).join(',')).join('\r\n');
+}
+
+function htmlCell(value) {
+  if (value === null || value === undefined) return '';
+  const text = value instanceof Date ? formatReportDate(value) : String(value);
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function htmlTable(title, rows) {
+  const body = rows.map((row, rowIndex) => {
+    const tag = rowIndex === 0 ? 'th' : 'td';
+    return `<tr>${row.map(cell => `<${tag}>${htmlCell(cell)}</${tag}>`).join('')}</tr>`;
+  }).join('');
+  return `<h2>${htmlCell(title)}</h2><table>${body}</table>`;
+}
+
+async function buildReportData(query = {}) {
+  const period = query.period || 'all';
+  const cinemaId = query.cinemaId || null;
+  const year = parseInt(query.year) || new Date().getFullYear();
+
+  const [stats, topMovies, recentTxns, monthlyRevenue, revenueStats] = await Promise.all([
+    AdminModel.getDashboardStats({ cinemaId, period }),
+    AdminModel.getTopMovies(20),
+    AdminModel.getRecentTransactions(50),
+    AdminModel.getMonthlyRevenue(year, cinemaId),
+    AdminModel.getRevenueStats({ cinemaId }),
+  ]);
+
+  return { period, cinemaId, year, stats, topMovies, recentTxns, monthlyRevenue, revenueStats };
+}
+
+function buildReportRows(report) {
+  const overviewRows = [
+    ['Metric', 'Value'],
+    ['Period', report.period],
+    ['Year', report.year],
+    ['Total Revenue', report.stats.TotalRevenue || 0],
+    ['Tickets Sold', report.stats.TicketSales || 0],
+    ['FnB Revenue', report.stats.FnBSales || 0],
+    ['Occupancy Rate (%)', report.stats.OccupancyRate || 0],
+  ];
+
+  const topMovieRows = [
+    ['Rank', 'Movie', 'Tickets', 'Today Revenue'],
+    ...(report.topMovies || []).map((movie, index) => [
+      index + 1,
+      movie.Title,
+      movie.TotalTickets || 0,
+      movie.TodayRevenue || 0,
+    ]),
+  ];
+
+  const transactionRows = [
+    ['Transaction ID', 'Branch', 'Item', 'Date', 'Amount', 'Status'],
+    ...(report.recentTxns || []).map(txn => [
+      txn.id,
+      txn.branch,
+      txn.item,
+      txn.date,
+      txn.amount,
+      txn.status,
+    ]),
+  ];
+
+  const monthlyRows = [
+    ['Month', 'Ticket Revenue', 'FnB Revenue', 'Total Revenue'],
+    ...(report.monthlyRevenue || []).map(item => {
+      const ticketRevenue = Number(item.TicketRevenue || 0);
+      const fnbRevenue = Number(item.FnBRevenue || 0);
+      return [item.MonthNumber, ticketRevenue, fnbRevenue, ticketRevenue + fnbRevenue];
+    }),
+  ];
+
+  const detailRows = [
+    ['Booking Date', 'Movie', 'Cinema', 'Tickets', 'Total Revenue', 'Average Ticket Revenue'],
+    ...((report.revenueStats && report.revenueStats.data) || []).map(item => [
+      formatReportDate(item.BookingDate).slice(0, 10),
+      item.MovieTitle,
+      item.CinemaName,
+      item.TotalTickets || 0,
+      item.TotalRevenue || 0,
+      item.AvgTicketRevenue || 0,
+    ]),
+  ];
+
+  return { overviewRows, topMovieRows, transactionRows, monthlyRows, detailRows };
+}
+
+function buildCsvReport(report) {
+  const rows = buildReportRows(report);
+  return [
+    'D-CINEMA DASHBOARD REPORT',
+    `Generated At,${csvCell(new Date())}`,
+    '',
+    'OVERVIEW',
+    rowsToCsv(rows.overviewRows),
+    '',
+    'TOP MOVIES',
+    rowsToCsv(rows.topMovieRows),
+    '',
+    'RECENT TRANSACTIONS',
+    rowsToCsv(rows.transactionRows),
+    '',
+    'MONTHLY REVENUE',
+    rowsToCsv(rows.monthlyRows),
+    '',
+    'REVENUE DETAILS',
+    rowsToCsv(rows.detailRows),
+  ].join('\r\n');
+}
+
+function buildExcelReport(report) {
+  const rows = buildReportRows(report);
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; color: #111827; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    h2 { font-size: 15px; margin: 24px 0 8px; color: #991b1b; }
+    .meta { color: #6b7280; margin-bottom: 16px; }
+    table { border-collapse: collapse; margin-bottom: 10px; }
+    th { background: #111827; color: #ffffff; font-weight: 700; }
+    th, td { border: 1px solid #d1d5db; padding: 6px 10px; mso-number-format: "\\@"; }
+  </style>
+</head>
+<body>
+  <h1>D-CINEMA DASHBOARD REPORT</h1>
+  <div class="meta">Generated at: ${htmlCell(formatReportDate(new Date()))}</div>
+  ${htmlTable('Overview', rows.overviewRows)}
+  ${htmlTable('Top Movies', rows.topMovieRows)}
+  ${htmlTable('Recent Transactions', rows.transactionRows)}
+  ${htmlTable('Monthly Revenue', rows.monthlyRows)}
+  ${htmlTable('Revenue Details', rows.detailRows)}
+</body>
+</html>`;
+}
+
 function removeAccents(str) {
-  if(!str) return '';
+  if (!str) return '';
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, 'd').replace(/Đ/g, 'D');
 }
 
@@ -20,7 +179,7 @@ exports.createMovie = async (req, res) => {
     console.log('[adminController] req.body:', req.body);
     console.log('[adminController] req.file:', req.file);
 
-    const { title, description, director, duration, ageRating, status, mainCast } = req.body || {};
+    const { title, description, director, duration, ageRating, status, mainCast, trailerURL, genreIds } = req.body || {};
     if (!title || !duration) {
       return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc: title, duration.' });
     }
@@ -35,7 +194,9 @@ exports.createMovie = async (req, res) => {
       ageRating,
       posterURL,
       status,
-      mainCast
+      mainCast,
+      trailerURL,
+      genreIds
     };
 
     const movie = await AdminModel.createMovie(movieData);
@@ -73,7 +234,6 @@ exports.saveSeats = async (req, res) => {
     if (!seats || !Array.isArray(seats)) {
       return res.status(400).json({ success: false, message: 'Dữ liệu ghế không hợp lệ.' });
     }
-    
     await AdminModel.saveSeats(roomId, seats, roomType);
     res.json({ success: true, message: 'Lưu sơ đồ ghế thành công!' });
   } catch (err) {
@@ -84,6 +244,8 @@ exports.saveSeats = async (req, res) => {
 
 exports.updateMovie = async (req, res) => {
   try {
+    console.log('[adminController] updateMovie req.body:', req.body);
+    console.log('[adminController] updateMovie trailerURL:', req.body.trailerURL);
     const posterURL = req.file ? 'images/' + req.file.filename : undefined;
     const body = { ...req.body };
     if (posterURL) body.posterURL = posterURL;
@@ -106,6 +268,42 @@ exports.deleteMovie = async (req, res) => {
   } catch (err) {
     console.error('[adminController] deleteMovie:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getMovieReviews = async (req, res) => {
+  try {
+    const data = await AdminModel.getMovieReviews(req.query || {});
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[adminController] getMovieReviews:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server khi tải đánh giá phim.' });
+  }
+};
+
+exports.toggleMovieReview = async (req, res) => {
+  try {
+    const review = await AdminModel.toggleMovieReview(req.params.id);
+    if (!review) return res.status(404).json({ success: false, message: 'Không tìm thấy đánh giá.' });
+    res.json({
+      success: true,
+      message: review.IsVisible ? 'Đã hiển thị đánh giá.' : 'Đã ẩn đánh giá.',
+      data: review
+    });
+  } catch (err) {
+    console.error('[adminController] toggleMovieReview:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server khi đổi trạng thái đánh giá.' });
+  }
+};
+
+exports.deleteMovieReview = async (req, res) => {
+  try {
+    const deleted = await AdminModel.deleteMovieReview(req.params.id);
+    if (!deleted) return res.status(404).json({ success: false, message: 'Không tìm thấy đánh giá.' });
+    res.json({ success: true, message: 'Đã xóa đánh giá.' });
+  } catch (err) {
+    console.error('[adminController] deleteMovieReview:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server khi xóa đánh giá.' });
   }
 };
 
@@ -308,7 +506,20 @@ exports.createFnB = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc.' });
     }
 
-    const fnb = await AdminModel.createFnB(req.body);
+    let imageURL = 'images/default_fnb.png';
+    if (req.file) {
+      imageURL = 'images/' + req.file.filename;
+    } else if (req.body.imageURL) {
+      imageURL = req.body.imageURL;
+    }
+
+    const fnbData = {
+      ...req.body,
+      imageURL,
+      isAvailable: req.body.isAvailable !== 'false'
+    };
+
+    const fnb = await AdminModel.createFnB(fnbData);
     res.status(201).json({ success: true, message: 'Tạo mặt hàng thành công!', data: fnb });
   } catch (err) {
     console.error('[adminController] createFnB:', err.message);
@@ -318,7 +529,15 @@ exports.createFnB = async (req, res) => {
 
 exports.updateFnB = async (req, res) => {
   try {
-    const fnb = await AdminModel.updateFnB(parseInt(req.params.id), req.body);
+    const updateData = { ...req.body };
+    if (req.file) {
+      updateData.imageURL = 'images/' + req.file.filename;
+    }
+    if (updateData.isAvailable !== undefined) {
+      updateData.isAvailable = updateData.isAvailable !== 'false';
+    }
+
+    const fnb = await AdminModel.updateFnB(parseInt(req.params.id), updateData);
     if (!fnb) return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
     res.json({ success: true, message: 'Cập nhật mặt hàng thành công!', data: fnb });
   } catch (err) {
@@ -333,6 +552,9 @@ exports.deleteFnB = async (req, res) => {
     res.json({ success: true, message: 'Xóa mặt hàng thành công!' });
   } catch (err) {
     console.error('[adminController] deleteFnB:', err.message);
+    if (err.message.includes('REFERENCE constraint') || err.message.includes('conflict')) {
+      return res.status(409).json({ success: false, message: 'Mặt hàng này đã phát sinh giao dịch hóa đơn, không thể xóa. Hãy chuyển trạng thái hoạt động sang Tạm ẩn.' });
+    }
     if (err.message.includes('người mua')) {
       return res.status(409).json({ success: false, message: err.message });
     }
@@ -392,6 +614,78 @@ exports.getCinemas = async (req, res) => {
   } catch (err) {
     console.error('[adminController] getCinemas:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.createCinema = async (req, res) => {
+  try {
+    const { name, address, city } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Tên rạp là bắt buộc.' });
+    const cinema = await AdminModel.createCinema({ name, address, city });
+    res.status(201).json({ success: true, message: 'Thêm rạp thành công!', data: cinema });
+  } catch (err) {
+    console.error('[adminController] createCinema:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.updateCinema = async (req, res) => {
+  try {
+    const { name, address, city } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Tên rạp là bắt buộc.' });
+    const cinema = await AdminModel.updateCinema(parseInt(req.params.id), { name, address, city });
+    if (!cinema) return res.status(404).json({ success: false, message: 'Không tìm thấy rạp.' });
+    res.json({ success: true, message: 'Cập nhật rạp thành công!', data: cinema });
+  } catch (err) {
+    console.error('[adminController] updateCinema:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.deleteCinema = async (req, res) => {
+  try {
+    await AdminModel.deleteCinema(parseInt(req.params.id));
+    res.json({ success: true, message: 'Xóa rạp thành công!' });
+  } catch (err) {
+    console.error('[adminController] deleteCinema:', err.message);
+    const status = err.message.includes('Không thể xóa') ? 400 : 500;
+    res.status(status).json({ success: false, message: err.message });
+  }
+};
+
+exports.createRoom = async (req, res) => {
+  try {
+    const { cinemaId, name } = req.body;
+    if (!cinemaId || !name) return res.status(400).json({ success: false, message: 'Vui lòng nhập đầy đủ thông tin.' });
+    const room = await AdminModel.createRoom({ cinemaId: parseInt(cinemaId), name, totalSeats: 0 });
+    res.status(201).json({ success: true, message: 'Thêm phòng thành công!', data: room });
+  } catch (err) {
+    console.error('[adminController] createRoom:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.updateRoom = async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Tên phòng là bắt buộc.' });
+    const room = await AdminModel.updateRoom(parseInt(req.params.id), { name });
+    if (!room) return res.status(404).json({ success: false, message: 'Không tìm thấy phòng.' });
+    res.json({ success: true, message: 'Cập nhật phòng thành công!', data: room });
+  } catch (err) {
+    console.error('[adminController] updateRoom:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.deleteRoom = async (req, res) => {
+  try {
+    await AdminModel.deleteRoom(parseInt(req.params.id));
+    res.json({ success: true, message: 'Xóa phòng thành công!' });
+  } catch (err) {
+    console.error('[adminController] deleteRoom:', err.message);
+    const status = err.message.includes('Không thể xóa') ? 400 : 500;
+    res.status(status).json({ success: false, message: err.message });
   }
 };
 
@@ -457,8 +751,8 @@ exports.exportPdf = async (req, res) => {
 
     // Remove accents function if not globally available, just copy logic or use simple replace
     const normalizeStr = str => {
-        if (!str) return '';
-        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
+      if (!str) return '';
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
     };
 
     // Header
@@ -471,32 +765,32 @@ exports.exportPdf = async (req, res) => {
     // 1. KPI Section (4 boxes)
     doc.fillColor('#111827').fontSize(14).text('1. OVERVIEW STATISTICS');
     doc.moveDown(0.5);
-    
+
     // Draw KPI table
     const startY = doc.y;
     doc.rect(50, startY, 500, 60).stroke('#d1d5db');
     doc.moveTo(175, startY).lineTo(175, startY + 60).stroke('#d1d5db');
     doc.moveTo(300, startY).lineTo(300, startY + 60).stroke('#d1d5db');
     doc.moveTo(425, startY).lineTo(425, startY + 60).stroke('#d1d5db');
-    
+
     doc.fontSize(10).fillColor('#6b7280');
     doc.text('Total Revenue', 60, startY + 10, { width: 105, align: 'center' });
     doc.text('Tickets Sold', 185, startY + 10, { width: 105, align: 'center' });
     doc.text('F&B Revenue', 310, startY + 10, { width: 105, align: 'center' });
     doc.text('Occupancy', 435, startY + 10, { width: 105, align: 'center' });
-    
+
     doc.fontSize(12).fillColor('#111827');
     doc.text(`${new Intl.NumberFormat('en-US').format(stats.TotalRevenue || 0)} VND`, 60, startY + 30, { width: 105, align: 'center' });
     doc.text(`${new Intl.NumberFormat('en-US').format(stats.TicketSales || 0)}`, 185, startY + 30, { width: 105, align: 'center' });
     doc.text(`${new Intl.NumberFormat('en-US').format(stats.FnBSales || 0)} VND`, 310, startY + 30, { width: 105, align: 'center' });
     doc.text(`${stats.OccupancyRate || 0}%`, 435, startY + 30, { width: 105, align: 'center' });
-    
+
     doc.y = startY + 80;
 
     // 2. Top Movies Section
     doc.fontSize(14).fillColor('#111827').text('2. TOP MOVIES RANKING');
     doc.moveDown(0.5);
-    
+
     // Table Header
     let tableY = doc.y;
     doc.rect(50, tableY, 500, 20).fillAndStroke('#f3f4f6', '#d1d5db');
@@ -505,10 +799,10 @@ exports.exportPdf = async (req, res) => {
     doc.text('Movie Title', 90, tableY + 5);
     doc.text('Tickets', 350, tableY + 5);
     doc.text('Revenue (VND)', 430, tableY + 5);
-    
+
     tableY += 20;
     doc.fillColor('#111827');
-    
+
     if (topMovies && topMovies.length > 0) {
       topMovies.forEach((m, idx) => {
         doc.rect(50, tableY, 500, 25).stroke('#e5e7eb');
@@ -523,13 +817,13 @@ exports.exportPdf = async (req, res) => {
       doc.text('No movie data available.', 60, tableY + 7);
       tableY += 25;
     }
-    
+
     doc.y = tableY + 30;
 
     // 3. Recent Transactions
     doc.fontSize(14).fillColor('#111827').text('3. RECENT TRANSACTIONS');
     doc.moveDown(0.5);
-    
+
     tableY = doc.y;
     doc.rect(50, tableY, 500, 20).fillAndStroke('#f3f4f6', '#d1d5db');
     doc.fillColor('#4b5563').fontSize(10);
@@ -538,10 +832,10 @@ exports.exportPdf = async (req, res) => {
     doc.text('Date', 250, tableY + 5);
     doc.text('Amount', 370, tableY + 5);
     doc.text('Status', 470, tableY + 5);
-    
+
     tableY += 20;
     doc.fillColor('#111827');
-    
+
     if (recentTxns && recentTxns.length > 0) {
       recentTxns.forEach(t => {
         doc.rect(50, tableY, 500, 25).stroke('#e5e7eb');
@@ -549,12 +843,12 @@ exports.exportPdf = async (req, res) => {
         doc.text(normalizeStr(t.branch).substring(0, 20), 120, tableY + 7);
         doc.text(normalizeStr(t.date), 250, tableY + 7);
         doc.text(normalizeStr(t.amount), 370, tableY + 7);
-        
+
         // Status color
         if (t.status === 'COMPLETED') doc.fillColor('#10b981');
         else if (t.status === 'CANCELLED') doc.fillColor('#ef4444');
         else doc.fillColor('#f59e0b');
-        
+
         doc.text(t.status, 470, tableY + 7);
         doc.fillColor('#111827'); // reset
         tableY += 25;
@@ -577,6 +871,92 @@ exports.exportPdf = async (req, res) => {
   }
 };
 
+exports.getGenres = async (req, res) => {
+  try {
+    const data = await AdminModel.getGenres({ includeInactive: req.query.includeInactive !== 'false' });
+    res.json({ success: true, count: data.length, data });
+  } catch (err) {
+    console.error('[adminController] getGenres:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.createGenre = async (req, res) => {
+  try {
+    const data = await AdminModel.createGenre(req.body.genreName || req.body.name);
+    res.status(201).json({ success: true, message: 'Đã thêm thể loại.', data });
+  } catch (err) {
+    console.error('[adminController] createGenre:', err.message);
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+exports.updateGenre = async (req, res) => {
+  try {
+    const data = await AdminModel.updateGenre(req.params.id, req.body.genreName || req.body.name);
+    if (!data) return res.status(404).json({ success: false, message: 'Không tìm thấy thể loại.' });
+    res.json({ success: true, message: 'Đã cập nhật thể loại.', data });
+  } catch (err) {
+    console.error('[adminController] updateGenre:', err.message);
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+exports.toggleGenre = async (req, res) => {
+  try {
+    const data = await AdminModel.toggleGenre(req.params.id);
+    if (!data) return res.status(404).json({ success: false, message: 'Không tìm thấy thể loại.' });
+    res.json({ success: true, message: 'Đã đổi trạng thái thể loại.', data });
+  } catch (err) {
+    console.error('[adminController] toggleGenre:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.deleteGenre = async (req, res) => {
+  try {
+    const data = await AdminModel.deleteGenre(req.params.id);
+    res.json({
+      success: true,
+      message: data && data.Deactivated ? 'Thể loại đang được dùng nên đã chuyển sang ẩn.' : 'Đã xóa thể loại.',
+      data
+    });
+  } catch (err) {
+    console.error('[adminController] deleteGenre:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.exportCsv = async (req, res) => {
+  try {
+    const report = await buildReportData(req.query);
+    const csv = buildCsvReport(report);
+    const filename = `D-Cinema-Report-${new Date().toISOString().slice(0, 10)}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(Buffer.from('\ufeff' + csv, 'utf8'));
+  } catch (err) {
+    console.error('[adminController] exportCsv:', err.message);
+    res.status(500).json({ success: false, message: 'Server error generating CSV report.' });
+  }
+};
+
+exports.exportExcel = async (req, res) => {
+  try {
+    const report = await buildReportData(req.query);
+    const workbookHtml = buildExcelReport(report);
+    const filename = `D-Cinema-Report-${new Date().toISOString().slice(0, 10)}.xls`;
+
+    res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(Buffer.from('\ufeff' + workbookHtml, 'utf8'));
+  } catch (err) {
+    console.error('[adminController] exportExcel:', err.message);
+    res.status(500).json({ success: false, message: 'Server error generating Excel report.' });
+  }
+};
+
 // ─────────────────────────────────────────────────────────────
 //  GET /api/admin/stats/revenue-chart
 // ─────────────────────────────────────────────────────────────
@@ -592,7 +972,7 @@ exports.getRevenueChartData = async (req, res) => {
     let fnbData = [];
 
     if (period === 'today') {
-      labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+      labels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
       ticketData = new Array(24).fill(0);
       fnbData = new Array(24).fill(0);
 
@@ -612,7 +992,7 @@ exports.getRevenueChartData = async (req, res) => {
         ticketData[day] += t.TotalAmount || 0;
         fnbData[day] += t.FnBRevenue || 0;
       });
-      
+
       // Shift so Monday is first
       labels.push(labels.shift());
       ticketData.push(ticketData.shift());
@@ -620,7 +1000,7 @@ exports.getRevenueChartData = async (req, res) => {
 
     } else if (period === 'month') {
       const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-      labels = Array.from({length: daysInMonth}, (_, i) => `Ngày ${i + 1}`);
+      labels = Array.from({ length: daysInMonth }, (_, i) => `Ngày ${i + 1}`);
       ticketData = new Array(daysInMonth).fill(0);
       fnbData = new Array(daysInMonth).fill(0);
 
@@ -632,7 +1012,7 @@ exports.getRevenueChartData = async (req, res) => {
 
     } else {
       // all -> 12 months
-      labels = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+      labels = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
       ticketData = new Array(12).fill(0);
       fnbData = new Array(12).fill(0);
 
@@ -657,3 +1037,88 @@ exports.getRevenueChartData = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
 };
+
+// ════════════════════════════════════════════════════════════
+//  PROMOTIONS MANAGEMENT
+// ════════════════════════════════════════════════════════════
+
+exports.getAllPromotions = async (req, res) => {
+  try {
+    const data = await AdminModel.getAllPromotions();
+    res.json({ success: true, count: data.length, data });
+  } catch (err) {
+    console.error('[adminController] getAllPromotions:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getActivePromotions = async (req, res) => {
+  try {
+    const data = await AdminModel.getActivePromotions();
+    res.json({ success: true, count: data.length, data });
+  } catch (err) {
+    console.error('[adminController] getActivePromotions:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.createPromotion = async (req, res) => {
+  try {
+    const { title, description, badgeLabel, linkURL, isFeatured, isActive, sortOrder } = req.body || {};
+    if (!title) {
+      return res.status(400).json({ success: false, message: 'Thiếu tiêu đề (title).' });
+    }
+    const imageURL = req.file ? 'images/' + req.file.filename : (req.body.imageURL || null);
+    const promo = await AdminModel.createPromotion({
+      title, description, badgeLabel, imageURL, linkURL,
+      isFeatured: isFeatured === 'true' || isFeatured === true || isFeatured === 1,
+      isActive: isActive !== 'false' && isActive !== false && isActive !== 0,
+      sortOrder
+    });
+    res.status(201).json({ success: true, message: 'Thêm khuyến mãi thành công!', data: promo });
+  } catch (err) {
+    console.error('[adminController] createPromotion:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.updatePromotion = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { title, description, badgeLabel, linkURL, isFeatured, isActive, sortOrder } = req.body || {};
+    const imageURL = req.file ? 'images/' + req.file.filename : (req.body.imageURL || null);
+    const promo = await AdminModel.updatePromotion(id, {
+      title, description, badgeLabel, imageURL, linkURL,
+      isFeatured: isFeatured === 'true' || isFeatured === true || isFeatured === 1,
+      isActive: isActive !== 'false' && isActive !== false && isActive !== 0,
+      sortOrder
+    });
+    if (!promo) return res.status(404).json({ success: false, message: 'Không tìm thấy khuyến mãi.' });
+    res.json({ success: true, message: 'Cập nhật khuyến mãi thành công!', data: promo });
+  } catch (err) {
+    console.error('[adminController] updatePromotion:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.deletePromotion = async (req, res) => {
+  try {
+    await AdminModel.deletePromotion(parseInt(req.params.id));
+    res.json({ success: true, message: 'Xóa khuyến mãi thành công!' });
+  } catch (err) {
+    console.error('[adminController] deletePromotion:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.togglePromotionActive = async (req, res) => {
+  try {
+    const promo = await AdminModel.togglePromotionActive(parseInt(req.params.id));
+    if (!promo) return res.status(404).json({ success: false, message: 'Không tìm thấy khuyến mãi.' });
+    res.json({ success: true, message: 'Đã thay đổi trạng thái khuyến mãi.', data: promo });
+  } catch (err) {
+    console.error('[adminController] togglePromotionActive:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+

@@ -1,12 +1,15 @@
 const { sql, getPool } = require('../config/db');
 
+const SettingsModel = require('./settingsModel');
+const RewardModel = require('./rewardModel');
+
 function isCoupleSeat(seat) {
   return seat.SeatType && seat.SeatType.toLowerCase().includes('couple');
 }
 
 function getSeatMultiplier(seat) {
-  if (isCoupleSeat(seat)) return parseFloat(seat.PriceMultiplier || 1.5) / 2;
-  if (seat.SeatType === 'VIP') return parseFloat(seat.PriceMultiplier || 1.2);
+  if (isCoupleSeat(seat)) return parseFloat(SettingsModel.cache['COUPLE_MULTIPLIER']) || 1.5;
+  if (seat.SeatType === 'VIP') return parseFloat(SettingsModel.cache['VIP_MULTIPLIER']) || 1.2;
   return parseFloat(seat.PriceMultiplier || 1.0);
 }
 
@@ -47,18 +50,30 @@ class BookingModel {
     const result = await pool.request()
       .input('code', sql.NVarChar, code)
       .query(`
-        SELECT VoucherID, Code, DiscountType, DiscountValue,
-               MinOrderValue, MaxDiscount, UsageLimit, UsedCount,
-               StartDate, EndDate, IsActive
-        FROM   Vouchers
-        WHERE  Code = @code
-          AND  IsActive = 1
-          AND  StartDate <= GETDATE()
-          AND  EndDate   >= GETDATE()
-          AND  (UsageLimit IS NULL OR UsedCount < UsageLimit)
+        SELECT v.VoucherID, v.Code, v.DiscountType, v.DiscountValue,
+               v.MinOrderValue, v.MaxDiscount, v.UsageLimit, v.UsedCount,
+               v.StartDate, v.EndDate, v.IsActive,
+               uv.UserID AS OwnerUserID, uv.IsUsed AS UserVoucherUsed
+        FROM   Vouchers v
+        LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID
+        WHERE  v.Code = @code
+          AND  v.IsActive = 1
+          AND  v.StartDate <= GETDATE()
+          AND  v.EndDate   >= GETDATE()
+          AND  (v.UsageLimit IS NULL OR v.UsedCount < v.UsageLimit)
       `);
     if (result.recordset.length === 0) return null;
     const voucher = result.recordset[0];
+
+    if (voucher.OwnerUserID && (!userId || voucher.OwnerUserID !== parseInt(userId, 10))) {
+      voucher.notOwned = true;
+      return voucher;
+    }
+
+    if (voucher.OwnerUserID && voucher.UserVoucherUsed) {
+      voucher.alreadyUsed = true;
+      return voucher;
+    }
 
     if (userId) {
       const checkUsed = await pool.request()
@@ -194,14 +209,24 @@ class BookingModel {
         const vReq = transaction.request();
         vReq.input('code', sql.NVarChar, voucherCode.trim().toUpperCase());
         const vResult = await vReq.query(`
-          SELECT VoucherID, DiscountType, DiscountValue, MaxDiscount, MinOrderValue
-          FROM Vouchers WITH (UPDLOCK) 
-          WHERE Code = @code AND IsActive = 1
-            AND StartDate <= GETUTCDATE() AND EndDate >= GETUTCDATE()
-            AND (UsageLimit IS NULL OR UsedCount < UsageLimit)
+          SELECT v.VoucherID, v.DiscountType, v.DiscountValue, v.MaxDiscount, v.MinOrderValue,
+                 uv.UserID AS OwnerUserID, uv.IsUsed AS UserVoucherUsed
+          FROM Vouchers v WITH (UPDLOCK)
+          LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID
+          WHERE v.Code = @code AND v.IsActive = 1
+            AND v.StartDate <= GETUTCDATE() AND v.EndDate >= GETUTCDATE()
+            AND (v.UsageLimit IS NULL OR v.UsedCount < v.UsageLimit)
         `);
         if (vResult.recordset.length > 0) {
           const v = vResult.recordset[0];
+
+          if (v.OwnerUserID && v.OwnerUserID !== parseInt(userId, 10)) {
+            throw new Error('Voucher này thuộc tài khoản khác.');
+          }
+
+          if (v.OwnerUserID && v.UserVoucherUsed) {
+            throw new Error('Voucher đổi điểm này đã được sử dụng.');
+          }
           
           // Check if this user has already used this voucher
           const checkUsedReq = transaction.request();
@@ -284,6 +309,18 @@ class BookingModel {
         if (updateVoucher.rowsAffected[0] === 0) {
            throw new Error('Voucher đã hết lượt sử dụng trong khi xử lý giao dịch.');
         }
+
+        await transaction.request()
+          .input('voucherId', sql.Int, voucherId)
+          .input('userId', sql.Int, userId)
+          .query(`
+            UPDATE UserVouchers
+            SET IsUsed = 1,
+                UsedAt = GETDATE()
+            WHERE VoucherID = @voucherId
+              AND UserID = @userId
+              AND IsUsed = 0
+          `);
       }
 
       await transaction.commit();
@@ -384,9 +421,14 @@ class BookingModel {
         WHERE TicketID IN (${ticketIdList.join(',')}) AND Status = 'pending'
       `);
 
+      const awardedPoints = await RewardModel.awardPointsForTickets(transaction, ticketIdList);
+
       await transaction.commit();
       console.log(`[DB Webhook] ✅ Confirm booking successfully for tickets: ${ticketIdList.join(', ')}`);
-      return true;
+      if (awardedPoints.length > 0) {
+        console.log(`[Rewards] Awarded points: ${awardedPoints.map(p => `ticket ${p.ticketId} +${p.points}`).join(', ')}`);
+      }
+      return { success: true, awardedPoints };
     } catch (err) {
       if (err.code !== 'DUPLICATE_TRANSACTION') {
         try {
@@ -410,7 +452,7 @@ class BookingModel {
     try {
       // 1. Lấy thông tin các vé để hoàn trả voucher
       const ticketsResult = await transaction.request().query(`
-        SELECT VoucherID FROM Tickets
+        SELECT TicketID, UserID, VoucherID FROM Tickets
         WHERE TicketID IN (${ticketIdList.join(',')}) AND Status = 'pending'
       `);
       const tickets = ticketsResult.recordset;
@@ -442,6 +484,20 @@ class BookingModel {
             .input('count', sql.Int, count)
             .query('UPDATE Vouchers SET UsedCount = CASE WHEN UsedCount >= @count THEN UsedCount - @count ELSE 0 END WHERE VoucherID = @vId');
         }
+
+        for (const ticket of tickets.filter(t => t.VoucherID !== null && t.UserID !== null)) {
+          await transaction.request()
+            .input('voucherId', sql.Int, ticket.VoucherID)
+            .input('userId', sql.Int, ticket.UserID)
+            .query(`
+              UPDATE UserVouchers
+              SET IsUsed = 0,
+                  UsedAt = NULL
+              WHERE VoucherID = @voucherId
+                AND UserID = @userId
+                AND Source = 'reward'
+            `);
+        }
       }
 
       // 4. Xóa Ticket_FnB và Tickets
@@ -471,12 +527,56 @@ class BookingModel {
     return result.recordset;
   }
 
+  static async cancelConfirmedBooking(ticketId, userId) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('ticketId', sql.Int, ticketId)
+      .input('userId', sql.Int, userId)
+      .query(`
+        DECLARE @ShowtimeID int;
+        DECLARE @Status varchar(20);
+        DECLARE @StartTime datetime;
+        
+        SELECT @ShowtimeID = t.ShowtimeID, @Status = t.Status, @StartTime = st.StartTime
+        FROM Tickets t
+        JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+        WHERE t.TicketID = @ticketId AND t.UserID = @userId;
+
+        IF @ShowtimeID IS NULL
+        BEGIN
+            SELECT 'NOT_FOUND' AS ErrorCode, 'Không tìm thấy vé hợp lệ của bạn.' AS Message;
+            RETURN;
+        END
+
+        IF @Status <> 'confirmed'
+        BEGIN
+            SELECT 'INVALID_STATUS' AS ErrorCode, 'Chỉ có thể hủy vé đã được xác nhận thanh toán.' AS Message;
+            RETURN;
+        END
+
+        IF DATEDIFF(minute, GETUTCDATE(), @StartTime) < 120
+        BEGIN
+            SELECT 'TOO_LATE' AS ErrorCode, 'Chỉ được phép hủy vé trước khi suất chiếu bắt đầu ít nhất 2 giờ.' AS Message;
+            RETURN;
+        END
+
+        UPDATE Tickets SET Status = 'cancelled' WHERE TicketID = @ticketId;
+        SELECT 'SUCCESS' AS ErrorCode, 'Hủy vé thành công.' AS Message;
+      `);
+      
+    const record = result.recordset[0];
+    if (record.ErrorCode !== 'SUCCESS') {
+      throw new Error(record.Message);
+    }
+    return true;
+  }
+
   static async cleanupExpiredPendingBookings() {
     const pool = await getPool();
     try {
       // 1. Tìm các vé pending quá 10 phút
       const expiredTicketsResult = await pool.request().query(`
-        SELECT TicketID, VoucherID FROM Tickets
+        SELECT TicketID, UserID, VoucherID FROM Tickets
         WHERE Status = 'pending' AND DATEDIFF(minute, BookedAt, GETDATE()) >= 10
       `);
       const expiredTickets = expiredTicketsResult.recordset;
@@ -506,6 +606,20 @@ class BookingModel {
             .input('vId', sql.Int, vId)
             .input('count', sql.Int, count)
             .query('UPDATE Vouchers SET UsedCount = CASE WHEN UsedCount >= @count THEN UsedCount - @count ELSE 0 END WHERE VoucherID = @vId');
+        }
+
+        for (const ticket of expiredTickets.filter(t => t.VoucherID !== null && t.UserID !== null)) {
+          await pool.request()
+            .input('voucherId', sql.Int, ticket.VoucherID)
+            .input('userId', sql.Int, ticket.UserID)
+            .query(`
+              UPDATE UserVouchers
+              SET IsUsed = 0,
+                  UsedAt = NULL
+              WHERE VoucherID = @voucherId
+                AND UserID = @userId
+                AND Source = 'reward'
+            `);
         }
       }
 
@@ -572,7 +686,8 @@ class BookingModel {
                r.RoomName, r.RoomType,
                c.CinemaName, c.Address,
                s.SeatRow, s.SeatNumber, s.SeatType,
-               v.Code AS VoucherCode
+               v.Code AS VoucherCode,
+               u.Email AS UserEmail, u.FullName AS UserFullName
         FROM   Tickets t
         JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
         JOIN   Movies    m  ON st.MovieID   = m.MovieID
@@ -580,6 +695,7 @@ class BookingModel {
         JOIN   Cinemas   c  ON r.CinemaID   = c.CinemaID
         JOIN   Seats     s  ON t.SeatID     = s.SeatID
         LEFT   JOIN Vouchers v ON t.VoucherID = v.VoucherID
+        JOIN   Users     u  ON t.UserID     = u.UserID
         WHERE  t.TicketID = @ticketId
       `);
 
