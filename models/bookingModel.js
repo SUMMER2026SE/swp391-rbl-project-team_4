@@ -8,9 +8,12 @@ function isCoupleSeat(seat) {
 }
 
 function getSeatMultiplier(seat) {
+  if (seat.PriceMultiplier && parseFloat(seat.PriceMultiplier) !== 1.0) {
+    return parseFloat(seat.PriceMultiplier);
+  }
   if (isCoupleSeat(seat)) return parseFloat(SettingsModel.cache['COUPLE_MULTIPLIER']) || 1.5;
   if (seat.SeatType === 'VIP') return parseFloat(SettingsModel.cache['VIP_MULTIPLIER']) || 1.2;
-  return parseFloat(seat.PriceMultiplier || 1.0);
+  return 1.0;
 }
 
 function couplePairKey(seat) {
