@@ -3,6 +3,7 @@
 //  Dành cho: Quản lý (Role: Admin, Manager)
 // ============================================================
 const AdminModel = require('../models/adminModel');
+const ComboModel = require('../models/comboModel');
 const RefundModel = require('../models/refundModel');
 const PDFDocument = require('pdfkit');
 
@@ -503,10 +504,15 @@ exports.getAllFnB = async (req, res) => {
 
 exports.createFnB = async (req, res) => {
   try {
-    const { name, price } = req.body;
-    if (!name || price == null) {
+    const { name, category, price, description, stock, isAvailable } = req.body;
+    if (!name || price == null || !category) {
       return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc.' });
     }
+
+    const trimmedName = name.trim();
+    const parsedPrice = parseFloat(price);
+    const parsedStock = parseInt(stock) || 0;
+    const isAvail = isAvailable !== 'false' && isAvailable !== false;
 
     let imageURL = 'images/default_fnb.png';
     if (req.file) {
@@ -515,14 +521,50 @@ exports.createFnB = async (req, res) => {
       imageURL = req.body.imageURL;
     }
 
-    const fnbData = {
-      ...req.body,
-      imageURL,
-      isAvailable: req.body.isAvailable !== 'false'
-    };
+    if (category === 'Combos') {
+      // Validate duplicate combo
+      const existing = await ComboModel.getByName(trimmedName);
+      if (existing) {
+        return res.status(400).json({ success: false, message: 'Tên combo đã tồn tại.' });
+      }
 
-    const fnb = await AdminModel.createFnB(fnbData);
-    res.status(201).json({ success: true, message: 'Tạo mặt hàng thành công!', data: fnb });
+      const combo = await ComboModel.create({
+        comboName: trimmedName,
+        description: description ? description.trim() : null,
+        price: parsedPrice,
+        imageURL,
+        status: isAvail ? 'Active' : 'Inactive',
+        stock: parsedStock
+      });
+
+      // Fetch the synchronized FoodBeverages record to return
+      const pool = await require('../config/db').getPool();
+      const fnbRes = await pool.request()
+        .input('comboId', require('../config/db').sql.Int, combo.ComboID)
+        .query("SELECT * FROM FoodBeverages WHERE ComboID = @comboId");
+      const fnb = fnbRes.recordset[0];
+
+      return res.status(201).json({ success: true, message: 'Tạo combo thành công!', data: fnb });
+    } else {
+      // Validate duplicate snack/drink
+      const existing = await AdminModel.getFnBByNameAndCategory(trimmedName, category);
+      if (existing) {
+        return res.status(400).json({ success: false, message: 'Tên mặt hàng đã tồn tại trong danh mục này.' });
+      }
+
+      const fnbData = {
+        name: trimmedName,
+        description: description ? description.trim() : null,
+        category,
+        price: parsedPrice,
+        stock: parsedStock,
+        imageURL,
+        isAvailable: isAvail
+      };
+
+      const fnb = await AdminModel.createFnB(fnbData);
+      return res.status(201).json({ success: true, message: 'Tạo mặt hàng thành công!', data: fnb });
+    }
   } catch (err) {
     console.error('[adminController] createFnB:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
@@ -531,17 +573,72 @@ exports.createFnB = async (req, res) => {
 
 exports.updateFnB = async (req, res) => {
   try {
-    const updateData = { ...req.body };
-    if (req.file) {
-      updateData.imageURL = 'images/' + req.file.filename;
-    }
-    if (updateData.isAvailable !== undefined) {
-      updateData.isAvailable = updateData.isAvailable !== 'false';
+    const id = parseInt(req.params.id);
+    const currentItem = await AdminModel.getFnBById(id);
+    if (!currentItem) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
     }
 
-    const fnb = await AdminModel.updateFnB(parseInt(req.params.id), updateData);
-    if (!fnb) return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
-    res.json({ success: true, message: 'Cập nhật mặt hàng thành công!', data: fnb });
+    const { name, category, price, description, stock, isAvailable } = req.body;
+
+    let imageURL = req.body.imageURL;
+    if (req.file) {
+      imageURL = 'images/' + req.file.filename;
+    }
+
+    const isAvail = isAvailable !== undefined ? (isAvailable !== 'false' && isAvailable !== false) : undefined;
+    const parsedPrice = price !== undefined ? parseFloat(price) : undefined;
+    const parsedStock = stock !== undefined ? parseInt(stock) : undefined;
+
+    if (currentItem.ComboID !== null) {
+      // It's a Combo
+      if (name !== undefined) {
+        const trimmedName = name.trim();
+        if (trimmedName.toLowerCase() !== currentItem.Name.toLowerCase()) {
+          const existing = await ComboModel.getByName(trimmedName);
+          if (existing) {
+            return res.status(400).json({ success: false, message: 'Tên combo đã tồn tại.' });
+          }
+        }
+      }
+
+      const updateData = {
+        comboName: name !== undefined ? name.trim() : undefined,
+        description,
+        price: parsedPrice,
+        imageURL,
+        status: isAvail !== undefined ? (isAvail ? 'Active' : 'Inactive') : undefined,
+        stock: parsedStock
+      };
+
+      await ComboModel.update(currentItem.ComboID, updateData);
+      const updated = await AdminModel.getFnBById(id);
+      return res.json({ success: true, message: 'Cập nhật combo thành công!', data: updated });
+    } else {
+      // It's a normal item (Snack/Drink)
+      const checkName = name !== undefined ? name.trim() : currentItem.Name;
+      const checkCategory = category !== undefined ? category : currentItem.Category;
+
+      if (checkName.toLowerCase() !== currentItem.Name.toLowerCase() || checkCategory !== currentItem.Category) {
+        const existing = await AdminModel.getFnBByNameAndCategory(checkName, checkCategory);
+        if (existing) {
+          return res.status(400).json({ success: false, message: 'Tên mặt hàng đã tồn tại trong danh mục này.' });
+        }
+      }
+
+      const updateData = {
+        name: name !== undefined ? name.trim() : undefined,
+        description,
+        category,
+        price: parsedPrice,
+        stock: parsedStock,
+        imageURL,
+        isAvailable: isAvail
+      };
+
+      const fnb = await AdminModel.updateFnB(id, updateData);
+      return res.json({ success: true, message: 'Cập nhật mặt hàng thành công!', data: fnb });
+    }
   } catch (err) {
     console.error('[adminController] updateFnB:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
@@ -550,7 +647,17 @@ exports.updateFnB = async (req, res) => {
 
 exports.deleteFnB = async (req, res) => {
   try {
-    await AdminModel.deleteFnB(parseInt(req.params.id));
+    const id = parseInt(req.params.id);
+    const currentItem = await AdminModel.getFnBById(id);
+    if (!currentItem) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
+    }
+
+    if (currentItem.ComboID !== null) {
+      await ComboModel.softDelete(currentItem.ComboID);
+    } else {
+      await AdminModel.deleteFnB(id);
+    }
     res.json({ success: true, message: 'Xóa mặt hàng thành công!' });
   } catch (err) {
     console.error('[adminController] deleteFnB:', err.message);
@@ -566,9 +673,19 @@ exports.deleteFnB = async (req, res) => {
 
 exports.toggleFnBAvailability = async (req, res) => {
   try {
-    const fnb = await AdminModel.toggleFnBAvailability(parseInt(req.params.id));
-    if (!fnb) return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
-    res.json({ success: true, message: 'Đã thay đổi trạng thái khả dụng.', data: fnb });
+    const id = parseInt(req.params.id);
+    const currentItem = await AdminModel.getFnBById(id);
+    if (!currentItem) return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
+
+    let updated;
+    if (currentItem.ComboID !== null) {
+      const newStatus = currentItem.IsAvailable ? 'Inactive' : 'Active';
+      await ComboModel.update(currentItem.ComboID, { status: newStatus });
+      updated = await AdminModel.getFnBById(id);
+    } else {
+      updated = await AdminModel.toggleFnBAvailability(id);
+    }
+    res.json({ success: true, message: 'Đã thay đổi trạng thái khả dụng.', data: updated });
   } catch (err) {
     console.error('[adminController] toggleFnBAvailability:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });

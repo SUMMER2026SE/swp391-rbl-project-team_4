@@ -90,7 +90,7 @@ class MovieModel {
             SELECT 1 FROM Showtimes st
             JOIN Rooms r ON st.RoomID = r.RoomID
             JOIN Cinemas c ON r.CinemaID = c.CinemaID
-            WHERE st.MovieID = m.MovieID AND c.City = @city AND st.StartTime > GETDATE() AND st.Status = 'active'
+            WHERE st.MovieID = m.MovieID AND c.City = @city AND st.StartTime > GETUTCDATE() AND st.Status = 'active'
           )
       `;
     } else {
