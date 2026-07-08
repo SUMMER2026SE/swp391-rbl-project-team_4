@@ -13,7 +13,7 @@ class StaffModel {
       JOIN   Movies  m ON st.MovieID = m.MovieID
       JOIN   Rooms   r ON st.RoomID  = r.RoomID
       JOIN   Cinemas c ON r.CinemaID = c.CinemaID
-      WHERE  CAST(st.StartTime AS DATE) = CAST(GETDATE() AS DATE)
+      WHERE  CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = CAST(GETDATE() AS DATE)
         AND  st.Status = 'active'
       ORDER BY st.StartTime ASC
     `);
