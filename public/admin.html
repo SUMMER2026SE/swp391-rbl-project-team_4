@@ -91,16 +91,7 @@
                         <line x1="10" y1="1" x2="10" y2="4" />
                         <line x1="14" y1="1" x2="14" y2="4" />
                     </svg>
-                    Đồ ăn & Nước
-                </button>
-                <button class="sn" data-page="combos" onclick="navigate('combos',this)">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="4" width="20" height="16" rx="2" />
-                        <line x1="6" y1="8" x2="18" y2="8" />
-                        <line x1="6" y1="12" x2="14" y2="12" />
-                        <line x1="6" y1="16" x2="10" y2="16" />
-                    </svg>
-                    Quản lý Combo
+                    Quản lý Đồ ăn & Combo
                 </button>
                 <button class="sn" data-page="voucher" onclick="navigate('voucher',this)">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1004,20 +995,35 @@
                     <div>
                         <h1
                             style="font-size: 1.6rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 8px;">
-                            QUẢN LÝ ĐỒ ĂN & NƯỚC UỐNG</h1>
+                            QUẢN LÝ ĐỒ ĂN & COMBO</h1>
                         <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.5; max-width: 600px;">Quản lý
-                            kho hàng đồ ăn và nước uống bán lẻ tại rạp.</p>
+                            kho hàng đồ ăn, nước uống và các gói combo tại rạp.</p>
                     </div>
-                    <!-- Search input on top right -->
-                    <div class="tb-search"
-                        style="border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); width: 250px;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <circle cx="11" cy="11" r="8" />
-                            <path d="m21 21-4.35-4.35" />
-                        </svg>
-                        <input type="text" placeholder="Tìm kiếm đồ ăn..." id="fnbSearchInput"
-                            oninput="loadFnB(this.value)">
+                    <!-- Filter and Search controls -->
+                    <div class="fnb-filters" style="display: flex; gap: 12px; align-items: center;">
+                        <div class="ff-select-wrap" style="position: relative; width: 180px;">
+                            <select id="fnbFilterCategory" onchange="filterFnBList()"
+                                style="width: 100%; padding: 10px 12px; padding-right: 32px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text); appearance: none; font-size: 0.9rem; outline: none;">
+                                <option value="">Tất cả danh mục</option>
+                                <option value="Bắp rang & Snack">Bắp rang & Snack</option>
+                                <option value="Nước uống">Nước uống</option>
+                                <option value="Combos">Combo</option>
+                            </select>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; pointer-events: none; color: var(--text2);">
+                                <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                        </div>
+                        <div class="tb-search"
+                            style="border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); width: 250px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35" />
+                            </svg>
+                            <input type="text" placeholder="Tìm kiếm mặt hàng..." id="fnbSearchInput"
+                                oninput="loadFnB(this.value)">
+                        </div>
                     </div>
                 </div>
 
@@ -1095,6 +1101,7 @@
                                             style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); color: var(--text); appearance: none;">
                                             <option value="Bắp rang & Snack">Bắp rang & Snack</option>
                                             <option value="Nước uống">Nước uống</option>
+                                            <option value="Combos">Combo</option>
                                         </select>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                             style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; pointer-events: none; color: var(--text2);">
@@ -1223,7 +1230,7 @@
             </div>
         </div>
 
-        <div class="page" id="page-combos">
+        <div class="page" id="page-combos" style="display: none !important;">
             <div class="content-scroll" style="padding: 30px 40px; display: flex; flex-direction: column; gap: 32px;">
                 <div class="fnb-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <div>

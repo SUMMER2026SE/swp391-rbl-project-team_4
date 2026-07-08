@@ -37,6 +37,12 @@ exports.createCombo = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Tên combo không được để trống.' });
         }
 
+        const trimmedName = comboName.trim();
+        const existing = await ComboModel.getByName(trimmedName);
+        if (existing) {
+            return res.status(400).json({ success: false, message: 'Tên combo này đã tồn tại.' });
+        }
+
         const parsedPrice = parseFloat(price);
         if (isNaN(parsedPrice) || parsedPrice < 0) {
             return res.status(400).json({ success: false, message: 'Giá combo phải là số lớn hơn hoặc bằng 0.' });
@@ -53,7 +59,7 @@ exports.createCombo = async (req, res) => {
         }
 
         const combo = await ComboModel.create({
-            comboName: comboName.trim(),
+            comboName: trimmedName,
             description: description ? description.trim() : null,
             price: parsedPrice,
             imageURL,
@@ -88,7 +94,14 @@ exports.updateCombo = async (req, res) => {
             if (!comboName || comboName.trim() === '') {
                 return res.status(400).json({ success: false, message: 'Tên combo không được để trống.' });
             }
-            updateData.comboName = comboName.trim();
+            const trimmedName = comboName.trim();
+            if (trimmedName.toLowerCase() !== currentCombo.ComboName.toLowerCase()) {
+                const existing = await ComboModel.getByName(trimmedName);
+                if (existing) {
+                    return res.status(400).json({ success: false, message: 'Tên combo này đã tồn tại.' });
+                }
+            }
+            updateData.comboName = trimmedName;
         }
 
         if (description !== undefined) {

@@ -1021,6 +1021,8 @@ async function loadFnB(search = '') {
         const res = await apiFetch('/api/admin/fnb');
         if (res.success) {
             FNB_DATA = res.data;
+            
+            // Filter by search term
             if (search) {
                 const term = search.toLowerCase();
                 FNB_DATA = FNB_DATA.filter(item => 
@@ -1028,6 +1030,13 @@ async function loadFnB(search = '') {
                     (item.Description && item.Description.toLowerCase().includes(term))
                 );
             }
+            
+            // Filter by category filter dropdown
+            const catFilter = document.getElementById('fnbFilterCategory') ? document.getElementById('fnbFilterCategory').value : '';
+            if (catFilter) {
+                FNB_DATA = FNB_DATA.filter(item => item.Category === catFilter);
+            }
+            
             renderFnB();
             loadFnBStats();
             initDragAndDrop();
@@ -1037,17 +1046,23 @@ async function loadFnB(search = '') {
     }
 }
 
+function filterFnBList() {
+    const searchVal = document.getElementById('fnbSearchInput') ? document.getElementById('fnbSearchInput').value : '';
+    loadFnB(searchVal);
+}
+
 function renderFnB() {
     const container = document.getElementById('fnbTableBody');
     if (!container) return;
 
     if (FNB_DATA.length === 0) {
-        container.innerHTML = '<tr><td colspan="7" style="padding:24px;color:#9ca3af;text-align:center;">Chưa có đồ ăn/nước uống nào.</td></tr>';
+        container.innerHTML = '<tr><td colspan="7" style="padding:24px;color:#9ca3af;text-align:center;">Chưa có mặt hàng hoặc combo nào.</td></tr>';
         return;
     }
 
     let html = '';
     FNB_DATA.forEach(item => {
+        const displayCategory = item.Category === 'Combos' ? 'Combo' : item.Category;
         html += `
             <tr style="border-bottom: 1px solid var(--border); opacity: ${item.IsAvailable ? 1 : 0.5};">
                 <td style="padding: 12px 16px;">
@@ -1061,7 +1076,7 @@ function renderFnB() {
                 </td>
                 <td style="padding: 12px 16px;">
                     <span style="font-size: 0.8rem; padding: 4px 8px; background: var(--bg); border-radius: 4px; color: var(--text2); font-weight: 500;">
-                        ${item.Category}
+                        ${displayCategory}
                     </span>
                 </td>
                 <td style="padding: 12px 16px; font-weight: 700; color: var(--accent);">

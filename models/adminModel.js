@@ -811,11 +811,28 @@ class AdminModel {
   static async getAllFnB() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT FnBID, Name, Description, Category, Price, Stock, ImageURL, IsAvailable
+      SELECT FnBID, Name, Description, Category, Price, Stock, ImageURL, IsAvailable, ComboID
       FROM FoodBeverages
       ORDER BY Category, Name
     `);
     return result.recordset;
+  }
+
+  static async getFnBById(id) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, id)
+      .query("SELECT * FROM FoodBeverages WHERE FnBID = @id");
+    return result.recordset[0] || null;
+  }
+
+  static async getFnBByNameAndCategory(name, category) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('name', sql.NVarChar, name)
+      .input('category', sql.NVarChar, category)
+      .query("SELECT * FROM FoodBeverages WHERE LOWER(Name) = LOWER(@name) AND Category = @category");
+    return result.recordset[0] || null;
   }
 
   static async createFnB(data) {
