@@ -767,11 +767,13 @@
                 data.data.forEach(t => {
                     const key = t.BookedAt + '_' + t.MovieTitle;
                     if (!bookingsMap[key]) {
+                        const rTypePf = (t.RoomType || 'Standard').trim();
                         bookingsMap[key] = {
                             MovieTitle: t.MovieTitle,
                             PosterURL: t.PosterURL,
                             StartTime: t.StartTime,
-                            RoomName: t.RoomType && t.RoomType !== '2D Standard' ? `[${t.RoomType}] ${t.RoomName}` : t.RoomName,
+                            RoomName: rTypePf !== 'Standard' ? `[${rTypePf}] ${t.RoomName}` : t.RoomName,
+                            RoomType: rTypePf,
                             Status: t.Status,
                             TotalAmount: 0,
                             Seats: [],

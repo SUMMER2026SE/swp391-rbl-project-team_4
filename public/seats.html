@@ -839,6 +839,19 @@
             max-height: 80px;
         }
 
+        /* Room type badge in sidebar */
+        .room-type-badge {
+            display: inline-block;
+            font-size: 0.6rem; font-weight: 800;
+            letter-spacing: 0.8px; text-transform: uppercase;
+            padding: 2px 7px; border-radius: 4px; margin-left: 6px;
+            vertical-align: middle;
+        }
+        .rt-standard { background: rgba(100,116,139,0.25); color: #94a3b8; border: 1px solid rgba(100,116,139,0.35); }
+        .rt-imax     { background: rgba(245,158,11,0.22); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); }
+        .rt-3d       { background: rgba(59,130,246,0.22); color: #60a5fa; border: 1px solid rgba(59,130,246,0.4); }
+        .rt-2d       { background: rgba(16,185,129,0.22); color: #34d399; border: 1px solid rgba(16,185,129,0.4); }
+
         /* Price breakdown */
         .price-breakdown {
             padding-bottom: 22px;
@@ -1757,7 +1770,16 @@
             document.getElementById('movieAge').textContent = showtimeData.AgeRating || 'ALL';
             document.getElementById('movieDuration').textContent = showtimeData.Duration ? `${showtimeData.Duration} phút` : '--';
             document.getElementById('infoCinema').textContent = showtimeData.CinemaName || '--';
-            document.getElementById('infoRoom').textContent = showtimeData.RoomName ? (showtimeData.RoomType && showtimeData.RoomType !== '2D Standard' ? `[${showtimeData.RoomType}] ${showtimeData.RoomName}` : showtimeData.RoomName) : '--';
+
+            // Room display with badge
+            const rType = (showtimeData.RoomType || 'Standard').trim();
+            let badgeCls = 'rt-standard';
+            if (rType === 'IMAX Laser') badgeCls = 'rt-imax';
+            else if (rType === '3D')   badgeCls = 'rt-3d';
+            else if (rType === '2D')   badgeCls = 'rt-2d';
+
+            const roomEl = document.getElementById('infoRoom');
+            roomEl.innerHTML = `${showtimeData.RoomName || '--'}<span class="room-type-badge ${badgeCls}">${rType}</span>`;
 
             const start = new Date(showtimeData.StartTime);
             document.getElementById('infoTime').textContent = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -2456,6 +2478,7 @@
             });
 
             const start = new Date(showtimeData.StartTime);
+            const rTypePay = (showtimeData.RoomType || 'Standard').trim();
             const bookingPayload = {
                 showtimeId,
                 movieTitle: showtimeData.Title,
@@ -2463,7 +2486,8 @@
                 genre: showtimeData.MainCast || '',
                 date: start.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }),
                 time: start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-                hall: `${showtimeData.RoomName ? (showtimeData.RoomType && showtimeData.RoomType !== '2D Standard' ? `[${showtimeData.RoomType}] ` + showtimeData.RoomName : showtimeData.RoomName) : '--'} — ${showtimeData.CinemaName}`,
+                hall: `${showtimeData.RoomName || '--'} [${rTypePay}] — ${showtimeData.CinemaName}`,
+                roomType: rTypePay,
                 seats: displayNames.join(', '),
                 seatIds: Array.from(selectedSeats),
                 seatDetails,

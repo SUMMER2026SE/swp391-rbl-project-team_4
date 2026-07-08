@@ -234,11 +234,19 @@ exports.saveSeats = async (req, res) => {
     if (!seats || !Array.isArray(seats)) {
       return res.status(400).json({ success: false, message: 'Dữ liệu ghế không hợp lệ.' });
     }
+    const VALID_ROOM_TYPES = ['Standard', 'IMAX Laser', '2D', '3D'];
+    if (roomType && !VALID_ROOM_TYPES.includes(roomType)) {
+      return res.status(400).json({
+        success: false,
+        message: `Loại phòng không hợp lệ. Chỉ chấp nhận: ${VALID_ROOM_TYPES.join(', ')}.`
+      });
+    }
     await AdminModel.saveSeats(roomId, seats, roomType);
     res.json({ success: true, message: 'Lưu sơ đồ ghế thành công!' });
   } catch (err) {
     console.error('[adminController] saveSeats:', err.message);
-    const status = err.message.includes('đang có vé đặt') ? 400 : 500;
+    const status = err.message.includes('đang có vé đặt') ? 400
+                 : err.message.includes('không hợp lệ') ? 400 : 500;
     res.status(status).json({ success: false, message: err.message || 'Lỗi server khi lưu sơ đồ ghế.' });
   }
 };
@@ -656,9 +664,9 @@ exports.deleteCinema = async (req, res) => {
 
 exports.createRoom = async (req, res) => {
   try {
-    const { cinemaId, name } = req.body;
+    const { cinemaId, name, roomType } = req.body;
     if (!cinemaId || !name) return res.status(400).json({ success: false, message: 'Vui lòng nhập đầy đủ thông tin.' });
-    const room = await AdminModel.createRoom({ cinemaId: parseInt(cinemaId), name, totalSeats: 0 });
+    const room = await AdminModel.createRoom({ cinemaId: parseInt(cinemaId), name, roomType, totalSeats: 0 });
     res.status(201).json({ success: true, message: 'Thêm phòng thành công!', data: room });
   } catch (err) {
     console.error('[adminController] createRoom:', err.message);
@@ -668,9 +676,9 @@ exports.createRoom = async (req, res) => {
 
 exports.updateRoom = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, roomType } = req.body;
     if (!name) return res.status(400).json({ success: false, message: 'Tên phòng là bắt buộc.' });
-    const room = await AdminModel.updateRoom(parseInt(req.params.id), { name });
+    const room = await AdminModel.updateRoom(parseInt(req.params.id), { name, roomType });
     if (!room) return res.status(404).json({ success: false, message: 'Không tìm thấy phòng.' });
     res.json({ success: true, message: 'Cập nhật phòng thành công!', data: room });
   } catch (err) {

@@ -72,14 +72,10 @@ class MovieModel {
               FROM Movie_Genres mg
               WHERE mg.MovieID = m.MovieID) AS GenreIDs,
              COALESCE((SELECT STRING_AGG(Format, ', ') 
-                       FROM (SELECT DISTINCT CASE 
-                               WHEN r2.RoomName LIKE '%3D%' THEN '3D'
-                               WHEN r2.RoomName LIKE '%IMAX%' THEN 'IMAX'
-                               ELSE '2D'
-                             END AS Format 
+                       FROM (SELECT DISTINCT ISNULL(r2.RoomType, 'Standard') AS Format 
                              FROM Showtimes st2 
                              JOIN Rooms r2 ON st2.RoomID = r2.RoomID 
-                             WHERE st2.MovieID = m.MovieID AND st2.Status = 'active') AS Formats), '2D') AS Formats
+                             WHERE st2.MovieID = m.MovieID AND st2.Status = 'active') AS Formats), 'Standard') AS Formats
       FROM   Movies m
     `;
     if (city && city !== 'Toàn quốc') {
@@ -116,10 +112,10 @@ class MovieModel {
               FROM Movie_Genres mg
               WHERE mg.MovieID = m.MovieID) AS GenreIDs,
              COALESCE((SELECT STRING_AGG(Format, ', ') 
-                       FROM (SELECT DISTINCT r.RoomType AS Format
+                       FROM (SELECT DISTINCT ISNULL(r.RoomType, 'Standard') AS Format
                              FROM Showtimes st 
                              JOIN Rooms r ON st.RoomID = r.RoomID 
-                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D Standard') AS Formats
+                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), 'Standard') AS Formats
       FROM   Movies m
       WHERE  m.Status = 'Coming Soon'
       ORDER BY m.MovieID ASC
@@ -157,10 +153,10 @@ class MovieModel {
               FROM Movie_Genres mg
               WHERE mg.MovieID = m.MovieID) AS GenreIDs,
              COALESCE((SELECT STRING_AGG(Format, ', ') 
-                       FROM (SELECT DISTINCT r.RoomType AS Format
+                       FROM (SELECT DISTINCT ISNULL(r.RoomType, 'Standard') AS Format
                              FROM Showtimes st 
                              JOIN Rooms r ON st.RoomID = r.RoomID 
-                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D Standard') AS Formats
+                             WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), 'Standard') AS Formats
       FROM   Movies m
       ${whereClause}
       ORDER BY m.MovieID DESC
@@ -184,10 +180,10 @@ class MovieModel {
                 FROM Movie_Genres mg
                 WHERE mg.MovieID = m.MovieID) AS GenreIDs,
                COALESCE((SELECT STRING_AGG(Format, ', ') 
-                         FROM (SELECT DISTINCT r.RoomType AS Format
+                         FROM (SELECT DISTINCT ISNULL(r.RoomType, 'Standard') AS Format
                                FROM Showtimes st 
                                JOIN Rooms r ON st.RoomID = r.RoomID 
-                               WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), '2D Standard') AS Formats
+                               WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), 'Standard') AS Formats
         FROM   Movies m
         WHERE  m.MovieID = @movieId
       `);

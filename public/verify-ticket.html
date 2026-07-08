@@ -630,7 +630,7 @@
         const branch     = data.cinemaAddress || data.cinemaName || '—';
         const scanNow    = new Date().toLocaleString('vi-VN');
         const payLabel   = getPaymentMethodLabel(data.paymentMethod);
-        const roomDisplay = data.roomType && data.roomType !== '2D Standard'
+        const roomDisplay = data.roomType && data.roomType !== 'Standard'
             ? `[${data.roomType}] ${data.roomName || '—'}`
             : (data.roomName || '—');
 
