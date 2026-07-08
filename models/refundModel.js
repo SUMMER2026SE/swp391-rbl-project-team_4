@@ -107,7 +107,8 @@ class RefundModel {
         .query(`
           SELECT t.TicketID, t.UserID, t.Status, t.TotalAmount, t.ShowtimeID, t.VoucherID,
                  t.PointsEarned, t.PointsAwardedAt,
-                 st.StartTime, m.Title AS MovieTitle
+                 st.StartTime, m.Title AS MovieTitle,
+                 DATEDIFF(minute, GETDATE(), st.StartTime) AS MinutesToStart
           FROM Tickets t WITH (UPDLOCK)
           JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
           JOIN Movies m ON st.MovieID = m.MovieID
@@ -122,10 +123,7 @@ class RefundModel {
       const invalid = tickets.find(t => t.Status !== 'confirmed');
       if (invalid) throw new Error('Chỉ có thể yêu cầu hoàn tiền cho vé đã thanh toán thành công.');
 
-      const tooLate = tickets.find(t => {
-        const diff = new Date(t.StartTime).getTime() - Date.now();
-        return diff < 2 * 60 * 60 * 1000;
-      });
+      const tooLate = tickets.find(t => t.MinutesToStart < 120);
       if (tooLate) throw new Error('Chỉ được phép hủy vé trước khi suất chiếu bắt đầu ít nhất 2 giờ.');
 
       const existing = await transaction.request().query(`
@@ -140,10 +138,16 @@ class RefundModel {
 
       const created = [];
       for (const ticket of tickets) {
+        const fnbRes = await transaction.request()
+          .input('ticketIdFnB', sql.Int, ticket.TicketID)
+          .query('SELECT ISNULL(SUM(tf.Quantity * fb.Price), 0) AS FnBSum FROM Ticket_FnB tf JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID WHERE tf.TicketID = @ticketIdFnB');
+        const fnbSum = Number(fnbRes.recordset[0]?.FnBSum || 0);
+        const refundAmount = Number(ticket.TotalAmount || 0) + fnbSum;
+
         const insertResult = await transaction.request()
           .input('ticketId', sql.Int, ticket.TicketID)
           .input('userId', sql.Int, parseInt(userId, 10))
-          .input('refundAmount', sql.Decimal(18, 2), Number(ticket.TotalAmount || 0))
+          .input('refundAmount', sql.Decimal(18, 2), refundAmount)
           .input('reason', sql.NVarChar(500), reason)
           .input('bankName', sql.NVarChar(100), bankName)
           .input('bankAccountNumber', sql.VarChar(50), bankAccountNumber)
@@ -269,7 +273,7 @@ class RefundModel {
       const currentResult = await transaction.request()
         .input('refundId', sql.Int, parsedId)
         .query(`
-          SELECT rr.*, t.VoucherID, t.PointsEarned, t.PointsAwardedAt
+          SELECT rr.*, t.VoucherID, t.PointsEarned, t.PointsAwardedAt, t.ShowtimeID
           FROM RefundRequests rr WITH (UPDLOCK)
           JOIN Tickets t ON rr.TicketID = t.TicketID
           WHERE rr.RefundID = @refundId
@@ -361,20 +365,39 @@ class RefundModel {
     }
 
     if (refundRequest.VoucherID) {
-      await transaction.request()
-        .input('voucherId', sql.Int, refundRequest.VoucherID)
-        .query('UPDATE Vouchers SET UsedCount = CASE WHEN UsedCount > 0 THEN UsedCount - 1 ELSE 0 END WHERE VoucherID = @voucherId');
-      await transaction.request()
-        .input('voucherId', sql.Int, refundRequest.VoucherID)
+      const activeCheck = await transaction.request()
         .input('userId', sql.Int, refundRequest.UserID)
+        .input('voucherId', sql.Int, refundRequest.VoucherID)
+        .input('ticketId', sql.Int, ticketId)
+        .input('showtimeId', sql.Int, refundRequest.ShowtimeID)
         .query(`
-          UPDATE UserVouchers
-          SET IsUsed = 0,
-              UsedAt = NULL
-          WHERE VoucherID = @voucherId
-            AND UserID = @userId
-            AND Source = 'reward'
+          SELECT COUNT(*) AS ActiveCount 
+          FROM Tickets 
+          WHERE UserID = @userId 
+            AND ShowtimeID = @showtimeId
+            AND VoucherID = @voucherId 
+            AND TicketID != @ticketId 
+            AND Status IN ('confirmed', 'pending', 'refund_requested')
         `);
+      
+      const remainingActive = activeCheck.recordset[0].ActiveCount;
+
+      if (remainingActive === 0) {
+        await transaction.request()
+          .input('voucherId', sql.Int, refundRequest.VoucherID)
+          .query('UPDATE Vouchers SET UsedCount = CASE WHEN UsedCount > 0 THEN UsedCount - 1 ELSE 0 END WHERE VoucherID = @voucherId');
+        await transaction.request()
+          .input('voucherId', sql.Int, refundRequest.VoucherID)
+          .input('userId', sql.Int, refundRequest.UserID)
+          .query(`
+            UPDATE UserVouchers
+            SET IsUsed = 0,
+                UsedAt = NULL
+            WHERE VoucherID = @voucherId
+              AND UserID = @userId
+              AND Source = 'reward'
+          `);
+      }
     }
 
     const points = Number(refundRequest.PointsEarned || 0);

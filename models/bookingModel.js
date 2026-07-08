@@ -670,7 +670,12 @@ class BookingModel {
                m.Title AS MovieTitle, m.PosterURL,
                CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
                CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
-               r.RoomName, r.RoomType,
+               r.RoomName,
+               CASE
+                 WHEN r.RoomName LIKE '%3D%' THEN '3D'
+                 WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
+                 ELSE '2D Standard'
+               END AS RoomType,
                c.CinemaName,
                s.SeatRow, s.SeatNumber, s.SeatType,
                v.Code AS VoucherCode,
@@ -711,7 +716,12 @@ class BookingModel {
                m.Title AS MovieTitle, m.PosterURL, m.Duration,
                CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
                CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
-               r.RoomName, r.RoomType,
+               r.RoomName,
+               CASE
+                 WHEN r.RoomName LIKE '%3D%' THEN '3D'
+                 WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
+                 ELSE '2D Standard'
+               END AS RoomType,
                c.CinemaName, c.Address,
                s.SeatRow, s.SeatNumber, s.SeatType,
                v.Code AS VoucherCode,

@@ -455,7 +455,13 @@ class AdminModel {
   static async getRooms() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT r.RoomID, r.RoomName, r.TotalSeats, r.RoomType, r.CinemaID,
+      SELECT r.RoomID, r.RoomName, r.TotalSeats,
+             CASE
+               WHEN r.RoomName LIKE '%3D%' THEN '3D'
+               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
+               ELSE '2D Standard'
+             END AS RoomType,
+             r.CinemaID,
              c.CinemaName, c.Address
       FROM   Rooms r
       JOIN   Cinemas c ON r.CinemaID = c.CinemaID
@@ -550,21 +556,11 @@ class AdminModel {
         `);
       }
 
-      // 4. Update the room's TotalSeats count and RoomType
-      if (roomType) {
-        await request.query(`
-          UPDATE Rooms 
-          SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None'),
-              RoomType = @roomType
-          WHERE RoomID = @roomId
-        `);
-      } else {
-        await request.query(`
-          UPDATE Rooms 
-          SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None')
-          WHERE RoomID = @roomId
-        `);
-      }
+      await request.query(`
+        UPDATE Rooms
+        SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None')
+        WHERE RoomID = @roomId
+      `);
 
       await transaction.commit();
       return true;
