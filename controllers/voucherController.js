@@ -261,8 +261,21 @@ exports.deleteVoucher = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Không tìm thấy voucher cần xóa.' });
         }
 
-        await VoucherModel.softDelete(id);
-        res.json({ success: true, message: 'Đã chuyển trạng thái voucher thành Inactive thành công!' });
+        try {
+            const deleted = await VoucherModel.hardDelete(id);
+            if (deleted) {
+                return res.json({ success: true, message: 'Đã xóa voucher thành công khỏi hệ thống!' });
+            }
+        } catch (dbErr) {
+            console.log(`[deleteVoucher] Hard delete failed, falling back to soft delete:`, dbErr.message);
+            // Fallback to soft delete if voucher is linked to other records
+            const softDeleted = await VoucherModel.softDelete(id);
+            if (softDeleted) {
+                return res.json({ success: true, message: 'Voucher đã được ẩn khỏi danh sách do đã được sử dụng trước đó.' });
+            }
+        }
+        
+        res.status(400).json({ success: false, message: 'Không thể xóa hoặc ẩn voucher này.' });
     } catch (err) {
         console.error('[voucherController] deleteVoucher:', err.message);
         res.status(500).json({ success: false, message: 'Lỗi hệ thống khi xóa voucher.' });

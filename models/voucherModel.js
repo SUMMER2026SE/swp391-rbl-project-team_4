@@ -25,6 +25,8 @@ class VoucherModel {
     if (status) {
       request.input('status', sql.VarChar, status);
       query += " AND Status = @status";
+    } else {
+      query += " AND Status != 'Inactive'";
     }
     
     query += " ORDER BY CreatedAt DESC";
@@ -138,6 +140,14 @@ class VoucherModel {
     `;
     const result = await request.query(query);
     return result.recordset[0] || null;
+  }
+
+  static async hardDelete(id) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, id)
+      .query("DELETE FROM Voucher WHERE VoucherID = @id");
+    return result.rowsAffected[0] > 0;
   }
 
   static async softDelete(id) {

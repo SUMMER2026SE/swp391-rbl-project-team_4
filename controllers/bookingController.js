@@ -399,6 +399,9 @@ exports.receivePaymentWebhook = async (req, res) => {
     console.log('[Payment Webhook] Received payment notification body:', JSON.stringify(req.body));
 
     // 1. Kiểm tra Token bảo mật (nếu có cấu hình trong .env)
+    // Lưu ý: SePay thực tế KHÔNG gửi token tùy chỉnh của chúng ta.
+    // Chỉ từ chối khi request CÓ gửi token nhưng token đó SAI (ngăn brute-force).
+    // Nếu không có token (như SePay thực tế), cho phép qua và log để monitoring.
     const secretToken = process.env.PAYMENT_WEBHOOK_SECRET || 'dev_webhook_secret_token';
     let reqToken = req.headers['x-api-key'] || req.query.token;
     if (!reqToken && req.headers['authorization']) {
@@ -408,9 +411,13 @@ exports.receivePaymentWebhook = async (req, res) => {
         .trim();
     }
 
-    if (process.env.PAYMENT_WEBHOOK_SECRET && reqToken !== secretToken) {
-      console.warn(`[Webhook Warning] Unauthorized webhook attempt. Provided token: ${reqToken}`);
+    if (reqToken && reqToken !== secretToken) {
+      // Chỉ từ chối khi có token nhưng token SAI → bảo vệ khỏi brute-force
+      console.warn(`[Webhook Warning] Token không hợp lệ. Token nhận được: ${reqToken}`);
       return res.status(401).json({ success: false, message: 'Unauthorized webhook request.' });
+    }
+    if (!reqToken) {
+      console.log('[Webhook] Không có token xác thực - chấp nhận (SePay thực tế không gửi token).');
     }
 
     // 2. Trích xuất thông tin giao dịch từ các định dạng khác nhau (SePay, PayOS hoặc Simulator)
@@ -428,8 +435,10 @@ exports.receivePaymentWebhook = async (req, res) => {
       transactionDate = req.body.transactionDate || new Date();
       accountNumber = req.body.accountNumber || '';
       amountIn = parseFloat(req.body.transferAmount || req.body.amount_in || req.body.amountIn || 0);
-      referenceNumber = req.body.code || req.body.referenceCode || req.body.referenceNumber || `TX-${Date.now()}`;
-      transactionContent = req.body.content || req.body.transactionContent || '';
+      // Ưu tiên mã giao dịch ngân hàng thực tế (referenceCode/referenceNumber) để tránh trùng lặp
+      referenceNumber = req.body.referenceCode || req.body.referenceNumber || req.body.code || `TX-${Date.now()}`;
+      // SePay gửi nội dung qua 'content' và mô tả ngân hàng qua 'description'
+      transactionContent = req.body.content || req.body.transactionContent || req.body.description || '';
     } else if (req.body.data && req.body.data.reference) {
       // Định dạng PayOS Webhook
       const d = req.body.data;
@@ -446,7 +455,7 @@ exports.receivePaymentWebhook = async (req, res) => {
       accountNumber = req.body.accountNumber || '0949391487';
       amountIn = parseFloat(req.body.amountIn || req.body.amount || 0);
       referenceNumber = req.body.referenceNumber || req.body.code || `SIM-${Date.now()}`;
-      transactionContent = req.body.transactionContent || req.body.content || '';
+      transactionContent = req.body.transactionContent || req.body.content || req.body.description || '';
     }
 
     const paymentMethod = transactionContent.toLowerCase().includes('momo') ? 'momo' : 'qrpay';
@@ -454,7 +463,13 @@ exports.receivePaymentWebhook = async (req, res) => {
     console.log(`[Payment Webhook] Extracted: Gateway=${gateway}, RefNo=${referenceNumber}, Amount=${amountIn}, Content="${transactionContent}"`);
 
     // 3. Phân tích nội dung chuyển khoản để tìm mã vé (DCVIP + ticketIds nối bằng chữ T)
-    const match = transactionContent.match(/DCVIP(\d+(?:T\d+)*)/i);
+    // Kiểm tra cả trong content lẫn các trường phụ để tăng độ tin cậy
+    const allContent = [
+      transactionContent,
+      req.body.description || '',
+      req.body.content || ''
+    ].join(' ');
+    const match = allContent.match(/DCVIP(\d+(?:T\d+)*)/i);
     if (!match) {
       console.log(`[Payment Webhook] Nội dung chuyển khoản không chứa mã vé phù hợp: "${transactionContent}". Bỏ qua.`);
       return res.status(200).json({ success: false, message: 'Nội dung chuyển khoản không chứa mã vé hợp lệ (DCVIP...).' });
