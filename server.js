@@ -45,13 +45,16 @@ const voucherRoutes = require('./routes/voucherRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const newsRoutes = require('./routes/newsRoutes');
 const adminNewsCompatRoutes = require('./routes/adminNewsCompatRoutes');
+const staffRoutes = require('./routes/staffRoutes');
 
 app.use('/api/auth', authRoutes);     // Đăng ký, Đăng nhập
 app.use('/api/users', userRoutes);    // Thông tin người dùng (Profile)
 app.use('/api/movies', movieRoutes);    // Thông tin phim & lịch chiếu
 app.use('/api/bookings', bookingRoutes);  // Đặt vé, lịch sử, voucher
+app.use('/bookings', bookingRoutes);      // Compat: hỗ trợ frontend cũ/cache thiếu prefix /api
 app.use('/api/admin/vouchers', voucherRoutes); // Quản lý Voucher
 app.use('/api/admin', adminRoutes);    // Quản lý, thống kê (chỉ Super Admin)
+app.use('/api/staff', staffRoutes);    // Ban ve nhanh / nhan vien quay
 app.use('/api/chat', chatRoutes);      // AI Chatbot
 app.use('/api/news', newsRoutes);
 app.use('/admin', adminNewsCompatRoutes);
@@ -78,6 +81,10 @@ app.get('/booking', (req, res) => {
 });
 
 // ─── SPA Fallback — trả về index.html cho mọi route khác ─────
+app.get('/refund-request', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'refund-request.html'));
+});
+
 app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

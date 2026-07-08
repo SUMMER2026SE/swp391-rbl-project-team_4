@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yêu Cầu Hoàn Tiền | D-CINEMA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/shared-layout.css">
+    <style>
+        :root {
+            --bg:#0c0d10;
+            --panel:#141821;
+            --panel2:#1b2030;
+            --border:#2a3040;
+            --accent:#e50914;
+            --text:#f7f7fb;
+            --muted:#9ca3af;
+            --green:#22c55e;
+            --gold:#f59e0b;
+        }
+        * { box-sizing:border-box; }
+        body { margin:0; font-family:Inter, sans-serif; background:radial-gradient(circle at top left, rgba(229,9,20,.12), transparent 32%), var(--bg); color:var(--text); min-height:100vh; }
+        .navbar { position:sticky; top:0; z-index:10; background:rgba(12,13,16,.92); border-bottom:1px solid var(--border); backdrop-filter:blur(16px); }
+        .nav-wrap { max-width:1180px; height:72px; margin:0 auto; padding:0 24px; display:flex; align-items:center; justify-content:space-between; }
+        .logo { font-size:1.25rem; font-weight:900; letter-spacing:.08em; color:#fff; text-decoration:none; display:flex; align-items:center; gap:8px; }
+        .logo-d { color:var(--accent); font-size:1.7rem; }
+        .nav-link { color:var(--muted); text-decoration:none; font-weight:700; font-size:.92rem; }
+        .page { max-width:1040px; margin:0 auto; padding:42px 24px 80px; display:grid; grid-template-columns:1fr 380px; gap:28px; }
+        .card { background:rgba(20,24,33,.94); border:1px solid var(--border); border-radius:14px; box-shadow:0 20px 70px rgba(0,0,0,.35); overflow:hidden; }
+        .card-head { padding:24px 28px; border-bottom:1px solid var(--border); }
+        .eyebrow { color:var(--accent); font-size:.75rem; font-weight:900; letter-spacing:.16em; text-transform:uppercase; margin-bottom:10px; }
+        h1 { margin:0; font-size:2rem; line-height:1.15; }
+        .sub { margin:10px 0 0; color:var(--muted); line-height:1.55; font-size:.95rem; }
+        form { padding:26px 28px; display:grid; gap:18px; }
+        label { display:block; color:#d6d9e3; font-size:.78rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; }
+        input, textarea { width:100%; border:1px solid var(--border); background:#0f131b; color:var(--text); border-radius:10px; padding:14px 15px; font:inherit; outline:none; transition:.18s; }
+        textarea { min-height:118px; resize:vertical; }
+        input:focus, textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(229,9,20,.14); }
+        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        .actions { display:flex; justify-content:flex-end; gap:12px; padding-top:4px; }
+        .btn { border:1px solid var(--border); border-radius:10px; padding:13px 18px; font-weight:900; cursor:pointer; text-decoration:none; color:var(--text); background:#141927; }
+        .btn.primary { border-color:var(--accent); background:var(--accent); color:#fff; min-width:170px; }
+        .btn:disabled { opacity:.55; cursor:not-allowed; }
+        .summary { padding:22px; display:grid; gap:16px; }
+        .ticket { display:flex; gap:14px; align-items:center; background:var(--panel2); border:1px solid var(--border); border-radius:12px; padding:14px; }
+        .poster { width:72px; height:96px; object-fit:cover; border-radius:8px; background:#111; flex:0 0 auto; }
+        .ticket-title { font-size:1rem; font-weight:900; line-height:1.3; }
+        .meta { color:var(--muted); font-size:.83rem; margin-top:6px; line-height:1.5; }
+        .amount { border-top:1px solid var(--border); padding-top:16px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .amount strong { color:var(--gold); font-size:1.35rem; }
+        .note { color:var(--muted); font-size:.82rem; line-height:1.55; border-top:1px solid var(--border); padding-top:16px; }
+        .state { padding:26px; color:var(--muted); text-align:center; }
+        .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:#111827; color:#fff; border:1px solid var(--border); border-radius:10px; padding:13px 18px; display:none; z-index:50; }
+        .toast.ok { background:#064e3b; border-color:#047857; }
+        .toast.err { background:#7f1d1d; border-color:#dc2626; }
+        @media (max-width:900px) { .page { grid-template-columns:1fr; } .grid-2 { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-wrap">
+            <a href="index.html" class="logo"><span class="logo-d">D</span><span>D-CINEMA</span></a>
+            <a href="profile.html" class="nav-link">Quay lại tài khoản</a>
+        </div>
+    </header>
+
+    <main class="page">
+        <section class="card">
+            <div class="card-head">
+                <div class="eyebrow">Hoàn tiền thủ công</div>
+                <h1>Yêu cầu hủy vé và hoàn tiền</h1>
+                <p class="sub">Nhập thông tin tài khoản nhận tiền. Admin sẽ kiểm tra yêu cầu, chuyển khoản thủ công và cập nhật trạng thái hoàn tiền trong hệ thống.</p>
+            </div>
+            <form id="refundForm">
+                <div>
+                    <label for="reason">Lý do hủy vé</label>
+                    <textarea id="reason" required maxlength="500" placeholder="Ví dụ: Tôi bận lịch cá nhân, không thể đến rạp..."></textarea>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <label for="bankName">Ngân hàng</label>
+                        <input id="bankName" required maxlength="100" placeholder="Ví dụ: MB Bank">
+                    </div>
+                    <div>
+                        <label for="bankAccountNumber">Số tài khoản</label>
+                        <input id="bankAccountNumber" required maxlength="50" inputmode="numeric" placeholder="Nhập số tài khoản">
+                    </div>
+                </div>
+                <div>
+                    <label for="bankAccountHolder">Tên chủ tài khoản</label>
+                    <input id="bankAccountHolder" required maxlength="100" placeholder="Nhập đúng tên chủ tài khoản">
+                </div>
+                <div class="actions">
+                    <a class="btn" href="profile.html">Hủy thao tác</a>
+                    <button class="btn primary" id="submitBtn" type="submit">Gửi yêu cầu</button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="card">
+            <div class="card-head">
+                <div class="eyebrow">Thông tin vé</div>
+                <h1 style="font-size:1.25rem;">Vé cần hoàn tiền</h1>
+            </div>
+            <div class="summary" id="ticketSummary">
+                <div class="state">Đang tải thông tin vé...</div>
+            </div>
+        </aside>
+    </main>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const idsFromUrl = params.get('ticketIds') || sessionStorage.getItem('refundTicketIds') || '';
+        const ticketIds = idsFromUrl.split(',').map(id => parseInt(id, 10)).filter(Boolean);
+        let loadedTickets = [];
+
+        function getToken() {
+            return localStorage.getItem('token') || sessionStorage.getItem('token');
+        }
+
+        function money(value) {
+            return Number(value || 0).toLocaleString('vi-VN') + ' đ';
+        }
+
+        function showToast(message, type = '') {
+            const el = document.getElementById('toast');
+            el.textContent = message;
+            el.className = 'toast ' + type;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 2800);
+        }
+
+        function formatDate(value) {
+            if (!value) return '';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '';
+            return date.toLocaleString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function renderSummary() {
+            const wrap = document.getElementById('ticketSummary');
+            if (!loadedTickets.length) {
+                wrap.innerHTML = '<div class="state">Không tìm thấy thông tin vé.</div>';
+                return;
+            }
+
+            const first = loadedTickets[0];
+            const seats = loadedTickets.map(t => `${t.SeatRow || ''}${t.SeatNumber || ''}`).join(', ');
+            const total = loadedTickets.reduce((sum, t) => sum + Number(t.TotalAmount || 0), 0);
+            wrap.innerHTML = `
+                <div class="ticket">
+                    <img class="poster" src="${first.PosterURL || 'images/default_poster.svg'}" onerror="this.src='images/default_poster.svg'" alt="">
+                    <div>
+                        <div class="ticket-title">${first.MovieTitle || 'Vé xem phim'}</div>
+                        <div class="meta">${formatDate(first.StartTime)}<br>${first.CinemaName || ''} ${first.RoomName ? '• ' + first.RoomName : ''}<br>Ghế: ${seats}</div>
+                    </div>
+                </div>
+                <div class="amount"><span>Số tiền dự kiến hoàn</span><strong>${money(total)}</strong></div>
+                <div class="note">Yêu cầu chỉ được gửi khi vé đã thanh toán thành công và còn trước giờ chiếu ít nhất 2 giờ. Sau khi admin chuyển khoản, trạng thái vé sẽ chuyển sang đã hoàn tiền.</div>
+            `;
+        }
+
+        async function loadTickets() {
+            if (!ticketIds.length) {
+                document.getElementById('ticketSummary').innerHTML = '<div class="state">Thiếu mã vé cần hoàn tiền.</div>';
+                document.getElementById('submitBtn').disabled = true;
+                return;
+            }
+            const token = getToken();
+            if (!token) {
+                window.location.href = 'auth.html?redirect=refund-request.html';
+                return;
+            }
+            try {
+                const rows = [];
+                for (const id of ticketIds) {
+                    const res = await fetch('/api/bookings/' + id, {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    const json = await res.json();
+                    if (!json.success) throw new Error(json.message || 'Không thể tải vé #' + id);
+                    rows.push(json.data);
+                }
+                loadedTickets = rows;
+                renderSummary();
+            } catch (err) {
+                document.getElementById('ticketSummary').innerHTML = `<div class="state">${err.message || 'Không thể tải thông tin vé.'}</div>`;
+                document.getElementById('submitBtn').disabled = true;
+            }
+        }
+
+        document.getElementById('refundForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const token = getToken();
+            if (!token) return;
+
+            const payload = {
+                ticketIds,
+                reason: document.getElementById('reason').value.trim(),
+                bankName: document.getElementById('bankName').value.trim(),
+                bankAccountNumber: document.getElementById('bankAccountNumber').value.trim(),
+                bankAccountHolder: document.getElementById('bankAccountHolder').value.trim()
+            };
+
+            btn.disabled = true;
+            btn.textContent = 'Đang gửi...';
+            try {
+                const res = await fetch('/api/bookings/request-refund', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message || 'Gửi yêu cầu hoàn tiền thất bại.');
+                sessionStorage.removeItem('refundTicketIds');
+                showToast('Đã gửi yêu cầu hoàn tiền.', 'ok');
+                setTimeout(() => { window.location.href = 'profile.html'; }, 900);
+            } catch (err) {
+                showToast(err.message || 'Có lỗi xảy ra khi gửi yêu cầu.', 'err');
+                btn.disabled = false;
+                btn.textContent = 'Gửi yêu cầu';
+            }
+        });
+
+        loadTickets();
+    </script>
+</body>
+</html>

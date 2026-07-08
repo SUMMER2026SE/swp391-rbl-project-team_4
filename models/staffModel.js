@@ -58,7 +58,7 @@ class StaffModel {
         const sCheck = await sReq.query(`
           SELECT s.SeatRow, s.SeatNumber, s.SeatType, s.PriceMultiplier, t.TicketID 
           FROM Seats s WITH (UPDLOCK)
-          LEFT JOIN Tickets t WITH (UPDLOCK) ON t.SeatID = s.SeatID AND t.ShowtimeID = @showtimeId AND t.Status IN ('confirmed','pending')
+          LEFT JOIN Tickets t WITH (UPDLOCK) ON t.SeatID = s.SeatID AND t.ShowtimeID = @showtimeId AND t.Status IN ('confirmed','pending','refund_requested')
           WHERE s.SeatID = @seatId
         `);
         if (sCheck.recordset.length === 0) {

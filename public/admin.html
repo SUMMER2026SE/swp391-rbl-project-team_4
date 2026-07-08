@@ -91,9 +91,18 @@
                         <line x1="10" y1="1" x2="10" y2="4" />
                         <line x1="14" y1="1" x2="14" y2="4" />
                     </svg>
-                    Quản lý Đồ ăn & Combo
+                    Đồ ăn & Nước
                 </button>
-                <button class="sn" data-page="voucher" onclick="navigate('voucher',this)">
+                <button class="sn" data-page="combos" onclick="navigate('combos',this)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <line x1="6" y1="8" x2="18" y2="8" />
+                        <line x1="6" y1="12" x2="14" y2="12" />
+                        <line x1="6" y1="16" x2="10" y2="16" />
+                    </svg>
+                    Quản lý Combo
+                </button>
+                <button class="sn" onclick="location.href='admin-voucher.html'">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                         <line x1="7" y1="7" x2="7.01" y2="7" />
@@ -573,8 +582,8 @@
                     <div class="cw-toolbar">
                         <div class="cw-tools-left">
                             <div class="btn-group-toggle">
-                                <button class="bgt-btn active"><svg width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2">
+                                <button class="bgt-btn active" title="Chế độ xem sơ đồ"><svg width="16" height="16"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <line x1="8" y1="6" x2="21" y2="6" />
                                         <line x1="8" y1="12" x2="21" y2="12" />
                                         <line x1="8" y1="18" x2="21" y2="18" />
@@ -582,33 +591,54 @@
                                         <line x1="3" y1="12" x2="3.01" y2="12" />
                                         <line x1="3" y1="18" x2="3.01" y2="18" />
                                     </svg></button>
-                                <button class="bgt-btn" onclick="addSeatRow()"><svg width="16" height="16"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <button class="bgt-btn" onclick="addSeatRow()" title="Thêm hàng ghế"><svg width="16"
+                                        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
                                         <line x1="12" y1="5" x2="12" y2="19" />
                                         <line x1="5" y1="12" x2="19" y2="12" />
-                                    </svg> Hàng</button>
-                                <button class="bgt-btn" onclick="addSeatCol()"><svg width="16" height="16"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    </svg> +Hàng</button>
+                                <button class="bgt-btn" onclick="addSeatCol()" title="Thêm cột ghế"><svg width="16"
+                                        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
                                         <line x1="12" y1="5" x2="12" y2="19" />
                                         <line x1="5" y1="12" x2="19" y2="12" />
-                                    </svg> Cột</button>
+                                    </svg> +Cột</button>
                             </div>
                         </div>
                         <div class="cw-legend-toggles">
-                            <label class="cl-toggle"><input type="radio" name="seat_tool" value="Normal" checked><span
-                                    class="cbox standard"></span>Thường</label>
-                            <label class="cl-toggle"><input type="radio" name="seat_tool" value="VIP"><span
-                                    class="cbox vip"></span>VIP</label>
-                            <label class="cl-toggle"><input type="radio" name="seat_tool" value="Couple"><span
-                                    class="cbox"
-                                    style="background:#ec4899;box-shadow:0 0 8px rgba(236,72,153,0.4)"></span>Couple</label>
-                            <label class="cl-toggle"><input type="radio" name="seat_tool" value="None"><span
-                                    class="cbox blocked"></span>Xóa</label>
+                            <label class="cl-toggle" title="Ghế thường - giá cơ bản">
+                                <input type="radio" name="seat_tool" value="Normal" checked>
+                                <span class="cbox standard"></span>Thường
+                            </label>
+                            <label class="cl-toggle" title="Ghế VIP - giá x1.2">
+                                <input type="radio" name="seat_tool" value="VIP">
+                                <span class="cbox vip"></span>VIP ★
+                            </label>
+                            <label class="cl-toggle" title="Ghế cặp đôi - giá x1.5 (chọn theo cặp)">
+                                <input type="radio" name="seat_tool" value="Couple">
+                                <span class="cbox"
+                                    style="background:linear-gradient(180deg,#db2777,#7d0e3d);box-shadow:0 0 8px rgba(219,39,119,0.5);width:44px;"></span>Couple
+                                ♥
+                            </label>
+                            <label class="cl-toggle" title="Xóa ghế (ô trống)">
+                                <input type="radio" name="seat_tool" value="None">
+                                <span class="cbox blocked"></span>Xóa
+                            </label>
                         </div>
                         <div class="cw-tools-right">
-                            <button class="btn-outline-red" onclick="clearSeatMap()">Làm mới</button>
-                            <button class="btn-solid-red" onclick="saveSeatLayout()">Lưu bố cục</button>
+                            <button class="btn-outline-red" onclick="clearSeatMap()"
+                                title="Xóa toàn bộ và bắt đầu lại">🔄 Làm mới</button>
+                            <button class="btn-outline-red" onclick="previewCustomerView()"
+                                title="Xem trước như khách hàng" style="border-color:#3b82f6;color:#3b82f6;">👁 Xem
+                                trước</button>
+                            <button class="btn-solid-red" onclick="saveSeatLayout()">💾 Lưu bố cục</button>
                         </div>
+                    </div>
+
+                    <!-- Seat count stats bar -->
+                    <div id="seatStatsBar"
+                        style="display:flex; gap:20px; padding:10px 24px; background:rgba(0,0,0,0.3); border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.8rem; font-weight:600; align-items:center; flex-wrap:wrap;">
+                        <span style="color:#6b7280;">Chưa chọn phòng để thiết kế sơ đồ ghế</span>
                     </div>
 
                     <div class="cw-canvas-area">

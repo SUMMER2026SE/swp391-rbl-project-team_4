@@ -691,7 +691,8 @@ exports.getPublicBookingDetails = async (req, res) => {
     const result = await pool.request().query(`
       SELECT t.TicketID, t.Status, t.TicketPrice, t.TotalAmount, t.PaymentMethod,
              m.Title AS MovieTitle, m.PosterURL, m.Duration,
-             st.StartTime, st.EndTime,
+             CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
+             CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
              r.RoomName,
              c.CinemaName, c.Address,
              s.SeatRow, s.SeatNumber, s.SeatType,
@@ -796,7 +797,7 @@ exports.requestCancelBooking = async (req, res) => {
       return res.status(400).json({ success: false, message: 'TicketID không hợp lệ.' });
     }
 
-    await BookingModel.cancelConfirmedBooking(ticketId, req.user.userId);
+    await BookingModel.cancelConfirmedBooking(ticketId, req.user.userId, req.body || {});
 
     res.json({ success: true, message: 'Hủy vé thành công.' });
   } catch (err) {
@@ -809,5 +810,29 @@ exports.requestCancelBooking = async (req, res) => {
       return res.status(400).json({ success: false, message: err.message });
     }
     res.status(500).json({ success: false, message: 'Lỗi server khi hủy vé.' });
+  }
+};
+
+exports.requestRefundBooking = async (req, res) => {
+  try {
+    const { ticketIds } = req.body || {};
+    const created = await BookingModel.requestRefund(req.user.userId, ticketIds, req.body || {});
+    res.json({
+      success: true,
+      message: 'Đã gửi yêu cầu hoàn tiền. Vui lòng chờ admin xử lý.',
+      data: created
+    });
+  } catch (err) {
+    console.error('[bookingController] requestRefundBooking:', err.message);
+    if (
+      err.message.includes('không hợp lệ') ||
+      err.message.includes('Không tìm thấy') ||
+      err.message.includes('Chỉ') ||
+      err.message.includes('Vui lòng') ||
+      err.message.includes('đã có yêu cầu')
+    ) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    res.status(500).json({ success: false, message: 'Lỗi server khi gửi yêu cầu hoàn tiền.' });
   }
 };

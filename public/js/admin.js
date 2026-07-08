@@ -520,6 +520,18 @@ function buildChart(chartData) {
         chartInstance.destroy();
     }
 
+    const maxRevenue = Math.max(0, ...ticketData, ...fnbData);
+    const moneyScale = maxRevenue >= 1000000
+        ? { divisor: 1000000, suffix: ' Tr' }
+        : maxRevenue >= 1000
+            ? { divisor: 1000, suffix: 'K' }
+            : { divisor: 1, suffix: 'đ' };
+    const formatAxisMoney = value => {
+        const scaled = Number(value || 0) / moneyScale.divisor;
+        const text = scaled % 1 === 0 ? scaled.toLocaleString('vi-VN') : scaled.toLocaleString('vi-VN', { maximumFractionDigits: 1 });
+        return text + moneyScale.suffix;
+    };
+
     chartInstance = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
@@ -570,9 +582,12 @@ function buildChart(chartData) {
                 },
                 y: {
                     grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                    beginAtZero: true,
+                    suggestedMax: maxRevenue > 0 ? maxRevenue * 1.25 : 1000,
                     ticks: {
                         color: '#9ca3af', font: { size: 11 },
-                        callback: v => (v / 1000000) + ' Tr'
+                        maxTicksLimit: 6,
+                        callback: formatAxisMoney
                     },
                     border: { display: false }
                 }
@@ -587,18 +602,34 @@ function buildChart(chartData) {
 let MOVIE_DATA = [];
 let filteredMovies = [];
 let GENRE_DATA = [];
+let genresLoadingPromise = null;
 
-async function loadGenres() {
-    try {
-        const res = await apiFetch('/api/admin/genres');
-        if (res.success) {
-            GENRE_DATA = res.data || [];
-            renderGenreAdminList();
-            renderMovieGenreCheckboxes();
-        }
-    } catch (err) {
-        console.error('[Admin] loadGenres:', err);
+async function loadGenres(force = false) {
+    if (!force && GENRE_DATA.length) {
+        renderGenreAdminList();
+        return GENRE_DATA;
     }
+
+    if (genresLoadingPromise) return genresLoadingPromise;
+
+    genresLoadingPromise = (async () => {
+        try {
+            const res = await apiFetch('/api/admin/genres');
+            if (res.success) {
+                GENRE_DATA = res.data || [];
+                renderGenreAdminList();
+                return GENRE_DATA;
+            }
+            throw new Error(res.message || 'Khong the tai the loai.');
+        } catch (err) {
+            console.error('[Admin] loadGenres:', err);
+            return GENRE_DATA;
+        } finally {
+            genresLoadingPromise = null;
+        }
+    })();
+
+    return genresLoadingPromise;
 }
 
 function renderGenreAdminList() {
@@ -638,6 +669,15 @@ function renderMovieGenreCheckboxes(selectedIds = []) {
 
 function getSelectedMovieGenreIds() {
     return Array.from(document.querySelectorAll('.movie-genre-checkbox:checked')).map(input => input.value);
+}
+
+async function ensureMovieGenres(selectedIds = []) {
+    const wrap = document.getElementById('movieGenreCheckboxes');
+    if (wrap && !GENRE_DATA.some(g => g.IsActive)) {
+        wrap.innerHTML = '<span style="color:var(--text2);font-size:0.85rem;">Dang tai the loai...</span>';
+    }
+    await loadGenres();
+    renderMovieGenreCheckboxes(selectedIds);
 }
 
 async function saveGenre() {
@@ -791,7 +831,7 @@ async function deleteMovie(id) {
 
 let editingMovieId = null;
 
-function editMovie(id) {
+async function editMovie(id) {
     const movie = MOVIE_DATA.find(m => m.MovieID === id);
     if (!movie) return;
     editingMovieId = id;
@@ -805,23 +845,23 @@ function editMovie(id) {
     document.getElementById('movieMainCast').value = movie.MainCast || '';
     document.getElementById('movieTrailerURL').value = movie.TrailerURL || '';
     const selectedGenres = String(movie.GenreIDs || '').split(',').map(id => parseInt(id, 10)).filter(Boolean);
-    renderMovieGenreCheckboxes(selectedGenres);
+    await ensureMovieGenres(selectedGenres);
     const preview = document.getElementById('posterPreview');
     if (movie.PosterURL) {
         preview.src = movie.PosterURL;
         preview.style.display = 'block';
     }
     document.querySelector('.btn-panel-save').textContent = 'Cập nhật Phim';
-    openAddMovieModal();
+    await openAddMovieModal();
 }
 
-function openAddMovieModal() {
+async function openAddMovieModal() {
     if (!editingMovieId) {
         document.querySelector('#addMovieModal .panel-header h2').textContent = 'THÊM PHIM MỚI';
         document.querySelector('.btn-panel-save').textContent = 'Lưu Phim';
         document.getElementById('addMovieForm').reset();
         document.getElementById('posterPreview').style.display = 'none';
-        renderMovieGenreCheckboxes();
+        await ensureMovieGenres();
     }
     document.getElementById('addMovieModalOverlay').classList.add('show');
     document.getElementById('addMovieModal').classList.add('show');
@@ -966,6 +1006,10 @@ function navigate(page, btn) {
     if (page === 'reviews') {
         populateReviewMovieFilter();
         loadAdminReviews();
+    }
+
+    if (page === 'refunds') {
+        loadAdminRefunds();
     }
 
     if (page === 'promotions') {
@@ -1949,7 +1993,7 @@ function animateCounter(el, target, prefix = '', suffix = '', decimals = 0, isCu
 ══════════════════════════ */
 let SHOWTIME_DATA = [];
 let ROOM_DATA = [];
-let scheduleDate = new Date().toISOString().split('T')[0];
+let scheduleDate = toDateInputValue(new Date());
 let allCinemas = [];
 let selectedCity = '';
 let selectedCinemaId = null;
@@ -2188,7 +2232,7 @@ function selectScheduleMovie(movieId) {
 function changeScheduleDate(delta) {
     const d = new Date(scheduleDate);
     d.setDate(d.getDate() + delta);
-    scheduleDate = d.toISOString().split('T')[0];
+    scheduleDate = toDateInputValue(d);
     document.getElementById('scheduleDateInput').value = scheduleDate;
     loadShowtimes();
 }
@@ -2286,7 +2330,7 @@ function openShowtimeModal(showtimeId = null) {
         // Date and times
         const stDateObj = new Date(showtime.StartTime);
         const enDateObj = new Date(showtime.EndTime);
-        document.getElementById('stDate').value = stDateObj.toISOString().split('T')[0];
+        document.getElementById('stDate').value = toDateInputValue(stDateObj);
         document.getElementById('stStartTime').value = String(stDateObj.getHours()).padStart(2, '0') + ':' + String(stDateObj.getMinutes()).padStart(2, '0');
         document.getElementById('stEndTime').value = String(enDateObj.getHours()).padStart(2, '0') + ':' + String(enDateObj.getMinutes()).padStart(2, '0');
         document.getElementById('stDuration').value = Math.round((enDateObj - stDateObj) / 60000);
@@ -2355,6 +2399,8 @@ async function saveShowtime() {
 
     const start = new Date(`${dateStr}T${startTimeStr}`);
     const end = new Date(start.getTime() + duration * 60000);
+    const startLocal = `${dateStr}T${startTimeStr}:00`;
+    const endLocal = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}T${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}:00`;
 
     const btn = document.getElementById('btnSaveShowtime');
     const oldText = btn.textContent;
@@ -2369,8 +2415,8 @@ async function saveShowtime() {
                 method: 'PUT',
                 body: JSON.stringify({
                     movieId, roomId,
-                    startTime: start.toISOString(),
-                    endTime: end.toISOString(),
+                    startTime: startLocal,
+                    endTime: endLocal,
                     price, status
                 })
             });
@@ -2380,8 +2426,8 @@ async function saveShowtime() {
                 method: 'POST',
                 body: JSON.stringify({
                     movieId, roomId,
-                    startTime: start.toISOString(),
-                    endTime: end.toISOString(),
+                    startTime: startLocal,
+                    endTime: endLocal,
                     price
                 })
             });
@@ -2943,17 +2989,24 @@ window.renderSeatMatrix = function() {
 
             if (sType === 'Couple') {
                 const c2 = c + 1;
-                const num2 = (c2 <= maxCol) ? c2 : c;
-                const lbl = (c2 <= maxCol) ? `${rowChar}${c}-${num2}` : `${rowChar}${c}`;
-                
-                html += `<button class="seat-btn couple"
-                    onclick="toggleCoupleSeat('${rowChar}', ${c}, this)"
-                    data-row="${rowChar}" data-col1="${c}" data-col2="${num2}"
-                    title="Ghế cặp đôi ${lbl}">
-                    <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${lbl}</span>
-                </button>`;
-                
-                if (c2 <= maxCol) c++; // skip next column if it was part of the pair
+                const seat2 = builderSeats.find(s => s.SeatRow === rowChar && s.SeatNumber === c2);
+                if (c2 <= maxCol && seat2 && seat2.SeatType === 'Couple') {
+                    const lbl = `${rowChar}${c}-${c2}`;
+                    html += `<button class="seat-btn couple"
+                        onclick="toggleCoupleSeat('${rowChar}', ${c}, this)"
+                        data-row="${rowChar}" data-col1="${c}" data-col2="${c2}"
+                        title="Ghế cặp đôi ${lbl}">
+                        <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${lbl}</span>
+                    </button>`;
+                    c++; // skip next column if it was part of the pair
+                } else {
+                    html += `<button class="seat-btn couple"
+                        onclick="toggleSeat('${rowChar}', ${c}, this)"
+                        data-row="${rowChar}" data-col="${c}"
+                        title="Ghế cặp đôi ${rowChar}${c}">
+                        <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${rowChar}${c}</span>
+                    </button>`;
+                }
             } else {
                 let sClass = 'blocked';
                 let inner = `<span style="color:rgba(255,255,255,0.04);position:relative;z-index:2;">${c}</span>`;
@@ -3022,8 +3075,14 @@ window.toggleCoupleSeat = function(rowChar, col1, btn) {
         [col1, col2].forEach((cn, idx) => {
             if (cn > maxCol) return;
             let s = builderSeats.find(x => x.SeatRow === rowChar && x.SeatNumber === cn);
-            if (!s) { s = { SeatRow: rowChar, SeatNumber: cn, SeatType: 'Couple', PriceMultiplier: 1.5 }; builderSeats.push(s); }
-            else { s.SeatType = 'Couple'; s.PriceMultiplier = 1.5; }
+            const mult = tool === 'VIP' ? 1.2 : (tool === 'Couple' ? 1.5 : 1.0);
+            if (!s) {
+                s = { SeatRow: rowChar, SeatNumber: cn, SeatType: tool, PriceMultiplier: mult };
+                builderSeats.push(s);
+            } else {
+                s.SeatType = tool;
+                s.PriceMultiplier = mult;
+            }
         });
     }
     renderSeatMatrix();
@@ -3037,6 +3096,22 @@ window.adminZoomOut = function() { adminBuilderZoom = Math.max(0.45, adminBuilde
 window.addSeatRow = function() { maxRow++; renderSeatMatrix(); };
 window.addSeatCol = function() { maxCol++; renderSeatMatrix(); };
 
+window.removeSeatRow = function() {
+    if (maxRow > 1) {
+        maxRow--;
+        builderSeats = builderSeats.filter(s => (s.SeatRow.charCodeAt(0) - 64) <= maxRow);
+        renderSeatMatrix();
+    }
+};
+
+window.removeSeatCol = function() {
+    if (maxCol > 1) {
+        maxCol--;
+        builderSeats = builderSeats.filter(s => s.SeatNumber <= maxCol);
+        renderSeatMatrix();
+    }
+};
+
 window.clearSeatMap = function() {
     if (!confirm('Ban co chac muon lam moi toan bo so do (xoa trang)?')) return;
     builderSeats = [];
@@ -3046,8 +3121,8 @@ window.clearSeatMap = function() {
 /* ─── Customer Preview Modal ─── */
 window.previewCustomerView = function() {
     if (!currentBuilderRoomId) { alert('Vui long chon mot phong!'); return; }
-    const validSeats = builderSeats.filter(s => s.SeatType !== 'None');
-    if (validSeats.length === 0) { alert('Phong nay chua co ghe nao!'); return; }
+    const physicalSeats = builderSeats.filter(s => s.SeatType !== 'None');
+    if (physicalSeats.length === 0) { alert('Phong nay chua co ghe nao!'); return; }
 
     const room = (typeof ROOM_DATA !== 'undefined') ? ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId) : null;
     const roomName = room ? room.RoomName : 'Phong chieu';
@@ -3064,6 +3139,7 @@ window.previewCustomerView = function() {
 
     // Build preview using same logic as seats.html
     const rowsMap = {};
+    const validSeats = builderSeats;
     validSeats.forEach(s => { if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = []; rowsMap[s.SeatRow].push(s); });
     const allRows = Object.keys(rowsMap).sort();
     const coupleRowSet = new Set(validSeats.filter(s => s.SeatType === 'Couple').map(s => s.SeatRow));
@@ -3097,7 +3173,9 @@ window.previewCustomerView = function() {
             // Center aisle gap
             if (total > 4 && i === half) seatsHtml += `<div style="width:20px;"></div>`;
             
-            if (s.SeatType === 'Couple') {
+            if (s.SeatType === 'None') {
+                seatsHtml += `<div style="width:36px;height:34px;visibility:hidden;pointer-events:none;flex-shrink:0;"></div>`;
+            } else if (s.SeatType === 'Couple') {
                 const s2 = rowSeats[i + 1];
                 if (s2 && s2.SeatType === 'Couple' && s2.SeatNumber === s.SeatNumber + 1) {
                     const lbl = `${row}${s.SeatNumber}-${s2.SeatNumber}`;
@@ -3160,7 +3238,7 @@ window.saveSeatLayout = async function() {
         alert('Vui long chon mot phong truoc khi luu.');
         return;
     }
-    const payload = builderSeats.filter(s => s.SeatType !== 'None');
+    const payload = builderSeats;
     
     let roomType = null;
     const typeSelect = document.getElementById('builderRoomTypeSelect');
@@ -3184,7 +3262,7 @@ window.saveSeatLayout = async function() {
                 toast.textContent = '&#10003; Da luu so do ghe thanh cong! (' + payload.length + ' ghe)';
                 container.appendChild(toast);
                 setTimeout(() => toast.remove(), 4000);
-            } else { alert('Luu so do ghe thanh cong!'); }
+            } else { showToast('Luu so do ghe thanh cong!'); }
             await loadRooms();
             renderCinemaSidebar();
             const cRoom = ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId);
@@ -3196,10 +3274,10 @@ window.saveSeatLayout = async function() {
                     if (rEl) window.selectRoomForBuilder(currentBuilderRoomId, rEl);
                 }, 100);
             }
-        } else { alert('Loi: ' + (res.message || 'Khong xac dinh')); }
+        } else { showToast('Loi: ' + (res.message || 'Khong xac dinh'), 'error'); }
     } catch(err) {
         console.error(err);
-        alert('Loi ket noi khi luu so do.');
+        showToast('Loi ket noi khi luu so do.', 'error');
     } finally {
         if (saveBtn) { saveBtn.innerHTML = oldHtml || '&#128190; Luu bo cuc'; saveBtn.disabled = false; }
     }
@@ -3527,7 +3605,9 @@ function renderQsSeatMap() {
             // Center aisle gap
             if (total > 4 && i === half) html += `<div style="width:18px;flex-shrink:0;"></div>`;
 
-            if (seat.SeatType === 'Couple') {
+            if (seat.SeatType === 'None') {
+                html += `<div style="width:33px;height:31px;visibility:hidden;pointer-events:none;flex-shrink:0;"></div>`;
+            } else if (seat.SeatType === 'Couple') {
                 const s1 = seat;
                 const s2 = rowSeats[i + 1];
                 if (s2 && s2.SeatType === 'Couple' && s2.SeatNumber === s1.SeatNumber + 1) {
@@ -4022,6 +4102,165 @@ async function deleteAdminReview(reviewId) {
     }
 }
 
+let REFUND_DATA = [];
+let refundSearchTimer = null;
+
+function formatAdminVnd(value) {
+    return Number(value || 0).toLocaleString('vi-VN') + 'đ';
+}
+
+function getRefundFilters() {
+    const params = new URLSearchParams();
+    const status = document.getElementById('refundStatusFilter')?.value;
+    const search = document.getElementById('refundSearchInput')?.value.trim();
+    if (status) params.set('status', status);
+    if (search) params.set('search', search);
+    return params.toString();
+}
+
+async function loadAdminRefunds() {
+    const body = document.getElementById('refundAdminBody');
+    if (body) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải yêu cầu hoàn tiền...</td></tr>';
+    }
+    try {
+        const query = getRefundFilters();
+        const res = await apiFetch('/api/admin/refunds' + (query ? '?' + query : ''));
+        if (!res.success) {
+            if (body) body.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">${adminEscape(res.message || 'Không thể tải yêu cầu hoàn tiền.')}</td></tr>`;
+            return;
+        }
+        REFUND_DATA = (res.data && res.data.refunds) || [];
+        renderAdminRefundSummary(res.data && res.data.summary);
+        renderAdminRefundTable();
+    } catch (err) {
+        console.error('[Admin] loadAdminRefunds:', err);
+        if (body) body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">Lỗi kết nối server.</td></tr>';
+    }
+}
+
+function debouncedLoadAdminRefunds() {
+    clearTimeout(refundSearchTimer);
+    refundSearchTimer = setTimeout(loadAdminRefunds, 350);
+}
+
+function renderAdminRefundSummary(summary = {}) {
+    const totalEl = document.getElementById('refundKpiTotal');
+    const pendingEl = document.getElementById('refundKpiPending');
+    const approvedEl = document.getElementById('refundKpiApproved');
+    const amountEl = document.getElementById('refundKpiPendingAmount');
+    if (totalEl) totalEl.textContent = summary.totalRefunds || 0;
+    if (pendingEl) pendingEl.textContent = summary.pendingRefunds || 0;
+    if (approvedEl) approvedEl.textContent = summary.approvedRefunds || 0;
+    if (amountEl) amountEl.textContent = formatAdminVnd(summary.pendingAmount || 0);
+}
+
+function renderRefundStatus(status) {
+    const labels = {
+        pending: 'Chờ xử lý',
+        approved: 'Đã duyệt',
+        completed: 'Đã hoàn tiền',
+        rejected: 'Đã từ chối'
+    };
+    const colors = {
+        pending: 'background:rgba(245,158,11,0.12);color:#d97706;',
+        approved: 'background:rgba(59,130,246,0.12);color:#2563eb;',
+        completed: 'background:rgba(16,185,129,0.12);color:#059669;',
+        rejected: 'background:rgba(239,68,68,0.12);color:#dc2626;'
+    };
+    return `<span class="status-badge" style="${colors[status] || ''}">${labels[status] || status}</span>`;
+}
+
+function renderAdminRefundTable() {
+    const body = document.getElementById('refundAdminBody');
+    if (!body) return;
+
+    if (!REFUND_DATA.length) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có yêu cầu hoàn tiền phù hợp.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = REFUND_DATA.map(item => {
+        const seat = `${item.SeatRow || ''}${item.SeatNumber || ''}`;
+        const showtime = item.StartTime ? formatAdminDate(item.StartTime) : '';
+        const actionButtons = item.Status === 'pending'
+            ? `
+                <button class="tb-icon-sm" title="Duyệt yêu cầu" onclick="updateAdminRefund(${item.RefundID}, 'approve')" style="color:#2563eb;">Duyệt</button>
+                <button class="tb-icon-sm danger" title="Từ chối" onclick="updateAdminRefund(${item.RefundID}, 'reject')" style="color:#dc2626;">Từ chối</button>
+              `
+            : item.Status === 'approved'
+                ? `<button class="tb-icon-sm" title="Đã chuyển khoản" onclick="updateAdminRefund(${item.RefundID}, 'complete')" style="color:#059669;">Đã chuyển</button>`
+                : '<span style="color:var(--text3);font-size:0.78rem;">Đã xử lý</span>';
+
+        return `
+            <tr class="txn-row">
+                <td>
+                    <div style="font-weight:800;color:var(--text);font-size:0.88rem;">#${item.TicketID} - ${adminEscape(item.MovieTitle)}</div>
+                    <div style="font-size:0.74rem;color:var(--text2);margin-top:4px;">${adminEscape(showtime)} • ${adminEscape(item.CinemaName || '')} • ${adminEscape(item.RoomName || '')} • Ghế ${adminEscape(seat)}</div>
+                </td>
+                <td>
+                    <div style="font-weight:700;color:var(--text);font-size:0.86rem;">${adminEscape(item.FullName)}</div>
+                    <div style="font-size:0.75rem;color:var(--text2);margin-top:4px;">${adminEscape(item.Email || '')}</div>
+                    <div style="font-size:0.75rem;color:var(--text2);margin-top:2px;">${adminEscape(item.Phone || '')}</div>
+                </td>
+                <td style="font-weight:900;color:var(--accent);">${formatAdminVnd(item.RefundAmount)}</td>
+                <td>
+                    <div style="font-weight:800;color:var(--text);">${adminEscape(item.BankName)}</div>
+                    <div style="font-size:0.8rem;color:var(--text2);margin-top:4px;">STK: ${adminEscape(item.BankAccountNumber)}</div>
+                    <div style="font-size:0.8rem;color:var(--text2);margin-top:2px;">Chủ TK: ${adminEscape(item.BankAccountHolder)}</div>
+                    ${item.RefundTransactionCode ? `<div style="font-size:0.75rem;color:#059669;margin-top:4px;">Mã GD: ${adminEscape(item.RefundTransactionCode)}</div>` : ''}
+                </td>
+                <td style="max-width:260px;">
+                    <div style="font-size:0.84rem;line-height:1.45;white-space:normal;color:var(--text);">${adminEscape(item.Reason || 'Không có lý do.')}</div>
+                    ${item.AdminNote ? `<div style="font-size:0.75rem;color:var(--text2);margin-top:6px;">Admin: ${adminEscape(item.AdminNote)}</div>` : ''}
+                </td>
+                <td>
+                    ${renderRefundStatus(item.Status)}
+                    <div style="font-size:0.72rem;color:var(--text2);margin-top:6px;">${formatAdminDate(item.RequestedAt)}</div>
+                </td>
+                <td><div class="table-actions" style="gap:6px;flex-wrap:wrap;">${actionButtons}</div></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function updateAdminRefund(refundId, action) {
+    const payload = { action };
+    if (action === 'approve') {
+        const note = prompt('Ghi chú duyệt hoàn tiền (có thể bỏ trống):');
+        if (note === null) return;
+        payload.adminNote = note;
+    } else if (action === 'reject') {
+        const note = prompt('Nhập lý do từ chối hoàn tiền:');
+        if (!note || !note.trim()) return;
+        payload.adminNote = note;
+    } else if (action === 'complete') {
+        const txCode = prompt('Nhập mã giao dịch sau khi đã chuyển khoản cho khách:');
+        if (!txCode || !txCode.trim()) return;
+        const note = prompt('Ghi chú hoàn tiền (có thể bỏ trống):');
+        if (note === null) return;
+        payload.refundTransactionCode = txCode;
+        payload.adminNote = note;
+    }
+
+    try {
+        const res = await apiFetch(`/api/admin/refunds/${refundId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadAdminRefunds();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        console.error('[Admin] updateAdminRefund:', err);
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
 let NEWS_DATA = [];
 
 function adminEscape(value) {
@@ -4041,8 +4280,9 @@ function formatAdminDate(value) {
 
 function toDateInputValue(value) {
     const date = value ? new Date(value) : new Date();
-    if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 10);
-    return date.toISOString().slice(0, 10);
+    const fallback = new Date();
+    const target = Number.isNaN(date.getTime()) ? fallback : date;
+    return `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, '0')}-${String(target.getDate()).padStart(2, '0')}`;
 }
 
 async function loadNewsArticles() {
