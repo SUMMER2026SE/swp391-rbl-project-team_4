@@ -399,25 +399,23 @@ exports.receivePaymentWebhook = async (req, res) => {
     console.log('[Payment Webhook] Received payment notification body:', JSON.stringify(req.body));
 
     // 1. Kiểm tra Token bảo mật (nếu có cấu hình trong .env)
-    // Lưu ý: SePay thực tế KHÔNG gửi token tùy chỉnh của chúng ta.
-    // Chỉ từ chối khi request CÓ gửi token nhưng token đó SAI (ngăn brute-force).
-    // Nếu không có token (như SePay thực tế), cho phép qua và log để monitoring.
-    const secretToken = process.env.PAYMENT_WEBHOOK_SECRET || 'dev_webhook_secret_token';
-    let reqToken = req.headers['x-api-key'] || req.query.token;
-    if (!reqToken && req.headers['authorization']) {
-      reqToken = req.headers['authorization']
-        .replace(/Bearer\s+/i, '')
-        .replace(/Apikey\s+/i, '')
-        .trim();
-    }
+    const secretToken = process.env.PAYMENT_WEBHOOK_SECRET;
+    if (secretToken) {
+      let reqToken = req.headers['x-api-key'] || req.query.token;
+      if (!reqToken && req.headers['authorization']) {
+        reqToken = req.headers['authorization']
+          .replace(/Bearer\s+/i, '')
+          .replace(/Apikey\s+/i, '')
+          .trim();
+      }
 
-    if (reqToken && reqToken !== secretToken) {
-      // Chỉ từ chối khi có token nhưng token SAI → bảo vệ khỏi brute-force
-      console.warn(`[Webhook Warning] Token không hợp lệ. Token nhận được: ${reqToken}`);
-      return res.status(401).json({ success: false, message: 'Unauthorized webhook request.' });
-    }
-    if (!reqToken) {
-      console.log('[Webhook] Không có token xác thực - chấp nhận (SePay thực tế không gửi token).');
+      if (reqToken !== secretToken) {
+        console.warn(`[Webhook Warning] Token không hợp lệ. Token nhận được: ${reqToken || 'Không có'}`);
+        return res.status(401).json({ success: false, message: 'Unauthorized webhook request.' });
+      }
+      console.log('[Webhook] Xác thực token thành công.');
+    } else {
+      console.log('[Webhook] Không cấu hình PAYMENT_WEBHOOK_SECRET - tự động bỏ qua xác thực token.');
     }
 
     // 2. Trích xuất thông tin giao dịch từ các định dạng khác nhau (SePay, PayOS hoặc Simulator)
