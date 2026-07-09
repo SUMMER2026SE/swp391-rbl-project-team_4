@@ -307,12 +307,13 @@ body { display: flex; }
 
 /* ──────────────── PAGES ──────────────── */
 .page { display: none; flex: 1; overflow: hidden; }
-.page.active { display: flex; flex-direction: column; }
+.page.active { display: flex; flex-direction: column; height: calc(100vh - var(--topbar-h)); overflow: hidden; }
 
 .content-scroll {
     flex: 1; overflow-y: auto;
     padding: 24px 28px 40px;
     display: flex; flex-direction: column; gap: 22px;
+    min-height: 0;
 }
 
 /* ──────────────── DASHBOARD HEADING ──────────────── */

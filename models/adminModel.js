@@ -4,23 +4,6 @@ let schemaReady = false;
 let genreSchemaReady = false;
 let reviewSchemaReady = false;
 
-function toSqlDateTimeText(value) {
-  if (!value) return null;
-  if (typeof value === 'string') {
-    const text = value.trim();
-    const localMatch = text.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(?::(\d{2}))?/);
-    if (localMatch && !/[zZ]$/.test(text)) {
-      return `${localMatch[1]} ${localMatch[2]}:${localMatch[3] || '00'}`;
-    }
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    throw new Error('Thời gian suất chiếu không hợp lệ.');
-  }
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
-}
-
 async function ensureMovieReviewsTable() {
   if (reviewSchemaReady) return;
   const pool = await getPool();
@@ -491,29 +474,15 @@ class AdminModel {
 
       // 1. Get currently booked seats for this room to avoid deleting/modifying booked seats.
       const bookedSeatsResult = await request.query(`
-        SELECT DISTINCT s.SeatID, s.SeatRow, s.SeatNumber
+        SELECT DISTINCT s.SeatID
         FROM Seats s
         JOIN Tickets t ON t.SeatID = s.SeatID
         JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
         WHERE s.RoomID = @roomId AND st.StartTime > GETUTCDATE()
-          AND t.Status IN ('confirmed', 'pending', 'refund_requested', 'used')
+          AND t.Status IN ('confirmed', 'pending', 'used')
       `);
 
-      const bookedSeats = bookedSeatsResult.recordset;
-      const bookedSeatIds = bookedSeats.map(r => r.SeatID);
-
-      // Validate: Check if any booked seat is missing from the incoming layout array OR changed to 'None'
-      const invalidSeats = [];
-      for (const bs of bookedSeats) {
-        const matchingInputSeat = seatsArray.find(s => s.SeatRow === bs.SeatRow && s.SeatNumber === bs.SeatNumber);
-        if (!matchingInputSeat || matchingInputSeat.SeatType === 'None') {
-          invalidSeats.push(`${bs.SeatRow}${bs.SeatNumber}`);
-        }
-      }
-
-      if (invalidSeats.length > 0) {
-        throw new Error(`Không thể xóa hoặc đặt thành ô trống các ghế đang có vé đặt: ${invalidSeats.join(', ')}`);
-      }
+      const bookedSeatIds = bookedSeatsResult.recordset.map(r => r.SeatID);
 
       // 2. Clear existing seats that are NOT currently booked in upcoming showtimes
       if (bookedSeatIds.length > 0) {
@@ -580,13 +549,12 @@ class AdminModel {
 
     let filters = 'WHERE 1=1';
     if (movieId) { request.input('movieId', sql.Int, parseInt(movieId)); filters += ' AND st.MovieID = @movieId'; }
-    if (date) { request.input('date', sql.Date, date); filters += ' AND CAST(st.StartTime AS DATE) = @date'; }
+    if (date) { request.input('date', sql.Date, date); filters += ' AND CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date'; }
     if (cinemaId) { request.input('cinemaId', sql.Int, parseInt(cinemaId)); filters += ' AND c.CinemaID = @cinemaId'; }
 
     const result = await request.query(`
       SELECT st.ShowtimeID, st.MovieID, st.RoomID,
-             CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
-             CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
+             st.StartTime, st.EndTime,
              COALESCE(st.Price, st.BasePrice, 0) AS Price,
              st.Status,
              m.Title AS MovieTitle,
@@ -597,7 +565,7 @@ class AdminModel {
       JOIN   Movies  m ON st.MovieID = m.MovieID
       JOIN   Rooms   r ON st.RoomID  = r.RoomID
       JOIN   Cinemas c ON r.CinemaID = c.CinemaID
-      LEFT   JOIN Tickets t ON t.ShowtimeID = st.ShowtimeID AND t.Status IN ('confirmed','pending','refund_requested')
+      LEFT   JOIN Tickets t ON t.ShowtimeID = st.ShowtimeID AND t.Status IN ('confirmed','pending')
       ${filters}
       GROUP BY st.ShowtimeID, st.MovieID, st.RoomID, st.StartTime, st.EndTime,
                COALESCE(st.Price, st.BasePrice, 0), st.Status,
@@ -609,18 +577,16 @@ class AdminModel {
 
   static async createShowtime(data) {
     const pool = await getPool();
-    const startTime = toSqlDateTimeText(data.startTime);
-    const endTime = toSqlDateTimeText(data.endTime);
 
     // Check conflict
     const conflictCheck = await pool.request()
       .input('roomId', sql.Int, data.roomId)
-      .input('startTime', sql.VarChar(19), startTime)
-      .input('endTime', sql.VarChar(19), endTime)
+      .input('startTime', sql.DateTime, data.startTime)
+      .input('endTime', sql.DateTime, data.endTime)
       .query(`
         SELECT ShowtimeID FROM Showtimes
         WHERE RoomID = @roomId AND Status = 'active'
-          AND NOT (CONVERT(datetime, @endTime, 120) <= StartTime OR CONVERT(datetime, @startTime, 120) >= EndTime)
+          AND NOT (@endTime <= StartTime OR @startTime >= EndTime)
       `);
 
     if (conflictCheck.recordset.length > 0) {
@@ -630,13 +596,13 @@ class AdminModel {
     const result = await pool.request()
       .input('movieId', sql.Int, data.movieId)
       .input('roomId', sql.Int, data.roomId)
-      .input('startTime', sql.VarChar(19), startTime)
-      .input('endTime', sql.VarChar(19), endTime)
+      .input('startTime', sql.DateTime, data.startTime)
+      .input('endTime', sql.DateTime, data.endTime)
       .input('price', sql.Decimal(18, 2), data.price)
       .query(`
         INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, BasePrice, Status)
         OUTPUT INSERTED.*
-        VALUES (@movieId, @roomId, CONVERT(datetime, @startTime, 120), CONVERT(datetime, @endTime, 120), @price, 'active')
+        VALUES (@movieId, @roomId, @startTime, @endTime, @price, 'active')
       `);
     return result.recordset[0];
   }
@@ -646,31 +612,25 @@ class AdminModel {
 
     const currentResult = await pool.request()
       .input('showtimeId', sql.Int, showtimeId)
-      .query(`
-        SELECT MovieID, RoomID, StartTime, EndTime,
-               CONVERT(varchar(19), StartTime, 120) AS StartTimeText,
-               CONVERT(varchar(19), EndTime, 120) AS EndTimeText
-        FROM Showtimes
-        WHERE ShowtimeID = @showtimeId
-      `);
+      .query('SELECT MovieID, RoomID, StartTime, EndTime FROM Showtimes WHERE ShowtimeID = @showtimeId');
 
     if (currentResult.recordset.length === 0) return null;
 
     const current = currentResult.recordset[0];
     const movieId = data.movieId != null ? parseInt(data.movieId) : current.MovieID;
     const roomId = data.roomId != null ? parseInt(data.roomId) : current.RoomID;
-    const startTime = toSqlDateTimeText(data.startTime || current.StartTimeText);
-    const endTime = toSqlDateTimeText(data.endTime || current.EndTimeText);
+    const startTime = data.startTime || current.StartTime;
+    const endTime = data.endTime || current.EndTime;
 
     const conflictCheck = await pool.request()
       .input('roomId', sql.Int, roomId)
-      .input('startTime', sql.VarChar(19), startTime)
-      .input('endTime', sql.VarChar(19), endTime)
+      .input('startTime', sql.DateTime, startTime)
+      .input('endTime', sql.DateTime, endTime)
       .input('showtimeId', sql.Int, showtimeId)
       .query(`
         SELECT ShowtimeID FROM Showtimes
         WHERE RoomID = @roomId AND Status = 'active' AND ShowtimeID != @showtimeId
-          AND NOT (CONVERT(datetime, @endTime, 120) <= StartTime OR CONVERT(datetime, @startTime, 120) >= EndTime)
+          AND NOT (@endTime <= StartTime OR @startTime >= EndTime)
       `);
 
     if (conflictCheck.recordset.length > 0) {
@@ -681,16 +641,16 @@ class AdminModel {
       .input('showtimeId', sql.Int, showtimeId)
       .input('movieId', sql.Int, movieId)
       .input('roomId', sql.Int, roomId)
-      .input('startTime', sql.VarChar(19), startTime)
-      .input('endTime', sql.VarChar(19), endTime)
+      .input('startTime', sql.DateTime, startTime)
+      .input('endTime', sql.DateTime, endTime)
       .input('price', sql.Decimal(18, 2), data.price)
       .input('status', sql.NVarChar, data.status)
       .query(`
         UPDATE Showtimes
         SET MovieID   = @movieId,
             RoomID    = @roomId,
-            StartTime = CONVERT(datetime, @startTime, 120),
-            EndTime   = CONVERT(datetime, @endTime, 120),
+            StartTime = @startTime,
+            EndTime   = @endTime,
             BasePrice = COALESCE(@price, BasePrice),
             Status    = COALESCE(@status, Status)
         OUTPUT INSERTED.*
@@ -706,7 +666,7 @@ class AdminModel {
       .input('showtimeId', sql.Int, showtimeId)
       .query(`
         SELECT COUNT(TicketID) AS cnt FROM Tickets
-        WHERE ShowtimeID = @showtimeId AND Status IN ('confirmed', 'used', 'pending', 'refund_requested')
+        WHERE ShowtimeID = @showtimeId AND Status IN ('confirmed', 'used')
       `);
     if (ticketCheck.recordset[0].cnt > 0) {
       throw new Error('Không thể xóa suất chiếu đã có vé được bán.');
@@ -848,31 +808,43 @@ class AdminModel {
 
 
   // --- F&B MANAGEMENT ---
-  static async getAllFnB() {
+  static async getFnBByNameAndCategory(name, category, excludeId = null) {
     const pool = await getPool();
-    const result = await pool.request().query(`
-      SELECT FnBID, Name, Description, Category, Price, Stock, ImageURL, IsAvailable, ComboID
-      FROM FoodBeverages
-      ORDER BY Category, Name
-    `);
-    return result.recordset;
+    const request = pool.request()
+      .input('name', sql.NVarChar, name)
+      .input('category', sql.NVarChar, category);
+    
+    let query = `
+      SELECT * FROM FoodBeverages 
+      WHERE LOWER(LTRIM(RTRIM(Name))) = LOWER(LTRIM(RTRIM(@name))) 
+        AND Category = @category
+    `;
+    
+    if (excludeId !== null) {
+      request.input('excludeId', sql.Int, excludeId);
+      query += " AND FnBID != @excludeId";
+    }
+    
+    const result = await request.query(query);
+    return result.recordset[0] || null;
   }
 
   static async getFnBById(id) {
     const pool = await getPool();
     const result = await pool.request()
       .input('id', sql.Int, id)
-      .query("SELECT * FROM FoodBeverages WHERE FnBID = @id");
+      .query('SELECT * FROM FoodBeverages WHERE FnBID = @id');
     return result.recordset[0] || null;
   }
 
-  static async getFnBByNameAndCategory(name, category) {
+  static async getAllFnB() {
     const pool = await getPool();
-    const result = await pool.request()
-      .input('name', sql.NVarChar, name)
-      .input('category', sql.NVarChar, category)
-      .query("SELECT * FROM FoodBeverages WHERE LOWER(Name) = LOWER(@name) AND Category = @category");
-    return result.recordset[0] || null;
+    const result = await pool.request().query(`
+      SELECT FnBID, Name, Description, Category, Price, Stock, ImageURL, IsAvailable
+      FROM FoodBeverages
+      ORDER BY Category, Name
+    `);
+    return result.recordset;
   }
 
   static async createFnB(data) {
@@ -1061,7 +1033,7 @@ class AdminModel {
       .query(`
         SELECT COUNT(*) AS cnt FROM Tickets t
         JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
-        WHERE st.RoomID = @id AND t.Status IN ('confirmed', 'pending', 'refund_requested')
+        WHERE st.RoomID = @id AND t.Status IN ('confirmed', 'pending')
       `);
     if (check.recordset[0].cnt > 0) {
       throw new Error('Không thể xóa phòng đang có vé bán.');
@@ -1152,7 +1124,7 @@ class AdminModel {
         FROM Tickets t2
         JOIN Showtimes st2 ON t2.ShowtimeID = st2.ShowtimeID
         ${cinemaId ? 'JOIN Rooms r2 ON st2.RoomID = r2.RoomID JOIN Cinemas c2 ON r2.CinemaID = c2.CinemaID' : ''}
-        WHERE t2.Status IN ('confirmed', 'used', 'pending', 'refund_requested')
+        WHERE t2.Status IN ('confirmed', 'used', 'pending')
         ${cinemaId ? 'AND c2.CinemaID = @cinemaId' : ''}
         ${dateFilter.replace(/t\.BookedAt/g, 't2.BookedAt')}
       );
@@ -1172,7 +1144,7 @@ class AdminModel {
           FROM Tickets t
           JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
           ${cinemaId ? 'JOIN Rooms r ON st.RoomID = r.RoomID JOIN Cinemas c ON r.CinemaID = c.CinemaID' : ''}
-          WHERE t.Status IN ('confirmed', 'used', 'pending', 'refund_requested')
+          WHERE t.Status IN ('confirmed', 'used', 'pending')
           ${cinemaId ? 'AND c.CinemaID = @cinemaId' : ''}
           ${dateFilter}
         ) AS TicketSales,
@@ -1293,7 +1265,7 @@ class AdminModel {
     if (period === 'today') {
       dateFilter = 'CAST(t.BookedAt AS DATE) = CAST(GETUTCDATE() AS DATE)';
     } else if (period === 'week') {
-      dateFilter = 'CAST(t.BookedAt AS DATE) >= CAST(DATEADD(day, -6, GETUTCDATE()) AS DATE)';
+      dateFilter = 't.BookedAt >= DATEADD(wk, DATEDIFF(wk, 0, GETUTCDATE()), 0)';
     } else if (period === 'month') {
       dateFilter = 'MONTH(t.BookedAt) = MONTH(GETUTCDATE()) AND YEAR(t.BookedAt) = YEAR(GETUTCDATE())';
     } else {
@@ -1340,7 +1312,7 @@ class AdminModel {
         FROM   Tickets t
         JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
         JOIN   Movies    m  ON st.MovieID   = m.MovieID
-        WHERE  t.Status IN ('confirmed', 'used', 'pending', 'refund_requested')
+        WHERE  t.Status IN ('confirmed', 'used', 'pending')
         GROUP BY m.MovieID, m.Title, m.PosterURL
         ORDER BY TodayRevenue DESC, TotalTickets DESC
       `);
