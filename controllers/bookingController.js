@@ -9,37 +9,120 @@ const { sendBookingEmail } = require('../services/emailService');
 const { emitPaymentConfirmed } = require('../sockets/socketManager');
 const os = require('os');
 
-async function sendBookingConfirmationEmails(ticketIds, source = 'booking') {
-  for (const ticketId of ticketIds) {
+function getVerificationUrl(req, ticketId) {
+  let host = req ? req.get('host') : 'localhost:9999';
+  const protocol = req && req.protocol ? req.protocol : 'http';
+
+  if (host.includes('localhost') || host.includes('127.0.0.1')) {
     try {
-      const ticketDetail = await BookingModel.getBookingDetail(ticketId);
-      if (!ticketDetail || !ticketDetail.UserEmail) {
-        console.warn(`[${source}] Skip booking email for ticket ${ticketId}: missing user email.`);
-        continue;
+      const interfaces = os.networkInterfaces();
+      let candidates = [];
+      for (const devName in interfaces) {
+        if (/virtual|vmware|vbox|vethernet|pseudo/i.test(devName)) continue;
+        
+        const iface = interfaces[devName];
+        for (let i = 0; i < iface.length; i++) {
+          const alias = iface[i];
+          if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+            const isWifi = /wi-fi|wifi|wireless|wlan/i.test(devName);
+            candidates.push({ devName, ip: alias.address, isWifi });
+          }
+        }
       }
-
-      const foodStr = Array.isArray(ticketDetail.foodItems) && ticketDetail.foodItems.length > 0
-        ? ticketDetail.foodItems.map(f => `${f.Quantity}x ${f.Name}`).join(', ')
-        : '';
-      const ticketCode = ticketDetail.QRCode || ticketId.toString();
-      const totalAmount = Number(ticketDetail.TotalAmount || 0).toLocaleString('vi-VN') + 'đ';
-
-      await sendBookingEmail(ticketDetail.UserEmail, {
-        customerName: ticketDetail.UserFullName || 'Khach hang',
-        movieTitle: ticketDetail.MovieTitle,
-        cinemaName: ticketDetail.CinemaName,
-        roomName: ticketDetail.RoomName,
-        showtime: new Date(ticketDetail.StartTime).toLocaleString('vi-VN'),
-        seats: `${ticketDetail.SeatRow}${ticketDetail.SeatNumber}`,
-        food: foodStr,
-        totalAmount,
-        ticketCode,
-        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ticketCode)}`
-      });
-    } catch (emailErr) {
-      console.error(`[${source}] Failed to send booking email for ticket ${ticketId}:`, emailErr.message);
+      candidates.sort((a, b) => (b.isWifi ? 1 : 0) - (a.isWifi ? 1 : 0));
+      if (candidates.length > 0) {
+        const ipAddress = candidates[0].ip;
+        const port = host.split(':')[1] || '9999';
+        host = `${ipAddress}:${port}`;
+      }
+    } catch (err) {
+      console.error('Error replacing localhost with LAN IP:', err.message);
     }
   }
+
+  return `${protocol}://${host}/verify-ticket.html?id=${ticketId}`;
+}
+
+async function sendGroupedBookingEmail(ticketIds, req) {
+  if (!ticketIds || ticketIds.length === 0) return;
+  
+  try {
+    const pool = await getPool();
+    
+    // 1. Lấy thông tin chi tiết của nhóm vé
+    const result = await pool.request().query(`
+      SELECT t.TicketID, t.Status, t.TicketPrice, t.TotalAmount, t.PaymentMethod,
+             m.Title AS MovieTitle, m.PosterURL, m.Duration,
+             CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
+             CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
+             r.RoomName,
+             c.CinemaName, c.Address,
+             s.SeatRow, s.SeatNumber, s.SeatType,
+             u.FullName AS CustomerName, u.Email AS UserEmail, u.Phone AS CustomerPhone
+      FROM   Tickets t
+      JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
+      JOIN   Movies    m  ON st.MovieID   = m.MovieID
+      JOIN   Rooms     r  ON st.RoomID    = r.RoomID
+      JOIN   Cinemas   c  ON r.CinemaID   = c.CinemaID
+      JOIN   Seats     s  ON t.SeatID     = s.SeatID
+      JOIN   Users     u  ON t.UserID     = u.UserID
+      WHERE  t.TicketID IN (${ticketIds.join(',')})
+    `);
+
+    if (result.recordset.length === 0) {
+      console.warn(`[sendGroupedBookingEmail] Không tìm thấy chi tiết vé cho IDs: ${ticketIds.join(', ')}`);
+      return;
+    }
+
+    const recordset = result.recordset;
+    const first = recordset[0];
+    const userEmail = first.UserEmail;
+    if (!userEmail) {
+      console.warn(`[sendGroupedBookingEmail] Người dùng không có email cho nhóm vé: ${ticketIds.join(', ')}`);
+      return;
+    }
+
+    const seatsList = recordset.map(r => `${r.SeatRow}${r.SeatNumber}`).sort();
+    const uniqueSeats = [...new Set(seatsList)];
+    const ticketSum = recordset.reduce((sum, item) => sum + parseFloat(item.TotalAmount || 0), 0);
+
+    // 2. Lấy thông tin đồ ăn F&B đi kèm
+    const fnbResult = await pool.request().query(`
+      SELECT fb.Name, tf.Quantity, fb.Price
+      FROM   Ticket_FnB tf
+      JOIN   FoodBeverages fb ON tf.FnBID = fb.FnBID
+      WHERE  tf.TicketID IN (${ticketIds.join(',')})
+    `);
+
+    const foodDisplayItems = fnbResult.recordset.map(item => `${item.Quantity}x ${item.Name}`);
+    const fnbSum = fnbResult.recordset.reduce((sum, item) => sum + (item.Quantity * parseFloat(item.Price || 0)), 0);
+    const grandTotal = ticketSum + fnbSum;
+
+    const bookingId = 'DC-' + ticketIds.sort((a, b) => a - b).join('-');
+    const verifyIdsStr = ticketIds.sort((a, b) => a - b).join(',');
+    const verifyUrl = getVerificationUrl(req, verifyIdsStr);
+
+    const bookingInfo = {
+      customerName: first.CustomerName || 'Khách hàng',
+      movieTitle: first.MovieTitle,
+      cinemaName: first.CinemaName,
+      roomName: first.RoomName,
+      showtime: new Date(first.StartTime).toLocaleString('vi-VN'),
+      seats: uniqueSeats.join(', '),
+      food: foodDisplayItems.join(', ') || '',
+      totalAmount: grandTotal.toLocaleString('vi-VN') + 'đ',
+      ticketCode: bookingId,
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`
+    };
+
+    await sendBookingEmail(userEmail, bookingInfo);
+  } catch (err) {
+    console.error(`[sendGroupedBookingEmail] ❌ Lỗi khi gửi email nhóm vé:`, err.message);
+  }
+}
+
+async function sendBookingConfirmationEmails(ticketIds, source = 'booking', req = null) {
+  await sendGroupedBookingEmail(ticketIds, req);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -352,7 +435,7 @@ exports.checkBookingStatus = async (req, res) => {
                     console.warn('[Polling] emitPaymentConfirmed failed (non-critical):', emitErr.message);
                   }
 
-                  await sendBookingConfirmationEmails(ids, 'Polling');
+                  await sendBookingConfirmationEmails(ids, 'Polling', req);
                 } catch (dbErr) {
                   if (dbErr.code === 'DUPLICATE_TRANSACTION') {
                     console.log(`[SePay Polling Check] Giao dịch trùng lặp đã được xử lý thành công trước đó.`);
@@ -534,36 +617,11 @@ exports.receivePaymentWebhook = async (req, res) => {
         console.warn('[Webhook] emitPaymentConfirmed failed (non-critical):', emitErr.message);
       }
 
-      // 📧 GỬI EMAIL XÁC NHẬN VÉ ĐIỆN TỬ
+      // 📧 GỬI EMAIL XÁC NHẬN VÉ ĐIỆN TỬ (GROUPED)
       try {
-        for (const ticketId of ticketIds) {
-          const ticketDetail = await BookingModel.getBookingDetail(ticketId);
-          if (ticketDetail && ticketDetail.UserEmail) {
-
-            // Format food items if any
-            let foodStr = '';
-            if (ticketDetail.foodItems && ticketDetail.foodItems.length > 0) {
-              foodStr = ticketDetail.foodItems.map(f => `${f.Quantity}x ${f.Name}`).join(', ');
-            }
-
-            const bookingInfo = {
-              customerName: ticketDetail.UserFullName || 'Khách hàng',
-              movieTitle: ticketDetail.MovieTitle,
-              cinemaName: ticketDetail.CinemaName,
-              roomName: ticketDetail.RoomName,
-              showtime: new Date(ticketDetail.StartTime).toLocaleString('vi-VN'),
-              seats: `${ticketDetail.SeatRow}${ticketDetail.SeatNumber}`,
-              food: foodStr,
-              totalAmount: ticketDetail.TotalAmount.toLocaleString('vi-VN') + 'đ',
-              ticketCode: ticketDetail.QRCode || ticketId.toString(),
-              qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticketDetail.QRCode}`
-            };
-
-            await sendBookingEmail(ticketDetail.UserEmail, bookingInfo);
-          }
-        }
+        await sendGroupedBookingEmail(ticketIds, req);
       } catch (emailErr) {
-        console.error('[Webhook] Lỗi khi gửi email vé:', emailErr.message);
+        console.error('[Webhook] Lỗi khi gửi email nhóm vé:', emailErr.message);
       }
 
 

@@ -231,7 +231,7 @@ class StaffModel {
 
     const result = await request.query(`
       SELECT t.TicketID, t.Status, t.BookedAt, t.CheckedAt,
-             u.FullName AS CustomerName, u.Phone AS CustomerPhone,
+             u.FullName AS CustomerName, u.Phone AS CustomerPhone, u.Email AS CustomerEmail,
              m.Title AS MovieTitle,
              st.StartTime, st.EndTime,
              r.RoomName, r.RoomType,

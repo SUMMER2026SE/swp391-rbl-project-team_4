@@ -4,6 +4,7 @@
 // ============================================================
 const StaffModel = require('../models/staffModel');
 const MovieModel = require('../models/movieModel'); // Reuse getSeatsByShowtime
+const { sendTicketCheckInEmail } = require('../services/emailService');
 
 // ─────────────────────────────────────────────────────────────
 //  GET /api/staff/showtimes/today
@@ -98,6 +99,26 @@ exports.checkTicket = async (req, res) => {
 
     // --- Đánh dấu vé đã dùng ---
     await StaffModel.markTicketAsUsed(ticket.TicketID);
+
+    // --- Gửi email check-in thành công (bất đồng bộ) ---
+    if (ticket.CustomerEmail) {
+      const showtimeStr = new Date(ticket.StartTime).toLocaleString('vi-VN');
+      const seatsStr = `${ticket.SeatRow}${ticket.SeatNumber}`;
+      const checkedAtStr = new Date().toLocaleString('vi-VN');
+      
+      sendTicketCheckInEmail(ticket.CustomerEmail, {
+        customerName: ticket.CustomerName || 'Khách hàng',
+        movieTitle: ticket.MovieTitle,
+        cinemaName: ticket.CinemaName,
+        roomName: ticket.RoomName,
+        showtime: showtimeStr,
+        seats: seatsStr,
+        checkedAt: checkedAtStr,
+        bookingId: `DC-${ticket.TicketID}`
+      }).catch(emailErr => {
+        console.error('[staffController] Lỗi gửi email check-in:', emailErr.message);
+      });
+    }
 
     res.json({
       success: true,
