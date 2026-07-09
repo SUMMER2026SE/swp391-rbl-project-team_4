@@ -794,10 +794,7 @@ class AdminModel {
       `);
     return result.recordset;
   }
-<<<<<<< HEAD
-=======
 
->>>>>>> d173bd87361c61b494e5f8013436577d9dd450e3
   static async getLiveRoomsStatus(cinemaId) {
     const pool = await getPool();
     let query = `
@@ -833,10 +830,7 @@ class AdminModel {
     const result = await request.query(query);
     return result.recordset;
   }
-<<<<<<< HEAD
-=======
 
->>>>>>> d173bd87361c61b494e5f8013436577d9dd450e3
   // --- PROMOTIONS MANAGEMENT ---
   static async getAllPromotions() {
     const pool = await getPool();
@@ -929,10 +923,7 @@ class AdminModel {
       `);
     return result.recordset.length > 0 ? result.recordset[0] : null;
   }
-<<<<<<< HEAD
-=======
 
->>>>>>> d173bd87361c61b494e5f8013436577d9dd450e3
 }
 
 module.exports = AdminModel;

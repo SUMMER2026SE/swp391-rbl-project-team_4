@@ -25,16 +25,16 @@
             </a>
             <nav class="nav-links">
                 <div class="dropdown">
-                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
+                    <a href="movies.html" id="nav-phim"><span data-i18n="nav.movies">Movies</span> <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav.nowShowing">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav.comingSoon">Sắp chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
-                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" data-i18n="nav.cinemas">Rạp</a>
+                <a href="promotions.html" id="nav-promo" data-i18n="nav.promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" data-i18n="nav.news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" data-i18n="nav.prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -42,7 +42,7 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                    <input type="text" placeholder="Tìm kiếm phim..." data-i18n-placeholder="auto.ph_kfbyxb"   class="search-input" id="searchInput" >
                 </div>
                 <a href="profile.html" class="nav-user-icon" title="Hồ sơ" class="active">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -50,7 +50,7 @@
                         <circle cx="12" cy="7" r="4" />
                     </svg>
                 </a>
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav.login" data-i18n="nav.login">Đăng Nhập</a>
             </div>
         </div>
     </header>
@@ -74,7 +74,7 @@
                     </button>
                     <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(event)">
                 </div>
-                <div class="user-name" id="displayFullName">Tuấn Anh</div>
+                <div class="user-name" id="displayFullName"><span data-i18n="profile.puv6kj">Tuấn Anh</span></div>
                 <div class="user-email" id="displayEmail">tuananh@dcinema.vn</div>
                 <div class="member-badge" id="sidebarTierBadge">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -131,7 +131,7 @@
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                             MEMBER
                         </div>
-                        <div class="mc-name" id="mcName">Nguyễn Tuấn Anh</div>
+                        <div class="mc-name" id="mcName"><span data-i18n="profile.s5987y">Nguyễn Tuấn Anh</span></div>
                         <div class="mc-since">Member since Jan 2022</div>
                     </div>
                     <div class="mc-right">
@@ -184,7 +184,7 @@
                         </div>
                         <div class="form-group span-2">
                             <label class="form-label">Address</label>
-                            <textarea class="form-control" rows="2" id="inputAddress" placeholder="Enter your address">Quận 1, TP. Hồ Chí Minh, Việt Nam</textarea>
+                            <textarea class="form-control" rows="2" id="inputAddress" placeholder="Enter your address"><span data-i18n="auto.hl139p"><span data-i18n="profile.ic73ts">Quận 1, TP. Hồ Chí Minh, Việt Nam</span></span></textarea>
                         </div>
                     </div>
 
@@ -310,7 +310,7 @@
                     <span class="logo-d">D</span>
                     <span class="logo-text">D-CINEMA</span>
                 </a>
-                <p>Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
+                <p data-i18n="footer.desc">Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
                 <div class="footer-socials">
                     <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2">
@@ -327,22 +327,22 @@
                 </div>
             </div>
             <div class="footer-col">
-                <h4>DỊCH VỤ</h4>
-                <a href="#">Về chúng tôi</a>
-                <a href="#">Tuyển dụng</a>
-                <a href="#">Liên hệ</a>
+                <h4 data-i18n="footer.services">DỊCH VỤ</h4>
+                <a href="#" data-i18n="footer.about">Về chúng tôi</a>
+                <a href="#" data-i18n="footer.career">Tuyển dụng</a>
+                <a href="#" data-i18n="footer.contact">Liên hệ</a>
             </div>
             <div class="footer-col">
-                <h4>PHÁP LÝ</h4>
-                <a href="#">Điều khoản sử dụng</a>
-                <a href="#">Chính sách bảo mật</a>
-                <a href="#">Chính sách thanh toán</a>
+                <h4 data-i18n="footer.legal">PHÁP LÝ</h4>
+                <a href="#" data-i18n="footer.terms">Điều khoản sử dụng</a>
+                <a href="#" data-i18n="footer.privacy">Chính sách bảo mật</a>
+                <a href="#" data-i18n="footer.payment">Chính sách thanh toán</a>
             </div>
             <div class="footer-col">
-                <h4>ĐĂNG KÝ NHẬN TIN</h4>
-                <p style="margin-bottom: 5px; font-size: 0.8rem;">Nhận thông tin về phim mới và khuyến mãi.</p>
+                <h4 data-i18n="footer.newsletter">ĐĂNG KÝ NHẬN TIN</h4>
+                <p style="margin-bottom: 5px; font-size: 0.8rem;" data-i18n="footer.newsDesc">Nhận thông tin về phim mới và khuyến mãi.</p>
                 <form class="newsletter-form" onsubmit="event.preventDefault()">
-                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
+                    <input type="email" placeholder="Email của bạn"   class="newsletter-input" required >
                     <button type="submit" class="newsletter-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">

@@ -126,3 +126,6 @@ uploads/*
 !uploads/.gitkeep
 .env
 config/db.js
+config/cinemamanagements.sql
+config/dbscript.sql
+HUONG_DAN_CHAY.md

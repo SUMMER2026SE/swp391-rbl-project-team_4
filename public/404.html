@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Không tìm thấy trang | D-CINEMA</title>
+    <title><span data-i18n="auto.gm7a8p">404 - Không tìm thấy trang | D-CINEMA</span></title>
     <meta name="description" content="Trang bạn đang tìm kiếm không tồn tại.">
     <link rel="stylesheet" href="css/shared-layout.css">
     <style>
@@ -75,19 +75,19 @@
             </a>
             <nav class="nav-links">
                 <div class="dropdown">
-                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
+                    <a href="movies.html" id="nav-phim"><span data-i18n="nav.movies">Movies</span> <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav.nowShowing">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav.comingSoon">Sắp chiếu</a>
                     </div>
                 </div>
                 <div class="nav-dropdown">
-                    <a href="booking.html" id="nav-rap">Rạp <span style="font-size: 0.8em;">▼</span></a>
+                    <a href="booking.html" id="nav-rap"><span data-i18n="nav.cinemas">Rạp</span> <span style="font-size: 0.8em;">▼</span></a>
                     <div class="nav-dropdown-content" id="cinemaDropdown">
                         <!-- Populated by JS -->
                     </div>
                 </div>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
+                <a href="promotions.html" id="nav-promo" data-i18n="nav.promotions">Promotions</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -95,7 +95,7 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                    <input type="text" placeholder="Tìm kiếm phim..." data-i18n-placeholder="auto.ph_kfbyxb"  class="search-input" id="searchInput" >
                 </div>
                 <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -103,16 +103,16 @@
                         <circle cx="12" cy="7" r="4" />
                     </svg>
                 </a>
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav.login" data-i18n="nav.login">Đăng Nhập</a>
             </div>
         </div>
     </header>
 
     <div class="error-container">
         <div class="error-code">404</div>
-        <h1 class="error-title">Rất tiếc! Lạc đường rồi.</h1>
-        <p class="error-msg">Trang bạn đang tìm kiếm có thể đã bị xóa, đổi tên hoặc tạm thời không thể truy cập. Hãy quay lại trang chủ để tiếp tục trải nghiệm cùng D-CINEMA nhé.</p>
-        <a href="index.html" class="btn-home">Trở về Trang chủ</a>
+        <h1 class="error-title"><span data-i18n="auto.x3x3mi">Rất tiếc! Lạc đường rồi.</span></h1>
+        <p class="error-msg"><span data-i18n="auto.4cyujo">Trang bạn đang tìm kiếm có thể đã bị xóa, đổi tên hoặc tạm thời không thể truy cập. Hãy quay lại trang chủ để tiếp tục trải nghiệm cùng D-CINEMA nhé.</span></p>
+        <a href="index.html" class="btn-home"><span data-i18n="auto.ui89y5">Trở về Trang chủ</span></a>
     </div>
 
     <!-- Footer -->
@@ -126,9 +126,9 @@
                 <p style="color: var(--text2); font-size: 0.9rem;">&copy; 2024 D-CINEMA. All rights reserved.</p>
             </div>
             <div style="display: flex; gap: 20px;">
-                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Về chúng tôi</a>
-                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Điều khoản</a>
-                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Bảo mật</a>
+                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;" data-i18n="footer.about">Về chúng tôi</a>
+                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;"><span data-i18n="auto.g5x3eb">Điều khoản</span></a>
+                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;"><span data-i18n="auto.sx1sp1">Bảo mật</span></a>
             </div>
         </div>
     </footer>

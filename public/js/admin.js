@@ -104,6 +104,95 @@ async function exportPdf() {
     }
 }
 
+async function exportCsv() {
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    if (!token) return alert('Vui lÃ²ng Ä‘Äƒng nháº­p!');
+
+    const params = new URLSearchParams();
+    if (dashCinemaId) params.set('cinemaId', dashCinemaId);
+    if (dashPeriod) params.set('period', dashPeriod);
+    const qs = params.toString() ? '?' + params.toString() : '';
+
+    try {
+        const res = await fetch('/api/admin/stats/export-csv' + qs, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            return alert(errData.message || 'KhÃ´ng thá»ƒ xuáº¥t file CSV.');
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'D-Cinema-Report.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error('Error downloading CSV:', err);
+        alert('Lá»—i káº¿t ná»‘i khi xuáº¥t CSV!');
+    }
+}
+
+async function exportExcel() {
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    if (!token) return alert('Vui lÃ²ng Ä‘Äƒng nháº­p!');
+
+    const params = new URLSearchParams();
+    if (dashCinemaId) params.set('cinemaId', dashCinemaId);
+    if (dashPeriod) params.set('period', dashPeriod);
+    const qs = params.toString() ? '?' + params.toString() : '';
+
+    try {
+        const res = await fetch('/api/admin/stats/export-excel' + qs, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            return alert(errData.message || 'KhÃ´ng thá»ƒ xuáº¥t file Excel.');
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'D-Cinema-Report.xls';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error('Error downloading Excel:', err);
+        alert('Lá»—i káº¿t ná»‘i khi xuáº¥t Excel!');
+    }
+}
+
+function ensureReportExportButtons() {
+    const actions = document.querySelector('.heading-actions');
+    if (!actions || document.getElementById('btnExportCsv')) return;
+
+    const csvBtn = document.createElement('button');
+    csvBtn.className = 'btn-export';
+    csvBtn.id = 'btnExportCsv';
+    csvBtn.type = 'button';
+    csvBtn.onclick = exportCsv;
+    csvBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> CSV';
+
+    const excelBtn = document.createElement('button');
+    excelBtn.className = 'btn-export';
+    excelBtn.id = 'btnExportExcel';
+    excelBtn.type = 'button';
+    excelBtn.onclick = exportExcel;
+    excelBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel';
+
+    actions.appendChild(csvBtn);
+    actions.appendChild(excelBtn);
+}
 
 async function fetchLiveRoomsStatus() {
     try {
@@ -127,7 +216,7 @@ function renderLiveRooms(rooms) {
     if (!grid) return;
 
     if (!rooms || rooms.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text3);">Không có phòng chiếu.</p>';
+        grid.innerHTML = '<p style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text3);"><span data-i18n="admin.no_rooms">Không có phòng chiếu.</span></p>';
         return;
     }
 
@@ -170,7 +259,7 @@ function renderLiveRooms(rooms) {
                     <div class="lr-name">${r.RoomName}</div>
                     <div class="lr-status-dot ${statusClass}"></div>
                 </div>
-                <div class="lr-movie">${status === 'empty' ? 'Chưa có lịch' : (r.MovieTitle || 'Unknown')}</div>
+                <div class="lr-movie">${status === 'empty' ? '<span data-i18n="admin.no_schedule">Chưa có lịch</span>' : (r.MovieTitle || 'Unknown')}</div>
                 ${status !== 'empty' ? `
                     <div class="lr-progress-bg">
                         <div class="lr-progress-fill ${statusClass}" style="width: ${progressPercent}%"></div>
@@ -216,9 +305,9 @@ function renderCinemaList(cinemas) {
     // Build the "all" item + all cinema items as HTML
     const allActiveClass = (!dashCinemaId) ? ' active' : '';
     let html = `
-        <div class="fdm-item${allActiveClass}" data-id="" onclick="selectCinema('', 'Tất cả cụm rạp', this)">
+        <div class="fdm-item${allActiveClass}" data-id="" onclick="selectCinema('', '<span data-i18n="admin.all_cinemas">Tất cả cụm rạp</span>', this)">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Tất cả cụm rạp
+            <span data-i18n="admin.all_cinemas">Tất cả cụm rạp</span>
         </div>
     `;
 
@@ -324,7 +413,7 @@ function renderTopMovies(movies) {
             </div>
             <div class="rank-revenue">
                 <div class="rank-amount">${formatCurrency(m.TodayRevenue)} đ</div>
-                <div class="rank-today">HÔM NAY</div>
+                <div class="rank-today"><span data-i18n="admin.today_caps">HÔM NAY</span></div>
             </div>
         </div>
     `).join('');
@@ -423,6 +512,7 @@ function buildChart(chartData) {
 
     if (chartData) {
         labels = chartData.labels || [];
+
         ticketData = chartData.ticketData || [];
         fnbData = chartData.fnbData || [];
     }
@@ -483,7 +573,7 @@ function buildChart(chartData) {
                     grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
                     ticks: {
                         color: '#9ca3af', font: { size: 11 },
-                        callback: v => (v / 1000000) + ' Tr'
+                        callback: v => parseFloat((v / 1000000).toFixed(1)) + ' Tr'
                     },
                     border: { display: false }
                 }
@@ -497,6 +587,132 @@ function buildChart(chartData) {
 ══════════════════════════ */
 let MOVIE_DATA = [];
 let filteredMovies = [];
+let GENRE_DATA = [];
+
+async function loadGenres() {
+    try {
+        const res = await apiFetch('/api/admin/genres');
+        if (res.success) {
+            GENRE_DATA = res.data || [];
+            renderGenreAdminList();
+            renderMovieGenreCheckboxes();
+        }
+    } catch (err) {
+        console.error('[Admin] loadGenres:', err);
+    }
+}
+
+function renderGenreAdminList() {
+    const wrap = document.getElementById('genreAdminList');
+    if (!wrap) return;
+    if (!GENRE_DATA.length) {
+        wrap.innerHTML = '<span style="color:var(--text2);font-size:0.85rem;">Chưa có thể loại nào.</span>';
+        return;
+    }
+    wrap.innerHTML = GENRE_DATA.map(g => `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:${g.IsActive ? 'var(--surface)' : '#f3f4f6'};">
+            <span style="font-weight:700;color:${g.IsActive ? 'var(--text)' : 'var(--text3)'};">${g.GenreName}</span>
+            <span style="font-size:0.75rem;color:var(--text2);">${g.MovieCount || 0} phim</span>
+            <button class="tb-icon-sm" title="Sửa" onclick="editGenre(${g.GenreID})">✎</button>
+            <button class="tb-icon-sm" title="${g.IsActive ? 'Ẩn' : 'Hiện'}" onclick="toggleGenre(${g.GenreID})">${g.IsActive ? 'Ẩn' : 'Hiện'}</button>
+            <button class="tb-icon-sm danger" title="Xóa" onclick="deleteGenre(${g.GenreID})">×</button>
+        </div>
+    `).join('');
+}
+
+function renderMovieGenreCheckboxes(selectedIds = []) {
+    const wrap = document.getElementById('movieGenreCheckboxes');
+    if (!wrap) return;
+    const activeGenres = GENRE_DATA.filter(g => g.IsActive);
+    if (!activeGenres.length) {
+        wrap.innerHTML = '<span style="color:var(--text2);font-size:0.85rem;">Chưa có thể loại. Hãy thêm ở trang Phim.</span>';
+        return;
+    }
+    const selectedSet = new Set(selectedIds.map(id => parseInt(id, 10)));
+    wrap.innerHTML = activeGenres.map(g => `
+        <label style="display:flex;align-items:center;gap:8px;color:var(--text);font-size:0.9rem;cursor:pointer;">
+            <input type="checkbox" class="movie-genre-checkbox" value="${g.GenreID}" ${selectedSet.has(g.GenreID) ? 'checked' : ''} style="accent-color:var(--accent);">
+            ${g.GenreName}
+        </label>
+    `).join('');
+}
+
+function getSelectedMovieGenreIds() {
+    return Array.from(document.querySelectorAll('.movie-genre-checkbox:checked')).map(input => input.value);
+}
+
+async function saveGenre() {
+    const input = document.getElementById('genreNameInput');
+    const name = input ? input.value.trim() : '';
+    if (!name) return alert('Vui lòng nhập tên thể loại.');
+    try {
+        const res = await apiFetch('/api/admin/genres', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ genreName: name })
+        });
+        if (res.success) {
+            input.value = '';
+            await loadGenres();
+            await loadMovies();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        alert('Lỗi khi lưu thể loại.');
+    }
+}
+
+async function editGenre(id) {
+    const genre = GENRE_DATA.find(g => g.GenreID === id);
+    if (!genre) return;
+    const name = prompt('Nhập tên thể loại mới:', genre.GenreName);
+    if (!name || !name.trim()) return;
+    try {
+        const res = await apiFetch(`/api/admin/genres/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ genreName: name.trim() })
+        });
+        if (res.success) {
+            await loadGenres();
+            await loadMovies();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        alert('Lỗi khi cập nhật thể loại.');
+    }
+}
+
+async function toggleGenre(id) {
+    try {
+        const res = await apiFetch(`/api/admin/genres/${id}/toggle`, { method: 'PATCH' });
+        if (res.success) {
+            await loadGenres();
+            await loadMovies();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        alert('Lỗi khi đổi trạng thái thể loại.');
+    }
+}
+
+async function deleteGenre(id) {
+    if (!confirm('Bạn có chắc muốn xóa thể loại này không? Nếu đang được dùng, hệ thống sẽ chuyển sang ẩn.')) return;
+    try {
+        const res = await apiFetch(`/api/admin/genres/${id}`, { method: 'DELETE' });
+        if (res.success) {
+            await loadGenres();
+            await loadMovies();
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (err) {
+        alert('Lỗi khi xóa thể loại.');
+    }
+}
 
 async function loadMovies() {
     try {
@@ -518,9 +734,9 @@ function renderMovieTable() {
     const body = document.getElementById('movieBody');
     if (!body) return;
     const statusMap = {
-        'Now Showing': 'Đang chiếu',
-        'Coming Soon': 'Sắp chiếu',
-        'deleted': 'Đã xóa'
+        'Now Showing': `<span data-i18n="admin.now_showing">Đang chiếu</span>`,
+        'Coming Soon': `<span data-i18n="admin.coming_soon">Sắp chiếu</span>`,
+        'deleted': `<span data-i18n="admin.deleted">Đã xóa</span>`
     };
     body.innerHTML = filteredMovies.map(m => `
         <tr class="txn-row">
@@ -531,8 +747,8 @@ function renderMovieTable() {
             </td>
             <td>
                 <div class="m-title-block">
-                    <div class="m-title">${m.Title}</div>
-                    <div class="m-director">ĐD. ${m.Director || 'Đang cập nhật'}</div>
+                    <div class="m-title" data-i18n="movies.title_${m.MovieID}">${m.Title}</div>
+                    <div class="m-director"><span data-i18n="admin.dir">ĐD.</span> ${m.Director || '<span data-i18n="admin.updating">Đang cập nhật</span>'}</div>
                 </div>
             </td>
             <td>
@@ -540,9 +756,10 @@ function renderMovieTable() {
             </td>
             <td>
                 <div class="m-genres">
-                    <span class="genre-tag">${m.AgeRating || 'G'}</span>
+                    ${(m.Genres || 'Chưa gán').split(',').map(g => `<span class="genre-tag">${g.trim()}</span>`).join('')}
                 </div>
             </td>
+            <td><span class="genre-tag">${m.AgeRating || 'Chưa gán'}</span></td>
             <td><div class="m-duration">${m.Duration} phút</div></td>
             <td>
                 <div class="table-actions">
@@ -578,7 +795,7 @@ function editMovie(id) {
     const movie = MOVIE_DATA.find(m => m.MovieID === id);
     if (!movie) return;
     editingMovieId = id;
-    document.querySelector('#addMovieModal .panel-header h2').textContent = 'SỬA PHIM';
+    document.querySelector('#addMovieModal .panel-header h2').innerHTML = '<span data-i18n="admin.edit_movie">SỬA PHIM</span>';
     document.getElementById('movieTitle').value = movie.Title || '';
     document.getElementById('movieDescription').value = movie.Description || '';
     document.getElementById('movieDirector').value = movie.Director || '';
@@ -591,14 +808,14 @@ function editMovie(id) {
         preview.src = movie.PosterURL;
         preview.style.display = 'block';
     }
-    document.querySelector('.btn-panel-save').textContent = 'Cập nhật Phim';
+    document.querySelector('.btn-panel-save').innerHTML = '<span data-i18n="admin.update_movie">Cập nhật Movies</span>';
     openAddMovieModal();
 }
 
 function openAddMovieModal() {
     if (!editingMovieId) {
-        document.querySelector('#addMovieModal .panel-header h2').textContent = 'THÊM PHIM MỚI';
-        document.querySelector('.btn-panel-save').textContent = 'Lưu Phim';
+        document.querySelector('#addMovieModal .panel-header h2').innerHTML = '<span data-i18n="admin.add_new_movie">THÊM PHIM MỚI</span>';
+        document.querySelector('.btn-panel-save').innerHTML = '<span data-i18n="admin.save_movie">Lưu Phim</span>';
         document.getElementById('addMovieForm').reset();
         document.getElementById('posterPreview').style.display = 'none';
     }
@@ -616,7 +833,7 @@ function closeAddMovieModal() {
 function filterMovies(filter, btn) {
     document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-    
+
     if (filter === 'Tất cả') {
         filteredMovies = [...MOVIE_DATA];
     } else {
@@ -738,7 +955,7 @@ function navigate(page, btn) {
     if (page === 'promotions') {
         loadPromotions();
     }
-    
+
     if (page === 'pricing' || page === 'settings') {
         loadSettings();
     }
@@ -806,15 +1023,15 @@ function renderFnB() {
                 <img src="${masterCombo.ImageURL || 'images/default_poster.svg'}" alt="${masterCombo.Name}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
             </div>
             <div class="fcb-info">
-                <span class="fcb-badge">NỔI BẬT</span>
-                <h3>${masterCombo.Name}</h3>
+                <span class="fcb-badge" data-i18n="admin.featured">NỔI BẬT</span>
+                <h3><span data-i18n="fnb.${getFnbKey(masterCombo.Name)}">${masterCombo.Name}</span></h3>
                 <div class="fcb-details">
                     <div class="fcb-price-block">
-                        <span class="fcb-label">GIÁ</span>
+                        <span class="fcb-label"><span data-i18n="admin.price_caps">GIÁ</span></span>
                         <span class="fcb-price">${masterCombo.Price.toLocaleString()}đ</span>
                     </div>
                     <div class="fcb-stock-block">
-                        <span class="fcb-label">TỒN KHO</span>
+                        <span class="fcb-label"><span data-i18n="admin.stock_caps">TỒN KHO</span></span>
                         <div class="fcb-progress-wrap">
                             <span class="fcb-stock-val">${masterCombo.Stock}</span>
                         </div>
@@ -827,7 +1044,7 @@ function renderFnB() {
 
     otherItems.forEach(item => {
         let stockClass = 'moderate';
-        let stockLabel = 'Trung bình';
+        let stockLabel = `<span data-i18n="admin.stock_med">Trung bình</span>`;
         if (item.Stock > 500) { stockClass = 'high'; stockLabel = 'Dồi dào'; }
         else if (item.Stock < 50) { stockClass = 'danger'; stockLabel = 'SẮP HẾT HÀNG'; }
 
@@ -839,13 +1056,13 @@ function renderFnB() {
                 </div>
                 <div class="fc-sm-info-block">
                     <div class="fc-sm-top" style="padding-top:10px;">
-                        <h4>${item.Name}</h4>
+                        <h4><span data-i18n="fnb.${getFnbKey(item.Name)}">${item.Name}</span></h4>
                         <span class="fc-sm-price text-red">${item.Price.toLocaleString()}đ</span>
                     </div>
                     <div class="fc-sm-bottom">
                         <div class="fc-sm-inv">
-                            <span class="fc-sm-label">TỒN KHO</span>
-                            <span class="fc-sm-val">${item.Stock} đơn vị</span>
+                            <span class="fc-sm-label"><span data-i18n="admin.stock_caps">TỒN KHO</span></span>
+                            <span class="fc-sm-val">${item.Stock} <span data-i18n="admin.units">đơn vị</span></span>
                         </div>
                         <span class="inv-badge ${stockClass}">${stockLabel}</span>
                     </div>
@@ -920,7 +1137,7 @@ async function loadFnBStats() {
             const data = res.data;
             document.getElementById('fnbKpiRevenue').textContent = data.TotalRevenue ? data.TotalRevenue.toLocaleString('vi-VN') + ' đ' : '0 đ';
             document.getElementById('fnbKpiVouchers').textContent = data.TotalVouchersUsed ? data.TotalVouchersUsed.toLocaleString() : '0';
-            document.getElementById('fnbKpiLowStock').textContent = data.LowStockItems + ' Mặt hàng';
+            document.getElementById('fnbKpiLowStock').textContent = data.LowStockItems;
             document.getElementById('fnbKpiTotal').textContent = data.TotalItems;
         }
     } catch (err) {
@@ -1080,7 +1297,7 @@ function renderVouchers() {
         };
 
         const activeClass = item.IsActive ? 'high' : 'danger';
-        const activeLabel = item.IsActive ? 'HOẠT ĐỘNG' : 'TẠM KHÓA';
+        const activeLabel = item.IsActive ? '<span data-i18n="admin.active_caps">HOẠT ĐỘNG</span>' : '<span data-i18n="admin.suspended_caps">TẠM KHÓA</span>';
 
         const todayStr = new Date().toISOString().split('T')[0];
         const endStr = new Date(item.EndDate).toISOString().split('T')[0];
@@ -1278,10 +1495,10 @@ function updateStaffKPIs() {
 
     const kpiCards = document.querySelectorAll('.staff-kpis .skpi-desc');
     if (kpiCards.length >= 4) {
-        kpiCards[0].textContent = `${adminCount} người được ủy quyền`;
-        kpiCards[1].textContent = `${managerCount} người được ủy quyền`;
-        kpiCards[2].textContent = `0 người được ủy quyền`; 
-        kpiCards[3].textContent = `${customerCount} khách hàng`; 
+        kpiCards[0].innerHTML = `${adminCount} <span data-i18n="admin.authorized_persons">người được ủy quyền</span>`;
+        kpiCards[1].innerHTML = `${managerCount} <span data-i18n="admin.authorized_persons">người được ủy quyền</span>`;
+        kpiCards[2].innerHTML = `0 <span data-i18n="admin.authorized_persons">người được ủy quyền</span>`;
+        kpiCards[3].innerHTML = `${customerCount} <span data-i18n="admin.customers">khách hàng</span>`;
     }
 }
 
@@ -1308,7 +1525,7 @@ function applyStaffFilters() {
             if (currentStaffRoleFilter === 'Khách hàng') roleMatch = (u.RoleName === 'Customer');
             if (currentStaffRoleFilter === 'Nhân viên') roleMatch = (u.RoleName === 'Staff');
         }
-        
+
         let statusMatch = true;
         if (currentStaffStatusFilter !== 'Tất cả') {
             if (currentStaffStatusFilter === 'Active') statusMatch = u.IsActive === 1;
@@ -1322,7 +1539,7 @@ function applyStaffFilters() {
 function renderStaffTable() {
     const body = document.getElementById('staffTableBody');
     if (!body) return;
-    
+
     if (FILTERED_STAFF.length === 0) {
         body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px;">Không có dữ liệu nhân sự</td></tr>';
         return;
@@ -1351,7 +1568,7 @@ function renderStaffTable() {
             </td>
             <td>
                 <span class="st-status ${user.IsActive ? 'active' : 'blocked'}" style="cursor:pointer;" onclick="toggleStaffStatus(${user.UserID})">
-                    <span class="ss-dot"></span> ${user.IsActive ? 'Hoạt động' : 'Bị khóa'}
+                    <span class="ss-dot"></span> ${user.IsActive ? '<span data-i18n="admin.active">Hoạt động</span>' : '<span data-i18n="admin.locked">Bị khóa</span>'}
                 </span>
             </td>
             <td><span class="st-date">${new Date(user.CreatedAt).toLocaleDateString('vi-VN')}</span></td>
@@ -1364,7 +1581,7 @@ function renderStaffTable() {
     `}).join('');
 
     const pgInfo = document.getElementById('staffPgInfo');
-    if (pgInfo) pgInfo.innerHTML = `Hiển thị <strong>${FILTERED_STAFF.length}</strong> nhân viên`;
+    if (pgInfo) pgInfo.innerHTML = `<span data-i18n="admin.showing">Hiển thị</span> <strong>${FILTERED_STAFF.length}</strong> <span data-i18n="admin.staff_lowercase">nhân viên</span>`;
 }
 
 async function changeStaffRole(userId, newRole) {
@@ -1475,7 +1692,7 @@ function buildScheduleCityDropdown() {
     const citySel = document.getElementById('scheduleCitySelect');
     if (!citySel) return;
     const cities = [...new Set(allCinemas.map(c => c.City))].sort();
-    citySel.innerHTML = '<option value="">-- Thành phố --</option>' +
+    citySel.innerHTML = '<option value="" data-i18n="admin.city_placeholder">-- Thành phố --</option>' +
         cities.map(city => `<option value="${city}">${city}</option>`).join('');
 
     if (cities.length > 0) {
@@ -1490,7 +1707,7 @@ function filterScheduleCity(city) {
     if (!cinemaSel) return;
 
     const filtered = allCinemas.filter(c => c.City === city);
-    cinemaSel.innerHTML = '<option value="">-- Rạp/Chi nhánh --</option>' +
+    cinemaSel.innerHTML = '<option value="" data-i18n="admin.branch_placeholder">-- Rạp/Chi nhánh --</option>' +
         filtered.map(c => `<option value="${c.CinemaID}">${c.CinemaName}</option>`).join('');
 
     if (filtered.length > 0) {
@@ -1509,7 +1726,7 @@ function filterScheduleCinema(cinemaId) {
     const stCitySel = document.getElementById('stCitySelect');
     if (stCitySel && stCitySel.options.length <= 1 && allCinemas.length > 0) {
         const cities = [...new Set(allCinemas.map(c => c.City))].sort();
-        stCitySel.innerHTML = '<option value="">-- Chọn thành phố --</option>' +
+        stCitySel.innerHTML = '<option value="" data-i18n="admin.select_city">-- Chọn thành phố --</option>' +
             cities.map(city => `<option value="${city}">${city}</option>`).join('');
     }
 
@@ -1525,7 +1742,7 @@ window.filterStCity = function (city) {
     const roomSel = document.getElementById('stRoomSelect');
     if (!cinemaSel || !roomSel) return;
 
-    roomSel.innerHTML = '<option value="">-- Chọn phòng --</option>';
+    roomSel.innerHTML = '<option value="">-- <span data-i18n="admin.select_room">Chọn phòng</span> --</option>';
     roomSel.disabled = true;
 
     if (!city) {
@@ -1545,14 +1762,14 @@ window.filterStCinema = function (cinemaId) {
     if (!roomSel) return;
 
     if (!cinemaId) {
-        roomSel.innerHTML = '<option value="">-- Chọn phòng --</option>';
+        roomSel.innerHTML = '<option value="">-- <span data-i18n="admin.select_room">Chọn phòng</span> --</option>';
         roomSel.disabled = true;
         return;
     }
 
     const cid = parseInt(cinemaId);
     const filteredRooms = ROOM_DATA.filter(r => r.CinemaID === cid);
-    roomSel.innerHTML = '<option value="">-- Chọn phòng --</option>' +
+    roomSel.innerHTML = '<option value="">-- <span data-i18n="admin.select_room">Chọn phòng</span> --</option>' +
         filteredRooms.map(r => `<option value="${r.RoomID}">${r.RoomName}</option>`).join('');
     roomSel.disabled = false;
 };
@@ -1601,7 +1818,7 @@ function renderShowtimeTable() {
     if (!container) return;
 
     if (!SHOWTIME_DATA.length) {
-        container.innerHTML = '<p style="padding:24px;color:#9ca3af;text-align:center;">Chưa có suất chiếu nào trong ngày này.</p>';
+        container.innerHTML = '<p style="padding:24px;color:#9ca3af;text-align:center;"><span data-i18n="admin.no_showtimes_today">Chưa có suất chiếu nào trong ngày này.</span></p>';
         return;
     }
 
@@ -1609,10 +1826,10 @@ function renderShowtimeTable() {
         <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
             <thead>
                 <tr style="border-bottom:1px solid rgba(255,255,255,0.08);color:#9ca3af;text-align:left;">
-                    <th style="padding:12px 16px;">Phim</th>
-                    <th style="padding:12px 16px;">Rạp / Phòng</th>
+                    <th style="padding:12px 16px;">Movies</th>
+                    <th style="padding:12px 16px;"><span data-i18n="admin.cinema_room">Rạp / Phòng</span></th>
                     <th style="padding:12px 16px;">Giờ chiếu</th>
-                    <th style="padding:12px 16px;">Giá vé</th>
+                    <th style="padding:12px 16px;"><span data-i18n="admin.ticket_price">Giá vé</span></th>
                     <th style="padding:12px 16px;">Đã bán</th>
                     <th style="padding:12px 16px;">Trạng thái</th>
                     <th style="padding:12px 16px;">Thao tác</th>
@@ -1632,7 +1849,7 @@ function renderShowtimeTable() {
                         <td style="padding:12px 16px;">${timeStr}</td>
                         <td style="padding:12px 16px;">${Number(st.Price).toLocaleString('vi-VN')} đ</td>
                         <td style="padding:12px 16px;">${st.TicketsSold}/${st.TotalSeats} (${soldPct}%)</td>
-                        <td style="padding:12px 16px;"><span class="status-badge ${st.Status}">${st.Status === 'active' ? 'Đang chiếu' : st.Status === 'cancelled' ? 'Đã hủy' : st.Status === 'finished' ? 'Đã kết thúc' : st.Status}</span></td>
+                        <td style="padding:12px 16px;"><span class="status-badge ${st.Status}">${st.Status === 'active' ? `<span data-i18n="admin.now_showing">Đang chiếu</span>` : st.Status === 'cancelled' ? `<span data-i18n="admin.cancelled">Đã hủy</span>` : st.Status === 'finished' ? `<span data-i18n="admin.finished">Đã kết thúc</span>` : st.Status}</span></td>
                         <td style="padding:12px 16px;">
                             <div style="display:flex;gap:8px;">
                                 <button onclick="openShowtimeModal(${st.ShowtimeID})" title="Sửa" style="background:none;border:none;color:#3b82f6;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
@@ -1655,11 +1872,12 @@ function updateScheduleSummary() {
     const soldEl = document.getElementById('schSeatsSold');
     if (revEl) revEl.textContent = revenue.toLocaleString('vi-VN') + ' đ';
     if (occEl) occEl.textContent = totalSeats ? ((totalSold / totalSeats) * 100).toFixed(1) + '%' : '0%';
-    if (soldEl) soldEl.textContent = totalSold + ' ghế';
+    if (soldEl) soldEl.innerHTML = totalSold + ' <span data-i18n="admin.seats_lowercase">ghế</span>';
     const dateLabel = document.getElementById('scheduleDateLabel');
     if (dateLabel) {
         const d = new Date(scheduleDate);
-        dateLabel.textContent = d.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+        const isEn = typeof i18n !== 'undefined' && i18n.lang === 'en';
+        dateLabel.textContent = d.toLocaleDateString(isEn ? 'en-US' : 'vi-VN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
     }
 }
 
@@ -1674,7 +1892,7 @@ function renderScheduleMovieLibrary() {
             <img src="${m.PosterURL || 'images/default_poster.svg'}" onerror="this.src='images/default_poster.svg'" class="lc-poster">
             <div class="lc-info">
                 <div class="lc-title">${m.Title}</div>
-                <div class="lc-dur">Thời lượng: ${m.Duration} phút</div>
+                <div class="lc-dur"><span data-i18n="admin.duration">Thời lượng</span>: ${m.Duration} <span data-i18n="admin.minutes">phút</span></div>
                 <div class="lc-tags"><span class="lc-genre">${m.Status}</span></div>
             </div>
         </div>
@@ -1713,7 +1931,7 @@ function openShowtimeModal(showtimeId = null) {
     const citySel = document.getElementById('stCitySelect');
     if (citySel && allCinemas.length > 0) {
         const cities = [...new Set(allCinemas.map(c => c.City))].sort();
-        citySel.innerHTML = '<option value="">-- Chọn thành phố --</option>' +
+        citySel.innerHTML = '<option value="" data-i18n="admin.select_city">-- Chọn thành phố --</option>' +
             cities.map(city => `<option value="${city}">${city}</option>`).join('');
     }
 
@@ -1722,14 +1940,14 @@ function openShowtimeModal(showtimeId = null) {
     if (movieSel && MOVIE_DATA.length > 0) {
         movieSel.innerHTML = '<option value="">-- Chọn phim --</option>' +
             MOVIE_DATA.filter(m => m.Status !== 'deleted').map(m =>
-                `<option value="${m.MovieID}">${m.Title} (${m.Duration} phút)</option>`
+                `<option value="${m.MovieID}">${m.Title} (${m.Duration} <span data-i18n="admin.minutes">phút</span>)</option>`
             ).join('');
     }
 
     // Reset room selects
     document.getElementById('stCinemaSelect').innerHTML = '<option value="">-- Chọn rạp --</option>';
     document.getElementById('stCinemaSelect').disabled = true;
-    document.getElementById('stRoomSelect').innerHTML = '<option value="">-- Chọn phòng --</option>';
+    document.getElementById('stRoomSelect').innerHTML = '<option value="">-- <span data-i18n="admin.select_room">Chọn phòng</span> --</option>';
     document.getElementById('stRoomSelect').disabled = true;
 
     // Set default date to current scheduleDate
@@ -1945,7 +2163,7 @@ function filterScheduleMovies(query) {
             <img src="${m.PosterURL || 'images/default_poster.svg'}" onerror="this.src='images/default_poster.svg'" class="lc-poster">
             <div class="lc-info">
                 <div class="lc-title">${m.Title}</div>
-                <div class="lc-dur">Thời lượng: ${m.Duration} phút</div>
+                <div class="lc-dur"><span data-i18n="admin.duration">Thời lượng</span>: ${m.Duration} <span data-i18n="admin.minutes">phút</span></div>
             </div>
         </div>
     `).join('') || '<p style="padding:16px;color:#9ca3af;">Không tìm thấy phim.</p>';
@@ -1978,7 +2196,7 @@ function renderCinemaSidebar() {
                     <span class="cs-badge">HOẠT ĐỘNG</span>
                 </div>
                 <div class="cs-name">${c.CinemaName}</div>
-                <div class="cs-meta">${roomsInCinema.length} Phòng | ${totalSeats} Ghế</div>
+                <div class="cs-meta">${roomsInCinema.length} <span data-i18n="admin.rooms">Phòng</span> | ${totalSeats} <span data-i18n="admin.seats">Ghế</span></div>
             </div>
         `;
     }).join('');
@@ -1993,13 +2211,101 @@ window.selectCinemaForBuilder = function (cinemaId, el) {
     if (!grid) return;
 
     if (rooms.length === 0) {
-        grid.innerHTML = '<p style="color:#9ca3af;font-size:0.85rem;">Không có phòng</p>';
-        return;
+        grid.innerHTML = '<p style="color:#9ca3af;font-size:0.85rem;">Không có phòng</p>' +
+            `<button class="room-btn add-btn" onclick="openAddRoomModal(${cinemaId})">+</button>`;
+    } else {
+        grid.innerHTML = rooms.map(r =>
+            `<button class="room-btn" onclick="selectRoomForBuilder(${r.RoomID}, this)">
+                ${r.RoomName}
+                <div class="room-actions">
+                    <span class="room-act-edit" onclick="event.stopPropagation(); openEditRoomModal(${r.RoomID}, '${r.RoomName}')">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </span>
+                    <span class="room-act-del" onclick="event.stopPropagation(); deleteRoom(${r.RoomID})">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </span>
+                </div>
+             </button>`
+        ).join('') + `<button class="room-btn add-btn" onclick="openAddRoomModal(${cinemaId})">+</button>`;
     }
 
-    grid.innerHTML = rooms.map(r =>
-        `<button class="room-btn" onclick="selectRoomForBuilder(${r.RoomID}, this)">${r.RoomName}</button>`
-    ).join('') + `<button class="room-btn add-btn">+</button>`;
+    // Toggle Workspace visibility vs Detail visibility
+    const ws = document.getElementById('cinemaWorkspace');
+    const detail = document.getElementById('cinemaDetail');
+    if (ws) ws.style.display = 'none';
+    if (detail) {
+        detail.style.display = 'flex';
+
+        // Find cinema object
+        const c = allCinemas.find(x => x.CinemaID === cinemaId);
+        if (c) {
+            const totalSeats = rooms.reduce((sum, r) => sum + r.TotalSeats, 0);
+            detail.innerHTML = `
+                <div class="cinema-detail-header" style="border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <span class="badge" style="background: var(--yellow); color: #fff; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 4px; text-transform: uppercase;">Cụm rạp chi nhánh</span>
+                        <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text); margin: 8px 0 4px 0;">${c.CinemaName}</h1>
+                        <p style="color: var(--text2); display: flex; align-items: center; gap: 6px; font-size: 0.9rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            ${c.Address}, ${c.City}
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-outline-red" style="padding: 10px 20px; font-size: 0.85rem;" onclick="openEditCinemaModal(${c.CinemaID})">
+                            Sửa cụm rạp
+                        </button>
+                        <button class="btn-solid-red" style="padding: 10px 20px; font-size: 0.85rem;" onclick="deleteCinema(${c.CinemaID})">
+                            Xóa cụm rạp
+                        </button>
+                    </div>
+                </div>
+
+                <div class="cinema-detail-body" style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--text);">DANH SÁCH PHÒNG CHIẾU (${rooms.length})</h2>
+                            <button class="btn-solid-red" style="padding: 6px 14px; font-size: 0.75rem;" onclick="openAddRoomModal(${c.CinemaID})">
+                                + Thêm phòng
+                            </button>
+                        </div>
+                        <div class="rooms-detail-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                            ${rooms.map(r => `
+                                <div style="padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-white); transition: all 0.2s; cursor: pointer; position: relative;" onclick="document.querySelector('[onclick*=\\'selectRoomForBuilder(${r.RoomID}\\')').click()">
+                                    <div style="font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 6px;">${r.RoomName}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text2); display: flex; align-items: center; gap: 6px; margin-bottom: 12px;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21v-4a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v4"/><path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
+                                        Sức chứa: <strong>${r.TotalSeats}</strong> ghế
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn-outline-red" style="padding: 4px 10px; font-size: 0.7rem; border-radius: 4px;" onclick="event.stopPropagation(); openEditRoomModal(${r.RoomID}, '${r.RoomName}')">Sửa tên</button>
+                                        <button class="btn-outline-red" style="padding: 4px 10px; font-size: 0.7rem; border-radius: 4px;" onclick="event.stopPropagation(); deleteRoom(${r.RoomID})">Xóa</button>
+                                    </div>
+                                </div>
+                            `).join('') || '<p style="color: var(--text3); font-style: italic;">Chưa có phòng chiếu nào được tạo.</p>'}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--text); margin-bottom: 16px;">THÔNG TIN THỐNG KÊ</h2>
+                        <div style="border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg-white);">
+                            <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text2);">Tổng số phòng</span>
+                                <strong style="font-size: 1.1rem; color: var(--text);">${rooms.length}</strong>
+                            </div>
+                            <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text2);">Tổng số ghế</span>
+                                <strong style="font-size: 1.1rem; color: var(--text);">${totalSeats}</strong>
+                            </div>
+                            <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text2);">Thành phố</span>
+                                <strong style="font-size: 1.1rem; color: var(--text);">${c.City}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
 };
 
 window.selectRoomForBuilder = async function (roomId, el) {
@@ -2007,8 +2313,15 @@ window.selectRoomForBuilder = async function (roomId, el) {
     if (el) el.classList.add('active');
 
     currentBuilderRoomId = roomId;
+
+    // Toggle Workspace visibility vs Detail visibility
+    const ws = document.getElementById('cinemaWorkspace');
+    const detail = document.getElementById('cinemaDetail');
+    if (ws) ws.style.display = 'flex';
+    if (detail) detail.style.display = 'none';
+
     const matrix = document.getElementById('seatMatrix');
-    matrix.innerHTML = '<p style="color:#9ca3af;padding:20px;">Đang tải sơ đồ ghế...</p>';
+    if (matrix) matrix.innerHTML = '<p style="color:#9ca3af;padding:20px;">Đang tải sơ đồ ghế...</p>';
 
     try {
         const res = await apiFetch(`/api/admin/rooms/${roomId}/seats`);
@@ -2028,6 +2341,223 @@ window.selectRoomForBuilder = async function (roomId, el) {
         }
     } catch (err) {
         console.error('Failed to load room seats:', err);
+    }
+};
+
+// --- Cinema CRUD ---
+window.openAddCinemaModal = function () {
+    document.getElementById('cinemaModalTitle').innerText = 'Thêm cụm rạp mới';
+    document.getElementById('cinemaId').value = '';
+    document.getElementById('cinemaForm').reset();
+    document.getElementById('cinemaModalOverlay').style.display = 'block';
+    document.getElementById('cinemaModal').style.display = 'block';
+};
+
+window.openEditCinemaModal = function (id) {
+    const c = allCinemas.find(x => x.CinemaID === id);
+    if (!c) return;
+    document.getElementById('cinemaModalTitle').innerText = 'Sửa thông tin cụm rạp';
+    document.getElementById('cinemaId').value = c.CinemaID;
+    document.getElementById('cinemaNameInput').value = c.CinemaName;
+    document.getElementById('cinemaAddressInput').value = c.Address;
+    document.getElementById('cinemaCityInput').value = c.City;
+    document.getElementById('cinemaModalOverlay').style.display = 'block';
+    document.getElementById('cinemaModal').style.display = 'block';
+};
+
+window.closeCinemaModal = function () {
+    document.getElementById('cinemaModalOverlay').style.display = 'none';
+    document.getElementById('cinemaModal').style.display = 'none';
+};
+
+window.saveCinema = async function (e) {
+    if (e) e.preventDefault();
+    const id = document.getElementById('cinemaId').value;
+    const name = document.getElementById('cinemaNameInput').value.trim();
+    const address = document.getElementById('cinemaAddressInput').value.trim();
+    const city = document.getElementById('cinemaCityInput').value;
+
+    if (!name || !address || !city) {
+        showToast('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
+        return;
+    }
+
+    try {
+        let res;
+        if (id) {
+            res = await apiFetch(`/api/admin/cinemas/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ name, address, city })
+            });
+        } else {
+            res = await apiFetch('/api/admin/cinemas', {
+                method: 'POST',
+                body: JSON.stringify({ name, address, city })
+            });
+        }
+
+        if (res.success) {
+            showToast(id ? 'Cập nhật cụm rạp thành công' : 'Thêm cụm rạp mới thành công');
+            closeCinemaModal();
+            // Reload cinemas
+            await loadCinemas();
+            // If we are editing, we can re-render detail panel
+            if (id) {
+                selectCinemaForBuilder(parseInt(id));
+            } else {
+                // If it's a new cinema, clear selection/render empty state
+                const list = document.getElementById('csList');
+                if (list) {
+                    list.innerHTML = '<p style="padding: 16px; color: #9ca3af; text-align: center;">Đang tải danh sách rạp...</p>';
+                }
+                renderCinemaSidebar();
+                // Select the new cinema if we can find it
+                if (res.data && res.data.CinemaID) {
+                    selectCinemaForBuilder(res.data.CinemaID);
+                }
+            }
+        } else {
+            showToast(res.message || 'Lỗi khi lưu cụm rạp', 'error');
+        }
+    } catch (err) {
+        console.error('saveCinema error:', err);
+        showToast('Có lỗi xảy ra', 'error');
+    }
+};
+
+window.deleteCinema = async function (id) {
+    const c = allCinemas.find(x => x.CinemaID === id);
+    if (!c) return;
+    if (!confirm(`Bạn có chắc chắn muốn xóa cụm rạp "${c.CinemaName}"? Hành động này không thể hoàn tác.`)) {
+        return;
+    }
+
+    try {
+        const res = await apiFetch(`/api/admin/cinemas/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (res.success) {
+            showToast('Xóa cụm rạp thành công');
+            // Hide workspaces
+            const ws = document.getElementById('cinemaWorkspace');
+            const detail = document.getElementById('cinemaDetail');
+            if (ws) ws.style.display = 'none';
+            if (detail) {
+                detail.innerHTML = `
+                    <div class="cd-empty-state" style="margin: auto; text-align: center; color: var(--text3);">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 16px; color: var(--border2);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                        <h3>Chọn một cụm rạp hoặc phòng để bắt đầu thiết lập</h3>
+                        <p style="margin-top: 8px; font-size: 0.85rem;">Chọn rạp từ danh sách bên trái hoặc nhấn nút "+" để thêm cụm rạp mới.</p>
+                    </div>
+                `;
+            }
+            await loadCinemas();
+            renderCinemaSidebar();
+        } else {
+            showToast(res.message || 'Lỗi khi xóa cụm rạp', 'error');
+        }
+    } catch (err) {
+        console.error('deleteCinema error:', err);
+        showToast('Có lỗi xảy ra', 'error');
+    }
+};
+
+// --- Room CRUD ---
+window.openAddRoomModal = function (cinemaId) {
+    document.getElementById('roomModalTitle').innerText = 'Thêm phòng chiếu mới';
+    document.getElementById('roomId').value = '';
+    document.getElementById('roomCinemaId').value = cinemaId;
+    document.getElementById('roomForm').reset();
+    document.getElementById('roomModalOverlay').style.display = 'block';
+    document.getElementById('roomModal').style.display = 'block';
+};
+
+window.openEditRoomModal = function (id, currentName) {
+    document.getElementById('roomModalTitle').innerText = 'Sửa tên phòng chiếu';
+    document.getElementById('roomId').value = id;
+    document.getElementById('roomNameInput').value = currentName;
+    document.getElementById('roomModalOverlay').style.display = 'block';
+    document.getElementById('roomModal').style.display = 'block';
+};
+
+window.closeRoomModal = function () {
+    document.getElementById('roomModalOverlay').style.display = 'none';
+    document.getElementById('roomModal').style.display = 'none';
+};
+
+window.saveRoom = async function (e) {
+    if (e) e.preventDefault();
+    const id = document.getElementById('roomId').value;
+    const cinemaId = document.getElementById('roomCinemaId').value;
+    const name = document.getElementById('roomNameInput').value.trim();
+
+    if (!name) {
+        showToast('Vui lòng nhập tên phòng chiếu', 'error');
+        return;
+    }
+
+    try {
+        let res;
+        if (id) {
+            res = await apiFetch(`/api/admin/rooms/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ name })
+            });
+        } else {
+            res = await apiFetch('/api/admin/rooms', {
+                method: 'POST',
+                body: JSON.stringify({ cinemaId: parseInt(cinemaId), name })
+            });
+        }
+
+        if (res.success) {
+            showToast(id ? 'Cập nhật phòng thành công' : 'Thêm phòng chiếu mới thành công');
+            closeRoomModal();
+            // Reload rooms
+            await loadRooms();
+            // Re-render sidebar/details
+            const activeCinemaId = cinemaId ? parseInt(cinemaId) : (ROOM_DATA.find(x => x.RoomID === parseInt(id))?.CinemaID);
+            if (activeCinemaId) {
+                selectCinemaForBuilder(activeCinemaId);
+            }
+        } else {
+            showToast(res.message || 'Lỗi khi lưu phòng chiếu', 'error');
+        }
+    } catch (err) {
+        console.error('saveRoom error:', err);
+        showToast('Có lỗi xảy ra', 'error');
+    }
+};
+
+window.deleteRoom = async function (id) {
+    const r = ROOM_DATA.find(x => x.RoomID === id);
+    if (!r) return;
+    if (!confirm(`Bạn có chắc chắn muốn xóa phòng "${r.RoomName}"? Hành động này sẽ xóa tất cả ghế trong phòng.`)) {
+        return;
+    }
+
+    try {
+        const res = await apiFetch(`/api/admin/rooms/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (res.success) {
+            showToast('Xóa phòng chiếu thành công');
+            // Hide workspace if deleted room was current active
+            if (currentBuilderRoomId === id) {
+                currentBuilderRoomId = null;
+                const ws = document.getElementById('cinemaWorkspace');
+                if (ws) ws.style.display = 'none';
+            }
+            await loadRooms();
+            selectCinemaForBuilder(r.CinemaID);
+        } else {
+            showToast(res.message || 'Lỗi khi xóa phòng chiếu', 'error');
+        }
+    } catch (err) {
+        console.error('deleteRoom error:', err);
+        showToast('Có lỗi xảy ra', 'error');
     }
 };
 
@@ -2072,7 +2602,7 @@ window.renderSeatMatrix = function () {
 
     // Update footer stats
     const stats = document.querySelector('.cwf-stats');
-    if (stats) stats.innerHTML = `Đã thiết lập: <strong>${totalSeats}</strong> Tổng ghế`;
+    if (stats) stats.innerHTML = `Đã thiết lập: <strong>${totalSeats}</strong> <span data-i18n="admin.total_seats_lc">Tổng ghế</span>`;
 };
 
 window.toggleSeat = function (rowChar, colNum, btn) {
@@ -2102,7 +2632,7 @@ window.toggleSeat = function (rowChar, colNum, btn) {
     // Update count
     const totalSeats = builderSeats.filter(s => s.SeatType !== 'None').length;
     const stats = document.querySelector('.cwf-stats');
-    if (stats) stats.innerHTML = `Đã thiết lập: <strong>${totalSeats}</strong> Tổng ghế`;
+    if (stats) stats.innerHTML = `Đã thiết lập: <strong>${totalSeats}</strong> <span data-i18n="admin.total_seats_lc">Tổng ghế</span>`;
 };
 
 window.addSeatRow = function () { maxRow++; renderSeatMatrix(); };
@@ -2364,7 +2894,7 @@ function resetQsState() {
     qsState.ticketPrice = 0;
 
     document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: #9ca3af;">Vui lòng chọn suất chiếu trước</p>';
-    document.getElementById('qsSelectedSeats').textContent = 'Chưa chọn ghế';
+    document.getElementById('qsSelectedSeats').innerHTML = `<span data-i18n="admin.no_seat_selected">Chưa chọn ghế</span>`;
     document.getElementById('qsCustomerPhone').value = '';
     document.getElementById('qsVoucherCode').value = '';
     document.getElementById('qsVoucherMessage').textContent = '';
@@ -2414,7 +2944,7 @@ async function selectQsShowtime(showtimeId, price) {
     document.querySelectorAll('.qs-showtime-card').forEach(c => c.classList.remove('selected'));
     document.getElementById(`qs-st-${showtimeId}`).classList.add('selected');
 
-    document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: #9ca3af;">Đang tải sơ đồ ghế...</p>';
+    document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: #9ca3af;"><span data-i18n="admin.loading_seatmap">Đang tải sơ đồ ghế...</span></p>';
 
     try {
         const res = await apiFetch(`/api/staff/showtimes/${showtimeId}/seats`);
@@ -2431,7 +2961,7 @@ async function selectQsShowtime(showtimeId, price) {
 function renderQsSeatMap() {
     const container = document.getElementById('qsSeatMapContainer');
     if (!qsState.seats || qsState.seats.length === 0) {
-        container.innerHTML = '<p style="color: #9ca3af;">Không có dữ liệu ghế.</p>';
+        container.innerHTML = '<p style="color: #9ca3af;"><span data-i18n="admin.no_seat_data">Không có dữ liệu ghế.</span></p>';
         return;
     }
 
@@ -2534,7 +3064,7 @@ function getSelectedSeatNames() {
 
 function updateQsTotals() {
     const seatNames = getSelectedSeatNames();
-    document.getElementById('qsSelectedSeats').textContent = seatNames || 'Chưa chọn ghế';
+    document.getElementById('qsSelectedSeats').innerHTML = seatNames || `<span data-i18n="admin.no_seat_selected">Chưa chọn ghế</span>`;
 
     let ticketTotal = 0;
     qsState.selectedSeatIds.forEach(id => {
@@ -2662,6 +3192,170 @@ async function submitQuickSell() {
 /* ════════════════════════════════════════════════
    PROMOTIONS MANAGEMENT
 ════════════════════════════════════════════════ */
+let NEWS_DATA = [];
+
+function adminEscape(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function formatAdminDate(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('vi-VN');
+}
+
+function toDateInputValue(value) {
+    const date = value ? new Date(value) : new Date();
+    if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 10);
+    return date.toISOString().slice(0, 10);
+}
+
+async function loadNewsArticles() {
+    try {
+        const res = await apiFetch('/api/admin/news');
+        if (res.success) {
+            NEWS_DATA = res.data || [];
+            renderNewsAdminTable();
+        }
+    } catch (err) {
+        console.error('[Admin] loadNewsArticles:', err);
+    }
+}
+
+function renderNewsAdminTable() {
+    const body = document.getElementById('newsAdminBody');
+    if (!body) return;
+    if (!NEWS_DATA.length) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có bài viết nào.</td></tr>';
+        return;
+    }
+    body.innerHTML = NEWS_DATA.map(item => `
+        <tr class="txn-row">
+            <td><img src="${item.ImageURL || 'images/default_poster.svg'}" alt="${adminEscape(item.Title)}" onerror="this.onerror=null;this.src='images/default_poster.svg'" style="width:70px;height:48px;object-fit:cover;border-radius:6px;box-shadow:var(--shadow-xs);border:1px solid var(--border);"></td>
+            <td>
+                <div style="font-weight:700;color:var(--text);font-size:0.88rem;">${adminEscape(item.Title)}</div>
+                <div style="font-size:0.78rem;color:var(--text2);margin-top:4px;line-height:1.4;">${adminEscape((item.Summary || '').substring(0, 90))}${item.Summary && item.Summary.length > 90 ? '...' : ''}</div>
+            </td>
+            <td><span class="status-badge ${item.Type === 'events' ? 'active' : 'finished'}">${item.Type === 'events' ? 'Sự kiện' : 'Tin tức'}</span></td>
+            <td style="color:var(--text2);font-size:0.84rem;">${formatAdminDate(item.PublishedAt)}</td>
+            <td>${item.IsFeatured ? '<span class="status-badge active">Nổi bật</span>' : '<span class="status-badge finished">Thường</span>'}</td>
+            <td>${item.IsActive ? '<span class="status-badge active">Đang hiện</span>' : '<span class="status-badge finished">Đã ẩn</span>'}</td>
+            <td>
+                <div class="table-actions">
+                    <button class="tb-icon-sm" title="Sửa" onclick="openNewsModal(${item.ArticleID})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                    <button class="tb-icon-sm" title="${item.IsActive ? 'Ẩn' : 'Hiện'}" onclick="toggleNewsArticle(${item.ArticleID})" style="color:${item.IsActive ? '#6b7280' : '#10b981'}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    <button class="tb-icon-sm danger" title="Xóa" onclick="deleteNewsArticle(${item.ArticleID})" style="color:var(--danger)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openNewsModal(id) {
+    document.getElementById('newsForm').reset();
+    document.getElementById('newsCurrentImg').innerHTML = '';
+    document.getElementById('newsPublishedAt').value = toDateInputValue();
+    document.getElementById('newsActive').checked = true;
+    document.getElementById('newsFeatured').checked = false;
+    document.getElementById('newsId').value = '';
+    document.getElementById('newsModalTitle').textContent = 'THÊM TIN TỨC';
+    if (id) {
+        const item = NEWS_DATA.find(x => x.ArticleID === id);
+        if (!item) return;
+        document.getElementById('newsModalTitle').textContent = 'SỬA TIN TỨC';
+        document.getElementById('newsId').value = item.ArticleID;
+        document.getElementById('newsTitle').value = item.Title || '';
+        document.getElementById('newsType').value = item.Type || 'news';
+        document.getElementById('newsSummary').value = item.Summary || '';
+        document.getElementById('newsContent').value = item.Content || '';
+        document.getElementById('newsAuthor').value = item.Author || '';
+        document.getElementById('newsPublishedAt').value = toDateInputValue(item.PublishedAt);
+        document.getElementById('newsBadge').value = item.BadgeLabel || '';
+        document.getElementById('newsSort').value = item.SortOrder || 0;
+        document.getElementById('newsFeatured').checked = !!item.IsFeatured;
+        document.getElementById('newsActive').checked = !!item.IsActive;
+        if (item.ImageURL) document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
+    }
+    document.getElementById('newsModalOverlay').style.display = 'block';
+    document.getElementById('newsAdminModal').style.display = 'block';
+}
+
+function closeNewsModal() {
+    document.getElementById('newsModalOverlay').style.display = 'none';
+    document.getElementById('newsAdminModal').style.display = 'none';
+}
+
+async function saveNewsArticle(event) {
+    event.preventDefault();
+    const id = document.getElementById('newsId').value;
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const formData = new FormData();
+    formData.append('title', document.getElementById('newsTitle').value);
+    formData.append('type', document.getElementById('newsType').value);
+    formData.append('summary', document.getElementById('newsSummary').value);
+    formData.append('content', document.getElementById('newsContent').value);
+    formData.append('author', document.getElementById('newsAuthor').value);
+    formData.append('publishedAt', document.getElementById('newsPublishedAt').value);
+    formData.append('badgeLabel', document.getElementById('newsBadge').value);
+    formData.append('sortOrder', document.getElementById('newsSort').value);
+    formData.append('isFeatured', document.getElementById('newsFeatured').checked ? 'true' : 'false');
+    formData.append('isActive', document.getElementById('newsActive').checked ? 'true' : 'false');
+    const imageFile = document.getElementById('newsImage').files[0];
+    if (imageFile) formData.append('image', imageFile);
+    try {
+        const res = await fetch(id ? `/api/admin/news/${id}` : '/api/admin/news', {
+            method: id ? 'PUT' : 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAdminToast(data.message, 'success');
+            closeNewsModal();
+            loadNewsArticles();
+        } else {
+            showAdminToast('Lỗi: ' + data.message, 'error');
+        }
+    } catch (err) {
+        console.error('[Admin] saveNewsArticle:', err);
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+async function deleteNewsArticle(id) {
+    if (!confirm('Bạn có chắc muốn xóa bài viết này không?')) return;
+    try {
+        const res = await apiFetch(`/api/admin/news/${id}`, { method: 'DELETE' });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadNewsArticles();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
+async function toggleNewsArticle(id) {
+    try {
+        const res = await apiFetch(`/api/admin/news/${id}/toggle`, { method: 'PATCH' });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadNewsArticles();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
 let PROMO_DATA = [];
 
 async function loadPromotions() {
@@ -2683,7 +3377,7 @@ function renderPromoTable() {
     if (!body) return;
 
     if (PROMO_DATA.length === 0) {
-        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có khuyến mãi nào. Nhấn <b>Thêm mới</b> để bắt đầu.</td></tr>';
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;"><span data-i18n="admin.no_promos">Chưa có khuyến mãi nào. Nhấn <b>Thêm mới</b> để bắt đầu.</span></td></tr>';
         return;
     }
 
@@ -2711,7 +3405,7 @@ function renderPromoTable() {
             <td>
                 ${p.IsFeatured
             ? '<span class="status-badge active" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.22);color:#d97706;font-weight:700;">★ Nổi bật</span>'
-            : '<span class="status-badge finished" style="background:rgba(107,114,128,0.06);border:1px solid rgba(107,114,128,0.12);color:#6b7280;">Thường</span>'}
+            : '<span class="status-badge finished" style="background:rgba(107,114,128,0.06);border:1px solid rgba(107,114,128,0.12);color:#6b7280;" data-i18n="admin.normal">Thường</span>'}
             </td>
             <td>
                 ${p.IsActive
@@ -2850,13 +3544,13 @@ async function loadSettings() {
         const res = await apiFetch('/api/admin/settings');
         if (res.success) {
             const data = res.data;
-            if(document.getElementById('cfg_BASE_TICKET_PRICE')) document.getElementById('cfg_BASE_TICKET_PRICE').value = data.BASE_TICKET_PRICE || '';
-            if(document.getElementById('cfg_VIP_MULTIPLIER')) document.getElementById('cfg_VIP_MULTIPLIER').value = data.VIP_MULTIPLIER || '';
-            if(document.getElementById('cfg_COUPLE_MULTIPLIER')) document.getElementById('cfg_COUPLE_MULTIPLIER').value = data.COUPLE_MULTIPLIER || '';
-            
-            if(document.getElementById('cfg_HOTLINE')) document.getElementById('cfg_HOTLINE').value = data.HOTLINE || '';
-            if(document.getElementById('cfg_SUPPORT_EMAIL')) document.getElementById('cfg_SUPPORT_EMAIL').value = data.SUPPORT_EMAIL || '';
-            if(document.getElementById('cfg_MAINTENANCE_MODE')) document.getElementById('cfg_MAINTENANCE_MODE').checked = (data.MAINTENANCE_MODE === 'true');
+            if (document.getElementById('cfg_BASE_TICKET_PRICE')) document.getElementById('cfg_BASE_TICKET_PRICE').value = data.BASE_TICKET_PRICE || '';
+            if (document.getElementById('cfg_VIP_MULTIPLIER')) document.getElementById('cfg_VIP_MULTIPLIER').value = data.VIP_MULTIPLIER || '';
+            if (document.getElementById('cfg_COUPLE_MULTIPLIER')) document.getElementById('cfg_COUPLE_MULTIPLIER').value = data.COUPLE_MULTIPLIER || '';
+
+            if (document.getElementById('cfg_HOTLINE')) document.getElementById('cfg_HOTLINE').value = data.HOTLINE || '';
+            if (document.getElementById('cfg_SUPPORT_EMAIL')) document.getElementById('cfg_SUPPORT_EMAIL').value = data.SUPPORT_EMAIL || '';
+            if (document.getElementById('cfg_MAINTENANCE_MODE')) document.getElementById('cfg_MAINTENANCE_MODE').checked = (data.MAINTENANCE_MODE === 'true');
         }
     } catch (e) {
         console.error('Failed to load settings', e);
@@ -2867,15 +3561,15 @@ async function savePricingSettings() {
     const basePrice = document.getElementById('cfg_BASE_TICKET_PRICE').value;
     const vipM = document.getElementById('cfg_VIP_MULTIPLIER').value;
     const coupleM = document.getElementById('cfg_COUPLE_MULTIPLIER').value;
-    
-    if(!basePrice || !vipM || !coupleM) return showToast('Lỗi', 'Vui lòng điền đủ thông tin');
-    
+
+    if (!basePrice || !vipM || !coupleM) return showToast('Lỗi', 'Vui lòng điền đủ thông tin');
+
     const payload = [
         { key: 'BASE_TICKET_PRICE', value: basePrice },
         { key: 'VIP_MULTIPLIER', value: vipM },
         { key: 'COUPLE_MULTIPLIER', value: coupleM }
     ];
-    
+
     await updateSettingsApi(payload);
 }
 
@@ -2883,13 +3577,13 @@ async function saveSystemSettings() {
     const hotline = document.getElementById('cfg_HOTLINE').value;
     const email = document.getElementById('cfg_SUPPORT_EMAIL').value;
     const maint = document.getElementById('cfg_MAINTENANCE_MODE').checked;
-    
+
     const payload = [
         { key: 'HOTLINE', value: hotline },
         { key: 'SUPPORT_EMAIL', value: email },
         { key: 'MAINTENANCE_MODE', value: maint ? 'true' : 'false' }
     ];
-    
+
     await updateSettingsApi(payload);
 }
 
@@ -2910,3 +3604,38 @@ async function updateSettingsApi(settingsArray) {
         showToast('Lỗi', 'Lỗi kết nối server');
     }
 }
+
+
+// Inject FNB Key Helper
+function getFnbKey(name) {
+    const map = {
+        'Combo Couple': 'fnb_combo_couple',
+        'Bắp Ngọt Lớn': 'fnb_sweet_popcorn_l',
+        'Bắp Phô Mai': 'fnb_cheese_popcorn',
+        'Nachos Grande': 'fnb_nachos_grande',
+        'Combo Family': 'fnb_combo_family',
+        'Combo Solo': 'fnb_combo_solo',
+        'Coca-Cola Lớn': 'fnb_coca_l',
+        'Nước Suối': 'fnb_bottled_water',
+        'Trà Đào Cam Sả': 'fnb_peach_tea',
+        'Nước Suối Dasani': 'fnb_bottled_water'
+    };
+    return map[name] || name;
+}
+
+// Auto-translate on DOM mutations
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof MutationObserver !== 'undefined') {
+        const observer = new MutationObserver((mutations) => {
+            let shouldUpdate = false;
+            for (let m of mutations) {
+                if (m.addedNodes.length > 0) {
+                    shouldUpdate = true;
+                    break;
+                }
+            }
+
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+});

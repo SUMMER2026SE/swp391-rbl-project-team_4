@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh sách Phim | D-Cinema</title>
+    <title><span data-i18n="auto.cga7mg">Danh sách Movies | D-Cinema</span></title>
     <link rel="stylesheet" href="css/movies.css">
     <link rel="stylesheet" href="css/shared-layout.css">
     <link rel="stylesheet" href="css/chatbot.css">
@@ -20,16 +20,16 @@
             </a>
             <nav class="nav-links">
                 <div class="dropdown">
-                    <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
+                    <a href="movies.html" id="nav-phim" class="active"><span data-i18n="nav.movies">Movies</span> <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav.nowShowing">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav.comingSoon">Sắp chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
-                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" data-i18n="nav.cinemas">Rạp</a>
+                <a href="promotions.html" id="nav-promo" data-i18n="nav.promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" data-i18n="nav.news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" data-i18n="nav.prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -37,7 +37,7 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                    <input type="text" placeholder="Tìm kiếm phim..." data-i18n-placeholder="auto.ph_kfbyxb"  class="search-input" id="searchInput" >
                 </div>
                 <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -45,7 +45,7 @@
                         <circle cx="12" cy="7" r="4" />
                     </svg>
                 </a>
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav.login" data-i18n="nav.login">Đăng Nhập</a>
             </div>
         </div>
     </header>
@@ -64,62 +64,62 @@
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Hành động">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Hành động</span>
+                            <span class="filter-label"><span data-i18n="genres.action">Hành động</span></span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Hài">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Hài</span>
+                            <span class="filter-label"><span data-i18n="genres.comedy">Hài</span></span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Kinh dị">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Kinh dị</span>
+                            <span class="filter-label"><span data-i18n="hero.maxo.genre">Kinh dị</span></span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Tình cảm">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Tình cảm</span>
+                            <span class="filter-label"><span data-i18n="genres.romance">Tình cảm</span></span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Viễn tưởng">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Viễn tưởng</span>
+                            <span class="filter-label"><span data-i18n="genres.scifi">Viễn tưởng</span></span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Tâm lý">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Tâm lý</span>
+                            <span class="filter-label"><span data-i18n="genres.psychological">Tâm lý</span></span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Hoạt hình">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Hoạt hình</span>
+                            <span class="filter-label"><span data-i18n="genres.animation">Hoạt hình</span></span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Phiêu lưu">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Phiêu lưu</span>
+                            <span class="filter-label"><span data-i18n="genres.adventure">Phiêu lưu</span></span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Ca Nhạc">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Ca Nhạc</span>
+                            <span class="filter-label"><span data-i18n="genres.musical">Ca Nhạc</span></span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Ly Kì">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Ly Kì</span>
+                            <span class="filter-label"><span data-i18n="genres.thriller">Ly Kì</span></span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Gia đình">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Gia đình</span>
+                            <span class="filter-label"><span data-i18n="genres.family">Gia đình</span></span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Giật Gân">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Giật Gân</span>
+                            <span class="filter-label"><span data-i18n="genres.suspense">Giật Gân</span></span>
                         </label>
                     </div>
                 </div>
@@ -153,8 +153,8 @@
             <!-- Header: Title & Sort -->
             <div class="movies-header" style="flex-direction: column; align-items: flex-start; gap: 15px;">
                 <div class="movies-title-tabs">
-                    <span class="tab-title active" id="tab-now-showing" onclick="app.switchMovieStatusTab('Now Showing')">Phim Đang Chiếu</span>
-                    <span class="tab-title" id="tab-coming-soon" onclick="app.switchMovieStatusTab('Coming Soon')">Phim Sắp Chiếu</span>
+                    <span class="tab-title active" id="tab-now-showing" onclick="app.switchMovieStatusTab('Now Showing')"><span data-i18n="movies.nowShowingTab">Movies Đang Chiếu</span></span>
+                    <span class="tab-title" id="tab-coming-soon" onclick="app.switchMovieStatusTab('Coming Soon')"><span data-i18n="movies.comingSoonTab">Movies Sắp Chiếu</span></span>
                 </div>
                 <div class="sort-container" style="align-self: flex-end; margin-top: -50px; z-index: 10;">
                     <label for="sortSelect">Sort by:</label>
@@ -201,7 +201,7 @@
                     <span class="logo-d">D</span>
                     <span class="logo-text">D-CINEMA</span>
                 </a>
-                <p>Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
+                <p data-i18n="footer.desc">Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
                 <div class="footer-socials">
                     <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2">
@@ -218,22 +218,22 @@
                 </div>
             </div>
             <div class="footer-col">
-                <h4>DỊCH VỤ</h4>
-                <a href="#">Về chúng tôi</a>
-                <a href="#">Tuyển dụng</a>
-                <a href="#">Liên hệ</a>
+                <h4 data-i18n="footer.services">DỊCH VỤ</h4>
+                <a href="#" data-i18n="footer.about">Về chúng tôi</a>
+                <a href="#" data-i18n="footer.career">Tuyển dụng</a>
+                <a href="#" data-i18n="footer.contact">Liên hệ</a>
             </div>
             <div class="footer-col">
-                <h4>PHÁP LÝ</h4>
-                <a href="#">Điều khoản sử dụng</a>
-                <a href="#">Chính sách bảo mật</a>
-                <a href="#">Chính sách thanh toán</a>
+                <h4 data-i18n="footer.legal">PHÁP LÝ</h4>
+                <a href="#" data-i18n="footer.terms">Điều khoản sử dụng</a>
+                <a href="#" data-i18n="footer.privacy">Chính sách bảo mật</a>
+                <a href="#" data-i18n="footer.payment">Chính sách thanh toán</a>
             </div>
             <div class="footer-col">
-                <h4>ĐĂNG KÝ NHẬN TIN</h4>
-                <p style="margin-bottom: 5px; font-size: 0.8rem;">Nhận thông tin về phim mới và khuyến mãi.</p>
+                <h4 data-i18n="footer.newsletter">ĐĂNG KÝ NHẬN TIN</h4>
+                <p style="margin-bottom: 5px; font-size: 0.8rem;" data-i18n="footer.newsDesc">Nhận thông tin về phim mới và khuyến mãi.</p>
                 <form class="newsletter-form" onsubmit="event.preventDefault()">
-                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
+                    <input type="email" placeholder="Email của bạn"  class="newsletter-input" required >
                     <button type="submit" class="newsletter-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thanh Toán | D-CINEMA+</title>
+    <title><span data-i18n="auto.ocwd6g">Thanh Toán | D-CINEMA+</span></title>
     <meta name="description" content="Hoàn tất đặt vé xem phim – Chọn ưu đãi và thanh toán an toàn qua VietQR, thẻ ATM hoặc thẻ quốc tế.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -753,7 +753,7 @@
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            THANH TOÁN AN TOÀN
+            <span data-i18n="auto.fau5js">THANH TOÁN AN TOÀN</span>
         </div>
         <div class="nav-right">
             <div class="nav-avatar" id="navAvatar" title="Tài khoản">U</div>
@@ -772,7 +772,7 @@
                         <path d="M19 12H5M12 5l-7 7 7 7"/>
                     </svg>
                 </a>
-                <h1>Xác nhận & Thanh toán</h1>
+                <h1><span data-i18n="auto.acje99">Xác nhận & Thanh toán</span></h1>
             </div>
 
             <!-- Booking Summary -->
@@ -780,7 +780,7 @@
                 <div class="movie-block">
                     <img src="images/movie_neon_dreams.png" alt="Poster" class="movie-poster-thumb" id="summaryPoster">
                     <div class="movie-info-col">
-                        <div class="now-playing-tag">ĐANG CHIẾU</div>
+                        <div class="now-playing-tag"><span data-i18n="nav.nowShowing">ĐANG CHIẾU</span></div>
                         <div class="movie-main-title" id="summaryTitle">NEON DREAMS: 2049</div>
                         <div class="movie-detail-row">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -788,7 +788,7 @@
                         </div>
                         <div class="movie-detail-row">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                            <span id="summaryHall">D-CINEMA Aeon Mall Long Biên</span>
+                            <span id="summaryHall"><span data-i18n="auto.pimihr">D-CINEMA Aeon Mall Long Biên</span></span>
                         </div>
                         <div class="movie-detail-row">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
@@ -797,18 +797,18 @@
                     </div>
                 </div>
                 <div class="res-detail-col">
-                    <div class="res-col-title">Chi tiết đặt vé</div>
+                    <div class="res-col-title"><span data-i18n="auto.akfs8o">Chi tiết đặt vé</span></div>
                     <div class="res-item">
-                        <span class="res-item-key">Ghế</span>
+                        <span class="res-item-key"><span data-i18n="auto.huxwi9">Ghế</span></span>
                         <span class="res-item-val" id="seatsDisplay">A7</span>
                     </div>
                     <div class="res-item" id="foodRow" style="display:none">
-                        <span class="res-item-key">Đồ ăn</span>
+                        <span class="res-item-key"><span data-i18n="booking.food">Đồ ăn</span></span>
                         <span class="res-item-val" id="combosDisplay">—</span>
                     </div>
                     <div class="digital-badge">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                        Vé điện tử
+                        <span data-i18n="auto.t2xyxy">Vé điện tử</span>
                     </div>
                 </div>
             </div>
@@ -817,11 +817,11 @@
             <div class="step-block">
                 <div class="step-header">
                     <div class="step-header-title">
-                        <em>Bước 1:</em> GIẢM GIÁ
+                        <em><span data-i18n="auto.bwzmqa">Bước 1:</span></em> <span data-i18n="auto.soazg0">GIẢM GIÁ</span>
                     </div>
                     <button class="step-reset-btn" onclick="resetDiscounts()">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
-                        Đặt lại
+                        <span data-i18n="auto.at9nrp">Đặt lại</span>
                     </button>
                 </div>
                 <div class="discount-list">
@@ -833,10 +833,10 @@
                         </div>
                         <div class="discount-row-right">
                             <div class="discount-input-wrap" id="input-voucher" onclick="event.stopPropagation()">
-                                <input type="text" class="discount-input" id="val-voucher" placeholder="Nhập mã voucher" autocomplete="off">
-                                <button class="discount-apply-btn" onclick="applyDiscount('voucher')">Áp dụng</button>
+                                <input type="text" class="discount-input" id="val-voucher" placeholder="Nhập mã voucher"  autocomplete="off">
+                                <button class="discount-apply-btn" onclick="applyDiscount('voucher')"><span data-i18n="auto.sctxjk">Áp dụng</span></button>
                             </div>
-                            <span class="discount-badge" id="badge-voucher" style="display:none">Đã áp dụng</span>
+                            <span class="discount-badge" id="badge-voucher" style="display:none"><span data-i18n="auto.defie6">Đã áp dụng</span></span>
                             <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </div>
@@ -844,14 +844,14 @@
                     <div class="discount-row" onclick="toggleDiscount('code', this)">
                         <div class="discount-row-left">
                             <div class="discount-row-icon disc-icon-code">🏷️</div>
-                            <span class="discount-row-label">Mã giảm giá</span>
+                            <span class="discount-row-label"><span data-i18n="auto.4apwz9">Mã giảm giá</span></span>
                         </div>
                         <div class="discount-row-right">
                             <div class="discount-input-wrap" id="input-code" onclick="event.stopPropagation()">
-                                <input type="text" class="discount-input" id="val-code" placeholder="Nhập mã khuyến mãi" autocomplete="off">
-                                <button class="discount-apply-btn" onclick="applyDiscount('code')">Áp dụng</button>
+                                <input type="text" class="discount-input" id="val-code" placeholder="Nhập mã khuyến mãi"  autocomplete="off">
+                                <button class="discount-apply-btn" onclick="applyDiscount('code')"><span data-i18n="auto.sctxjk">Áp dụng</span></button>
                             </div>
-                            <span class="discount-badge" id="badge-code" style="display:none">Đã áp dụng</span>
+                            <span class="discount-badge" id="badge-code" style="display:none"><span data-i18n="auto.defie6">Đã áp dụng</span></span>
                             <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </div>
@@ -859,14 +859,14 @@
                     <div class="discount-row" onclick="toggleDiscount('points', this)">
                         <div class="discount-row-left">
                             <div class="discount-row-icon disc-icon-points">⭐</div>
-                            <span class="discount-row-label">Điểm thành viên</span>
+                            <span class="discount-row-label"><span data-i18n="auto.nc4cp3">Điểm thành viên</span></span>
                         </div>
                         <div class="discount-row-right">
                             <div class="discount-input-wrap" id="input-points" onclick="event.stopPropagation()">
-                                <input type="number" class="discount-input" id="val-points" placeholder="Nhập số điểm muốn dùng" min="0">
-                                <button class="discount-apply-btn" onclick="applyDiscount('points')">Áp dụng</button>
+                                <input type="number" class="discount-input" id="val-points" placeholder="Nhập số điểm muốn dùng"  min="0">
+                                <button class="discount-apply-btn" onclick="applyDiscount('points')"><span data-i18n="auto.sctxjk">Áp dụng</span></button>
                             </div>
-                            <span class="discount-badge" id="badge-points" style="display:none">Đã áp dụng</span>
+                            <span class="discount-badge" id="badge-points" style="display:none"><span data-i18n="auto.defie6">Đã áp dụng</span></span>
                             <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </div>
@@ -874,14 +874,14 @@
                     <div class="discount-row" onclick="toggleDiscount('partner', this)">
                         <div class="discount-row-left">
                             <div class="discount-row-icon disc-icon-partner">🤝</div>
-                            <span class="discount-row-label">Đối tác</span>
+                            <span class="discount-row-label"><span data-i18n="auto.29z8mo">Đối tác</span></span>
                         </div>
                         <div class="discount-row-right">
                             <div class="discount-input-wrap" id="input-partner" onclick="event.stopPropagation()">
-                                <input type="text" class="discount-input" id="val-partner" placeholder="Nhập mã đối tác" autocomplete="off">
-                                <button class="discount-apply-btn" onclick="applyDiscount('partner')">Áp dụng</button>
+                                <input type="text" class="discount-input" id="val-partner" placeholder="Nhập mã đối tác" data-i18n-placeholder="auto.ph_e4srp9" autocomplete="off">
+                                <button class="discount-apply-btn" onclick="applyDiscount('partner')"><span data-i18n="auto.sctxjk">Áp dụng</span></button>
                             </div>
-                            <span class="discount-badge" id="badge-partner" style="display:none">Đã áp dụng</span>
+                            <span class="discount-badge" id="badge-partner" style="display:none"><span data-i18n="auto.defie6">Đã áp dụng</span></span>
                             <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </div>
@@ -889,14 +889,14 @@
                     <div class="discount-row" onclick="toggleDiscount('promo', this)">
                         <div class="discount-row-left">
                             <div class="discount-row-icon disc-icon-promo">🎉</div>
-                            <span class="discount-row-label">Mã Khuyến Mãi</span>
+                            <span class="discount-row-label"><span data-i18n="auto.03op76">Mã Khuyến Mãi</span></span>
                         </div>
                         <div class="discount-row-right">
                             <div class="discount-input-wrap" id="input-promo" onclick="event.stopPropagation()">
-                                <input type="text" class="discount-input" id="val-promo" placeholder="Nhập mã khuyến mãi" autocomplete="off">
-                                <button class="discount-apply-btn" onclick="applyDiscount('promo')">Áp dụng</button>
+                                <input type="text" class="discount-input" id="val-promo" placeholder="Nhập mã khuyến mãi"  autocomplete="off">
+                                <button class="discount-apply-btn" onclick="applyDiscount('promo')"><span data-i18n="auto.sctxjk">Áp dụng</span></button>
                             </div>
-                            <span class="discount-badge" id="badge-promo" style="display:none">Đã áp dụng</span>
+                            <span class="discount-badge" id="badge-promo" style="display:none"><span data-i18n="auto.defie6">Đã áp dụng</span></span>
                             <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </div>
@@ -906,7 +906,7 @@
                 <div class="promo-hint-banner" style="margin: 0 22px 18px; padding: 14px 18px; background: linear-gradient(95deg, rgba(229, 9, 20, 0.07) 0%, rgba(229, 9, 20, 0.02) 100%); border: 1px dashed rgba(229, 9, 20, 0.22); border-radius: 10px; display: flex; align-items: flex-start; gap: 12px; font-size: 0.82rem; line-height: 1.5; color: #8a8f9a; box-shadow: inset 0 0 10px rgba(0,0,0,0.2);">
                     <span style="font-size: 1.25rem; line-height: 1; filter: drop-shadow(0 0 4px rgba(240,165,0,0.5));">💡</span>
                     <div>
-                        <strong style="color: #cbd5e1; display: block; margin-bottom: 4px; font-weight: 700;">Gợi ý Ưu đãi dành cho bạn:</strong>
+                        <strong style="color: #cbd5e1; display: block; margin-bottom: 4px; font-weight: 700;"><span data-i18n="auto.evcgf0">Gợi ý Ưu đãi dành cho bạn:</span></strong>
                         <div style="margin-bottom: 6px;">
                             • Thành viên mới? Áp dụng mã <code class="welcome" onclick="quickApplyVoucher('WELCOME50')" title="Nhấp để áp dụng ngay">WELCOME50</code> để **giảm 50%** (tối đa 100K) cho đơn từ 200K.
                         </div>
@@ -921,21 +921,21 @@
             <div class="step-block">
                 <div class="step-header">
                     <div class="step-header-title">
-                        <em>Bước 2:</em> THẺ QUÀ TẶNG
+                        <em><span data-i18n="auto.iactkn">Bước 2:</span></em> <span data-i18n="auto.a810ln">THẺ QUÀ TẶNG</span>
                     </div>
                 </div>
                 <div class="discount-list">
                     <div class="discount-row" onclick="toggleDiscount('giftcard', this)">
                         <div class="discount-row-left">
                             <div class="discount-row-icon disc-icon-promo">🎁</div>
-                            <span class="discount-row-label">Thẻ quà tặng</span>
+                            <span class="discount-row-label"><span data-i18n="auto.lfmul2">Thẻ quà tặng</span></span>
                         </div>
                         <div class="discount-row-right">
                             <div class="discount-input-wrap" id="input-giftcard" onclick="event.stopPropagation()">
-                                <input type="text" class="discount-input" id="val-giftcard" placeholder="Nhập mã thẻ quà tặng" autocomplete="off">
-                                <button class="discount-apply-btn" onclick="applyDiscount('giftcard')">Áp dụng</button>
+                                <input type="text" class="discount-input" id="val-giftcard" placeholder="Nhập mã thẻ quà tặng"  autocomplete="off">
+                                <button class="discount-apply-btn" onclick="applyDiscount('giftcard')"><span data-i18n="auto.sctxjk">Áp dụng</span></button>
                             </div>
-                            <span class="discount-badge" id="badge-giftcard" style="display:none">Đã áp dụng</span>
+                            <span class="discount-badge" id="badge-giftcard" style="display:none"><span data-i18n="auto.defie6">Đã áp dụng</span></span>
                             <svg class="discount-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </div>
@@ -946,7 +946,7 @@
             <div class="step-block">
                 <div class="step-header">
                     <div class="step-header-title">
-                        <em>Bước 3:</em> HÌNH THỨC THANH TOÁN
+                        <em><span data-i18n="auto.loyrk4">Bước 3:</span></em> <span data-i18n="auto.86fe3w">HÌNH THỨC THANH TOÁN</span>
                     </div>
                 </div>
                 <div class="payment-list" id="paymentList">
@@ -960,8 +960,8 @@
                         </div>
                         <div class="payment-info">
                             <strong>QR Pay (VietQR / MB Bank)</strong>
-                            <span>Quét mã QR bằng app ngân hàng bất kỳ</span>
-                            <div class="payment-badge">✓ Xử lý tức thì · Không phí giao dịch</div>
+                            <span><span data-i18n="auto.45ivwu">Quét mã QR bằng app ngân hàng bất kỳ</span></span>
+                            <div class="payment-badge"><span data-i18n="auto.fvg23b">✓ Xử lý tức thì · Không phí giao dịch</span></div>
                         </div>
                     </div>
 
@@ -981,39 +981,39 @@
 
                 <!-- Tổng cộng section -->
                 <div class="summary-section">
-                    <div class="summary-section-title">Tổng cộng</div>
+                    <div class="summary-section-title"><span data-i18n="ticketPrices.calcTotalFinal">Tổng cộng</span></div>
                     <div class="sum-line">
-                        <span class="sum-label" id="ticketLbl">Vé xem phim (1x)</span>
+                        <span class="sum-label" id="ticketLbl"><span data-i18n="auto.a0svfe">Vé xem phim (1x)</span></span>
                         <span class="sum-value" id="ticketVal">100.000 VND</span>
                     </div>
                     <div class="sum-line" id="fnbSumLine" style="display:none">
-                        <span class="sum-label">Đồ ăn & Thức uống</span>
+                        <span class="sum-label"><span data-i18n="auto.ciojns">Đồ ăn & Thức uống</span></span>
                         <span class="sum-value" id="fnbVal">0 VND</span>
                     </div>
                     <div class="sum-line" style="border-top:1px solid #25282e; padding-top:10px; margin-top:4px;">
-                        <span class="sum-label" style="font-weight:600; color:#c5c8cf;">Tạm tính</span>
+                        <span class="sum-label" style="font-weight:600; color:#c5c8cf;"><span data-i18n="auto.4gq0ue">Tạm tính</span></span>
                         <span class="sum-value" style="font-weight:800;" id="subtotalVal">100.000 VND</span>
                     </div>
                 </div>
 
                 <!-- Khuyến mãi section -->
                 <div class="summary-section" id="promoSection">
-                    <div class="summary-section-title">Khuyến mãi</div>
+                    <div class="summary-section-title"><span data-i18n="auto.00sghj">Khuyến mãi</span></div>
                     <div class="sum-line">
-                        <span class="sum-label sum-discount-label" id="discountLbl">Chưa có mã giảm giá</span>
-                        <span class="sum-value sum-discount-value" id="discountVal">0,00 đ</span>
+                        <span class="sum-label sum-discount-label" id="discountLbl"><span data-i18n="auto.ld5hdd">Chưa có mã giảm giá</span></span>
+                        <span class="sum-value sum-discount-value" id="discountVal"><span data-i18n="auto.tqafbq">0,00 đ</span></span>
                     </div>
                 </div>
 
                 <!-- Total -->
                 <div class="sum-total-section">
-                    <div class="sum-total-label">Tổng số tiền thanh toán</div>
+                    <div class="sum-total-label"><span data-i18n="auto.u3txs5">Tổng số tiền thanh toán</span></div>
                     <div class="sum-total-value" id="totalFinalVal">100.000 VND</div>
                 </div>
 
                 <!-- Error Banner (ẩn mặc định, hiện khi có lỗi) -->
                 <div id="payErrorBanner" style="display:none; margin-bottom:12px; padding:12px 14px; background:rgba(229,9,20,0.1); border:1px solid rgba(229,9,20,0.4); border-radius:10px; font-size:0.82rem; color:#f87171; line-height:1.5;">
-                    <div style="font-weight:700; margin-bottom:4px;" id="payErrorTitle">⚠ Lỗi</div>
+                    <div style="font-weight:700; margin-bottom:4px;" id="payErrorTitle"><span data-i18n="auto.x72w9j">⚠ Lỗi</span></div>
                     <div id="payErrorMsg"></div>
                     <div id="payErrorActions" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;"></div>
                 </div>
@@ -1025,25 +1025,25 @@
                             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
                             <line x1="1" y1="10" x2="23" y2="10"/>
                         </svg>
-                        THANH TOÁN NGAY
+                        <span data-i18n="auto.l2vmm0">THANH TOÁN NGAY</span>
                     </button>
                 </div>
-                <p class="pay-note">Bằng cách nhấn thanh toán, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách bảo mật</a> của chúng tôi.</p>
+                <p class="pay-note">Bằng cách nhấn thanh toán, bạn đồng ý với <a href="#"><span data-i18n="auto.dvr498">Điều khoản dịch vụ</span></a> và <a href="#" data-i18n="footer.privacy">Chính sách bảo mật</a> của chúng tôi.</p>
 
             </div>
 
             <!-- Countdown Clock -->
             <div class="countdown-box">
-                <div class="countdown-title">⏱ Thời gian giữ vé</div>
+                <div class="countdown-title"><span data-i18n="auto.rx4gc5">⏱ Thời gian giữ vé</span></div>
                 <div class="countdown-row">
                     <div class="countdown-unit">
                         <div class="countdown-num" id="cdMin">10</div>
-                        <div class="countdown-label">Phút</div>
+                        <div class="countdown-label"><span data-i18n="auto.sdj5m2">Phút</span></div>
                     </div>
                     <div class="countdown-sep">:</div>
                     <div class="countdown-unit">
                         <div class="countdown-num" id="cdSec">00</div>
-                        <div class="countdown-label">Giây</div>
+                        <div class="countdown-label"><span data-i18n="auto.3fefe9">Giây</span></div>
                     </div>
                 </div>
                 <div class="countdown-warning" id="cdWarning"></div>
@@ -1079,25 +1079,25 @@
                     <span class="logo-d">D</span>
                     <span class="logo-text">D-CINEMA</span>
                 </a>
-                <p>Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
+                <p data-i18n="footer.desc">Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
             </div>
             <div class="footer-col">
-                <h4>DỊCH VỤ</h4>
-                <a href="#">Về chúng tôi</a>
-                <a href="#">Tuyển dụng</a>
-                <a href="#">Liên hệ</a>
+                <h4 data-i18n="footer.services">DỊCH VỤ</h4>
+                <a href="#" data-i18n="footer.about">Về chúng tôi</a>
+                <a href="#" data-i18n="footer.career">Tuyển dụng</a>
+                <a href="#" data-i18n="footer.contact">Liên hệ</a>
             </div>
             <div class="footer-col">
-                <h4>PHÁP LÝ</h4>
-                <a href="#">Điều khoản sử dụng</a>
-                <a href="#">Chính sách bảo mật</a>
-                <a href="#">Chính sách thanh toán</a>
+                <h4 data-i18n="footer.legal">PHÁP LÝ</h4>
+                <a href="#" data-i18n="footer.terms">Điều khoản sử dụng</a>
+                <a href="#" data-i18n="footer.privacy">Chính sách bảo mật</a>
+                <a href="#" data-i18n="footer.payment">Chính sách thanh toán</a>
             </div>
             <div class="footer-col">
-                <h4>ĐĂNG KÝ NHẬN TIN</h4>
-                <p style="margin-bottom: 5px; font-size: 0.8rem;">Nhận thông tin về phim mới và khuyến mãi.</p>
+                <h4 data-i18n="footer.newsletter">ĐĂNG KÝ NHẬN TIN</h4>
+                <p style="margin-bottom: 5px; font-size: 0.8rem;" data-i18n="footer.newsDesc">Nhận thông tin về phim mới và khuyến mãi.</p>
                 <form class="newsletter-form" onsubmit="event.preventDefault()">
-                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
+                    <input type="email" placeholder="Email của bạn"  class="newsletter-input" required >
                     <button type="submit" class="newsletter-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
                     </button>
@@ -1113,14 +1113,14 @@
     <div class="qr-modal-overlay" id="qrModal">
         <div class="qr-modal-box">
             <div class="qr-modal-header">
-                <div class="qr-modal-title" id="qrModalTitle">Quét mã QR để thanh toán</div>
+                <div class="qr-modal-title" id="qrModalTitle"><span data-i18n="auto.q31uip">Quét mã QR để thanh toán</span></div>
                 <button class="qr-modal-close" onclick="closeQrModal()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
             <div class="qr-modal-body">
                 <div class="qr-amount-badge">
-                    <div class="qr-amount-label">Số tiền cần thanh toán</div>
+                    <div class="qr-amount-label"><span data-i18n="auto.m5y1ts">Số tiền cần thanh toán</span></div>
                     <div class="qr-amount-value" id="qrAmountDisplay">0 VND</div>
                 </div>
                 <div class="qr-image-wrap">
@@ -1129,15 +1129,15 @@
                     </div>
                 </div>
                 <div class="qr-bank-info" id="qrBankInfo">
-                    <div class="qr-bank-row"><span class="qr-bank-key">Ngân hàng / Ví</span><span class="qr-bank-val" id="qrBankName">—</span></div>
-                    <div class="qr-bank-row"><span class="qr-bank-key">Số tài khoản</span>
+                    <div class="qr-bank-row"><span class="qr-bank-key"><span data-i18n="auto.pnunqg">Ngân hàng / Ví</span></span><span class="qr-bank-val" id="qrBankName">—</span></div>
+                    <div class="qr-bank-row"><span class="qr-bank-key"><span data-i18n="auto.9ui49u">Số tài khoản</span></span>
                         <span class="qr-bank-val" style="display:flex;align-items:center;gap:8px;">
                             <span id="qrAccNumber">—</span>
                             <button onclick="copyToClipboard('qrAccNumber')" title="Sao chép" style="background:rgba(255,255,255,0.08);border:1px solid #3a3e47;border-radius:5px;padding:2px 7px;color:#8a8f9a;font-size:0.72rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.color='#f0f0f0'" onmouseout="this.style.color='#8a8f9a'">📋</button>
                         </span>
                     </div>
-                    <div class="qr-bank-row"><span class="qr-bank-key">Tên tài khoản</span><span class="qr-bank-val" id="qrAccName">—</span></div>
-                    <div class="qr-bank-row"><span class="qr-bank-key">Nội dung CK</span>
+                    <div class="qr-bank-row"><span class="qr-bank-key"><span data-i18n="auto.ac3ngf">Tên tài khoản</span></span><span class="qr-bank-val" id="qrAccName">—</span></div>
+                    <div class="qr-bank-row"><span class="qr-bank-key"><span data-i18n="auto.bq75t9">Nội dung CK</span></span>
                         <span class="qr-bank-val" style="display:flex;align-items:center;gap:8px;">
                             <span id="qrTransferNote">—</span>
                             <button onclick="copyToClipboard('qrTransferNote')" title="Sao chép" style="background:rgba(255,255,255,0.08);border:1px solid #3a3e47;border-radius:5px;padding:2px 7px;color:#8a8f9a;font-size:0.72rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.color='#f0f0f0'" onmouseout="this.style.color='#8a8f9a'">📋</button>
@@ -1145,17 +1145,17 @@
                     </div>
                 </div>
                 <ol class="qr-steps">
-                    <li class="qr-step-item"><div class="qr-step-num">1</div><span>Mở ứng dụng ngân hàng trên điện thoại</span></li>
-                    <li class="qr-step-item"><div class="qr-step-num">2</div><span>Chọn <strong>Quét QR</strong> và scan mã trên màn hình</span></li>
-                    <li class="qr-step-item"><div class="qr-step-num">3</div><span>Kiểm tra số tiền và xác nhận thanh toán trong app</span></li>
-                    <li class="qr-step-item"><div class="qr-step-num">4</div><span>Hệ thống sẽ tự động xác nhận và chuyển hướng khi nhận được tiền.</span></li>
+                    <li class="qr-step-item"><div class="qr-step-num">1</div><span><span data-i18n="auto.l95ik1">Mở ứng dụng ngân hàng trên điện thoại</span></span></li>
+                    <li class="qr-step-item"><div class="qr-step-num">2</div><span>Chọn <strong><span data-i18n="auto.fcsxfa">Quét QR</span></strong> và scan mã trên màn hình</span></li>
+                    <li class="qr-step-item"><div class="qr-step-num">3</div><span><span data-i18n="auto.yj7pi6">Kiểm tra số tiền và xác nhận thanh toán trong app</span></span></li>
+                    <li class="qr-step-item"><div class="qr-step-num">4</div><span><span data-i18n="auto.6ye4ql">Hệ thống sẽ tự động xác nhận và chuyển hướng khi nhận được tiền.</span></span></li>
                 </ol>
 
                 <!-- Trạng thái chờ nhận tiền — real-time cập nhật qua Socket.IO hoặc polling -->
                 <div class="qr-status-container" style="display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:20px; padding:14px 18px; background:rgba(229,9,20,0.05); border:1px solid rgba(229,9,20,0.2); border-radius:10px;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <div class="qr-pulse-spinner" style="width:14px; height:14px; border:2px solid #e50914; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; flex-shrink:0;"></div>
-                        <span class="qr-status-text" style="font-size:0.83rem; font-weight:600; color:#e50914;">⏳ Đang chờ xác nhận chuyển khoản...</span>
+                        <span class="qr-status-text" style="font-size:0.83rem; font-weight:600; color:#e50914;"><span data-i18n="auto.l1owlp">⏳ Đang chờ xác nhận chuyển khoản...</span></span>
                     </div>
                     <span style="font-size:0.72rem; color:#8a8f9a; text-align:center;">Hệ thống sẽ tự động xác nhận ngay khi nhận được thanh toán.<br>Bạn không cần làm gì thêm.</span>
                 </div>
@@ -1167,10 +1167,10 @@
     <div class="modal-overlay" id="successModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(12px);">
         <div class="modal-box" style="background:#1a1c1f; border:1px solid rgba(34,197,94,0.4); border-radius:20px; padding:40px 36px; max-width:400px; width:92%; text-align:center; animation:qrSlideIn 0.35s ease; box-shadow:0 0 60px rgba(34,197,94,0.2), 0 30px 80px rgba(0,0,0,0.6);">
             <div class="modal-icon" style="font-size:3rem; margin-bottom:16px; animation:pulse-success 1s ease;">🎉</div>
-            <h2 style="font-size:1.4rem; font-weight:900; color:#22c55e; margin-bottom:10px; letter-spacing:-0.3px;">Đặt vé thành công!</h2>
-            <p style="font-size:0.88rem; color:#c5c8cf; line-height:1.6; margin-bottom:8px;">Hệ thống đã nhận được thanh toán và xác nhận vé của bạn. Cảm ơn bạn!</p>
+            <h2 style="font-size:1.4rem; font-weight:900; color:#22c55e; margin-bottom:10px; letter-spacing:-0.3px;"><span data-i18n="auto.yu29ho">Đặt vé thành công!</span></h2>
+            <p style="font-size:0.88rem; color:#c5c8cf; line-height:1.6; margin-bottom:8px;"><span data-i18n="auto.yhbjzo">Hệ thống đã nhận được thanh toán và xác nhận vé của bạn. Cảm ơn bạn!</span></p>
             <p id="successRedirectNote" style="font-size:0.78rem;color:#8a8f9a;margin-bottom:20px;">Tự động chuyển trang sau <strong style="color:#f0f0f0;"><span id="redirectCountdown">3</span></strong> giây…</p>
-            <button onclick="window.location.href='payment-success.html?v=' + Date.now()" style="width:100%; padding:13px; background:#22c55e; color:#fff; border:none; border-radius:10px; font-size:0.92rem; font-weight:800; cursor:pointer; font-family:'Inter',sans-serif; letter-spacing:0.3px; transition:all 0.2s;" onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">Xem vé của tôi ngay →</button>
+            <button onclick="window.location.href='payment-success.html?v=' + Date.now()" style="width:100%; padding:13px; background:#22c55e; color:#fff; border:none; border-radius:10px; font-size:0.92rem; font-weight:800; cursor:pointer; font-family:'Inter',sans-serif; letter-spacing:0.3px; transition:all 0.2s;" onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'"><span data-i18n="auto.4hajua">Xem vé của tôi ngay →</span></button>
         </div>
     </div>
 

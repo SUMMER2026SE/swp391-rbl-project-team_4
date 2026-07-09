@@ -5,10 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chọn Ghế | D-CINEMA</title>
-    <meta name="description" content="Chọn ghế xem phim tại D-CINEMA. Ghế thường, VIP và ghế cặp đôi. Đặt vé nhanh chóng.">
+    <meta name="description"
+        content="Chọn ghế xem phim tại D-CINEMA. Ghế thường, VIP và ghế cặp đôi. Đặt vé nhanh chóng.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <style>
         /* ─── CSS Variables ─── */
         :root {
@@ -37,57 +39,131 @@
 
         /* ─── Breadcrumb Banner ─── */
         .seat-breadcrumb {
-            background: linear-gradient(180deg, rgba(229,9,20,0.1) 0%, transparent 100%);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: linear-gradient(180deg, rgba(229, 9, 20, 0.1) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             padding: 12px 0;
         }
+
         .breadcrumb-inner {
-            max-width: 1400px; margin: 0 auto; padding: 0 20px;
-            display: flex; align-items: center; gap: 8px;
-            font-size: 0.82rem; color: #888;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: #888;
         }
-        .breadcrumb-inner a { color: #888; text-decoration: none; transition: color 0.2s; }
-        .breadcrumb-inner a:hover { color: #e50914; }
-        .breadcrumb-sep { color: #444; }
-        .breadcrumb-current { color: #e50914; font-weight: 600; }
-        .breadcrumb-cinema { color: #ccc; font-weight: 600; }
-        
+
+        .breadcrumb-inner a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb-inner a:hover {
+            color: #e50914;
+        }
+
+        .breadcrumb-sep {
+            color: #444;
+        }
+
+        .breadcrumb-current {
+            color: #e50914;
+            font-weight: 600;
+        }
+
+        .breadcrumb-cinema {
+            color: #ccc;
+            font-weight: 600;
+        }
+
         /* ─── Price breakdown ─── */
         .price-breakdown {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 10px; padding: 14px;
-            margin-top: 12px; display: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 12px;
+            display: none;
         }
-        .price-breakdown.visible { display: block; }
+
+        .price-breakdown.visible {
+            display: block;
+        }
+
         .price-breakdown-row {
-            display: flex; justify-content: space-between;
-            font-size: 0.8rem; color: #888; margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 6px;
         }
-        .price-breakdown-row:last-child { margin-bottom: 0; }
-        .price-breakdown-row .pbr-val { color: #ccc; font-weight: 600; }
+
+        .price-breakdown-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .price-breakdown-row .pbr-val {
+            color: #ccc;
+            font-weight: 600;
+        }
 
         /* ─── Animations ─── */
         @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
-        .sidebar-summary { animation: slideInRight 0.5s cubic-bezier(0.4,0,0.2,1); }
-        .seat-map { animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .sidebar-summary {
+            animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .seat-map {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
 
         /* ─── Showtime chip ─── */
         .showtime-chip {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(229,9,20,0.1); border: 1px solid rgba(229,9,20,0.25);
-            border-radius: 6px; padding: 5px 10px;
-            font-size: 0.78rem; font-weight: 700; color: #ff8080;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(229, 9, 20, 0.1);
+            border: 1px solid rgba(229, 9, 20, 0.25);
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #ff8080;
             margin-top: 8px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        html, body {
+        html,
+        body {
             font-family: var(--font);
             background: var(--bg-dark);
             color: var(--text);
@@ -95,7 +171,10 @@
             min-height: 100vh;
         }
 
-        a { text-decoration: none; color: inherit; }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
 
         /* ─── Navbar ─── */
         .navbar {
@@ -106,6 +185,7 @@
             backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
         }
+
         .nav-container {
             max-width: 1500px;
             margin: 0 auto;
@@ -114,13 +194,49 @@
             align-items: center;
             gap: 32px;
         }
-        .logo { display: flex; align-items: center; gap: 8px; }
-        .logo-d { font-size: 1.8rem; font-weight: 900; color: var(--primary); }
-        .logo-text { font-size: 1rem; font-weight: 800; letter-spacing: 2px; }
-        .nav-links { display: flex; gap: 28px; }
-        .nav-links a { color: #666; font-weight: 600; font-size: 0.9rem; transition: color 0.2s; }
-        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
-        .nav-actions { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-d {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .logo-text {
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            color: #666;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary);
+        }
+
+        .nav-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
         .btn-login {
             background: var(--primary);
             color: #fff;
@@ -130,15 +246,17 @@
             font-size: 0.85rem;
             transition: all 0.3s;
         }
+
         .btn-login:hover {
             background: var(--primary-hover);
             box-shadow: 0 4px 15px var(--primary-glow);
         }
+
         .nav-back-btn {
             display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border);
             color: var(--text-muted);
             padding: 8px 14px;
@@ -148,10 +266,11 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .nav-back-btn:hover {
             color: #fff;
-            border-color: rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         /* ─── Breadcrumb Progress ─── */
@@ -160,6 +279,7 @@
             border-bottom: 1px solid var(--border);
             padding: 14px 24px;
         }
+
         .steps-container {
             max-width: 1500px;
             margin: 0 auto;
@@ -167,6 +287,7 @@
             align-items: center;
             gap: 0;
         }
+
         .step-item {
             display: flex;
             align-items: center;
@@ -178,7 +299,11 @@
             color: var(--text-muted);
             padding: 0 20px 0 0;
         }
-        .step-item:first-child { padding-left: 0; }
+
+        .step-item:first-child {
+            padding-left: 0;
+        }
+
         .step-num {
             width: 26px;
             height: 26px;
@@ -192,19 +317,26 @@
             font-weight: 800;
             flex-shrink: 0;
         }
+
         .step-item.active {
             color: #fff;
         }
+
         .step-item.active .step-num {
             background: var(--primary);
             border-color: var(--primary);
             box-shadow: 0 0 12px var(--primary-glow);
         }
+
         .step-item.done .step-num {
             background: #16a34a;
             border-color: #16a34a;
         }
-        .step-item.done { color: #4ade80; }
+
+        .step-item.done {
+            color: #4ade80;
+        }
+
         .step-arrow {
             color: var(--border);
             font-size: 1.2rem;
@@ -221,9 +353,15 @@
             margin: 0 auto;
             gap: 0;
         }
+
         @media (max-width: 1100px) {
-            .page-wrapper { grid-template-columns: 1fr; }
-            .sidebar-summary { order: -1; }
+            .page-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-summary {
+                order: -1;
+            }
         }
 
         /* ─── Seat Layout Column ─── */
@@ -242,19 +380,21 @@
             perspective: 600px;
             position: relative;
         }
+
         .screen-bar {
             height: 8px;
-            background: linear-gradient(90deg, transparent, rgba(229,9,20,0.6), #ff1a26, rgba(229,9,20,0.6), transparent);
+            background: linear-gradient(90deg, transparent, rgba(229, 9, 20, 0.6), #ff1a26, rgba(229, 9, 20, 0.6), transparent);
             border-radius: 50% / 100% 100% 0 0;
-            box-shadow: 0 4px 30px rgba(229, 9, 20, 0.6), 0 2px 10px rgba(229,9,20,0.3);
+            box-shadow: 0 4px 30px rgba(229, 9, 20, 0.6), 0 2px 10px rgba(229, 9, 20, 0.3);
             transform: rotateX(-15deg);
             position: relative;
             z-index: 2;
         }
+
         .screen-glow {
             width: 80%;
             height: 140px;
-            background: linear-gradient(180deg, rgba(229,9,20,0.12) 0%, rgba(229,9,20,0.01) 85%, transparent 100%);
+            background: linear-gradient(180deg, rgba(229, 9, 20, 0.12) 0%, rgba(229, 9, 20, 0.01) 85%, transparent 100%);
             margin: 0 auto;
             position: absolute;
             left: 10%;
@@ -264,6 +404,7 @@
             pointer-events: none;
             opacity: 0.75;
         }
+
         .screen-label {
             margin-top: 18px;
             font-size: 0.75rem;
@@ -284,11 +425,13 @@
             width: fit-content;
             min-width: 100%;
         }
+
         .seat-row {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+
         .row-label {
             width: 28px;
             font-weight: 800;
@@ -310,11 +453,12 @@
             font-size: 0.72rem;
             font-weight: 800;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255,255,255,0.07);
+            border: 1px solid rgba(255, 255, 255, 0.07);
             position: relative;
             flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
+
         /* Chair headrest */
         .seat::before {
             content: '';
@@ -323,10 +467,11 @@
             left: 4px;
             right: 4px;
             height: 8px;
-            background: rgba(255,255,255,0.12);
+            background: rgba(255, 255, 255, 0.12);
             border-radius: 2px;
             transition: all 0.2s;
         }
+
         /* Chair cushion */
         .seat::after {
             content: '';
@@ -335,9 +480,9 @@
             left: 4px;
             right: 4px;
             top: 13px;
-            background: rgba(0,0,0,0.25);
+            background: rgba(0, 0, 0, 0.25);
             border-radius: 2px;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.2s;
         }
 
@@ -346,12 +491,14 @@
             background: linear-gradient(180deg, #5a6578, #3b424e);
             color: #cbd5e1;
         }
+
         .seat.normal:hover:not(.booked):not(.locked) {
             background: linear-gradient(180deg, #7c8ba1, #4f5869);
             transform: translateY(-3px) scale(1.08);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
             color: #fff;
         }
+
         .seat.normal:hover::before {
             background: rgba(255, 255, 255, 0.25);
         }
@@ -362,12 +509,14 @@
             color: #fef08a;
             border-color: rgba(252, 211, 77, 0.25);
         }
+
         .seat.vip:hover:not(.booked):not(.locked) {
             background: linear-gradient(180deg, #e07416, #aa5209);
             transform: translateY(-3px) scale(1.08);
             box-shadow: 0 6px 14px rgba(180, 83, 9, 0.55);
             color: #fff;
         }
+
         .seat.vip::before {
             background: rgba(255, 255, 255, 0.2);
         }
@@ -381,8 +530,9 @@
             color: #fce7f3;
             border-color: rgba(251, 207, 232, 0.25);
             font-size: 0.65rem;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
         }
+
         .seat.couple::before {
             content: '♥';
             font-size: 0.6rem;
@@ -392,13 +542,14 @@
             transform: translateX(-50%);
             width: 14px;
             height: 14px;
-            background: rgba(255,255,255,0.18);
+            background: rgba(255, 255, 255, 0.18);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #f472b6;
         }
+
         .seat.couple::after {
             content: '';
             position: absolute;
@@ -406,10 +557,11 @@
             left: 6px;
             right: 6px;
             top: 15px;
-            background: rgba(0,0,0,0.25);
+            background: rgba(0, 0, 0, 0.25);
             border-radius: 3px;
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
+
         .seat.couple:hover:not(.booked):not(.locked) {
             background: linear-gradient(180deg, #d82c73, #9d174d);
             transform: translateY(-3px) scale(1.05);
@@ -421,12 +573,13 @@
         .seat.selected {
             background: linear-gradient(180deg, #ff1a26, #cc000a) !important;
             color: #fff !important;
-            border-color: rgba(255,255,255,0.35) !important;
+            border-color: rgba(255, 255, 255, 0.35) !important;
             transform: translateY(-3px) scale(1.08) !important;
             box-shadow: 0 6px 20px rgba(229, 9, 20, 0.65) !important;
         }
+
         .seat.selected::before {
-            background: rgba(255,255,255,0.35) !important;
+            background: rgba(255, 255, 255, 0.35) !important;
         }
 
         /* Booked */
@@ -434,12 +587,16 @@
             background: var(--seat-booked) !important;
             color: #384252 !important;
             cursor: not-allowed;
-            border-color: rgba(255,255,255,0.02) !important;
+            border-color: rgba(255, 255, 255, 0.02) !important;
             opacity: 0.35;
             transform: none !important;
             box-shadow: none !important;
         }
-        .seat.booked::before, .seat.booked::after { display: none !important; }
+
+        .seat.booked::before,
+        .seat.booked::after {
+            display: none !important;
+        }
 
         /* Locked by others */
         .seat.locked {
@@ -451,7 +608,10 @@
         }
 
         /* Aisle gap in row */
-        .aisle-gap { width: 22px; flex-shrink: 0; }
+        .aisle-gap {
+            width: 22px;
+            flex-shrink: 0;
+        }
 
         /* ─── Legend ─── */
         .legend {
@@ -459,13 +619,14 @@
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
-            background: rgba(255,255,255,0.02);
+            background: rgba(255, 255, 255, 0.02);
             padding: 16px 28px;
             border-radius: 40px;
             border: 1px solid var(--border);
             max-width: 720px;
             margin: 0 auto;
         }
+
         .legend-item {
             display: flex;
             align-items: center;
@@ -474,18 +635,37 @@
             color: var(--text-muted);
             font-weight: 500;
         }
+
         .legend-box {
             width: 28px;
             height: 22px;
             border-radius: 4px;
             flex-shrink: 0;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .legend-box.normal { background: linear-gradient(180deg, #5a6578, #3b424e); }
-        .legend-box.vip { background: linear-gradient(180deg, #c2610d, #8f4305); }
-        .legend-box.couple { background: linear-gradient(180deg, #b81f5d, #7d0e3d); width: 56px; }
-        .legend-box.selected { background: linear-gradient(180deg, #ff1a26, #cc000a); }
-        .legend-box.booked { background: var(--seat-booked); opacity: 0.35; border: 1px solid #252a30; }
+
+        .legend-box.normal {
+            background: linear-gradient(180deg, #5a6578, #3b424e);
+        }
+
+        .legend-box.vip {
+            background: linear-gradient(180deg, #c2610d, #8f4305);
+        }
+
+        .legend-box.couple {
+            background: linear-gradient(180deg, #b81f5d, #7d0e3d);
+            width: 56px;
+        }
+
+        .legend-box.selected {
+            background: linear-gradient(180deg, #ff1a26, #cc000a);
+        }
+
+        .legend-box.booked {
+            background: var(--seat-booked);
+            opacity: 0.35;
+            border: 1px solid #252a30;
+        }
 
         /* ─── Sidebar Summary ─── */
         .sidebar-summary {
@@ -500,9 +680,19 @@
             max-height: calc(100vh - 140px);
             overflow-y: auto;
         }
-        .sidebar-summary::-webkit-scrollbar { width: 4px; }
-        .sidebar-summary::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-summary::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .sidebar-summary::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-summary::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-summary::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
 
         /* Movie card */
         .movie-card-mini {
@@ -512,39 +702,53 @@
             border-bottom: 1px solid var(--border);
             margin-bottom: 22px;
         }
+
         .movie-poster-mini {
             width: 76px;
             height: 110px;
             object-fit: cover;
             border-radius: 8px;
             flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
+
         .movie-meta-mini {
             display: flex;
             flex-direction: column;
             gap: 6px;
             min-width: 0;
         }
+
         .movie-title-mini {
             font-size: 1rem;
             font-weight: 800;
             line-height: 1.3;
             color: #fff;
         }
+
         .badge-row {
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
         }
+
         .mini-badge {
             font-size: 0.7rem;
             font-weight: 700;
             padding: 3px 8px;
             border-radius: 4px;
         }
-        .mini-badge.age { background: var(--primary); color: #fff; }
-        .mini-badge.duration { background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid var(--border); }
+
+        .mini-badge.age {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .mini-badge.duration {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
 
         /* Info rows */
         .info-rows {
@@ -555,6 +759,7 @@
             border-bottom: 1px solid var(--border);
             margin-bottom: 22px;
         }
+
         .info-row {
             display: flex;
             justify-content: space-between;
@@ -562,17 +767,20 @@
             gap: 12px;
             font-size: 0.88rem;
         }
+
         .info-key {
             color: var(--text-muted);
             font-weight: 500;
             flex-shrink: 0;
         }
+
         .info-val {
             font-weight: 700;
             color: #fff;
             text-align: right;
             word-break: break-word;
         }
+
         .info-val.seats-val {
             color: var(--primary);
             max-width: 180px;
@@ -586,6 +794,7 @@
             border-bottom: 1px solid var(--border);
             margin-bottom: 20px;
         }
+
         .price-breakdown-title {
             font-size: 0.75rem;
             font-weight: 700;
@@ -594,14 +803,22 @@
             color: var(--text-muted);
             margin-bottom: 12px;
         }
+
         .price-row {
             display: flex;
             justify-content: space-between;
             font-size: 0.85rem;
             margin-bottom: 7px;
         }
-        .price-row .key { color: var(--text-muted); }
-        .price-row .val { font-weight: 600; color: #fff; }
+
+        .price-row .key {
+            color: var(--text-muted);
+        }
+
+        .price-row .val {
+            font-weight: 600;
+            color: #fff;
+        }
 
         /* Total */
         .total-row {
@@ -610,7 +827,12 @@
             align-items: center;
             padding: 16px 0 20px;
         }
-        .total-label { font-size: 1rem; font-weight: 700; }
+
+        .total-label {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
         .total-amount {
             font-size: 1.6rem;
             font-weight: 900;
@@ -635,17 +857,22 @@
             gap: 10px;
             letter-spacing: 0.5px;
         }
+
         .btn-continue:hover:not(:disabled) {
             background: linear-gradient(135deg, #f40612, #d00009);
             box-shadow: 0 8px 24px rgba(229, 9, 20, 0.45);
             transform: translateY(-2px);
         }
+
         .btn-continue:disabled {
             opacity: 0.4;
             cursor: not-allowed;
             transform: none;
         }
-        .btn-continue svg { flex-shrink: 0; }
+
+        .btn-continue svg {
+            flex-shrink: 0;
+        }
 
         /* Seat limit info */
         .seat-limit-info {
@@ -656,7 +883,8 @@
         }
 
         /* Loading / Error state */
-        .loading-state, .error-state {
+        .loading-state,
+        .error-state {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -665,6 +893,7 @@
             gap: 16px;
             text-align: center;
         }
+
         .spinner {
             width: 48px;
             height: 48px;
@@ -673,10 +902,20 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .error-state svg { color: var(--primary); }
-        .error-state h3 { color: var(--text-muted); }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-state svg {
+            color: var(--primary);
+        }
+
+        .error-state h3 {
+            color: var(--text-muted);
+        }
     </style>
     <link rel="stylesheet" href="css/chatbot.css">
 </head>
@@ -691,25 +930,29 @@
             </a>
             <button class="nav-back-btn" onclick="history.back()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M19 12H5M12 5l-7 7 7 7"/>
+                    <path d="M19 12H5M12 5l-7 7 7 7" />
                 </svg>
-                Quay lại
+                <span data-i18n="auto.w7z5y1">Quay lại</span>
             </button>
             <nav class="nav-links">
                 <div class="dropdown">
-                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
+                    <a href="movies.html" id="nav-phim"><span data-i18n="nav.movies">Movies</span> <span
+                            class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav.nowShowing">Đang
+                            chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav.comingSoon">Sắp
+                            chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap" class="active">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
-                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" class="active" data-i18n="nav.cinemas">Rạp</a>
+                <a href="promotions.html" id="nav-promo" data-i18n="nav.promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" data-i18n="nav.news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" data-i18n="nav.prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav.login" data-i18n="nav.login">Đăng
+                    Nhập</a>
             </div>
         </div>
     </header>
@@ -719,17 +962,17 @@
         <div class="steps-container">
             <div class="step-item active">
                 <div class="step-num">1</div>
-                Chọn ghế
+                <span data-i18n="auto.nc68yc">Chọn ghế</span>
             </div>
             <span class="step-arrow">›</span>
             <div class="step-item" id="step2">
                 <div class="step-num">2</div>
-                Bắp & Nước
+                <span data-i18n="auto.on0it6">Bắp & Nước</span>
             </div>
             <span class="step-arrow">›</span>
             <div class="step-item" id="step3">
                 <div class="step-num">3</div>
-                Thanh toán
+                <span data-i18n="auto.jiejrw">Thanh toán</span>
             </div>
         </div>
     </div>
@@ -737,13 +980,14 @@
     <!-- Breadcrumb Navigation -->
     <div class="seat-breadcrumb">
         <div class="breadcrumb-inner">
-            <a href="index.html">Trang chủ</a>
+            <a href="index.html"><span data-i18n="auto.po065p">Trang chủ</span></a>
             <span class="breadcrumb-sep">›</span>
-            <a href="booking.html">Chọn rạp</a>
+            <a href="booking.html"><span data-i18n="auto.eiicmz">Chọn rạp</span></a>
             <span class="breadcrumb-sep">›</span>
-            <span class="breadcrumb-cinema" id="breadcrumbCinema">Đang tải...</span>
+            <span class="breadcrumb-cinema" id="breadcrumbCinema"><span data-i18n="auto.9gs2rk">Đang
+                    tải...</span></span>
             <span class="breadcrumb-sep">›</span>
-            <span class="breadcrumb-current" id="breadcrumbTime">Chọn ghế</span>
+            <span class="breadcrumb-current" id="breadcrumbTime"><span data-i18n="auto.nc68yc">Chọn ghế</span></span>
         </div>
     </div>
 
@@ -755,31 +999,80 @@
             <div class="screen-wrap">
                 <div class="screen-bar"></div>
                 <div class="screen-glow"></div>
-                <div class="screen-label">Màn Hình</div>
+                <div class="screen-label"><span data-i18n="auto.jrtmgi">Màn Hình</span></div>
+            </div>
+
+            <!-- Quy tắc phòng chiếu chuẩn -->
+            <div class="cinema-rules-banner">
+                <div class="banner-badge">
+                    <span class="pulse-dot"></span>
+                    Quy Tắc Rạp Phim
+                </div>
+                <div class="banner-content">
+                    <div class="rule-item">
+                        <span class="rule-icon">✦</span>
+                        <span>Không chừa ghế trống đơn lẻ</span>
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-icon">✦</span>
+                        <span>Chọn các ghế liền kề nhau</span>
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-icon">✦</span>
+                        <span>Hàng Sweetbox luôn theo cặp</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="view-toggle-bar">
+                <button class="view-toggle-btn active" id="btn2DView" onclick="switchView('2d')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M3 9h18M9 21V9" />
+                    </svg>
+                    Sơ đồ 2D
+                </button>
+                <button class="view-toggle-btn" id="btn3DView" onclick="switchView('3d')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                    Xem 3D
+                </button>
             </div>
 
             <!-- Seat availability -->
-            <div id="seatAvailability" style="text-align:center;margin-bottom:20px;font-size:0.85rem;color:var(--text-muted);"></div>
+            <div id="seatAvailability"
+                style="text-align:center;margin-bottom:20px;font-size:0.85rem;color:var(--text-muted);"></div>
 
             <!-- Zoom controls -->
-            <div class="zoom-controls-bar" style="display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 12px; max-width: 90%; margin-left: auto; margin-right: auto;">
-                <button class="nav-back-btn" onclick="zoomSeatMap(1.15)" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+            <div class="zoom-controls-bar"
+                style="display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 12px; max-width: 90%; margin-left: auto; margin-right: auto;">
+                <button class="nav-back-btn" onclick="zoomSeatMap(1.15)"
+                    style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
                     🔍 Phóng to
                 </button>
-                <button class="nav-back-btn" onclick="zoomSeatMap(0.85)" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+                <button class="nav-back-btn" onclick="zoomSeatMap(0.85)"
+                    style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
                     🔍 Thu nhỏ
                 </button>
-                <button class="nav-back-btn" onclick="resetZoom()" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+                <button class="nav-back-btn" onclick="resetZoom()"
+                    style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
                     🔄 Đặt lại
                 </button>
             </div>
 
             <!-- Seat Map Viewport -->
-            <div id="seatMapViewport" style="overflow-x: auto; overflow-y: hidden; border: 1px solid var(--border); border-radius: 12px; padding: 40px 16px; margin-bottom: 30px; background: rgba(0,0,0,0.15); display: flex; justify-content: center; min-height: 400px; align-items: flex-start; scrollbar-width: thin;">
-                <div class="seat-map" id="seatMapContainer" style="transform-origin: center top; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);">
+            <div id="seatMapViewport"
+                style="overflow-x: auto; overflow-y: hidden; border: 1px solid var(--border); border-radius: 12px; padding: 40px 16px; margin-bottom: 30px; background: rgba(0,0,0,0.15); display: flex; justify-content: center; min-height: 400px; align-items: flex-start; scrollbar-width: thin;">
+                <div class="seat-map" id="seatMapContainer"
+                    style="transform-origin: center top; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);">
                     <div class="loading-state">
                         <div class="spinner"></div>
-                        <p style="color: var(--text-muted);">Đang tải sơ đồ ghế ngồi...</p>
+                        <p style="color: var(--text-muted);"><span data-i18n="auto.jctcsc">Đang tải sơ đồ ghế
+                                ngồi...</span></p>
                     </div>
                 </div>
             </div>
@@ -788,7 +1081,7 @@
             <div class="legend">
                 <div class="legend-item">
                     <div class="legend-box normal"></div>
-                    <span>Thường</span>
+                    <span><span data-i18n="auto.5inrh1">Thường</span></span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box vip"></div>
@@ -796,15 +1089,15 @@
                 </div>
                 <div class="legend-item">
                     <div class="legend-box couple"></div>
-                    <span>Cặp đôi (+50%)</span>
+                    <span><span data-i18n="auto.8u354l">Cặp đôi (+50%)</span></span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box selected"></div>
-                    <span>Đang chọn</span>
+                    <span><span data-i18n="auto.5d3zbp">Đang chọn</span></span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box booked"></div>
-                    <span>Đã đặt</span>
+                    <span><span data-i18n="auto.8sj8jz">Đã đặt</span></span>
                 </div>
             </div>
         </section>
@@ -812,19 +1105,24 @@
         <!-- Right: Booking Summary Sidebar -->
         <aside class="sidebar-summary">
             <!-- Countdown Timer -->
-            <div class="countdown-card" id="countdownCard" style="display: none; align-items: center; justify-content: center; gap: 10px; background: rgba(229,9,20,0.12); border: 1px solid rgba(229,9,20,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; animation: fadeIn 0.3s ease;">
+            <div class="countdown-card" id="countdownCard"
+                style="display: none; align-items: center; justify-content: center; gap: 10px; background: rgba(229,9,20,0.12); border: 1px solid rgba(229,9,20,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; animation: fadeIn 0.3s ease;">
                 <span style="font-size: 1.15rem; animation: pulse 1s infinite alternate;">⏱️</span>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #ff8080; letter-spacing: 0.5px;">GIỮ GHẾ TRONG: <span id="countdownTimer" style="font-size: 1.15rem; color: #fff; font-family: monospace; margin-left: 4px;">05:00</span></div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #ff8080; letter-spacing: 0.5px;">GIỮ GHẾ TRONG:
+                    <span id="countdownTimer"
+                        style="font-size: 1.15rem; color: #fff; font-family: monospace; margin-left: 4px;">05:00</span>
+                </div>
             </div>
             <!-- Movie info -->
             <div class="movie-card-mini">
                 <img id="moviePoster" src="images/default_poster.svg" alt="Poster phim" class="movie-poster-mini"
-                     onerror="this.src='images/default_poster.svg'">
+                    onerror="this.src='images/default_poster.svg'">
                 <div class="movie-meta-mini">
-                    <h3 class="movie-title-mini" id="movieTitle">Đang tải...</h3>
+                    <h3 class="movie-title-mini" id="movieTitle"><span data-i18n="auto.9gs2rk">Đang tải...</span></h3>
                     <div class="badge-row">
                         <span class="mini-badge age" id="movieAge">ALL</span>
-                        <span class="mini-badge duration" id="movieDuration">-- phút</span>
+                        <span class="mini-badge duration" id="movieDuration"><span data-i18n="auto.nw5qnf">--
+                                phút</span></span>
                     </div>
                 </div>
             </div>
@@ -832,52 +1130,66 @@
             <!-- Showtime info -->
             <div class="info-rows">
                 <div class="info-row">
-                    <span class="info-key">🎬 Rạp chiếu</span>
+                    <span class="info-key"><span data-i18n="auto.1eugp5">🎬 Rạp chiếu</span></span>
                     <span class="info-val" id="infoCinema">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">🪑 Phòng chiếu</span>
+                    <span class="info-key"><span data-i18n="auto.ujt9iu">🪑 Phòng chiếu</span></span>
                     <span class="info-val" id="infoRoom">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">📅 Ngày chiếu</span>
+                    <span class="info-key"><span data-i18n="auto.6dw3u6">📅 Ngày chiếu</span></span>
                     <span class="info-val" id="infoDate">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">⏰ Giờ chiếu</span>
+                    <span class="info-key"><span data-i18n="auto.e2zslm">⏰ Giờ chiếu</span></span>
                     <span class="info-val" id="infoTime">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">💰 Giá vé gốc</span>
+                    <span class="info-key"><span data-i18n="auto.m0x4su">💰 Giá vé gốc</span></span>
                     <span class="info-val" id="infoPrice">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">🎟️ Ghế đã chọn</span>
-                    <span class="info-val seats-val" id="infoSeats">Chưa chọn</span>
+                    <span class="info-key"><span data-i18n="auto.oq89ji">🎟️ Ghế đã chọn</span></span>
+                    <span class="info-val seats-val" id="infoSeats"><span data-i18n="auto.bk2mnt">Chưa
+                            chọn</span></span>
                 </div>
             </div>
 
             <!-- Price breakdown -->
             <div class="price-breakdown" id="priceBreakdown" style="display:none;">
-                <div class="price-breakdown-title">Chi tiết giá</div>
+                <div class="price-breakdown-title"><span data-i18n="auto.rjyz8p">Chi tiết giá</span></div>
                 <div id="priceBreakdownRows"></div>
             </div>
 
             <!-- Total -->
             <div class="total-row">
-                <span class="total-label">Tạm tính</span>
+                <span class="total-label"><span data-i18n="auto.4gq0ue">Tạm tính</span></span>
                 <span class="total-amount" id="totalAmount">0 ₫</span>
             </div>
 
             <!-- CTA -->
             <button class="btn-continue" id="btnContinue" disabled onclick="confirmSeats()">
-                Tiếp Tục
+                <span data-i18n="auto.0wb3lh">Tiếp Tục</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                    <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
             </button>
             <p class="seat-limit-info">Tối đa 8 ghế mỗi lần đặt</p>
-        </aside>
+    </div>
+
+    <!-- Mobile Sticky Checkout Bar -->
+    <div class="mobile-checkout-bar" id="mobileCheckoutBar">
+        <div class="mobile-checkout-info">
+            <span class="mobile-checkout-seats" id="mobileSeats">Chưa chọn ghế</span>
+            <span class="mobile-checkout-total" id="mobileTotal">0 ₫</span>
+        </div>
+        <button class="btn-continue mobile-checkout-btn" id="mobileBtnContinue" disabled onclick="confirmSeats()">
+            Tiếp tục
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+        </button>
     </div>
 
     <!-- Scripts -->
@@ -1028,7 +1340,7 @@
                     const user = JSON.parse(userStr);
                     const btn = document.getElementById('btnLogin');
                     if (btn) { btn.textContent = user.fullName || 'Tài khoản'; btn.href = 'profile.html'; }
-                } catch (e) {}
+                } catch (e) { }
             }
         }
 
@@ -1253,7 +1565,7 @@
 
                         if (!isBooked && !isLocked) {
                             coupleEl.onclick = () => handleCoupleSeat(coupleEl, s1.SeatID, s2.SeatID);
-                            
+
                             const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
                             const seatPrice = basePrice * 1.5;
                             addTooltipListeners(coupleEl, `Ghế Cặp Đôi ${row}${s1.SeatNumber}-${s2.SeatNumber}`, seatPrice);
@@ -1304,7 +1616,7 @@
 
             if (!isBooked && !isLocked) {
                 el.onclick = () => handleSingleSeat(el, seat.SeatID);
-                
+
                 const basePrice = showtimeData ? (showtimeData.Price || 85000) : 85000;
                 const multiplier = isVip ? 1.2 : 1.0;
                 const seatPrice = basePrice * multiplier;
@@ -1612,8 +1924,10 @@
         document.head.appendChild(toastStyle);
     </script>
     <!-- Tooltip overlay -->
-    <div id="seatTooltip" style="position: absolute; display: none; background: #13171a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px 12px; font-size: 0.78rem; font-weight: 700; color: #fff; z-index: 9999; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.55); font-family: 'Inter', sans-serif; line-height: 1.4;"></div>
+    <div id="seatTooltip"
+        style="position: absolute; display: none; background: #13171a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px 12px; font-size: 0.78rem; font-weight: 700; color: #fff; z-index: 9999; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.55); font-family: 'Inter', sans-serif; line-height: 1.4;">
+    </div>
     <script src="js/chatbot.js"></script>
 </body>
-</html>
 
+</html>

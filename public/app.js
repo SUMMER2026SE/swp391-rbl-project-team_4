@@ -1,4 +1,4 @@
-const socket = typeof io !== 'undefined' ? io() : { on: () => {}, emit: () => {} };
+const socket = typeof io !== 'undefined' ? io() : { on: () => { }, emit: () => { } };
 const API_BASE = (window.location.protocol === 'file:' || window.location.hostname === '') ? 'http://localhost:9999' : '';
 
 const mockMovies = [
@@ -14,6 +14,17 @@ const mockFB = [
 ];
 
 const app = {
+    formatMovieMeta(genres, duration) {
+        const isEn = typeof i18n !== 'undefined' && i18n.lang === 'en';
+        let displayGenre = genres || (isEn ? 'Updating' : 'Đang cập nhật');
+        if (isEn && genres) {
+            const genreMap = { 'Hành động': 'Action', 'Hài hước': 'Comedy', 'Hài': 'Comedy', 'Kinh dị': 'Horror', 'Tình cảm': 'Romance', 'Lãng mạn': 'Romance', 'Khoa học viễn tưởng': 'Sci-Fi', 'Viễn tưởng': 'Sci-Fi', 'Tâm lý': 'Drama', 'Chính kịch': 'Drama', 'Hoạt hình': 'Animation', 'Phiêu lưu': 'Adventure', 'Nhạc kịch': 'Musical', 'Ca nhạc': 'Musical', 'Giật gân': 'Thriller', 'Ly kì': 'Thriller', 'Gia đình': 'Family', 'Tội phạm': 'Crime', 'Tài liệu': 'Documentary', 'Hồi hộp': 'Suspense' };
+            displayGenre = genres.split(',').map(g => genreMap[g.trim()] || g.trim()).join(', ');
+        }
+        const minText = isEn ? 'minutes' : 'phút';
+        const durText = duration ? `${duration} ${minText}` : (isEn ? 'Updating' : 'Đang cập nhật');
+        return `${displayGenre} | ${durText}`;
+    },
     currentShowtimeId: null,
     currentCity: 'Toàn quốc',
     bookingData: {
@@ -91,7 +102,7 @@ const app = {
                 </div>
                 <div class="movie-info">
                     <h3>${m.title}</h3>
-                    <p>${m.genre} | ${m.duration} phút</p>
+                    <p>${app.formatMovieMeta(m.genre, m.duration)}</p>
                 </div>
             </div>
         `).join('');
@@ -182,7 +193,7 @@ const app = {
     startBooking(movieId) {
         this.bookingData.movieId = movieId;
         const movie = mockMovies.find(m => m.id === movieId);
-        document.getElementById('summaryMovieName').innerText = movie ? movie.title : 'Phim Đang Chọn';
+        document.getElementById('summaryMovieName').innerText = movie ? movie.title : 'Movies Đang Chọn';
 
         this.switchView('booking-view');
         this.renderTimeSlots();
@@ -383,9 +394,11 @@ const app = {
 
     handleBookingClick(movieId) {
         const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+        const isEn = typeof i18n !== 'undefined' && i18n.lang === 'en';
         if (!token) {
-            alert('Vui lòng đăng nhập để tiếp tục đặt vé!');
-            window.location.href = 'auth.html';
+            alert(isEn ? 'Please log in to continue booking!' : 'Vui lòng đăng nhập để tiếp tục đặt vé!');
+            sessionStorage.setItem('redirectAfterLogin', `booking.html?movieId=${movieId}`);
+            window.location.href = `auth.html?redirect=${encodeURIComponent('booking.html?movieId=' + movieId)}`;
         } else {
             window.location.href = `booking.html?movieId=${movieId}`;
         }
@@ -416,12 +429,13 @@ const app = {
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                                 <div class="poster-overlay">
                                     <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                    <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
                                     <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">ĐẶT VÉ</button>
                                 </div>
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                <div class="movie-genre">${app.formatMovieMeta(movie.Genres, movie.Duration)}</div>
                                 <div class="movie-rating">★ 8.5</div>
                             </div>
                         </div>
@@ -437,12 +451,13 @@ const app = {
                                         <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                                         <div class="poster-overlay">
                                             <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                            <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
                                             <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">ĐẶT VÉ</button>
                                         </div>
                                     </div>
                                     <div class="movie-info">
                                         <h3 class="movie-title">${movie.Title}</h3>
-                                        <div class="movie-genre">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                        <div class="movie-genre">${app.formatMovieMeta(movie.Genres, movie.Duration)}</div>
                                         <div class="movie-rating">★ 8.5</div>
                                     </div>
                                 </div>
@@ -467,16 +482,17 @@ const app = {
                     comingSoonGrid.innerHTML = json.data.map(movie => `
                         <div class="movie-card">
                             <div class="movie-poster">
-                                <span class="coming-badge">SẮP CHIẾU</span>
+                                <span class="coming-badge" data-i18n="nav.comingSoon" style="text-transform: uppercase;">SẮP CHIẾU</span>
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                                 <div class="poster-overlay">
                                     <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                                    <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
                                 </div>
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.Genres ? movie.Genres : 'Khoa học viễn tưởng'} | ${movie.Duration} phút</div>
-                                <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">Sắp chiếu</div>
+                                <div class="movie-genre">${app.formatMovieMeta(movie.Genres, movie.Duration)}</div>
+                                <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;" data-i18n="nav.comingSoon">Sắp chiếu</div>
                             </div>
                         </div>
                     `).join('');
@@ -497,12 +513,12 @@ const app = {
                     app.renderMoviesGrid(json.data);
                     app.initMovieFilters();
                     this.allMovies = json.data;
-                    
+
                     // Parse query parameters to pre-fill filters
                     const urlParams = new URLSearchParams(window.location.search);
                     const statusParam = urlParams.get('status');
                     const searchParam = urlParams.get('search');
-                    
+
                     if (statusParam === 'showing' || statusParam === 'Now Showing') {
                         this.filterState.status = 'Now Showing';
                     } else if (statusParam === 'coming' || statusParam === 'Coming Soon') {
@@ -510,13 +526,13 @@ const app = {
                     } else {
                         this.filterState.status = 'Now Showing'; // Default view
                     }
-                    
+
                     if (searchParam) {
                         this.filterState.search = searchParam;
                         const searchInput = document.getElementById('searchInput');
                         if (searchInput) searchInput.value = searchParam;
                     }
-                    
+
                     this.updateTabUI();
                     this.filterAndRenderMovies();
                 }
@@ -524,18 +540,43 @@ const app = {
                 console.error('Failed to load all movies:', err);
             }
         }
+
+        // Update DOM for i18n after fetching and injecting HTML
+        if (typeof i18n !== 'undefined' && typeof i18n.updateDOM === 'function') {
+            i18n.updateDOM();
+        }
     },
 
     renderMoviesGrid(movies) {
         const allMoviesGrid = document.querySelector('.movies-grid');
         if (!allMoviesGrid) return;
-        
+
         if (!movies || movies.length === 0) {
-            allMoviesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">Không tìm thấy phim phù hợp.</div>';
+            allMoviesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px;" data-i18n="movies.noMatch">Không tìm thấy phim phù hợp.</div>';
             return;
         }
 
         allMoviesGrid.innerHTML = movies.map(movie => `
+            <div class="movie-card">
+                <div class="movie-poster">
+                    <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
+                    <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
+                    <div class="movie-overlay">
+                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                        <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
+                    </div>
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title" title="${movie.Title}">${movie.Title}</h3>
+                    <div class="movie-rating">
+                        <span class="stars">★ 8.5</span>
+                        <span class="genres">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    },
+
     switchMovieStatusTab(status) {
         this.filterState.status = status;
         this.updateTabUI();
@@ -606,7 +647,7 @@ const app = {
                         <circle cx="12" cy="12" r="10" />
                         <path d="M8 12h8" />
                     </svg>
-                    <p style="font-size: 1.1rem; font-weight: 500;">Không tìm thấy phim phù hợp với bộ lọc.</p>
+                    <p style="font-size: 1.1rem; font-weight: 500;" data-i18n="movies.noMatch">Không tìm thấy phim phù hợp với bộ lọc.</p>
                 </div>
             `;
             return;
@@ -618,26 +659,23 @@ const app = {
                     <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
                     <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                     <div class="movie-overlay">
-                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Get Tickets</button>
-                    </div>
-                </div>
-                <div class="movie-info">
-                    <h3 class="movie-title">${movie.Title}</h3>
-                    <div class="movie-rating">
-                        <span class="stars">★ 4.9</span>
-                        <span class="genres">${movie.Duration} phút | ${movie.Formats || '2D'}</span>
                         <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
+                        <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
                     </div>
                 </div>
                 <div class="movie-info">
                     <h3 class="movie-title" title="${movie.Title}">${movie.Title}</h3>
                     <div class="movie-rating">
                         <span class="stars">★ 8.5</span>
-                        <span class="genres">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</span>
+                        <span class="genres">${app.formatMovieMeta(movie.Genres, movie.Duration)}</span>
                     </div>
                 </div>
             </div>
         `).join('');
+
+        if (typeof i18n !== 'undefined' && typeof i18n.updateDOM === 'function') {
+            i18n.updateDOM();
+        }
     },
 
     initMovieFilters() {
@@ -647,7 +685,7 @@ const app = {
 
         const applyFilters = () => {
             if (!window.allMoviesData) return;
-            
+
             let filtered = [...window.allMoviesData];
 
             // 1. Filter by Search
@@ -662,9 +700,9 @@ const app = {
                 filtered = filtered.filter(m => {
                     const genreStr = m.Genres || m.MainCast || "";
                     if (!genreStr) return false;
-                    
+
                     const mGenres = genreStr.split(',').map(g => g.trim().toLowerCase());
-                    
+
                     return selectedGenres.some(selected => {
                         const s = selected.toLowerCase();
                         // Either exact match in array, or substring match in the full string
@@ -708,26 +746,26 @@ const app = {
         if (!dropdown) return;
     // --- Promotions (Tin tức & Khuyến mãi) ---
     async loadPromotions() {
-        const grid = document.getElementById('promotionsGrid');
-        if (!grid) return;
+            const grid = document.getElementById('promotionsGrid');
+            if (!grid) return;
 
-        try {
-            const res = await fetch(`${API_BASE}/api/movies/promotions`);
-            const json = await res.json();
+            try {
+                const res = await fetch(`${API_BASE}/api/movies/promotions`);
+                const json = await res.json();
 
-            if (!json.success || !json.data || json.data.length === 0) {
-                grid.innerHTML = '<p style="color:#999;padding:20px;text-align:center;">Chưa có khuyến mãi nào.</p>';
-                return;
-            }
+                if (!json.success || !json.data || json.data.length === 0) {
+                    grid.innerHTML = '<p style="color:#999;padding:20px;text-align:center;">Chưa có khuyến mãi nào.</p>';
+                    return;
+                }
 
-            const promos = json.data;
-            const featured = promos.find(p => p.IsFeatured) || promos[0];
-            const normals  = promos.filter(p => p.PromotionID !== featured.PromotionID);
+                const promos = json.data;
+                const featured = promos.find(p => p.IsFeatured) || promos[0];
+                const normals = promos.filter(p => p.PromotionID !== featured.PromotionID);
 
-            let html = '';
+                let html = '';
 
-            // Featured card
-            html += `
+                // Featured card
+                html += `
                 <div class="promo-card promo-featured">
                     <div class="promo-image">
                         ${featured.BadgeLabel ? `<div class="promo-badge">${featured.BadgeLabel}</div>` : ''}
@@ -736,15 +774,15 @@ const app = {
                              onerror="this.onerror=null;this.src='images/default_poster.svg'">
                     </div>
                     <div class="promo-content">
-                        <h3>${featured.Title}</h3>
-                        <p>${featured.Description || ''}</p>
-                        <a href="${featured.LinkURL || '#'}" class="btn-promo">Tìm Hiểu Thêm</a>
+                        <h3>${featured.title}</h3>
+                        <p>${featured.description || ''}</p>
+                        <a href="${featured.link}" class="btn-promo">Tìm Hiểu Thêm</a>
                     </div>
                 </div>`;
 
-            // Normal cards
-            normals.forEach(p => {
-                html += `
+                // Normal cards
+                normals.forEach(p => {
+                    html += `
                 <div class="promo-card promo-normal">
                     ${p.BadgeLabel ? `<div class="promo-badge-overlay">${p.BadgeLabel}</div>` : ''}
                     <img src="${p.ImageURL || 'images/default_poster.svg'}"
@@ -755,13 +793,13 @@ const app = {
                         <p>${p.Description || ''}</p>
                     </div>
                 </div>`;
-            });
+                });
 
-            grid.innerHTML = html;
-        } catch (err) {
-            console.warn('[app] loadPromotions failed, showing fallback:', err.message);
-            // Fallback to static cards if API not available
-            grid.innerHTML = `
+                grid.innerHTML = html;
+            } catch (err) {
+                console.warn('[app] loadPromotions failed, showing fallback:', err.message);
+                // Fallback to static cards if API not available
+                grid.innerHTML = `
                 <div class="promo-card promo-featured">
                     <div class="promo-image">
                         <div class="promo-badge">MEMBER EXCLUSIVE</div>
@@ -770,7 +808,7 @@ const app = {
                     <div class="promo-content">
                         <h3>Unlimited Popcorn Thursdays</h3>
                         <p>Tham gia chương trình Star Rewards ngay hôm nay và nhận bỏng ngô không giới hạn mỗi thứ năm với mọi lần mua vé.</p>
-                        <a href="#" class="btn-promo">Tìm Hiểu Thêm</a>
+                        <a href="#" class="btn-promo" data-i18n="promotions.seeDetail">Tìm Hiểu Thêm</a>
                     </div>
                 </div>
                 <div class="promo-card promo-normal">
@@ -789,36 +827,154 @@ const app = {
                         <p>Trải nghiệm phim ở định dạng lớn nhất có thể</p>
                     </div>
                 </div>`;
+            }
+
+            if (typeof i18n !== 'undefined' && typeof i18n.updateDOM === 'function') {
+                i18n.updateDOM();
+            }
         }
-    }
-};
+    };
 
 
-document.addEventListener('DOMContentLoaded', () => {
-    app.initSocket();
-    app.loadDynamicMovies();
-    app.loadPromotions();
+    document.addEventListener('DOMContentLoaded', () => {
+        app.initSocket();
+        app.loadDynamicMovies();
+        app.loadPromotions();
 
-    const searchInput = document.getElementById('searchInput');
-    const isMoviesPage = !!document.querySelector('.movies-grid');
+        const searchInput = document.getElementById('searchInput');
+        const isMoviesPage = !!document.querySelector('.movies-grid');
 
-    if (searchInput) {
+        if (searchInput) {
+            if (isMoviesPage) {
+                searchInput.addEventListener('input', () => app.filterAndRenderMovies());
+            } else {
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        window.location.href = `movies.html?search=${encodeURIComponent(searchInput.value)}`;
+                    }
+                });
+            }
+        }
+
+        // Bind change listeners to genre and format checkboxes on movies page
         if (isMoviesPage) {
-            searchInput.addEventListener('input', () => app.filterAndRenderMovies());
-        } else {
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    window.location.href = `movies.html?search=${encodeURIComponent(searchInput.value)}`;
-                }
+            document.querySelectorAll('input[name="genre"], input[name="format"]').forEach(cb => {
+                cb.addEventListener('change', () => app.filterAndRenderMovies());
             });
         }
-    }
+    });
 
-    // Bind change listeners to genre and format checkboxes on movies page
-    if (isMoviesPage) {
-        document.querySelectorAll('input[name="genre"], input[name="format"]').forEach(cb => {
-            cb.addEventListener('change', () => app.filterAndRenderMovies());
+    // --- Custom i18n System ---
+    const i18n = {
+        lang: localStorage.getItem('appLang') || 'vi',
+        dict: {},
+        timer: null,
+        async init() {
+            if (this.lang !== 'vi') {
+                try {
+                    const res = await fetch(`/locales/${this.lang}.json`);
+                    this.dict = await res.json();
+                } catch (err) {
+                    console.error("Failed to load language dict", err);
+                }
+            }
+            this.updateDOM();
+        },
+        setLang(lang) {
+            if (lang === this.lang) return;
+            localStorage.setItem('appLang', lang);
+            window.location.reload();
+        },
+        t(key, fallback) {
+            if (this.lang === 'vi') return fallback || key;
+            const keys = key.split('.');
+            let val = this.dict;
+            for (const k of keys) {
+                if (val && val[k]) val = val[k];
+                else return fallback || key;
+            }
+            return val || fallback || key;
+        },
+        updateDOM() {
+            if (this.lang === 'vi') return;
+
+            const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+            const btnLogin = document.getElementById('btnLogin');
+            if (userStr && btnLogin) {
+                btnLogin.removeAttribute('data-i18n');
+            }
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const translation = this.t(key, '');
+                if (translation) {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        if (el.placeholder) el.placeholder = translation;
+                        else el.value = translation;
+                    } else {
+                        el.innerHTML = translation;
+                    }
+                }
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                const translation = this.t(key, '');
+                if (translation) el.placeholder = translation;
+            });
+            document.querySelectorAll('[data-i18n-dynamic-option]').forEach(el => {
+                const key = el.getAttribute('data-i18n-dynamic-option');
+                const suffix = el.getAttribute('data-i18n-suffix') || '';
+                const translation = this.t(key, '');
+                if (translation) el.innerHTML = translation + suffix;
+            });
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        i18n.init();
+
+        const observer = new MutationObserver((mutations) => {
+            if (i18n.lang === 'vi') return;
+            let shouldUpdate = false;
+            for (const m of mutations) {
+                if (m.addedNodes.length > 0) {
+                    shouldUpdate = true;
+                    break;
+                }
+            }
+            if (shouldUpdate) {
+                clearTimeout(i18n.timer);
+                i18n.timer = setTimeout(() => i18n.updateDOM(), 50);
+            }
         });
-    }
-});
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        // Inject Custom Toggle into Navbar
+        const navActions = document.querySelector('.nav-actions') || document.querySelector('.admin-header-right');
+        if (navActions) {
+            const langToggle = document.createElement('div');
+            langToggle.className = 'custom-lang-toggle';
+            langToggle.style.cssText = `display:flex; gap:5px; margin-left:15px; background: #f1f3f8; padding:4px; border-radius:20px; align-items:center; border: 1px solid rgba(0,0,0,0.1); z-index: 9999;`;
+
+            const activeBg = 'var(--primary, var(--accent, #e50914))';
+            const inactiveBg = 'transparent';
+            const activeColor = '#fff';
+            const inactiveColor = '#555';
+
+            const btnVi = document.createElement('button');
+            btnVi.innerText = 'VI';
+            btnVi.style.cssText = `padding: 4px 10px; border-radius: 16px; border: none; font-weight: bold; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; color: ${i18n.lang === 'vi' ? activeColor : inactiveColor}; background: ${i18n.lang === 'vi' ? activeBg : inactiveBg};`;
+
+            const btnEn = document.createElement('button');
+            btnEn.innerText = 'EN';
+            btnEn.style.cssText = `padding: 4px 10px; border-radius: 16px; border: none; font-weight: bold; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; color: ${i18n.lang === 'en' ? activeColor : inactiveColor}; background: ${i18n.lang === 'en' ? activeBg : inactiveBg};`;
+
+            btnVi.onclick = () => i18n.setLang('vi');
+            btnEn.onclick = () => i18n.setLang('en');
+
+            langToggle.appendChild(btnVi);
+            langToggle.appendChild(btnEn);
+            navActions.insertBefore(langToggle, navActions.firstChild);
+        }
+    });
 

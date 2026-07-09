@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cổng giả lập thanh toán Webhook | CinemaVerse</title>
+    <title><span data-i18n="auto.5qbazj">Cổng giả lập thanh toán Webhook | CinemaVerse</span></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
@@ -70,6 +70,7 @@
             letter-spacing: -0.5px;
             color: #fff;
             text-decoration: none;
+            white-space: nowrap;
         }
 
         .logo span {
@@ -407,36 +408,36 @@
         <!-- LEFT PANEL: Pending Bookings -->
         <section class="card">
             <div class="card-title">
-                <span>Vé đang chờ thanh toán</span>
+                <span><span data-i18n="auto.kayxlu">Vé đang chờ thanh toán</span></span>
                 <button class="btn-refresh" onclick="fetchPendingBookings()">
-                    🔄 Làm mới
+                    <span data-i18n="auto.mha5kx">🔄 Làm mới</span>
                 </button>
             </div>
             <div class="pending-list" id="pendingList">
-                <div class="empty-state">Đang tải danh sách đặt vé...</div>
+                <div class="empty-state"><span data-i18n="auto.z3roog">Đang tải danh sách đặt vé...</span></div>
             </div>
         </section>
 
         <!-- RIGHT PANEL: Webhook form simulator -->
         <section class="card">
-            <div class="card-title">Giả lập cổng thanh toán Webhook</div>
+            <div class="card-title"><span data-i18n="auto.cm6zyi">Giả lập cổng thanh toán Webhook</span></div>
 
             <form id="webhookForm" onsubmit="sendWebhook(event)">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="gateway">Cổng ngân hàng (Gateway)</label>
+                        <label for="gateway"><span data-i18n="auto.w2lyku">Cổng ngân hàng (Gateway)</span></label>
                         <select id="gateway" required>
                             <option value="MBBank">🏦 MB Bank (Napas 247)</option>
-                            <option value="MoMo">💖 Ví MoMo QR</option>
+                            <option value="MoMo"><span data-i18n="auto.lm4uul">💖 Ví MoMo QR</span></option>
                             <option value="Vietcombank">🏦 Vietcombank</option>
                             <option value="Techcombank">🏦 Techcombank</option>
                             <option value="PayOS">⚡ PayOS Gateway</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="referenceNumber">Mã giao dịch (Ref No)</label>
+                        <label for="referenceNumber"><span data-i18n="auto.18o0kz">Mã giao dịch (Ref No)</span></label>
                         <div class="input-group">
-                            <input type="text" id="referenceNumber" placeholder="Ví dụ: FT2415..." required autocomplete="off">
+                            <input type="text" id="referenceNumber" placeholder="Ví dụ: FT2415..."  required autocomplete="off">
                             <button type="button" class="btn-gen" onclick="generateRefNo()" title="Tạo mã ngẫu nhiên">🎲</button>
                         </div>
                     </div>
@@ -444,27 +445,27 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="accountNumber">Số tài khoản nhận</label>
+                        <label for="accountNumber"><span data-i18n="auto.5tgkbf">Số tài khoản nhận</span></label>
                         <input type="text" id="accountNumber" value="0949391487" required autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label for="amount">Số tiền chuyển (VND)</label>
-                        <input type="number" id="amount" placeholder="Nhập số tiền..." required min="1000">
+                        <label for="amount"><span data-i18n="auto.t820em">Số tiền chuyển (VND)</span></label>
+                        <input type="number" id="amount" placeholder="Nhập số tiền..." data-i18n-placeholder="auto.ph_7e26u6" required min="1000">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="transactionContent">Nội dung chuyển khoản (ĐỐI SOÁT CHÍNH)</label>
-                    <input type="text" id="transactionContent" placeholder="Mã chuyển khoản (Ví dụ: DCVIP8)" required autocomplete="off" style="font-family:'Fira Code', monospace; letter-spacing:0.5px; font-weight:700;">
+                    <label for="transactionContent"><span data-i18n="auto.ywulsp">Nội dung chuyển khoản (ĐỐI SOÁT CHÍNH)</span></label>
+                    <input type="text" id="transactionContent" placeholder="Mã chuyển khoản (Ví dụ: DCVIP8)"  required autocomplete="off" style="font-family:'Fira Code', monospace; letter-spacing:0.5px; font-weight:700;">
                 </div>
 
                 <div class="form-group">
                     <label for="webhookSecret">Webhook Secret Token</label>
-                    <input type="password" id="webhookSecret" value="dev_webhook_secret_token" placeholder="Không bắt buộc..." autocomplete="off">
+                    <input type="password" id="webhookSecret" value="dev_webhook_secret_token" placeholder="Không bắt buộc..."  autocomplete="off">
                 </div>
 
                 <button type="submit" class="btn-submit" id="btnSubmit">
-                    <span>🚀 GỬI THÔNG BÁO WEBHOOK</span>
+                    <span><span data-i18n="auto.b5osgc">🚀 GỬI THÔNG BÁO WEBHOOK</span></span>
                 </button>
             </form>
         </section>
@@ -478,7 +479,7 @@
             <span style="cursor:pointer;" onclick="clearLogs()">Clear</span>
         </div>
         <div class="console-box" id="consoleBox">
-            <div class="console-line line-info">[System] Dev Simulator ready. Quét các vé pending từ CSDL để kiểm thử một click.</div>
+            <div class="console-line line-info"><span data-i18n="auto.dsxpco">[System] Dev Simulator ready. Quét các vé pending từ CSDL để kiểm thử một click.</span></div>
         </div>
     </section>
 
@@ -512,7 +513,7 @@
         async function fetchPendingBookings() {
             try {
                 const listContainer = document.getElementById('pendingList');
-                listContainer.innerHTML = '<div class="empty-state">Đang tải danh sách đặt vé...</div>';
+                listContainer.innerHTML = '<div class="empty-state"><span data-i18n="auto.z3roog">Đang tải danh sách đặt vé...</span></div>';
 
                 const response = await fetch('/api/bookings/webhook/pending');
                 const json = await response.json();

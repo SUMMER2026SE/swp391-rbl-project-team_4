@@ -39,7 +39,7 @@ function initChatbotWidget() {
                     <div class="bot-avatar">${clapperSvg}</div>
                     <div class="bot-info">
                         <span class="bot-name">CinemaVerse Bot</span>
-                        <span class="bot-status"><span class="status-dot"></span> Online</span>
+                        <span class="bot-status"><span class="status-dot"></span> <span id="moviebot-status-text">Online</span></span>
                     </div>
                 </div>
                 <button id="moviebot-close">
@@ -50,27 +50,27 @@ function initChatbotWidget() {
             <div id="moviebot-messages"></div>
 
             <div id="moviebot-suggestions">
-                <div class="sugg-header">✨ Bạn cần hỗ trợ?</div>
+                <div class="sugg-header" id="moviebot-sugg-header">✨ Bạn cần hỗ trợ?</div>
                 <div class="sugg-grid">
                     <div class="sugg-card" data-action="Cho tôi xem lịch chiếu phim mới nhất">
                         <div class="sugg-icon">📅</div>
-                        <div class="sugg-title">Lịch chiếu</div>
-                        <div class="sugg-desc">Xem lịch chiếu<br>phim mới nhất</div>
+                        <div class="sugg-title" id="moviebot-sugg-1-title">Lịch chiếu</div>
+                        <div class="sugg-desc" id="moviebot-sugg-1-desc">Xem lịch chiếu<br>phim mới nhất</div>
                     </div>
                     <div class="sugg-card" data-action="Giá vé hiện tại là bao nhiêu?">
                         <div class="sugg-icon">🎟️</div>
-                        <div class="sugg-title">Giá vé</div>
-                        <div class="sugg-desc">Tìm hiểu giá vé<br>theo rạp</div>
+                        <div class="sugg-title" id="moviebot-sugg-2-title">Giá vé</div>
+                        <div class="sugg-desc" id="moviebot-sugg-2-desc">Tìm hiểu giá vé<br>theo rạp</div>
                     </div>
                     <div class="sugg-card" data-action="Hướng dẫn tôi cách đặt vé">
                         <div class="sugg-icon">🎬</div>
-                        <div class="sugg-title">Đặt vé</div>
-                        <div class="sugg-desc">Chọn ghế, thanh toán<br>và nhận vé</div>
+                        <div class="sugg-title" id="moviebot-sugg-3-title">Đặt vé</div>
+                        <div class="sugg-desc" id="moviebot-sugg-3-desc">Chọn ghế, thanh toán<br>và nhận vé</div>
                     </div>
                     <div class="sugg-card" data-action="Tư vấn cho tôi phim hay đang chiếu">
                         <div class="sugg-icon">🍿</div>
-                        <div class="sugg-title">Tư vấn phim</div>
-                        <div class="sugg-desc">Gợi ý phim<br>theo sở thích</div>
+                        <div class="sugg-title" id="moviebot-sugg-4-title">Tư vấn phim</div>
+                        <div class="sugg-desc" id="moviebot-sugg-4-desc">Gợi ý phim<br>theo sở thích</div>
                     </div>
                 </div>
             </div>
@@ -106,8 +106,30 @@ function initChatbotWidget() {
     const messages = document.getElementById('moviebot-messages');
     const suggCards = document.querySelectorAll('.sugg-card');
 
+    const appLang = localStorage.getItem('appLang') || 'vi';
+
+    // Localize UI elements based on appLang
+    if (appLang === 'en') {
+        document.getElementById('moviebot-input').placeholder = "Type your question...";
+        document.getElementById('moviebot-sugg-header').innerHTML = "✨ Need help?";
+        document.getElementById('moviebot-sugg-1-title').innerHTML = "Showtimes";
+        document.getElementById('moviebot-sugg-1-desc').innerHTML = "View latest<br>showtimes";
+        document.getElementById('moviebot-sugg-2-title').innerHTML = "Prices";
+        document.getElementById('moviebot-sugg-2-desc').innerHTML = "Check ticket<br>prices";
+        document.getElementById('moviebot-sugg-3-title').innerHTML = "Booking";
+        document.getElementById('moviebot-sugg-3-desc').innerHTML = "Seats, payment<br>and tickets";
+        document.getElementById('moviebot-sugg-4-title').innerHTML = "Suggest";
+        document.getElementById('moviebot-sugg-4-desc').innerHTML = "Movie suggestions";
+        
+        suggCards[0].setAttribute('data-action', 'Show me the latest showtimes');
+        suggCards[1].setAttribute('data-action', 'What are the current ticket prices?');
+        suggCards[2].setAttribute('data-action', 'Guide me how to book tickets');
+        suggCards[3].setAttribute('data-action', 'Suggest some good movies showing right now');
+    }
+
     let chatHistory = [];
     let isSending = false;
+
 
     btn.addEventListener('click', () => { win.style.display = win.style.display === 'flex' ? 'none' : 'flex'; });
     close.addEventListener('click', () => { win.style.display = 'none'; });
@@ -142,7 +164,10 @@ function initChatbotWidget() {
 
     // Initial greeting
     setTimeout(() => {
-        appendMessage('Chào bạn! Mình là trợ lý AI của CinemaVerse. Mình có thể giúp gì cho bạn hôm nay? (Ví dụ: lịch chiếu phim, giá vé, tư vấn phim...)', 'bot');
+        const greeting = appLang === 'en' ? 
+            'Hello! I am CinemaVerse AI assistant. How can I help you today? (e.g. showtimes, ticket prices, movie suggestions...)' : 
+            'Chào bạn! Mình là trợ lý AI của CinemaVerse. Mình có thể giúp gì cho bạn hôm nay? (Ví dụ: lịch chiếu phim, giá vé, tư vấn phim...)';
+        appendMessage(greeting, 'bot');
     }, 500);
 
     const sendMessage = async (text) => {
@@ -161,7 +186,7 @@ function initChatbotWidget() {
         wrapper.innerHTML = `
             <div class="bot-avatar">${clapperSvg}</div>
             <div class="msg-content">
-                <div class="msg">Đang suy nghĩ...</div>
+                <div class="msg">${appLang === 'en' ? 'Thinking...' : 'Đang suy nghĩ...'}</div>
             </div>
         `;
         messages.appendChild(wrapper);
@@ -175,7 +200,7 @@ function initChatbotWidget() {
                     'Content-Type': 'application/json',
                     ...(token && { 'Authorization': `Bearer ${token}` })
                 },
-                body: JSON.stringify({ message: text, history: chatHistory.slice(0, -1) })
+                body: JSON.stringify({ message: text, history: chatHistory.slice(0, -1), lang: appLang })
             });
             const data = await res.json();
 
@@ -184,11 +209,11 @@ function initChatbotWidget() {
                 appendMessage(data.reply, 'bot');
                 chatHistory.push({ role: 'model', parts: [{ text: data.reply }] });
             } else {
-                appendMessage('Xin lỗi, mình gặp lỗi xử lý. Bạn thử lại nhé.', 'bot');
+                appendMessage(appLang === 'en' ? 'Sorry, I encountered a processing error. Please try again.' : 'Xin lỗi, mình gặp lỗi xử lý. Bạn thử lại nhé.', 'bot');
             }
         } catch (e) {
             document.getElementById(typingId).remove();
-            appendMessage('Mất kết nối với máy chủ AI.', 'bot');
+            appendMessage(appLang === 'en' ? 'Lost connection to AI server.' : 'Mất kết nối với máy chủ AI.', 'bot');
         } finally {
             isSending = false;
         }

@@ -68,14 +68,14 @@ img { display: block; max-width: 100%; }
     gap: 4px;
     text-decoration: none;
     flex-shrink: 0;
-}
+ white-space: nowrap; }
 
 .logo-text {
     font-size: 1.25rem;
     font-weight: 900;
     letter-spacing: 1px;
     color: var(--text-light);
-}
+ white-space: nowrap; }
 
 .logo-plus {
     color: var(--primary);
