@@ -1119,8 +1119,22 @@ function editFnB(id) {
     document.getElementById('btnCancelFnb').style.display = 'block';
 
     const dropZoneText = document.getElementById('fnbDropZoneText');
-    if (dropZoneText) {
-        dropZoneText.textContent = item.ImageURL ? `Hình hiện tại: ${item.ImageURL.split('/').pop()}` : 'Chọn file hoặc kéo thả vào đây';
+    const previewImg = document.getElementById('fnbPreviewImg');
+    const uploadIcon = document.getElementById('fnbUploadIcon');
+    if (item.ImageURL) {
+        if (previewImg) {
+            previewImg.src = item.ImageURL;
+            previewImg.style.display = 'block';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'none';
+        if (dropZoneText) dropZoneText.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
     }
 
     document.querySelector('.fnb-form-side').scrollIntoView({ behavior: 'smooth' });
@@ -1136,6 +1150,14 @@ function cancelEditFnB() {
     document.getElementById('btnCancelFnb').style.display = 'none';
     const dropZoneText = document.getElementById('fnbDropZoneText');
     if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
+    
+    const previewImg = document.getElementById('fnbPreviewImg');
+    const uploadIcon = document.getElementById('fnbUploadIcon');
+    if (previewImg) {
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+    }
+    if (uploadIcon) uploadIcon.style.display = 'block';
 }
 
 async function deleteFnB(id) {
@@ -1321,8 +1343,22 @@ function editCombo(id) {
     document.getElementById('btnCancelCombo').style.display = 'block';
 
     const dropZoneText = document.getElementById('comboDropZoneText');
-    if (dropZoneText) {
-        dropZoneText.textContent = item.ImageURL ? `Hình hiện tại: ${item.ImageURL.split('/').pop()}` : 'Chọn file hoặc kéo thả vào đây';
+    const previewImg = document.getElementById('comboPreviewImg');
+    const uploadIcon = document.getElementById('comboUploadIcon');
+    if (item.ImageURL) {
+        if (previewImg) {
+            previewImg.src = item.ImageURL;
+            previewImg.style.display = 'block';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'none';
+        if (dropZoneText) dropZoneText.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
     }
 
     document.querySelector('#page-combos .fnb-form-side').scrollIntoView({ behavior: 'smooth' });
@@ -1339,6 +1375,14 @@ function cancelEditCombo() {
     document.getElementById('btnCancelCombo').style.display = 'none';
     const dropZoneText = document.getElementById('comboDropZoneText');
     if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
+
+    const previewImg = document.getElementById('comboPreviewImg');
+    const uploadIcon = document.getElementById('comboUploadIcon');
+    if (previewImg) {
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+    }
+    if (uploadIcon) uploadIcon.style.display = 'block';
 }
 
 async function saveCombo() {
@@ -1424,20 +1468,56 @@ async function toggleComboStatus(id) {
     }
 }
 
+function showImagePreview(file, previewImgId, iconId, textId, defaultText = 'Chọn file hoặc kéo thả vào đây') {
+    const previewImg = document.getElementById(previewImgId);
+    const uploadIcon = iconId ? document.getElementById(iconId) : null;
+    const textEl = textId ? document.getElementById(textId) : null;
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (previewImg) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+            }
+            if (uploadIcon) uploadIcon.style.display = 'none';
+            if (textEl) {
+                if (textId && textId.includes('DropZone')) {
+                    textEl.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+                } else {
+                    textEl.textContent = file.name;
+                }
+            }
+        };
+        reader.readAsDataURL(file);
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (textEl) textEl.textContent = defaultText;
+    }
+}
+
 function handleFnbFileSelect(input) {
     const file = input.files[0];
-    const text = document.getElementById('fnbDropZoneText');
-    if (file && text) {
-        text.textContent = `Đã chọn: ${file.name}`;
-    }
+    showImagePreview(file, 'fnbPreviewImg', 'fnbUploadIcon', 'fnbDropZoneText');
 }
 
 function handleComboFileSelect(input) {
     const file = input.files[0];
-    const text = document.getElementById('comboDropZoneText');
-    if (file && text) {
-        text.textContent = `Đã chọn: ${file.name}`;
-    }
+    showImagePreview(file, 'comboPreviewImg', 'comboUploadIcon', 'comboDropZoneText');
+}
+
+function handleNewsFileSelect(input) {
+    const file = input.files[0];
+    showImagePreview(file, 'newsPreviewImg', null, 'newsFileName', 'Chưa chọn file');
+}
+
+function handlePromoFileSelect(input) {
+    const file = input.files[0];
+    showImagePreview(file, 'promoPreviewImg', null, 'promoFileName', 'Chưa chọn file');
 }
 
 let dragDropInitialized = false;
@@ -1472,7 +1552,7 @@ function initDragAndDrop() {
             const files = dt.files;
             if (files.length) {
                 fileInput.files = files;
-                if (textVal) textVal.textContent = `Đã chọn: ${files[0].name}`;
+                showImagePreview(files[0], `${prefix}PreviewImg`, `${prefix}UploadIcon`, `${prefix}DropZoneText`);
             }
         }, false);
     });
@@ -4058,6 +4138,7 @@ async function loadNewsArticles() {
 function renderNewsAdminTable() {
     const body = document.getElementById('newsAdminBody');
     if (!body) return;
+
     if (!NEWS_DATA.length) {
         body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có bài viết nào.</td></tr>';
         return;
@@ -4092,6 +4173,12 @@ function openNewsModal(id) {
     document.getElementById('newsFeatured').checked = false;
     document.getElementById('newsId').value = '';
     document.getElementById('newsModalTitle').textContent = 'THÊM TIN TỨC';
+    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('newsPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
     if (id) {
         const item = NEWS_DATA.find(x => x.ArticleID === id);
         if (!item) return;
@@ -4107,7 +4194,13 @@ function openNewsModal(id) {
         document.getElementById('newsSort').value = item.SortOrder || 0;
         document.getElementById('newsFeatured').checked = !!item.IsFeatured;
         document.getElementById('newsActive').checked = !!item.IsActive;
-        if (item.ImageURL) document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
+        if (item.ImageURL) {
+            document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
+            if (preview) {
+                preview.src = item.ImageURL;
+                preview.style.display = 'block';
+            }
+        }
     }
     document.getElementById('newsModalOverlay').style.display = 'block';
     document.getElementById('newsAdminModal').style.display = 'block';
@@ -4116,6 +4209,14 @@ function openNewsModal(id) {
 function closeNewsModal() {
     document.getElementById('newsModalOverlay').style.display = 'none';
     document.getElementById('newsAdminModal').style.display = 'none';
+    
+    document.getElementById('newsImage').value = '';
+    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('newsPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 }
 
 async function saveNewsArticle(event) {
@@ -4261,6 +4362,12 @@ function renderPromoTable() {
 function openPromoModal(id) {
     document.getElementById('promoForm').reset();
     document.getElementById('promoCurrentImg').innerHTML = '';
+    document.getElementById('promoFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('promoPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 
     if (id) {
         const p = PROMO_DATA.find(x => x.PromotionID === id);
@@ -4276,6 +4383,10 @@ function openPromoModal(id) {
         document.getElementById('promoActive').checked = !!p.IsActive;
         if (p.ImageURL) {
             document.getElementById('promoCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${p.ImageURL}" target="_blank" style="color:var(--accent);">${p.ImageURL}</a>`;
+            if (preview) {
+                preview.src = p.ImageURL;
+                preview.style.display = 'block';
+            }
         }
     } else {
         document.getElementById('promoModalTitle').textContent = 'THÊM KHUYẾN MÃI';
@@ -4290,6 +4401,14 @@ function openPromoModal(id) {
 function closePromoModal() {
     document.getElementById('promoModalOverlay').style.display = 'none';
     document.getElementById('promoModal').style.display = 'none';
+    
+    document.getElementById('promoImage').value = '';
+    document.getElementById('promoFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('promoPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 }
 
 async function savePromo(event) {
