@@ -16,6 +16,9 @@ router.get('/vouchers',                     bookingCtrl.getActiveVouchers);
 // GET  /api/bookings/payment-qr             — Ảnh QR thanh toán (Public)
 router.get('/payment-qr',                   bookingCtrl.getPaymentQRImages);
 
+// GET  /api/bookings/webhook                — Xác thực URL webhook với SePay (Public)
+router.get('/webhook',                      bookingCtrl.verifyWebhookUrl);
+
 // POST /api/bookings/webhook                — Webhook nhận thông báo chuyển khoản ngân hàng (Public)
 router.post('/webhook',                     bookingCtrl.receivePaymentWebhook);
 

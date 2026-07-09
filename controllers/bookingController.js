@@ -392,6 +392,20 @@ exports.checkBookingStatus = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────
+//  GET /api/bookings/webhook — Xác thực URL webhook với SePay
+//  SePay gửi GET request khi đăng ký webhook để kiểm tra endpoint hoạt động
+// ─────────────────────────────────────────────────────────────
+exports.verifyWebhookUrl = (req, res) => {
+  console.log('[Webhook Verify] SePay verification request received.');
+  // Trả về 200 OK để SePay xác nhận URL hợp lệ
+  return res.status(200).json({
+    success: true,
+    message: 'CinemaVerse webhook endpoint is active.',
+    timestamp: new Date().toISOString()
+  });
+};
+
+// ─────────────────────────────────────────────────────────────
 //  POST /api/bookings/webhook — Receive payment notifications (Standard SePay / PayOS & Simulator)
 // ─────────────────────────────────────────────────────────────
 exports.receivePaymentWebhook = async (req, res) => {
