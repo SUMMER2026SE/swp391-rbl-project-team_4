@@ -744,6 +744,7 @@ const app = {
     async loadCinemasNavbar() {
         const dropdown = document.getElementById('cinemaDropdown');
         if (!dropdown) return;
+    },
     // --- Promotions (Tin tức & Khuyến mãi) ---
     async loadPromotions() {
             const grid = document.getElementById('promotionsGrid');
