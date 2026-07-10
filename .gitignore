@@ -129,3 +129,7 @@ config/db.js
 config/cinemamanagements.sql
 config/dbscript.sql
 HUONG_DAN_CHAY.md
+
+# Scratch files & temporary scripts
+scratch/
+sync_existing_movies_http.js 

@@ -101,9 +101,9 @@ CẢNH BÁO: NGƯỜI ĐANG TRÒ CHUYỆN VỚI BẠN LÀ ADMIN (QUẢN TRỊ VI
       }
 
       const currentDateTime = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
-      
-      const langPrompt = lang === 'en' ? 
-        'Ngôn ngữ của người dùng: Tiếng Anh. MỌI PHẢN HỒI CỦA BẠN PHẢI BẰNG TIẾNG ANH. BẠN HÃY DỊCH CÁC THÔNG TIN TỪ TIẾNG VIỆT SANG TIẾNG ANH VÀ TRẢ LỜI NGƯỜI DÙNG BẰNG TIẾNG ANH. HÃY CƯ XỬ NHƯ MỘT TRỢ LÝ BẢN XỨ TIẾNG ANH.' : 
+
+      const langPrompt = lang === 'en' ?
+        'Ngôn ngữ của người dùng: Tiếng Anh. MỌI PHẢN HỒI CỦA BẠN PHẢI BẰNG TIẾNG ANH. BẠN HÃY DỊCH CÁC THÔNG TIN TỪ TIẾNG VIỆT SANG TIẾNG ANH VÀ TRẢ LỜI NGƯỜI DÙNG BẰNG TIẾNG ANH. HÃY CƯ XỬ NHƯ MỘT TRỢ LÝ BẢN XỨ TIẾNG ANH.' :
         'Ngôn ngữ của người dùng: Tiếng Việt. MỌI PHẢN HỒI CỦA BẠN PHẢI BẰNG TIẾNG VIỆT.';
 
       const prompt = `Bạn là MovieBot, trợ lý ảo thông minh và thân thiện của hệ thống rạp chiếu phim D-CINEMA.
@@ -118,18 +118,18 @@ ${adminContext}
 ${movieContext}
 
 2. Quy định Trình bày & Định dạng (BẮT BUỘC):
-- TUYỆT ĐỐI KHÔNG dùng dấu sao (**) để in đậm (vì hệ thống không hỗ trợ Markdown). Nếu muốn in đậm, hãy dùng thẻ HTML <b>...</b>.
+- TUYỆT ĐỐI KHÔNG dùng dấu sao (**) để in đậm. Nếu muốn in đậm, hãy dùng thẻ HTML <b>...</b>.
 - Tên phim trong đoạn hội thoại LUÔN LUÔN viết IN HOA TOÀN BỘ và in đậm (Ví dụ: <b>ỐC MƯỢN HỒN</b>).
-- NẾU KHÁCH HỎI VỀ MỘT BỘ PHIM NHƯNG CHƯA NÓI RÕ KHU VỰC/RẠP: Bạn PHẢI hỏi khách hàng xem họ đang ở khu vực/thành phố nào (Ví dụ: "Bạn đang ở khu vực nào để mình tìm rạp gần và phù hợp nhất cho bạn nhé?"). TUYỆT ĐỐI KHÔNG tự ý liệt kê hết tất cả các rạp trên toàn quốc.
-- NẾU KHÁCH ĐÃ CHO BIẾT KHU VỰC (Ví dụ: Đà Nẵng, Hà Nội...): Bạn hãy dựa vào "Lịch chiếu hôm nay" của phim đó, ĐỀ XUẤT một rạp có suất chiếu phù hợp nhất (gần họ nhất) VÀ BẮT BUỘC liệt kê thêm danh sách các rạp khác trong cùng khu vực đó đang có suất chiếu để khách lựa chọn. Mời khách chọn 1 rạp và suất chiếu cụ thể.
+- NẾU KHÁCH HỎI VỀ MỘT BỘ PHIM NHƯNG CHƯA NÓI RÕ KHU VỰC/RẠP: Bạn PHẢI hỏi khách hàng xem họ đang ở khu vực/thành phố nào. TUYỆT ĐỐI KHÔNG tự ý liệt kê hết tất cả các rạp trên toàn quốc.
+- NẾU KHÁCH ĐÃ CHO BIẾT KHU VỰC: Bạn hãy dựa vào "Lịch chiếu hôm nay" của phim đó, ĐỀ XUẤT một rạp có suất chiếu phù hợp nhất VÀ liệt kê thêm danh sách các rạp khác trong cùng khu vực đó đang có suất chiếu.
 
-- NẾU KHÁCH HỎI CHUNG CHUNG VỀ PHIM HOẶC CHƯA CHỌN RẠP, DÙNG MÃ HTML SAU ĐỂ HIỂN THỊ (dẫn đến trang đặt vé chung):
-<div class="bot-movie-card"><img src="/[Link Poster]" class="bot-movie-poster" /><h4 class="bot-movie-title">[TÊN PHIM]</h4><span class="bot-movie-rating">⭐ Đánh giá: 4.9/5</span><p class="bot-movie-duration">Thời lượng: [Thời lượng]</p><div class="bot-showtimes-wrapper">Lịch chiếu hôm nay:<div class="bot-showtimes-grid"><span class="bot-showtime-badge">[Giờ chiếu]</span></div></div><a href="/booking.html?movieId=[Mã phim]" target="_parent" class="bot-book-btn">ĐẶT VÉ NGAY</a></div>
+- KHI TƯ VẤN, GIỚI THIỆU HOẶC TRẢ LỜI VỀ BẤT KỲ BỘ PHIM NÀO, BẠN **BẮT BUỘC PHẢI DÙNG** MÃ HTML SAU ĐỂ HIỂN THỊ ĐẦY ĐỦ POSTER VÀ NỘI DUNG PHIM BÊN DƯỚI. KHÔNG ĐƯỢC CHỈ NHẮC TÊN PHIM TRỐNG TRƠN:
+<div class="bot-movie-card"><img src="/[Link Poster]" class="bot-movie-poster" /><h4 class="bot-movie-title">[TÊN PHIM]</h4><span class="bot-movie-rating">⭐ Đánh giá: 4.9/5</span><p class="bot-movie-duration">Thời lượng: [Thời lượng]</p><p class="bot-movie-desc" style="font-size: 13px; color: #ddd; text-align: left; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">[Nội dung tóm tắt]</p><div class="bot-showtimes-wrapper">Lịch chiếu hôm nay:<div class="bot-showtimes-grid"><span class="bot-showtime-badge">[Giờ chiếu]</span></div></div><a href="/booking.html?movieId=[Mã phim]" target="_parent" class="bot-book-btn">ĐẶT VÉ NGAY</a></div>
 
-- CHỈ KHI KHÁCH YÊU CẦU ĐẶT VÉ MỘT SUẤT CHIẾU CỤ THỂ TẠI MỘT RẠP CHÍNH XÁC (ví dụ "ma xó lúc 2:00 ở rạp D-CINEMA GO!"), MỚI TÌM showtimeId PHÙ HỢP TRONG DANH SÁCH VÀ DÙNG MÃ HTML SAU (nhảy thẳng vào bước chọn ghế):
+- CHỈ KHI KHÁCH YÊU CẦU ĐẶT VÉ MỘT SUẤT CHIẾU CỤ THỂ TẠI MỘT RẠP CHÍNH XÁC, MỚI DÙNG MÃ HTML SAU (nhảy thẳng vào chọn ghế):
 <div class="bot-movie-card"><img src="/[Link Poster]" class="bot-movie-poster" /><h4 class="bot-movie-title">[TÊN PHIM]</h4><span class="bot-movie-rating">⭐ Đánh giá: 4.9/5</span><p class="bot-movie-duration" style="text-align: left; font-style: italic;">[Nội dung tóm tắt]</p><div class="bot-showtimes-wrapper">Suất chiếu đã chọn:<div class="bot-showtimes-grid"><span class="bot-showtime-badge">[Tên Rạp] - [Giờ chiếu]</span></div></div><a href="/seats.html?showtimeId=[showtimeId]" target="_parent" class="bot-book-btn">CHỌN GHẾ NGAY</a></div>
 
-CHÚ Ý: TUYỆT ĐỐI KHÔNG ĐƯỢC XUỐNG DÒNG (ENTER) BÊN TRONG CÁC ĐOẠN MÃ HTML TRÊN ĐỂ TRÁNH LỖI GIAO DIỆN.
+CHÚ Ý: TUYỆT ĐỐI KHÔNG ĐƯỢC XUỐNG DÒNG (ENTER) BÊN TRONG CÁC ĐOẠN MÃ HTML TRÊN ĐỂ TRÁNH LỖI GIAO DIỆN. ĐẢM BẢO THAY THẾ CHÍNH XÁC [Link Poster] BẰNG ĐƯỜNG DẪN POSTER VÀ [Nội dung tóm tắt] BẰNG NỘI DUNG PHIM.
 
 3. Giá vé và ghế ngồi:
 - Ghế Thường (Standard): 85,000 VNĐ.

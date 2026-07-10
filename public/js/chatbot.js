@@ -227,6 +227,29 @@ function initChatbotWidget() {
             sendMessage(card.getAttribute('data-action'));
         });
     });
+
+    // Handle click on booking buttons in chatbot
+    messages.addEventListener('click', (e) => {
+        const btn = e.target.closest('.bot-book-btn');
+        if (btn) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                e.preventDefault(); // Prevent default navigation
+                
+                // Save redirect url so they can go back to seat selection
+                const targetUrl = btn.getAttribute('href');
+                
+                // Check language for alert message
+                if (appLang === 'en') {
+                    alert('Please log in to continue booking tickets.');
+                } else {
+                    alert('Vui lòng đăng nhập để tiếp tục đặt vé.');
+                }
+                
+                window.location.href = `/auth.html?redirect=${encodeURIComponent(targetUrl)}`;
+            }
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', initChatbotWidget);

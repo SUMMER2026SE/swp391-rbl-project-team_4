@@ -437,6 +437,7 @@
       btnGoogleContainer.style.background = 'transparent';
 
       // Yêu cầu Google render (vẽ) nút chuẩn của họ vào vị trí này
+      const appLang = localStorage.getItem('appLang') || 'vi';
       google.accounts.id.renderButton(
         btnGoogleContainer,
         {
@@ -444,7 +445,8 @@
           size: "large",
           shape: "rectangular",
           text: "signin_with", // Hiển thị chữ "Sign in with Google"
-          logo_alignment: "left"
+          logo_alignment: "left",
+          locale: appLang
         }
       );
     }

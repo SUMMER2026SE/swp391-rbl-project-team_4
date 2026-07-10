@@ -709,7 +709,9 @@
         "noAccount": "Don't have an account?",
         "registerHere": "Register now",
         "fullName": "Full Name",
-        "phone": "Phone Number"
+        "phone": "Phone Number",
+        "taglineText": "EVERY FRAME<br>IS A ",
+        "taglineRecovery": "SECURITY<br>IS A "
     },
     "genres": {
         "action": "Action",
