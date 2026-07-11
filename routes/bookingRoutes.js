@@ -34,6 +34,9 @@ router.get('/server-ip',                    bookingCtrl.getServerIP);
 // Áp dụng verifyToken cho toàn bộ booking routes (trừ các routes public bên trên)
 router.use(verifyToken);
 
+// POST /api/bookings/calculate-price       — Tính tiền vé tập trung
+router.post('/calculate-price',             bookingCtrl.calculatePrice);
+
 // POST /api/bookings/validate-voucher       — Kiểm tra voucher
 router.post('/validate-voucher',            bookingCtrl.validateVoucher);
 

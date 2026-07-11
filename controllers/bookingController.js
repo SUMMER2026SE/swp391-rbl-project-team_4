@@ -124,6 +124,33 @@ exports.getActiveVouchers = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────
+//  POST /api/bookings/calculate-price
+// ─────────────────────────────────────────────────────────────
+exports.calculatePrice = async (req, res) => {
+  try {
+    const { showtimeId, seatIds, foodItems = [], voucherCode } = req.body;
+    if (!showtimeId || !seatIds || seatIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp showtimeId và seatIds.' });
+    }
+
+    const result = await BookingModel.calculateBookingPrice(req.user.userId, {
+      showtimeId,
+      seatIds,
+      foodItems,
+      voucherCode
+    });
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (err) {
+    console.error('[bookingController] calculatePrice:', err.message);
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
 //  POST /api/bookings/validate-voucher
 // ─────────────────────────────────────────────────────────────
 exports.validateVoucher = async (req, res) => {
@@ -663,7 +690,36 @@ exports.cancelBooking = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Danh sách ticketIds không hợp lệ.' });
     }
 
-    await BookingModel.cancelBooking(ticketIds);
+    const releasedSeats = await BookingModel.cancelBooking(ticketIds);
+
+    // Broadcast giải phóng ghế qua Socket.IO room để giao diện các client khác cập nhật ngay lập tức
+    if (releasedSeats && releasedSeats.length > 0) {
+      const io = req.app.get('io');
+      if (io) {
+        // Nhóm các ghế bị hủy theo showtimeId
+        const showtimeGroups = {};
+        releasedSeats.forEach(item => {
+          if (!showtimeGroups[item.showtimeId]) {
+            showtimeGroups[item.showtimeId] = [];
+          }
+          showtimeGroups[item.showtimeId].push(item.seatId);
+        });
+
+        // Phát tán sự kiện tới từng phòng chiếu tương ứng
+        for (const [stId, seatIds] of Object.entries(showtimeGroups)) {
+          const room = `room_showtime_${stId}`;
+          seatIds.forEach(sid => {
+            io.to(room).emit('seatStatusUpdated', {
+              showtimeId: parseInt(stId, 10),
+              seatId: sid,
+              status: 'Trống'
+            });
+          });
+          console.log(`[Socket Broadcast] Released seats via cancel API:`, seatIds, `for showtime`, stId);
+        }
+      }
+    }
+
     res.json({ success: true, message: 'Đã hủy giữ chỗ thành công.' });
   } catch (err) {
     console.error('[bookingController] cancelBooking:', err.message);

@@ -1604,7 +1604,7 @@
         let lockedByOthers = new Set();  // Set<SeatID>
         let currentZoom = 1.0;
         let countdownInterval = null;
-        let secondsLeft = 600; // 10 minutes (đồng bộ với Socket.IO)
+        let secondsLeft = 300; // 5 minutes (300 seconds)
 
         // ──────────────────────────────────────────────
         //  Zoom & Timer & Tooltip Helpers
@@ -1628,7 +1628,7 @@
 
         function startTimer() {
             if (countdownInterval) return; // Already running
-            secondsLeft = 600;
+            secondsLeft = 300;
             const card = document.getElementById('countdownCard');
             if (card) card.style.display = 'flex';
             updateTimerDisplay();
@@ -1849,9 +1849,29 @@
                 const json = await res.json();
                 if (json.success && json.data) {
                     seatsList = json.data;
+                    
+                    // Khôi phục danh sách ghế đã chọn từ session
+                    try {
+                        const savedBooking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
+                        if (savedBooking && parseInt(savedBooking.showtimeId, 10) === showtimeId && Array.isArray(savedBooking.seatIds)) {
+                            savedBooking.seatIds.forEach(id => selectedSeats.add(parseInt(id, 10)));
+                            console.log('[Seats] Đã khôi phục các ghế đã chọn từ trước:', Array.from(selectedSeats));
+                        }
+                    } catch (e) {
+                        console.warn('[Seats] Lỗi khi khôi phục ghế đã chọn:', e.message);
+                    }
+
                     renderSeatGrid();
                     updateAvailability();
                     updateSummary();
+
+                    // Emit reclaimSeats sau khi socket đã kết nối để đồng bộ quyền sở hữu
+                    if (selectedSeats.size > 0) {
+                        if (socket.connected) {
+                            socket.emit('reclaimSeats', { showtimeId, seatIds: Array.from(selectedSeats) });
+                        }
+                        startTimer(); // Khôi phục bộ đếm ngược hiển thị ở client
+                    }
                 } else {
                     document.getElementById('seatMapContainer').innerHTML = `
                         <div class="error-state">
@@ -1967,9 +1987,10 @@
                         if (s2 && s2.SeatType && s2.SeatType.toLowerCase().includes('couple') && s2.SeatNumber === s1.SeatNumber + 1) {
                             const isBooked = s1.SeatStatus === 'booked' || s2.SeatStatus === 'booked';
                             const isLocked = s1.SeatStatus === 'locked' || s2.SeatStatus === 'locked';
+                            const isSelected = selectedSeats.has(s1.SeatID) || selectedSeats.has(s2.SeatID);
 
                             const coupleEl = document.createElement('div');
-                            coupleEl.className = `seat couple${isBooked ? ' booked' : ''}${isLocked ? ' locked' : ''}`;
+                            coupleEl.className = `seat couple${isBooked ? ' booked' : ''}${isLocked ? ' locked' : ''}${isSelected ? ' selected' : ''}`;
                             coupleEl.setAttribute('data-id-1', s1.SeatID);
                             coupleEl.setAttribute('data-id-2', s2.SeatID);
                             coupleEl.setAttribute('data-row', row);
@@ -2021,10 +2042,11 @@
             const isVip = seat.SeatType === 'VIP';
             const isBooked = seat.SeatStatus === 'booked';
             const isLocked = seat.SeatStatus === 'locked';
+            const isSelected = selectedSeats.has(seat.SeatID);
             const typeClass = isInCoupleRow ? 'couple' : (isVip ? 'vip' : 'normal');
 
             const el = document.createElement('div');
-            el.className = `seat ${typeClass}${isBooked ? ' booked' : ''}${isLocked ? ' locked' : ''}`;
+            el.className = `seat ${typeClass}${isBooked ? ' booked' : ''}${isLocked ? ' locked' : ''}${isSelected ? ' selected' : ''}`;
             el.setAttribute('data-id', seat.SeatID);
             el.setAttribute('data-row', seat.SeatRow);
             el.setAttribute('data-type', typeClass);
@@ -3166,6 +3188,12 @@
             }
         `;
         document.head.appendChild(toastStyle);
+        // Bắt sự kiện Pageshow để tự động reload lại trang nếu load từ bộ nhớ đệm (Browser Back button)
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        });
     </script>
     <!-- Tooltip overlay -->
     <div id="seatTooltip"

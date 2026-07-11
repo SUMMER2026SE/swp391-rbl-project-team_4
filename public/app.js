@@ -1,4 +1,10 @@
-const socket = typeof io !== 'undefined' ? io() : { on: () => {}, emit: () => {} };
+// Khởi tạo bookingSessionId độc nhất để giữ ghế qua nhiều trang
+let bookingSessionId = sessionStorage.getItem('bookingSessionId');
+if (!bookingSessionId) {
+    bookingSessionId = 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
+    sessionStorage.setItem('bookingSessionId', bookingSessionId);
+}
+const socket = typeof io !== 'undefined' ? io({ query: { bookingSessionId } }) : { on: () => {}, emit: () => {} };
 const API_BASE = (window.location.protocol === 'file:' || window.location.hostname === '') ? 'http://localhost:9999' : '';
 
 const mockMovies = [
