@@ -548,6 +548,15 @@
     } else if (newPass.length < 6) {
       setError(dom.newPassword, 'Mật khẩu phải có ít nhất 6 ký tự.');
       hasError = true;
+    } else if (!/^[A-Z]/.test(newPass)) {
+      setError(dom.newPassword, 'Chữ cái đầu tiên phải viết hoa.');
+      hasError = true;
+    } else if (!/\d/.test(newPass)) {
+      setError(dom.newPassword, 'Mật khẩu phải chứa ít nhất 1 chữ số.');
+      hasError = true;
+    } else if (!/[._!@#$%^&*()\-+=<>?]/.test(newPass)) {
+      setError(dom.newPassword, 'Mật khẩu phải chứa ký tự đặc biệt (VD: ., _, @).');
+      hasError = true;
     }
 
     if (!confirmPass) {

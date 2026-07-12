@@ -180,7 +180,7 @@ exports.validateVoucher = async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 exports.createBooking = async (req, res) => {
   try {
-    const { showtimeId, seatIds, foodItems = [], voucherCode, paymentMethod = 'online' } = req.body;
+    const { showtimeId, seatIds, foodItems = [], voucherCode, paymentMethod = 'qrpay' } = req.body;
 
     if (!showtimeId || !seatIds || seatIds.length === 0) {
       return res.status(400).json({ success: false, message: 'Vui lòng cung cấp showtimeId và seatIds.' });
@@ -212,13 +212,17 @@ exports.createBooking = async (req, res) => {
     console.error('[bookingController] createBooking:', err.message);
     // Phân loại lỗi trả về từ Model để set status code phù hợp
     if (
-      err.message.includes('đã được đặt') ||
       err.message.includes('không tồn tại') ||
       err.message.includes('chưa được thiết lập giá') ||
       err.message.includes('không hợp lệ') ||
-      err.message.includes('không đủ số lượng') ||
       err.message.includes('đã ngừng bán') ||
-      err.message.includes('không được hỗ trợ') ||
+      err.message.includes('không được hỗ trợ')
+    ) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    if (
+      err.message.includes('đã được đặt') ||
+      err.message.includes('không đủ số lượng') ||
       err.message.includes('Voucher')
     ) {
       return res.status(409).json({ success: false, message: err.message });
@@ -398,11 +402,10 @@ exports.receivePaymentWebhook = async (req, res) => {
   try {
     console.log('[Payment Webhook] Received payment notification body:', JSON.stringify(req.body));
 
-    // 1. Kiểm tra Token bảo mật (nếu có cấu hình trong .env)
-    // Lưu ý: SePay thực tế KHÔNG gửi token tùy chỉnh của chúng ta.
-    // Chỉ từ chối khi request CÓ gửi token nhưng token đó SAI (ngăn brute-force).
-    // Nếu không có token (như SePay thực tế), cho phép qua và log để monitoring.
+    // 1. Kiểm tra token bảo mật. Local simulator có thể chạy không token trong development,
+    // nhưng production phải có token đúng để tránh xác nhận thanh toán giả.
     const secretToken = process.env.PAYMENT_WEBHOOK_SECRET || 'dev_webhook_secret_token';
+    const isProduction = process.env.NODE_ENV === 'production';
     let reqToken = req.headers['x-api-key'] || req.query.token;
     if (!reqToken && req.headers['authorization']) {
       reqToken = req.headers['authorization']
@@ -412,12 +415,15 @@ exports.receivePaymentWebhook = async (req, res) => {
     }
 
     if (reqToken && reqToken !== secretToken) {
-      // Chỉ từ chối khi có token nhưng token SAI → bảo vệ khỏi brute-force
-      console.warn(`[Webhook Warning] Token không hợp lệ. Token nhận được: ${reqToken}`);
+      console.warn('[Webhook Warning] Token không hợp lệ.');
       return res.status(401).json({ success: false, message: 'Unauthorized webhook request.' });
     }
     if (!reqToken) {
-      console.log('[Webhook] Không có token xác thực - chấp nhận (SePay thực tế không gửi token).');
+      if (isProduction) {
+        console.warn('[Webhook Warning] Thiếu token xác thực trong production.');
+        return res.status(401).json({ success: false, message: 'Unauthorized webhook request.' });
+      }
+      console.log('[Webhook] Không có token xác thực - chỉ chấp nhận trong development/simulator.');
     }
 
     // 2. Trích xuất thông tin giao dịch từ các định dạng khác nhau (SePay, PayOS hoặc Simulator)
@@ -696,7 +702,7 @@ exports.getPublicBookingDetails = async (req, res) => {
              r.RoomName,
              c.CinemaName, c.Address,
              s.SeatRow, s.SeatNumber, s.SeatType,
-             u.FullName AS CustomerName, u.Email AS CustomerEmail, u.Phone AS CustomerPhone
+             u.FullName AS CustomerName
       FROM   Tickets t
       JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
       JOIN   Movies    m  ON st.MovieID   = m.MovieID
@@ -735,8 +741,6 @@ exports.getPublicBookingDetails = async (req, res) => {
       data: {
         bookingId: 'DC-' + ids.sort((a, b) => a - b).join('-'),
         customerName: first.CustomerName,
-        customerEmail: first.CustomerEmail,
-        customerPhone: first.CustomerPhone || 'Chưa cung cấp',
         movieTitle: first.MovieTitle,
         poster: first.PosterURL,
         duration: first.Duration,

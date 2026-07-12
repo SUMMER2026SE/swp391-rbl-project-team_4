@@ -74,6 +74,13 @@
                     </svg>
                     Đánh giá
                 </button>
+                <button class="sn" data-page="refunds" onclick="navigate('refunds',this)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23" />
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                    Hoàn tiền
+                </button>
                 <button class="sn" data-page="schedule" onclick="navigate('schedule',this)">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -1598,6 +1605,98 @@
                 </button>
             </div>
         </div>
+        <div class="page" id="page-refunds">
+            <div class="content-scroll" style="padding: 30px 40px; display: flex; flex-direction: column; gap: 24px;">
+                <div class="dash-heading">
+                    <div>
+                        <h1>QUẢN LÝ HOÀN TIỀN</h1>
+                        <p>Duyệt yêu cầu hủy vé, xem thông tin ngân hàng và cập nhật trạng thái hoàn tiền.</p>
+                    </div>
+                    <div class="heading-actions">
+                        <button class="btn-add-main" onclick="loadAdminRefunds()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <polyline points="23 4 23 10 17 10" />
+                                <polyline points="1 20 1 14 7 14" />
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
+                                <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14" />
+                            </svg>
+                            Tải lại
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;">
+                    <div class="fkpi-card">
+                        <div class="fkpi-info">
+                            <div class="fkpi-label">Tổng yêu cầu</div>
+                            <div class="fkpi-val" id="refundKpiTotal">0</div>
+                        </div>
+                    </div>
+                    <div class="fkpi-card">
+                        <div class="fkpi-info">
+                            <div class="fkpi-label">Chờ xử lý</div>
+                            <div class="fkpi-val" id="refundKpiPending">0</div>
+                        </div>
+                    </div>
+                    <div class="fkpi-card">
+                        <div class="fkpi-info">
+                            <div class="fkpi-label">Đã duyệt</div>
+                            <div class="fkpi-val" id="refundKpiApproved">0</div>
+                        </div>
+                    </div>
+                    <div class="fkpi-card">
+                        <div class="fkpi-info">
+                            <div class="fkpi-label">Tiền cần hoàn</div>
+                            <div class="fkpi-val" id="refundKpiPendingAmount">0đ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+                        <div>
+                            <div class="table-title">Danh sách yêu cầu hoàn tiền</div>
+                            <div style="color:var(--text2);font-size:0.85rem;margin-top:4px;">Kiểm tra thông tin khách hàng trước khi chuyển khoản.</div>
+                        </div>
+                        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                            <select id="refundStatusFilter" class="form-control" onchange="loadAdminRefunds()"
+                                style="min-width:180px;">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="pending">Chờ xử lý</option>
+                                <option value="approved">Đã duyệt</option>
+                                <option value="completed">Đã hoàn tiền</option>
+                                <option value="rejected">Đã từ chối</option>
+                            </select>
+                            <input id="refundSearchInput" class="form-control" type="text"
+                                placeholder="Tìm phim, khách hàng, STK..." oninput="debouncedLoadAdminRefunds()"
+                                style="min-width:260px;">
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>VÉ</th>
+                                    <th>KHÁCH HÀNG</th>
+                                    <th>SỐ TIỀN</th>
+                                    <th>THÔNG TIN NHẬN TIỀN</th>
+                                    <th>LÝ DO</th>
+                                    <th>TRẠNG THÁI</th>
+                                    <th>THAO TÁC</th>
+                                </tr>
+                            </thead>
+                            <tbody id="refundAdminBody">
+                                <tr>
+                                    <td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải yêu cầu hoàn tiền...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="page" id="page-pricing">
             <div class="content-scroll" style="padding: 30px 40px; max-width: 800px; margin: 0 auto;">
                 <div class="page-header" style="margin-bottom: 30px;">
@@ -2286,9 +2385,6 @@
         style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;">
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="js/admin.js?v=4"></script>
-
     <!-- Promotions Modal -->
     <div id="promoModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;"
         onclick="closePromoModal()"></div>
@@ -2964,10 +3060,48 @@
                 <button type="submit"
                     style="padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Lưu</button>
             </div>
+        </form>
+    </div>
+
+    <!-- Refund action modal -->
+    <div id="refundActionOverlay"
+        style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:520;backdrop-filter:blur(3px);"
+        onclick="closeRefundActionModal(false)"></div>
+    <div id="refundActionModal"
+        style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:521;background:#fff;border-radius:14px;width:520px;max-width:94vw;box-shadow:0 24px 70px rgba(15,23,42,0.35);overflow:hidden;">
+        <div style="padding:22px 26px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+            <div>
+                <h2 id="refundActionTitle" style="margin:0;color:#111827;font-size:1.2rem;font-weight:900;text-transform:uppercase;">Xử lý hoàn tiền</h2>
+                <p id="refundActionDesc" style="margin:6px 0 0;color:#6b7280;font-size:0.9rem;line-height:1.45;">Nhập thông tin xử lý yêu cầu hoàn tiền.</p>
+            </div>
+            <button type="button" onclick="closeRefundActionModal(false)"
+                style="width:36px;height:36px;border:none;border-radius:50%;background:#f3f4f6;color:#475569;font-size:1.4rem;line-height:1;cursor:pointer;">&times;</button>
+        </div>
+        <form id="refundActionForm" onsubmit="submitRefundActionModal(event)" style="padding:24px 26px;display:flex;flex-direction:column;gap:16px;">
+            <div id="refundTxCodeGroup" style="display:none;">
+                <label for="refundTxCodeInput" style="display:block;margin-bottom:8px;color:#374151;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">Mã giao dịch chuyển khoản *</label>
+                <input id="refundTxCodeInput" type="text" autocomplete="off"
+                    placeholder="VD: MBVCB240709001"
+                    style="width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;color:#111827;font-size:0.95rem;">
+            </div>
+            <div>
+                <label id="refundNoteLabel" for="refundNoteInput" style="display:block;margin-bottom:8px;color:#374151;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">Ghi chú</label>
+                <textarea id="refundNoteInput" rows="4"
+                    placeholder="Nhập ghi chú cho yêu cầu này..."
+                    style="width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;color:#111827;font-size:0.95rem;font-family:inherit;resize:vertical;"></textarea>
+                <div id="refundActionError" style="display:none;margin-top:8px;color:#dc2626;font-size:0.84rem;font-weight:600;"></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:4px;">
+                <button type="button" onclick="closeRefundActionModal(false)"
+                    style="padding:11px 22px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#475569;font-weight:800;cursor:pointer;">Hủy</button>
+                <button id="refundActionSubmitBtn" type="submit" onclick="submitRefundActionModal(event)"
+                    style="padding:11px 24px;border:none;border-radius:8px;background:#ef1b2d;color:#fff;font-weight:900;cursor:pointer;">Xác nhận</button>
+            </div>
+        </form>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="js/admin.js?v=4"></script>
+    <script src="js/admin.js?v=6"></script>
     <script src="js/admin-voucher.js?v=999"></script>
 
 </body>

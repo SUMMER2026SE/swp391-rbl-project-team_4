@@ -15,6 +15,14 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '680237511336-g14sn1oit
 const SALT_ROUNDS = 10;
 const TOKEN_EXPIRY = '7d'; // Token hết hạn sau 7 ngày
 
+function validatePasswordPolicy(password) {
+  if (!password || password.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự.';
+  if (!/^[A-Z]/.test(password)) return 'Chữ cái đầu tiên phải viết hoa.';
+  if (!/\d/.test(password)) return 'Mật khẩu phải chứa ít nhất 1 chữ số.';
+  if (!/[._!@#$%^&*()\-+=<>?]/.test(password)) return 'Mật khẩu phải chứa ký tự đặc biệt (VD: ., _, @).';
+  return null;
+}
+
 // ─────────────────────────────────────────────────────────────
 //  POST /api/auth/register
 // ─────────────────────────────────────────────────────────────
@@ -25,9 +33,8 @@ exports.register = async (req, res) => {
     if (!fullName || !email || !password) {
       return res.status(400).json({ success: false, message: 'Vui lòng cung cấp đầy đủ: fullName, email, password.' });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ success: false, message: 'Mật khẩu phải có ít nhất 6 ký tự.' });
-    }
+    const passwordError = validatePasswordPolicy(password);
+    if (passwordError) return res.status(400).json({ success: false, message: passwordError });
 
     const existCheck = await AuthModel.checkEmailExist(email);
     if (existCheck) {
@@ -81,6 +88,9 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(401).json({ success: false, message: 'Email hoặc mật khẩu không đúng.' });
     }
+    if (user.IsActive === false || user.IsActive === 0) {
+      return res.status(403).json({ success: false, message: 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.' });
+    }
 
     const isMatch = await bcrypt.compare(password, user.PasswordHash);
     if (!isMatch) {
@@ -122,6 +132,9 @@ exports.getMe = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng.' });
+    }
+    if (user.IsActive === false || user.IsActive === 0) {
+      return res.status(403).json({ success: false, message: 'Tài khoản đã bị khóa. Vui lòng đăng nhập bằng tài khoản khác.' });
     }
 
     res.json({
@@ -175,6 +188,9 @@ exports.googleLogin = async (req, res) => {
     if (existCheck) {
       user = await AuthModel.findUserByIdWithRole(existCheck.UserID);
       if (!user) return res.status(404).json({ success: false, message: 'Người dùng không tồn tại.' });
+      if (user.IsActive === false || user.IsActive === 0) {
+        return res.status(403).json({ success: false, message: 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.' });
+      }
 
       token = jwt.sign(
         { userId: user.UserID, email: user.Email, roleId: user.RoleID, roleName: user.RoleName },
@@ -326,7 +342,8 @@ exports.resetPassword = async (req, res) => {
   try {
     const { resetToken, newPassword } = req.body;
     if (!resetToken || !newPassword) return res.status(400).json({ success: false, message: 'Vui lòng cung cấp resetToken và mật khẩu mới.' });
-    if (newPassword.length < 6) return res.status(400).json({ success: false, message: 'Mật khẩu mới phải có ít nhất 6 ký tự.' });
+    const passwordError = validatePasswordPolicy(newPassword);
+    if (passwordError) return res.status(400).json({ success: false, message: passwordError });
 
     let decoded;
     try {

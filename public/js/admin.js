@@ -4224,24 +4224,125 @@ function renderAdminRefundTable() {
     }).join('');
 }
 
+let refundActionModalResolver = null;
+let refundActionModalMode = null;
+
+function openRefundActionModal(action) {
+    const config = {
+        approve: {
+            title: 'Duyệt yêu cầu hoàn tiền',
+            desc: 'Kiểm tra thông tin nhận tiền của khách hàng trước khi duyệt yêu cầu.',
+            noteLabel: 'Ghi chú duyệt',
+            notePlaceholder: 'Có thể bỏ trống hoặc nhập ghi chú cho yêu cầu này...',
+            submitLabel: 'Duyệt yêu cầu',
+            showTxCode: false
+        },
+        reject: {
+            title: 'Từ chối hoàn tiền',
+            desc: 'Nhập lý do từ chối để lưu lại lịch sử xử lý yêu cầu.',
+            noteLabel: 'Lý do từ chối *',
+            notePlaceholder: 'VD: Vé không đủ điều kiện hoàn tiền...',
+            submitLabel: 'Từ chối',
+            showTxCode: false
+        },
+        complete: {
+            title: 'Xác nhận đã chuyển khoản',
+            desc: 'Nhập mã giao dịch sau khi đã hoàn tiền cho khách hàng.',
+            noteLabel: 'Ghi chú hoàn tiền',
+            notePlaceholder: 'Có thể bỏ trống hoặc nhập ghi chú chuyển khoản...',
+            submitLabel: 'Xác nhận đã chuyển',
+            showTxCode: true
+        }
+    }[action];
+
+    if (!config) return Promise.resolve(null);
+
+    const overlay = document.getElementById('refundActionOverlay');
+    const modal = document.getElementById('refundActionModal');
+    const title = document.getElementById('refundActionTitle');
+    const desc = document.getElementById('refundActionDesc');
+    const txGroup = document.getElementById('refundTxCodeGroup');
+    const txInput = document.getElementById('refundTxCodeInput');
+    const noteLabel = document.getElementById('refundNoteLabel');
+    const noteInput = document.getElementById('refundNoteInput');
+    const error = document.getElementById('refundActionError');
+    const submitBtn = document.getElementById('refundActionSubmitBtn');
+
+    if (!overlay || !modal || !title || !desc || !txGroup || !txInput || !noteLabel || !noteInput || !error || !submitBtn) {
+        return Promise.resolve(null);
+    }
+
+    refundActionModalMode = action;
+    title.textContent = config.title;
+    desc.textContent = config.desc;
+    noteLabel.textContent = config.noteLabel;
+    noteInput.placeholder = config.notePlaceholder;
+    noteInput.value = '';
+    txInput.value = '';
+    txGroup.style.display = config.showTxCode ? 'block' : 'none';
+    error.style.display = 'none';
+    error.textContent = '';
+    submitBtn.textContent = config.submitLabel;
+    submitBtn.style.background = action === 'reject' ? '#dc2626' : '#ef1b2d';
+
+    overlay.style.display = 'block';
+    modal.style.display = 'block';
+    setTimeout(() => (config.showTxCode ? txInput : noteInput).focus(), 0);
+
+    return new Promise(resolve => {
+        refundActionModalResolver = resolve;
+    });
+}
+
+function closeRefundActionModal(result) {
+    const overlay = document.getElementById('refundActionOverlay');
+    const modal = document.getElementById('refundActionModal');
+    if (overlay) overlay.style.display = 'none';
+    if (modal) modal.style.display = 'none';
+
+    if (refundActionModalResolver) {
+        refundActionModalResolver(result || null);
+        refundActionModalResolver = null;
+    }
+    refundActionModalMode = null;
+}
+
+function submitRefundActionModal(event) {
+    event.preventDefault();
+
+    const action = refundActionModalMode;
+    const txCode = document.getElementById('refundTxCodeInput')?.value.trim() || '';
+    const note = document.getElementById('refundNoteInput')?.value.trim() || '';
+    const error = document.getElementById('refundActionError');
+
+    const fail = message => {
+        if (error) {
+            error.textContent = message;
+            error.style.display = 'block';
+        }
+    };
+
+    if (action === 'reject' && !note) {
+        fail('Vui lòng nhập lý do từ chối hoàn tiền.');
+        return;
+    }
+
+    if (action === 'complete' && !txCode) {
+        fail('Vui lòng nhập mã giao dịch chuyển khoản.');
+        return;
+    }
+
+    const result = {};
+    if (note) result.adminNote = note;
+    if (txCode) result.refundTransactionCode = txCode;
+    closeRefundActionModal(result);
+}
+
 async function updateAdminRefund(refundId, action) {
     const payload = { action };
-    if (action === 'approve') {
-        const note = prompt('Ghi chú duyệt hoàn tiền (có thể bỏ trống):');
-        if (note === null) return;
-        payload.adminNote = note;
-    } else if (action === 'reject') {
-        const note = prompt('Nhập lý do từ chối hoàn tiền:');
-        if (!note || !note.trim()) return;
-        payload.adminNote = note;
-    } else if (action === 'complete') {
-        const txCode = prompt('Nhập mã giao dịch sau khi đã chuyển khoản cho khách:');
-        if (!txCode || !txCode.trim()) return;
-        const note = prompt('Ghi chú hoàn tiền (có thể bỏ trống):');
-        if (note === null) return;
-        payload.refundTransactionCode = txCode;
-        payload.adminNote = note;
-    }
+    const modalResult = await openRefundActionModal(action);
+    if (!modalResult) return;
+    Object.assign(payload, modalResult);
 
     try {
         const res = await apiFetch(`/api/admin/refunds/${refundId}`, {
