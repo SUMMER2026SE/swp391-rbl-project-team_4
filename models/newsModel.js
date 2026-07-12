@@ -103,10 +103,22 @@ class NewsModel {
 
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT ArticleID, Type, Title, Summary, Content, ImageURL, BadgeLabel,
-             Author, PublishedAt, IsFeatured, IsActive, SortOrder, CreatedAt, UpdatedAt
-      FROM NewsArticles
-      ORDER BY PublishedAt DESC, ArticleID DESC
+      SELECT NewsID AS ArticleID, 
+             CASE WHEN Category = 'Event' THEN 'events' ELSE 'news' END AS Type, 
+             Title, 
+             Summary, 
+             Content, 
+             Thumbnail AS ImageURL, 
+             BadgeLabel,
+             Author, 
+             PublishedAt, 
+             IsFeatured, 
+             Status AS IsActive, 
+             SortOrder, 
+             CreatedAt, 
+             UpdatedAt
+      FROM dbo.News
+      ORDER BY PublishedAt DESC, NewsID DESC
     `);
 
     return result.recordset;
@@ -118,24 +130,27 @@ class NewsModel {
     if (!item.title) throw new Error('Vui long nhap tieu de bai viet.');
 
     const pool = await getPool();
+    const category = item.type === 'events' ? 'Event' : 'News';
+    const status = item.isActive ? 1 : 0;
+
     const result = await pool.request()
-      .input('type', sql.NVarChar, item.type)
       .input('title', sql.NVarChar, item.title)
       .input('summary', sql.NVarChar, item.summary || null)
       .input('content', sql.NVarChar(sql.MAX), item.content || null)
-      .input('imageURL', sql.NVarChar, item.imageURL || null)
+      .input('thumbnail', sql.NVarChar, item.imageURL || null)
+      .input('category', sql.NVarChar, category)
+      .input('status', sql.Bit, status)
+      .input('publishedAt', sql.DateTime, item.publishedAt)
       .input('badgeLabel', sql.NVarChar, item.badgeLabel || null)
       .input('author', sql.NVarChar, item.author || null)
-      .input('publishedAt', sql.DateTime, item.publishedAt)
       .input('isFeatured', sql.Bit, item.isFeatured)
-      .input('isActive', sql.Bit, item.isActive)
       .input('sortOrder', sql.Int, item.sortOrder)
       .query(`
-        INSERT INTO NewsArticles
-          (Type, Title, Summary, Content, ImageURL, BadgeLabel, Author, PublishedAt, IsFeatured, IsActive, SortOrder)
-        OUTPUT INSERTED.*
+        INSERT INTO dbo.News
+          (Title, Summary, Content, Thumbnail, Category, Status, PublishedAt, BadgeLabel, Author, IsFeatured, SortOrder)
+        OUTPUT INSERTED.NewsID AS ArticleID, INSERTED.Title, INSERTED.Summary, INSERTED.PublishedAt
         VALUES
-          (@type, @title, @summary, @content, @imageURL, @badgeLabel, @author, @publishedAt, @isFeatured, @isActive, @sortOrder)
+          (@title, @summary, @content, @thumbnail, @category, @status, @publishedAt, @badgeLabel, @author, @isFeatured, @sortOrder)
       `);
 
     return result.recordset[0];
@@ -143,41 +158,44 @@ class NewsModel {
 
   static async updateArticle(id, data) {
     await ensureNewsTable();
-    const articleId = parseInt(id, 10);
+    const newsId = parseInt(id, 10);
     const item = cleanArticleInput(data);
-    if (!Number.isInteger(articleId) || articleId <= 0) throw new Error('ArticleID khong hop le.');
+    if (!Number.isInteger(newsId) || newsId <= 0) throw new Error('NewsID khong hop le.');
     if (!item.title) throw new Error('Vui long nhap tieu de bai viet.');
 
     const pool = await getPool();
+    const category = item.type === 'events' ? 'Event' : 'News';
+    const status = item.isActive ? 1 : 0;
+
     const result = await pool.request()
-      .input('articleId', sql.Int, articleId)
-      .input('type', sql.NVarChar, item.type)
+      .input('newsId', sql.Int, newsId)
       .input('title', sql.NVarChar, item.title)
       .input('summary', sql.NVarChar, item.summary || null)
       .input('content', sql.NVarChar(sql.MAX), item.content || null)
-      .input('imageURL', sql.NVarChar, item.imageURL || null)
+      .input('thumbnail', sql.NVarChar, item.imageURL || null)
+      .input('category', sql.NVarChar, category)
+      .input('status', sql.Bit, status)
+      .input('publishedAt', sql.DateTime, item.publishedAt)
       .input('badgeLabel', sql.NVarChar, item.badgeLabel || null)
       .input('author', sql.NVarChar, item.author || null)
-      .input('publishedAt', sql.DateTime, item.publishedAt)
       .input('isFeatured', sql.Bit, item.isFeatured)
-      .input('isActive', sql.Bit, item.isActive)
       .input('sortOrder', sql.Int, item.sortOrder)
       .query(`
-        UPDATE NewsArticles
-        SET Type = @type,
-            Title = @title,
+        UPDATE dbo.News
+        SET Title = @title,
             Summary = @summary,
             Content = @content,
-            ImageURL = COALESCE(NULLIF(@imageURL, ''), ImageURL),
+            Thumbnail = COALESCE(NULLIF(@thumbnail, ''), Thumbnail),
+            Category = @category,
+            Status = @status,
+            PublishedAt = @publishedAt,
             BadgeLabel = @badgeLabel,
             Author = @author,
-            PublishedAt = @publishedAt,
             IsFeatured = @isFeatured,
-            IsActive = @isActive,
             SortOrder = @sortOrder,
             UpdatedAt = GETDATE()
-        OUTPUT INSERTED.*
-        WHERE ArticleID = @articleId
+        OUTPUT INSERTED.NewsID AS ArticleID, INSERTED.Title
+        WHERE NewsID = @newsId
       `);
 
     return result.recordset[0] || null;
@@ -185,27 +203,86 @@ class NewsModel {
 
   static async deleteArticle(id) {
     await ensureNewsTable();
-    const articleId = parseInt(id, 10);
+    const newsId = parseInt(id, 10);
     const pool = await getPool();
     const result = await pool.request()
-      .input('articleId', sql.Int, articleId)
-      .query('DELETE FROM NewsArticles WHERE ArticleID = @articleId');
+      .input('newsId', sql.Int, newsId)
+      .query('DELETE FROM dbo.News WHERE NewsID = @newsId');
     return result.rowsAffected[0] > 0;
   }
 
   static async toggleArticleActive(id) {
     await ensureNewsTable();
-    const articleId = parseInt(id, 10);
+    const newsId = parseInt(id, 10);
     const pool = await getPool();
     const result = await pool.request()
-      .input('articleId', sql.Int, articleId)
+      .input('newsId', sql.Int, newsId)
       .query(`
-        UPDATE NewsArticles
-        SET IsActive = CASE WHEN IsActive = 1 THEN 0 ELSE 1 END,
+        UPDATE dbo.News
+        SET Status = CASE WHEN Status = 1 THEN 0 ELSE 1 END,
             UpdatedAt = GETDATE()
-        OUTPUT INSERTED.*
-        WHERE ArticleID = @articleId
+        OUTPUT INSERTED.NewsID AS ArticleID, INSERTED.Status AS IsActive
+        WHERE NewsID = @newsId
       `);
+    return result.recordset[0] || null;
+  }
+
+  // --- UC06 - News and Events Management ---
+  static async getNewsPublic({ search, category, page = 1, limit = 10 } = {}) {
+    const pool = await getPool();
+    const request = pool.request();
+    let filters = 'WHERE Status = 1';
+
+    if (category) {
+      request.input('category', sql.NVarChar, category);
+      filters += ' AND Category = @category';
+    }
+
+    if (search) {
+      request.input('search', sql.NVarChar, `%${search}%`);
+      filters += ' AND (Title LIKE @search OR Summary LIKE @search OR Content LIKE @search)';
+    }
+
+    // Get total count for filters
+    const countResult = await request.query(`
+      SELECT COUNT(*) AS total
+      FROM dbo.News
+      ${filters}
+    `);
+    const totalItems = countResult.recordset[0].total;
+
+    const offset = (page - 1) * limit;
+    request.input('offset', sql.Int, offset);
+    request.input('limit', sql.Int, limit);
+
+    const dataResult = await request.query(`
+      SELECT NewsID, Title, Summary, Content, Thumbnail, Category, Status, PublishedAt, CreatedAt, UpdatedAt
+      FROM dbo.News
+      ${filters}
+      ORDER BY PublishedAt DESC, NewsID DESC
+      OFFSET @offset ROWS
+      FETCH NEXT @limit ROWS ONLY
+    `);
+
+    return {
+      totalItems,
+      data: dataResult.recordset
+    };
+  }
+
+  static async getNewsById(id) {
+    const newsId = parseInt(id, 10);
+    if (!Number.isInteger(newsId) || newsId <= 0) return null;
+
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('newsId', sql.Int, newsId)
+      .query(`
+        SELECT NewsID, Title, Summary, Content, Thumbnail, Category, Status, PublishedAt, CreatedAt, UpdatedAt
+        FROM dbo.News
+        WHERE NewsID = @newsId AND Status = 1
+      `);
+
     return result.recordset[0] || null;
   }
 }

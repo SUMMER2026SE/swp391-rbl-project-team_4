@@ -1,4 +1,5 @@
 const NewsModel = require('../models/newsModel');
+const NewsService = require('../services/newsService');
 
 function imagePathFromFile(file) {
   return file ? `/images/${file.filename}` : '';
@@ -80,5 +81,41 @@ exports.toggleArticleActive = async (req, res) => {
   } catch (err) {
     console.error('[newsController] toggleArticleActive:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi ẩn/hiện bài: ' + err.message });
+  }
+};
+
+// --- UC06 - News and Events Management ---
+exports.getNews = async (req, res) => {
+  try {
+    const result = await NewsService.getPublicNews(req.query);
+    res.json({
+      success: true,
+      page: result.page,
+      totalItems: result.totalItems,
+      totalPages: result.totalPages,
+      data: result.data
+    });
+  } catch (err) {
+    console.error('[newsController] getNews error:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server: ' + err.message });
+  }
+};
+
+exports.getNewsById = async (req, res) => {
+  try {
+    const news = await NewsService.getNewsById(req.params.id);
+    if (!news) {
+      return res.status(404).json({
+        success: false,
+        message: 'News not found'
+      });
+    }
+    res.json({
+      success: true,
+      data: news
+    });
+  } catch (err) {
+    console.error('[newsController] getNewsById error:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server: ' + err.message });
   }
 };
