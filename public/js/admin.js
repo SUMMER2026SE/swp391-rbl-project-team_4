@@ -520,18 +520,6 @@ function buildChart(chartData) {
         chartInstance.destroy();
     }
 
-    const maxRevenue = Math.max(0, ...ticketData, ...fnbData);
-    const moneyScale = maxRevenue >= 1000000
-        ? { divisor: 1000000, suffix: ' Tr' }
-        : maxRevenue >= 1000
-            ? { divisor: 1000, suffix: 'K' }
-            : { divisor: 1, suffix: 'đ' };
-    const formatAxisMoney = value => {
-        const scaled = Number(value || 0) / moneyScale.divisor;
-        const text = scaled % 1 === 0 ? scaled.toLocaleString('vi-VN') : scaled.toLocaleString('vi-VN', { maximumFractionDigits: 1 });
-        return text + moneyScale.suffix;
-    };
-
     chartInstance = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
@@ -582,12 +570,9 @@ function buildChart(chartData) {
                 },
                 y: {
                     grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
-                    beginAtZero: true,
-                    suggestedMax: maxRevenue > 0 ? maxRevenue * 1.25 : 1000,
                     ticks: {
                         color: '#9ca3af', font: { size: 11 },
-                        maxTicksLimit: 6,
-                        callback: formatAxisMoney
+                        callback: v => (v / 1000000) + ' Tr'
                     },
                     border: { display: false }
                 }
@@ -602,34 +587,18 @@ function buildChart(chartData) {
 let MOVIE_DATA = [];
 let filteredMovies = [];
 let GENRE_DATA = [];
-let genresLoadingPromise = null;
 
-async function loadGenres(force = false) {
-    if (!force && GENRE_DATA.length) {
-        renderGenreAdminList();
-        return GENRE_DATA;
-    }
-
-    if (genresLoadingPromise) return genresLoadingPromise;
-
-    genresLoadingPromise = (async () => {
-        try {
-            const res = await apiFetch('/api/admin/genres');
-            if (res.success) {
-                GENRE_DATA = res.data || [];
-                renderGenreAdminList();
-                return GENRE_DATA;
-            }
-            throw new Error(res.message || 'Khong the tai the loai.');
-        } catch (err) {
-            console.error('[Admin] loadGenres:', err);
-            return GENRE_DATA;
-        } finally {
-            genresLoadingPromise = null;
+async function loadGenres() {
+    try {
+        const res = await apiFetch('/api/admin/genres');
+        if (res.success) {
+            GENRE_DATA = res.data || [];
+            renderGenreAdminList();
+            renderMovieGenreCheckboxes();
         }
-    })();
-
-    return genresLoadingPromise;
+    } catch (err) {
+        console.error('[Admin] loadGenres:', err);
+    }
 }
 
 function renderGenreAdminList() {
@@ -669,15 +638,6 @@ function renderMovieGenreCheckboxes(selectedIds = []) {
 
 function getSelectedMovieGenreIds() {
     return Array.from(document.querySelectorAll('.movie-genre-checkbox:checked')).map(input => input.value);
-}
-
-async function ensureMovieGenres(selectedIds = []) {
-    const wrap = document.getElementById('movieGenreCheckboxes');
-    if (wrap && !GENRE_DATA.some(g => g.IsActive)) {
-        wrap.innerHTML = '<span style="color:var(--text2);font-size:0.85rem;">Dang tai the loai...</span>';
-    }
-    await loadGenres();
-    renderMovieGenreCheckboxes(selectedIds);
 }
 
 async function saveGenre() {
@@ -831,7 +791,7 @@ async function deleteMovie(id) {
 
 let editingMovieId = null;
 
-async function editMovie(id) {
+function editMovie(id) {
     const movie = MOVIE_DATA.find(m => m.MovieID === id);
     if (!movie) return;
     editingMovieId = id;
@@ -845,23 +805,23 @@ async function editMovie(id) {
     document.getElementById('movieMainCast').value = movie.MainCast || '';
     document.getElementById('movieTrailerURL').value = movie.TrailerURL || '';
     const selectedGenres = String(movie.GenreIDs || '').split(',').map(id => parseInt(id, 10)).filter(Boolean);
-    await ensureMovieGenres(selectedGenres);
+    renderMovieGenreCheckboxes(selectedGenres);
     const preview = document.getElementById('posterPreview');
     if (movie.PosterURL) {
         preview.src = movie.PosterURL;
         preview.style.display = 'block';
     }
     document.querySelector('.btn-panel-save').textContent = 'Cập nhật Phim';
-    await openAddMovieModal();
+    openAddMovieModal();
 }
 
-async function openAddMovieModal() {
+function openAddMovieModal() {
     if (!editingMovieId) {
         document.querySelector('#addMovieModal .panel-header h2').textContent = 'THÊM PHIM MỚI';
         document.querySelector('.btn-panel-save').textContent = 'Lưu Phim';
         document.getElementById('addMovieForm').reset();
         document.getElementById('posterPreview').style.display = 'none';
-        await ensureMovieGenres();
+        renderMovieGenreCheckboxes();
     }
     document.getElementById('addMovieModalOverlay').classList.add('show');
     document.getElementById('addMovieModal').classList.add('show');
@@ -877,7 +837,7 @@ function closeAddMovieModal() {
 function filterMovies(filter, btn) {
     document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-    
+
     if (filter === 'Tất cả') {
         filteredMovies = [...MOVIE_DATA];
     } else {
@@ -1008,15 +968,11 @@ function navigate(page, btn) {
         loadAdminReviews();
     }
 
-    if (page === 'refunds') {
-        loadAdminRefunds();
-    }
-
     if (page === 'promotions') {
         loadPromotions();
         loadNewsArticles();
     }
-    
+
     if (page === 'pricing' || page === 'settings') {
         loadSettings();
     }
@@ -1059,28 +1015,27 @@ function adminLogout() {
    F&B MANAGEMENT
 ══════════════════════════ */
 let FNB_DATA = [];
+let currentFnbFilter = 'Tất cả';
+
+function filterFnB(filter, btn) {
+    document.querySelectorAll('.fnb-filter-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    currentFnbFilter = filter;
+    renderFnB();
+}
 
 async function loadFnB(search = '') {
     try {
         const res = await apiFetch('/api/admin/fnb');
         if (res.success) {
             FNB_DATA = res.data;
-            
-            // Filter by search term
             if (search) {
                 const term = search.toLowerCase();
-                FNB_DATA = FNB_DATA.filter(item => 
-                    item.Name.toLowerCase().includes(term) || 
+                FNB_DATA = FNB_DATA.filter(item =>
+                    item.Name.toLowerCase().includes(term) ||
                     (item.Description && item.Description.toLowerCase().includes(term))
                 );
             }
-            
-            // Filter by category filter dropdown
-            const catFilter = document.getElementById('fnbFilterCategory') ? document.getElementById('fnbFilterCategory').value : '';
-            if (catFilter) {
-                FNB_DATA = FNB_DATA.filter(item => item.Category === catFilter);
-            }
-            
             renderFnB();
             loadFnBStats();
             initDragAndDrop();
@@ -1090,23 +1045,22 @@ async function loadFnB(search = '') {
     }
 }
 
-function filterFnBList() {
-    const searchVal = document.getElementById('fnbSearchInput') ? document.getElementById('fnbSearchInput').value : '';
-    loadFnB(searchVal);
-}
-
 function renderFnB() {
     const container = document.getElementById('fnbTableBody');
     if (!container) return;
 
-    if (FNB_DATA.length === 0) {
-        container.innerHTML = '<tr><td colspan="7" style="padding:24px;color:#9ca3af;text-align:center;">Chưa có mặt hàng hoặc combo nào.</td></tr>';
+    let itemsToRender = FNB_DATA;
+    if (currentFnbFilter !== 'Tất cả') {
+        itemsToRender = FNB_DATA.filter(item => item.Category === currentFnbFilter);
+    }
+
+    if (itemsToRender.length === 0) {
+        container.innerHTML = '<tr><td colspan="7" style="padding:24px;color:#9ca3af;text-align:center;">Chưa có mặt hàng nào thuộc danh mục này.</td></tr>';
         return;
     }
 
     let html = '';
-    FNB_DATA.forEach(item => {
-        const displayCategory = item.Category === 'Combos' ? 'Combo' : item.Category;
+    itemsToRender.forEach(item => {
         html += `
             <tr style="border-bottom: 1px solid var(--border); opacity: ${item.IsAvailable ? 1 : 0.5};">
                 <td style="padding: 12px 16px;">
@@ -1120,7 +1074,7 @@ function renderFnB() {
                 </td>
                 <td style="padding: 12px 16px;">
                     <span style="font-size: 0.8rem; padding: 4px 8px; background: var(--bg); border-radius: 4px; color: var(--text2); font-weight: 500;">
-                        ${displayCategory}
+                        ${item.Category === 'Combos' ? 'Combo' : item.Category}
                     </span>
                 </td>
                 <td style="padding: 12px 16px; font-weight: 700; color: var(--accent);">
@@ -1165,8 +1119,22 @@ function editFnB(id) {
     document.getElementById('btnCancelFnb').style.display = 'block';
 
     const dropZoneText = document.getElementById('fnbDropZoneText');
-    if (dropZoneText) {
-        dropZoneText.textContent = item.ImageURL ? `Hình hiện tại: ${item.ImageURL.split('/').pop()}` : 'Chọn file hoặc kéo thả vào đây';
+    const previewImg = document.getElementById('fnbPreviewImg');
+    const uploadIcon = document.getElementById('fnbUploadIcon');
+    if (item.ImageURL) {
+        if (previewImg) {
+            previewImg.src = item.ImageURL;
+            previewImg.style.display = 'block';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'none';
+        if (dropZoneText) dropZoneText.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
     }
 
     document.querySelector('.fnb-form-side').scrollIntoView({ behavior: 'smooth' });
@@ -1182,6 +1150,14 @@ function cancelEditFnB() {
     document.getElementById('btnCancelFnb').style.display = 'none';
     const dropZoneText = document.getElementById('fnbDropZoneText');
     if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
+
+    const previewImg = document.getElementById('fnbPreviewImg');
+    const uploadIcon = document.getElementById('fnbUploadIcon');
+    if (previewImg) {
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+    }
+    if (uploadIcon) uploadIcon.style.display = 'block';
 }
 
 async function deleteFnB(id) {
@@ -1367,8 +1343,22 @@ function editCombo(id) {
     document.getElementById('btnCancelCombo').style.display = 'block';
 
     const dropZoneText = document.getElementById('comboDropZoneText');
-    if (dropZoneText) {
-        dropZoneText.textContent = item.ImageURL ? `Hình hiện tại: ${item.ImageURL.split('/').pop()}` : 'Chọn file hoặc kéo thả vào đây';
+    const previewImg = document.getElementById('comboPreviewImg');
+    const uploadIcon = document.getElementById('comboUploadIcon');
+    if (item.ImageURL) {
+        if (previewImg) {
+            previewImg.src = item.ImageURL;
+            previewImg.style.display = 'block';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'none';
+        if (dropZoneText) dropZoneText.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
     }
 
     document.querySelector('#page-combos .fnb-form-side').scrollIntoView({ behavior: 'smooth' });
@@ -1385,6 +1375,14 @@ function cancelEditCombo() {
     document.getElementById('btnCancelCombo').style.display = 'none';
     const dropZoneText = document.getElementById('comboDropZoneText');
     if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
+
+    const previewImg = document.getElementById('comboPreviewImg');
+    const uploadIcon = document.getElementById('comboUploadIcon');
+    if (previewImg) {
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+    }
+    if (uploadIcon) uploadIcon.style.display = 'block';
 }
 
 async function saveCombo() {
@@ -1470,20 +1468,56 @@ async function toggleComboStatus(id) {
     }
 }
 
+function showImagePreview(file, previewImgId, iconId, textId, defaultText = 'Chọn file hoặc kéo thả vào đây') {
+    const previewImg = document.getElementById(previewImgId);
+    const uploadIcon = iconId ? document.getElementById(iconId) : null;
+    const textEl = textId ? document.getElementById(textId) : null;
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            if (previewImg) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+            }
+            if (uploadIcon) uploadIcon.style.display = 'none';
+            if (textEl) {
+                if (textId && textId.includes('DropZone')) {
+                    textEl.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+                } else {
+                    textEl.textContent = file.name;
+                }
+            }
+        };
+        reader.readAsDataURL(file);
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (textEl) textEl.textContent = defaultText;
+    }
+}
+
 function handleFnbFileSelect(input) {
     const file = input.files[0];
-    const text = document.getElementById('fnbDropZoneText');
-    if (file && text) {
-        text.textContent = `Đã chọn: ${file.name}`;
-    }
+    showImagePreview(file, 'fnbPreviewImg', 'fnbUploadIcon', 'fnbDropZoneText');
 }
 
 function handleComboFileSelect(input) {
     const file = input.files[0];
-    const text = document.getElementById('comboDropZoneText');
-    if (file && text) {
-        text.textContent = `Đã chọn: ${file.name}`;
-    }
+    showImagePreview(file, 'comboPreviewImg', 'comboUploadIcon', 'comboDropZoneText');
+}
+
+function handleNewsFileSelect(input) {
+    const file = input.files[0];
+    showImagePreview(file, 'newsPreviewImg', null, 'newsFileName', 'Chưa chọn file');
+}
+
+function handlePromoFileSelect(input) {
+    const file = input.files[0];
+    showImagePreview(file, 'promoPreviewImg', null, 'promoFileName', 'Chưa chọn file');
 }
 
 let dragDropInitialized = false;
@@ -1518,7 +1552,7 @@ function initDragAndDrop() {
             const files = dt.files;
             if (files.length) {
                 fileInput.files = files;
-                if (textVal) textVal.textContent = `Đã chọn: ${files[0].name}`;
+                showImagePreview(files[0], `${prefix}PreviewImg`, `${prefix}UploadIcon`, `${prefix}DropZoneText`);
             }
         }, false);
     });
@@ -1821,8 +1855,8 @@ function updateStaffKPIs() {
     if (kpiCards.length >= 4) {
         kpiCards[0].textContent = `${adminCount} người được ủy quyền`;
         kpiCards[1].textContent = `${managerCount} người được ủy quyền`;
-        kpiCards[2].textContent = `0 người được ủy quyền`; 
-        kpiCards[3].textContent = `${customerCount} khách hàng`; 
+        kpiCards[2].textContent = `0 người được ủy quyền`;
+        kpiCards[3].textContent = `${customerCount} khách hàng`;
     }
 }
 
@@ -1849,7 +1883,7 @@ function applyStaffFilters() {
             if (currentStaffRoleFilter === 'Khách hàng') roleMatch = (u.RoleName === 'Customer');
             if (currentStaffRoleFilter === 'Nhân viên') roleMatch = (u.RoleName === 'Staff');
         }
-        
+
         let statusMatch = true;
         if (currentStaffStatusFilter !== 'Tất cả') {
             if (currentStaffStatusFilter === 'Active') statusMatch = u.IsActive === 1;
@@ -1863,7 +1897,7 @@ function applyStaffFilters() {
 function renderStaffTable() {
     const body = document.getElementById('staffTableBody');
     if (!body) return;
-    
+
     if (FILTERED_STAFF.length === 0) {
         body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px;">Không có dữ liệu nhân sự</td></tr>';
         return;
@@ -1993,7 +2027,7 @@ function animateCounter(el, target, prefix = '', suffix = '', decimals = 0, isCu
 ══════════════════════════ */
 let SHOWTIME_DATA = [];
 let ROOM_DATA = [];
-let scheduleDate = toDateInputValue(new Date());
+let scheduleDate = new Date().toISOString().split('T')[0];
 let allCinemas = [];
 let selectedCity = '';
 let selectedCinemaId = null;
@@ -2232,7 +2266,7 @@ function selectScheduleMovie(movieId) {
 function changeScheduleDate(delta) {
     const d = new Date(scheduleDate);
     d.setDate(d.getDate() + delta);
-    scheduleDate = toDateInputValue(d);
+    scheduleDate = d.toISOString().split('T')[0];
     document.getElementById('scheduleDateInput').value = scheduleDate;
     loadShowtimes();
 }
@@ -2330,7 +2364,7 @@ function openShowtimeModal(showtimeId = null) {
         // Date and times
         const stDateObj = new Date(showtime.StartTime);
         const enDateObj = new Date(showtime.EndTime);
-        document.getElementById('stDate').value = toDateInputValue(stDateObj);
+        document.getElementById('stDate').value = stDateObj.toISOString().split('T')[0];
         document.getElementById('stStartTime').value = String(stDateObj.getHours()).padStart(2, '0') + ':' + String(stDateObj.getMinutes()).padStart(2, '0');
         document.getElementById('stEndTime').value = String(enDateObj.getHours()).padStart(2, '0') + ':' + String(enDateObj.getMinutes()).padStart(2, '0');
         document.getElementById('stDuration').value = Math.round((enDateObj - stDateObj) / 60000);
@@ -2399,8 +2433,6 @@ async function saveShowtime() {
 
     const start = new Date(`${dateStr}T${startTimeStr}`);
     const end = new Date(start.getTime() + duration * 60000);
-    const startLocal = `${dateStr}T${startTimeStr}:00`;
-    const endLocal = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}T${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}:00`;
 
     const btn = document.getElementById('btnSaveShowtime');
     const oldText = btn.textContent;
@@ -2415,8 +2447,8 @@ async function saveShowtime() {
                 method: 'PUT',
                 body: JSON.stringify({
                     movieId, roomId,
-                    startTime: startLocal,
-                    endTime: endLocal,
+                    startTime: start.toISOString(),
+                    endTime: end.toISOString(),
                     price, status
                 })
             });
@@ -2426,8 +2458,8 @@ async function saveShowtime() {
                 method: 'POST',
                 body: JSON.stringify({
                     movieId, roomId,
-                    startTime: startLocal,
-                    endTime: endLocal,
+                    startTime: start.toISOString(),
+                    endTime: end.toISOString(),
                     price
                 })
             });
@@ -2566,7 +2598,7 @@ window.selectCinemaForBuilder = function (cinemaId, el) {
     if (ws) ws.style.display = 'none';
     if (detail) {
         detail.style.display = 'flex';
-        
+
         // Find cinema object
         const c = allCinemas.find(x => x.CinemaID === cinemaId);
         if (c) {
@@ -2654,7 +2686,7 @@ window.selectRoomForBuilder = async function (roomId, el) {
     if (el) el.classList.add('active');
 
     currentBuilderRoomId = roomId;
-    
+
     // Toggle Workspace visibility vs Detail visibility
     const ws = document.getElementById('cinemaWorkspace');
     const detail = document.getElementById('cinemaDetail');
@@ -2686,7 +2718,7 @@ window.selectRoomForBuilder = async function (roomId, el) {
 };
 
 // --- Cinema CRUD ---
-window.openAddCinemaModal = function() {
+window.openAddCinemaModal = function () {
     document.getElementById('cinemaModalTitle').innerText = 'Thêm cụm rạp mới';
     document.getElementById('cinemaId').value = '';
     document.getElementById('cinemaForm').reset();
@@ -2694,7 +2726,7 @@ window.openAddCinemaModal = function() {
     document.getElementById('cinemaModal').style.display = 'block';
 };
 
-window.openEditCinemaModal = function(id) {
+window.openEditCinemaModal = function (id) {
     const c = allCinemas.find(x => x.CinemaID === id);
     if (!c) return;
     document.getElementById('cinemaModalTitle').innerText = 'Sửa thông tin cụm rạp';
@@ -2706,12 +2738,12 @@ window.openEditCinemaModal = function(id) {
     document.getElementById('cinemaModal').style.display = 'block';
 };
 
-window.closeCinemaModal = function() {
+window.closeCinemaModal = function () {
     document.getElementById('cinemaModalOverlay').style.display = 'none';
     document.getElementById('cinemaModal').style.display = 'none';
 };
 
-window.saveCinema = async function(e) {
+window.saveCinema = async function (e) {
     if (e) e.preventDefault();
     const id = document.getElementById('cinemaId').value;
     const name = document.getElementById('cinemaNameInput').value.trim();
@@ -2766,7 +2798,7 @@ window.saveCinema = async function(e) {
     }
 };
 
-window.deleteCinema = async function(id) {
+window.deleteCinema = async function (id) {
     const c = allCinemas.find(x => x.CinemaID === id);
     if (!c) return;
     if (!confirm(`Bạn có chắc chắn muốn xóa cụm rạp "${c.CinemaName}"? Hành động này không thể hoàn tác.`)) {
@@ -2805,7 +2837,7 @@ window.deleteCinema = async function(id) {
 };
 
 // --- Room CRUD ---
-window.openAddRoomModal = function(cinemaId) {
+window.openAddRoomModal = function (cinemaId) {
     document.getElementById('roomModalTitle').innerText = 'Thêm phòng chiếu mới';
     document.getElementById('roomId').value = '';
     document.getElementById('roomCinemaId').value = cinemaId;
@@ -2814,7 +2846,7 @@ window.openAddRoomModal = function(cinemaId) {
     document.getElementById('roomModal').style.display = 'block';
 };
 
-window.openEditRoomModal = function(id, currentName) {
+window.openEditRoomModal = function (id, currentName) {
     document.getElementById('roomModalTitle').innerText = 'Sửa tên phòng chiếu';
     document.getElementById('roomId').value = id;
     document.getElementById('roomNameInput').value = currentName;
@@ -2822,12 +2854,12 @@ window.openEditRoomModal = function(id, currentName) {
     document.getElementById('roomModal').style.display = 'block';
 };
 
-window.closeRoomModal = function() {
+window.closeRoomModal = function () {
     document.getElementById('roomModalOverlay').style.display = 'none';
     document.getElementById('roomModal').style.display = 'none';
 };
 
-window.saveRoom = async function(e) {
+window.saveRoom = async function (e) {
     if (e) e.preventDefault();
     const id = document.getElementById('roomId').value;
     const cinemaId = document.getElementById('roomCinemaId').value;
@@ -2871,7 +2903,7 @@ window.saveRoom = async function(e) {
     }
 };
 
-window.deleteRoom = async function(id) {
+window.deleteRoom = async function (id) {
     const r = ROOM_DATA.find(x => x.RoomID === id);
     if (!r) return;
     if (!confirm(`Bạn có chắc chắn muốn xóa phòng "${r.RoomName}"? Hành động này sẽ xóa tất cả ghế trong phòng.`)) {
@@ -2913,9 +2945,9 @@ function getSeatTypeClass(type) {
 
 /* ─── Helpers: update builder seat count stats ─── */
 function updateBuilderStats() {
-    const total  = builderSeats.filter(s => s.SeatType !== 'None').length;
+    const total = builderSeats.filter(s => s.SeatType !== 'None').length;
     const normal = builderSeats.filter(s => s.SeatType === 'Normal').length;
-    const vip    = builderSeats.filter(s => s.SeatType === 'VIP').length;
+    const vip = builderSeats.filter(s => s.SeatType === 'VIP').length;
     const couple = builderSeats.filter(s => s.SeatType === 'Couple').length;
     const tEl = document.getElementById('totalSeatCount');
     const nEl = document.getElementById('normalSeatCount');
@@ -2924,11 +2956,11 @@ function updateBuilderStats() {
     if (tEl) tEl.textContent = total;
     if (nEl) nEl.textContent = normal;
     if (vEl) vEl.textContent = vip;
-    if (cEl) cEl.textContent = Math.floor(couple/2) + ' cap (' + couple + ' ghe)';
+    if (cEl) cEl.textContent = Math.floor(couple / 2) + ' cap (' + couple + ' ghe)';
     const bar = document.getElementById('seatStatsBar');
     if (bar && currentBuilderRoomId) {
         const room = (typeof ROOM_DATA !== 'undefined') ? ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId) : null;
-        
+
         let typeSelectHtml = '';
         if (room) {
             const types = ['2D Standard', '3D', 'IMAX', '4DX', 'ScreenX'];
@@ -2949,7 +2981,7 @@ function updateBuilderStats() {
             <span style="color:#4b5563;">|</span>
             <span>VIP: <strong style="color:#f59e0b;">&#9733; ${vip}</strong></span>
             <span style="color:#4b5563;">|</span>
-            <span>Cap doi: <strong style="color:#ec4899;">&#9829; ${Math.floor(couple/2)} cap</strong></span>
+            <span>Cap doi: <strong style="color:#ec4899;">&#9829; ${Math.floor(couple / 2)} cap</strong></span>
             <span style="color:#4b5563;">|</span>
             <span style="color:#4ade80;font-weight:800;">Tong: ${total} ghe</span>`;
     }
@@ -2959,7 +2991,7 @@ function updateBuilderStats() {
    SEAT MATRIX — Premium Cinema Style
    Mirrors exactly what customers see in seats.html
 ═════════════════════════════════════════ */
-window.renderSeatMatrix = function() {
+window.renderSeatMatrix = function () {
     const matrix = document.getElementById('seatMatrix');
     if (!matrix) return;
 
@@ -2989,24 +3021,17 @@ window.renderSeatMatrix = function() {
 
             if (sType === 'Couple') {
                 const c2 = c + 1;
-                const seat2 = builderSeats.find(s => s.SeatRow === rowChar && s.SeatNumber === c2);
-                if (c2 <= maxCol && seat2 && seat2.SeatType === 'Couple') {
-                    const lbl = `${rowChar}${c}-${c2}`;
-                    html += `<button class="seat-btn couple"
-                        onclick="toggleCoupleSeat('${rowChar}', ${c}, this)"
-                        data-row="${rowChar}" data-col1="${c}" data-col2="${c2}"
-                        title="Ghế cặp đôi ${lbl}">
-                        <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${lbl}</span>
-                    </button>`;
-                    c++; // skip next column if it was part of the pair
-                } else {
-                    html += `<button class="seat-btn couple"
-                        onclick="toggleSeat('${rowChar}', ${c}, this)"
-                        data-row="${rowChar}" data-col="${c}"
-                        title="Ghế cặp đôi ${rowChar}${c}">
-                        <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${rowChar}${c}</span>
-                    </button>`;
-                }
+                const num2 = (c2 <= maxCol) ? c2 : c;
+                const lbl = (c2 <= maxCol) ? `${rowChar}${c}-${num2}` : `${rowChar}${c}`;
+
+                html += `<button class="seat-btn couple"
+                    onclick="toggleCoupleSeat('${rowChar}', ${c}, this)"
+                    data-row="${rowChar}" data-col1="${c}" data-col2="${num2}"
+                    title="Ghế cặp đôi ${lbl}">
+                    <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${lbl}</span>
+                </button>`;
+
+                if (c2 <= maxCol) c++; // skip next column if it was part of the pair
             } else {
                 let sClass = 'blocked';
                 let inner = `<span style="color:rgba(255,255,255,0.04);position:relative;z-index:2;">${c}</span>`;
@@ -3041,7 +3066,7 @@ window.renderSeatMatrix = function() {
 };
 
 /* Toggle a single (Normal/VIP/None) seat */
-window.toggleSeat = function(rowChar, colNum, btn) {
+window.toggleSeat = function (rowChar, colNum, btn) {
     if (!currentBuilderRoomId) { alert('Vui long chon mot phong truoc!'); return; }
     const tool = document.querySelector('input[name="seat_tool"]:checked').value;
 
@@ -3064,7 +3089,7 @@ window.toggleSeat = function(rowChar, colNum, btn) {
 };
 
 /* Toggle a couple seat pair */
-window.toggleCoupleSeat = function(rowChar, col1, btn) {
+window.toggleCoupleSeat = function (rowChar, col1, btn) {
     if (!currentBuilderRoomId) { alert('Vui long chon mot phong truoc!'); return; }
     const tool = document.querySelector('input[name="seat_tool"]:checked').value;
     const col2 = col1 + 1;
@@ -3075,14 +3100,8 @@ window.toggleCoupleSeat = function(rowChar, col1, btn) {
         [col1, col2].forEach((cn, idx) => {
             if (cn > maxCol) return;
             let s = builderSeats.find(x => x.SeatRow === rowChar && x.SeatNumber === cn);
-            const mult = tool === 'VIP' ? 1.2 : (tool === 'Couple' ? 1.5 : 1.0);
-            if (!s) {
-                s = { SeatRow: rowChar, SeatNumber: cn, SeatType: tool, PriceMultiplier: mult };
-                builderSeats.push(s);
-            } else {
-                s.SeatType = tool;
-                s.PriceMultiplier = mult;
-            }
+            if (!s) { s = { SeatRow: rowChar, SeatNumber: cn, SeatType: 'Couple', PriceMultiplier: 1.5 }; builderSeats.push(s); }
+            else { s.SeatType = 'Couple'; s.PriceMultiplier = 1.5; }
         });
     }
     renderSeatMatrix();
@@ -3090,39 +3109,23 @@ window.toggleCoupleSeat = function(rowChar, col1, btn) {
 
 /* Zoom */
 let adminBuilderZoom = 1.0;
-window.adminZoomIn  = function() { adminBuilderZoom = Math.min(2.0, adminBuilderZoom + 0.12); const c = document.querySelector('.cw-canvas'); if(c) c.style.transform = `scale(${adminBuilderZoom})`; };
-window.adminZoomOut = function() { adminBuilderZoom = Math.max(0.45, adminBuilderZoom - 0.12); const c = document.querySelector('.cw-canvas'); if(c) c.style.transform = `scale(${adminBuilderZoom})`; };
+window.adminZoomIn = function () { adminBuilderZoom = Math.min(2.0, adminBuilderZoom + 0.12); const c = document.querySelector('.cw-canvas'); if (c) c.style.transform = `scale(${adminBuilderZoom})`; };
+window.adminZoomOut = function () { adminBuilderZoom = Math.max(0.45, adminBuilderZoom - 0.12); const c = document.querySelector('.cw-canvas'); if (c) c.style.transform = `scale(${adminBuilderZoom})`; };
 
-window.addSeatRow = function() { maxRow++; renderSeatMatrix(); };
-window.addSeatCol = function() { maxCol++; renderSeatMatrix(); };
+window.addSeatRow = function () { maxRow++; renderSeatMatrix(); };
+window.addSeatCol = function () { maxCol++; renderSeatMatrix(); };
 
-window.removeSeatRow = function() {
-    if (maxRow > 1) {
-        maxRow--;
-        builderSeats = builderSeats.filter(s => (s.SeatRow.charCodeAt(0) - 64) <= maxRow);
-        renderSeatMatrix();
-    }
-};
-
-window.removeSeatCol = function() {
-    if (maxCol > 1) {
-        maxCol--;
-        builderSeats = builderSeats.filter(s => s.SeatNumber <= maxCol);
-        renderSeatMatrix();
-    }
-};
-
-window.clearSeatMap = function() {
+window.clearSeatMap = function () {
     if (!confirm('Ban co chac muon lam moi toan bo so do (xoa trang)?')) return;
     builderSeats = [];
     renderSeatMatrix();
 };
 
 /* ─── Customer Preview Modal ─── */
-window.previewCustomerView = function() {
+window.previewCustomerView = function () {
     if (!currentBuilderRoomId) { alert('Vui long chon mot phong!'); return; }
-    const physicalSeats = builderSeats.filter(s => s.SeatType !== 'None');
-    if (physicalSeats.length === 0) { alert('Phong nay chua co ghe nao!'); return; }
+    const validSeats = builderSeats.filter(s => s.SeatType !== 'None');
+    if (validSeats.length === 0) { alert('Phong nay chua co ghe nao!'); return; }
 
     const room = (typeof ROOM_DATA !== 'undefined') ? ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId) : null;
     const roomName = room ? room.RoomName : 'Phong chieu';
@@ -3139,7 +3142,6 @@ window.previewCustomerView = function() {
 
     // Build preview using same logic as seats.html
     const rowsMap = {};
-    const validSeats = builderSeats;
     validSeats.forEach(s => { if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = []; rowsMap[s.SeatRow].push(s); });
     const allRows = Object.keys(rowsMap).sort();
     const coupleRowSet = new Set(validSeats.filter(s => s.SeatType === 'Couple').map(s => s.SeatRow));
@@ -3153,29 +3155,27 @@ window.previewCustomerView = function() {
     const S = { // inline seat styles
         base: 'width:36px;height:34px;border-radius:8px 8px 6px 6px;display:inline-flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:0.7rem;font-weight:800;position:relative;flex-shrink:0;border:1px solid rgba(255,255,255,0.08);box-shadow:0 3px 6px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.12);cursor:default;',
         normal: 'background:linear-gradient(180deg,#475569,#1e293b);color:#cbd5e1;',
-        vip:    'background:linear-gradient(180deg,#e28a18,#8a4805);color:#fef08a;border-color:rgba(252,211,77,0.3);',
+        vip: 'background:linear-gradient(180deg,#e28a18,#8a4805);color:#fef08a;border-color:rgba(252,211,77,0.3);',
         couple: 'width:80px;height:34px;border-radius:9px 9px 6px 6px;background:linear-gradient(180deg,#db2777,#7d0e3d);color:#fce7f3;border-color:rgba(251,207,232,0.3);',
     };
 
     let seatsHtml = '';
     sortedRows.forEach(row => {
-        const rowSeats = rowsMap[row].sort((a,b) => a.SeatNumber - b.SeatNumber);
+        const rowSeats = rowsMap[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
         const isCpl = coupleRowSet.has(row);
         seatsHtml += `<div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;">`;
         seatsHtml += `<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:800;color:#6b7280;font-size:0.75rem;flex-shrink:0;">${row}</div>`;
 
         const total = rowSeats.length;
-        const half = Math.floor(total/2);
-        
+        const half = Math.floor(total / 2);
+
         for (let i = 0; i < total; i++) {
             const s = rowSeats[i];
-            
+
             // Center aisle gap
             if (total > 4 && i === half) seatsHtml += `<div style="width:20px;"></div>`;
-            
-            if (s.SeatType === 'None') {
-                seatsHtml += `<div style="width:36px;height:34px;visibility:hidden;pointer-events:none;flex-shrink:0;"></div>`;
-            } else if (s.SeatType === 'Couple') {
+
+            if (s.SeatType === 'Couple') {
                 const s2 = rowSeats[i + 1];
                 if (s2 && s2.SeatType === 'Couple' && s2.SeatNumber === s.SeatNumber + 1) {
                     const lbl = `${row}${s.SeatNumber}-${s2.SeatNumber}`;
@@ -3187,16 +3187,16 @@ window.previewCustomerView = function() {
             } else {
                 const isVip = s.SeatType === 'VIP';
                 const st = isVip ? S.vip : S.normal;
-                seatsHtml += `<div style="${S.base}${st}" title="${row}${s.SeatNumber}${isVip?' (VIP)':''}"><span style="position:relative;z-index:2;">${isVip?'<span style="position:absolute;top:-12px;right:-1px;font-size:0.48rem;color:#fbbf24;">&#9733;</span>':''} ${s.SeatNumber}</span></div>`;
+                seatsHtml += `<div style="${S.base}${st}" title="${row}${s.SeatNumber}${isVip ? ' (VIP)' : ''}"><span style="position:relative;z-index:2;">${isVip ? '<span style="position:absolute;top:-12px;right:-1px;font-size:0.48rem;color:#fbbf24;">&#9733;</span>' : ''} ${s.SeatNumber}</span></div>`;
             }
         }
         seatsHtml += `<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:800;color:#6b7280;font-size:0.75rem;flex-shrink:0;">${row}</div>`;
         seatsHtml += `</div>`;
     });
 
-    const nCnt = validSeats.filter(s => s.SeatType==='Normal').length;
-    const vCnt = validSeats.filter(s => s.SeatType==='VIP').length;
-    const cCnt = validSeats.filter(s => s.SeatType==='Couple').length;
+    const nCnt = validSeats.filter(s => s.SeatType === 'Normal').length;
+    const vCnt = validSeats.filter(s => s.SeatType === 'VIP').length;
+    const cCnt = validSeats.filter(s => s.SeatType === 'Couple').length;
 
     modal.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
@@ -3225,7 +3225,7 @@ window.previewCustomerView = function() {
             </span>
             <span style="display:flex;align-items:center;gap:7px;font-size:0.8rem;color:#ec4899;">
                 <span style="width:52px;height:20px;border-radius:3px;background:linear-gradient(180deg,#db2777,#7d0e3d);display:inline-block;"></span>
-                Cap doi +50% (${Math.floor(cCnt/2)} cap)
+                Cap doi +50% (${Math.floor(cCnt / 2)} cap)
             </span>
         </div>`;
 
@@ -3233,13 +3233,13 @@ window.previewCustomerView = function() {
     document.body.appendChild(ov);
 };
 
-window.saveSeatLayout = async function() {
+window.saveSeatLayout = async function () {
     if (!currentBuilderRoomId) {
         alert('Vui long chon mot phong truoc khi luu.');
         return;
     }
-    const payload = builderSeats;
-    
+    const payload = builderSeats.filter(s => s.SeatType !== 'None');
+
     let roomType = null;
     const typeSelect = document.getElementById('builderRoomTypeSelect');
     if (typeSelect) {
@@ -3262,7 +3262,7 @@ window.saveSeatLayout = async function() {
                 toast.textContent = '&#10003; Da luu so do ghe thanh cong! (' + payload.length + ' ghe)';
                 container.appendChild(toast);
                 setTimeout(() => toast.remove(), 4000);
-            } else { showToast('Luu so do ghe thanh cong!'); }
+            } else { alert('Luu so do ghe thanh cong!'); }
             await loadRooms();
             renderCinemaSidebar();
             const cRoom = ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId);
@@ -3274,10 +3274,10 @@ window.saveSeatLayout = async function() {
                     if (rEl) window.selectRoomForBuilder(currentBuilderRoomId, rEl);
                 }, 100);
             }
-        } else { showToast('Loi: ' + (res.message || 'Khong xac dinh'), 'error'); }
-    } catch(err) {
+        } else { alert('Loi: ' + (res.message || 'Khong xac dinh')); }
+    } catch (err) {
         console.error(err);
-        showToast('Loi ket noi khi luu so do.', 'error');
+        alert('Loi ket noi khi luu so do.');
     } finally {
         if (saveBtn) { saveBtn.innerHTML = oldHtml || '&#128190; Luu bo cuc'; saveBtn.disabled = false; }
     }
@@ -3590,10 +3590,10 @@ function renderQsSeatMap() {
         </div>`;
 
     sortedRows.forEach(rk => {
-        const rowSeats = [...rowsMap[rk]].sort((a,b) => a.SeatNumber - b.SeatNumber);
+        const rowSeats = [...rowsMap[rk]].sort((a, b) => a.SeatNumber - b.SeatNumber);
         const isCouple = coupleRowSet.has(rk);
         const total = rowSeats.length;
-        const half  = Math.floor(total / 2);
+        const half = Math.floor(total / 2);
 
         html += `<div style="display:flex;align-items:center;gap:7px;justify-content:center;margin-bottom:8px;">`;
         // Left label
@@ -3601,13 +3601,11 @@ function renderQsSeatMap() {
 
         for (let i = 0; i < total; i++) {
             const seat = rowSeats[i];
-            
+
             // Center aisle gap
             if (total > 4 && i === half) html += `<div style="width:18px;flex-shrink:0;"></div>`;
 
-            if (seat.SeatType === 'None') {
-                html += `<div style="width:33px;height:31px;visibility:hidden;pointer-events:none;flex-shrink:0;"></div>`;
-            } else if (seat.SeatType === 'Couple') {
+            if (seat.SeatType === 'Couple') {
                 const s1 = seat;
                 const s2 = rowSeats[i + 1];
                 if (s2 && s2.SeatType === 'Couple' && s2.SeatNumber === s1.SeatNumber + 1) {
@@ -3615,7 +3613,7 @@ function renderQsSeatMap() {
                     const sold = s1.Status !== 'available' || s2.Status !== 'available';
                     const lbl = `${rk}${s1.SeatNumber}-${s2.SeatNumber}`;
 
-                    const bg  = sel  ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
+                    const bg = sel ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
                     const border = sel ? '1px solid rgba(255,50,80,0.6)' : sold ? '1px dashed rgba(255,255,255,0.08)' : '1px solid rgba(251,207,232,0.25)';
                     const shadow = sel ? '0 0 14px rgba(229,9,20,0.6)' : sold ? 'none' : '0 3px 6px rgba(0,0,0,0.5),0 0 6px rgba(219,39,119,0.15)';
                     const onclick = (!sold) ? `onclick="toggleQsSeat(${s1.SeatID}, ${s2.SeatID}, '${lbl}')"` : '';
@@ -3627,9 +3625,9 @@ function renderQsSeatMap() {
                         box-shadow:${shadow};cursor:${cursor};
                         display:inline-flex;align-items:flex-end;justify-content:center;
                         padding-bottom:3px;font-size:0.6rem;font-weight:800;
-                        color:${sel?'#fff':sold?'rgba(255,255,255,0.15)':'#fce7f3'};
+                        color:${sel ? '#fff' : sold ? 'rgba(255,255,255,0.15)' : '#fce7f3'};
                         transition:all 0.2s;flex-shrink:0;position:relative;"
-                        ${onclick} title="${lbl}${sold?' (Đã bán)':''}">
+                        ${onclick} title="${lbl}${sold ? ' (Đã bán)' : ''}">
                         <span style="position:relative;z-index:5;">${lbl}</span>
                     </div>`;
                     i++; // skip next
@@ -3637,7 +3635,7 @@ function renderQsSeatMap() {
                     const sel = qsState.selectedSeatIds.includes(s1.SeatID);
                     const sold = s1.Status !== 'available';
                     const lbl = `${rk}${s1.SeatNumber}`;
-                    const bg  = sel  ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
+                    const bg = sel ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
                     const border = sel ? '1px solid rgba(255,50,80,0.6)' : sold ? '1px dashed rgba(255,255,255,0.08)' : '1px solid rgba(251,207,232,0.25)';
                     const shadow = sel ? '0 0 14px rgba(229,9,20,0.6)' : sold ? 'none' : '0 3px 6px rgba(0,0,0,0.5),0 0 6px rgba(219,39,119,0.15)';
                     const onclick = (!sold) ? `onclick="toggleQsSeat(${s1.SeatID}, null, '${lbl}')"` : '';
@@ -3649,14 +3647,14 @@ function renderQsSeatMap() {
                         box-shadow:${shadow};cursor:${cursor};
                         display:inline-flex;align-items:flex-end;justify-content:center;
                         padding-bottom:3px;font-size:0.6rem;font-weight:800;
-                        color:${sel?'#fff':sold?'rgba(255,255,255,0.15)':'#fce7f3'};
+                        color:${sel ? '#fff' : sold ? 'rgba(255,255,255,0.15)' : '#fce7f3'};
                         transition:all 0.2s;flex-shrink:0;position:relative;"
-                        ${onclick} title="${lbl}${sold?' (Đã bán)':''}">
+                        ${onclick} title="${lbl}${sold ? ' (Đã bán)' : ''}">
                         <span style="position:relative;z-index:5;">${lbl}</span>
                     </div>`;
                 }
             } else {
-                const sel  = qsState.selectedSeatIds.includes(seat.SeatID);
+                const sel = qsState.selectedSeatIds.includes(seat.SeatID);
                 const sold = seat.Status !== 'available';
                 const isVip = seat.SeatType === 'VIP';
 
@@ -3693,7 +3691,7 @@ function renderQsSeatMap() {
                     justify-content:center;padding-bottom:3px;
                     font-size:0.68rem;font-weight:800;color:${color};
                     transition:all 0.2s;flex-shrink:0;position:relative;"
-                    ${onclick} title="${rk}${seat.SeatNumber}${isVip?' (VIP)':''}${sold?' (Đã bán)':''}">
+                    ${onclick} title="${rk}${seat.SeatNumber}${isVip ? ' (VIP)' : ''}${sold ? ' (Đã bán)' : ''}">
                     ${isVip && !sold ? `<span style="position:absolute;top:0px;right:2px;font-size:0.44rem;color:#fbbf24;z-index:5;">★</span>` : ''}
                     <span style="position:relative;z-index:2;">${seat.SeatNumber}</span>
                 </div>`;
@@ -4053,8 +4051,8 @@ function renderAdminReviewTable() {
                 </td>
                 <td>
                     ${review.IsVisible
-                        ? '<span class="status-badge active">Đang hiển thị</span>'
-                        : '<span class="status-badge finished">Đã ẩn</span>'}
+                ? '<span class="status-badge active">Đang hiển thị</span>'
+                : '<span class="status-badge finished">Đã ẩn</span>'}
                 </td>
                 <td>
                     <div class="table-actions">
@@ -4381,9 +4379,8 @@ function formatAdminDate(value) {
 
 function toDateInputValue(value) {
     const date = value ? new Date(value) : new Date();
-    const fallback = new Date();
-    const target = Number.isNaN(date.getTime()) ? fallback : date;
-    return `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, '0')}-${String(target.getDate()).padStart(2, '0')}`;
+    if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 10);
+    return date.toISOString().slice(0, 10);
 }
 
 async function loadNewsArticles() {
@@ -4401,6 +4398,7 @@ async function loadNewsArticles() {
 function renderNewsAdminTable() {
     const body = document.getElementById('newsAdminBody');
     if (!body) return;
+
     if (!NEWS_DATA.length) {
         body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có bài viết nào.</td></tr>';
         return;
@@ -4435,6 +4433,12 @@ function openNewsModal(id) {
     document.getElementById('newsFeatured').checked = false;
     document.getElementById('newsId').value = '';
     document.getElementById('newsModalTitle').textContent = 'THÊM TIN TỨC';
+    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('newsPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
     if (id) {
         const item = NEWS_DATA.find(x => x.ArticleID === id);
         if (!item) return;
@@ -4450,7 +4454,13 @@ function openNewsModal(id) {
         document.getElementById('newsSort').value = item.SortOrder || 0;
         document.getElementById('newsFeatured').checked = !!item.IsFeatured;
         document.getElementById('newsActive').checked = !!item.IsActive;
-        if (item.ImageURL) document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
+        if (item.ImageURL) {
+            document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
+            if (preview) {
+                preview.src = item.ImageURL;
+                preview.style.display = 'block';
+            }
+        }
     }
     document.getElementById('newsModalOverlay').style.display = 'block';
     document.getElementById('newsAdminModal').style.display = 'block';
@@ -4459,6 +4469,14 @@ function openNewsModal(id) {
 function closeNewsModal() {
     document.getElementById('newsModalOverlay').style.display = 'none';
     document.getElementById('newsAdminModal').style.display = 'none';
+
+    document.getElementById('newsImage').value = '';
+    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('newsPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 }
 
 async function saveNewsArticle(event) {
@@ -4604,6 +4622,12 @@ function renderPromoTable() {
 function openPromoModal(id) {
     document.getElementById('promoForm').reset();
     document.getElementById('promoCurrentImg').innerHTML = '';
+    document.getElementById('promoFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('promoPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 
     if (id) {
         const p = PROMO_DATA.find(x => x.PromotionID === id);
@@ -4619,6 +4643,10 @@ function openPromoModal(id) {
         document.getElementById('promoActive').checked = !!p.IsActive;
         if (p.ImageURL) {
             document.getElementById('promoCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${p.ImageURL}" target="_blank" style="color:var(--accent);">${p.ImageURL}</a>`;
+            if (preview) {
+                preview.src = p.ImageURL;
+                preview.style.display = 'block';
+            }
         }
     } else {
         document.getElementById('promoModalTitle').textContent = 'THÊM KHUYẾN MÃI';
@@ -4633,6 +4661,14 @@ function openPromoModal(id) {
 function closePromoModal() {
     document.getElementById('promoModalOverlay').style.display = 'none';
     document.getElementById('promoModal').style.display = 'none';
+
+    document.getElementById('promoImage').value = '';
+    document.getElementById('promoFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('promoPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 }
 
 async function savePromo(event) {
@@ -4715,13 +4751,13 @@ async function loadSettings() {
         const res = await apiFetch('/api/admin/settings');
         if (res.success) {
             const data = res.data;
-            if(document.getElementById('cfg_BASE_TICKET_PRICE')) document.getElementById('cfg_BASE_TICKET_PRICE').value = data.BASE_TICKET_PRICE || '';
-            if(document.getElementById('cfg_VIP_MULTIPLIER')) document.getElementById('cfg_VIP_MULTIPLIER').value = data.VIP_MULTIPLIER || '';
-            if(document.getElementById('cfg_COUPLE_MULTIPLIER')) document.getElementById('cfg_COUPLE_MULTIPLIER').value = data.COUPLE_MULTIPLIER || '';
-            
-            if(document.getElementById('cfg_HOTLINE')) document.getElementById('cfg_HOTLINE').value = data.HOTLINE || '';
-            if(document.getElementById('cfg_SUPPORT_EMAIL')) document.getElementById('cfg_SUPPORT_EMAIL').value = data.SUPPORT_EMAIL || '';
-            if(document.getElementById('cfg_MAINTENANCE_MODE')) document.getElementById('cfg_MAINTENANCE_MODE').checked = (data.MAINTENANCE_MODE === 'true');
+            if (document.getElementById('cfg_BASE_TICKET_PRICE')) document.getElementById('cfg_BASE_TICKET_PRICE').value = data.BASE_TICKET_PRICE || '';
+            if (document.getElementById('cfg_VIP_MULTIPLIER')) document.getElementById('cfg_VIP_MULTIPLIER').value = data.VIP_MULTIPLIER || '';
+            if (document.getElementById('cfg_COUPLE_MULTIPLIER')) document.getElementById('cfg_COUPLE_MULTIPLIER').value = data.COUPLE_MULTIPLIER || '';
+
+            if (document.getElementById('cfg_HOTLINE')) document.getElementById('cfg_HOTLINE').value = data.HOTLINE || '';
+            if (document.getElementById('cfg_SUPPORT_EMAIL')) document.getElementById('cfg_SUPPORT_EMAIL').value = data.SUPPORT_EMAIL || '';
+            if (document.getElementById('cfg_MAINTENANCE_MODE')) document.getElementById('cfg_MAINTENANCE_MODE').checked = (data.MAINTENANCE_MODE === 'true');
         }
     } catch (e) {
         console.error('Failed to load settings', e);
@@ -4732,15 +4768,15 @@ async function savePricingSettings() {
     const basePrice = document.getElementById('cfg_BASE_TICKET_PRICE').value;
     const vipM = document.getElementById('cfg_VIP_MULTIPLIER').value;
     const coupleM = document.getElementById('cfg_COUPLE_MULTIPLIER').value;
-    
-    if(!basePrice || !vipM || !coupleM) return showToast('Lỗi', 'Vui lòng điền đủ thông tin');
-    
+
+    if (!basePrice || !vipM || !coupleM) return showToast('Lỗi', 'Vui lòng điền đủ thông tin');
+
     const payload = [
         { key: 'BASE_TICKET_PRICE', value: basePrice },
         { key: 'VIP_MULTIPLIER', value: vipM },
         { key: 'COUPLE_MULTIPLIER', value: coupleM }
     ];
-    
+
     await updateSettingsApi(payload);
 }
 
@@ -4748,13 +4784,13 @@ async function saveSystemSettings() {
     const hotline = document.getElementById('cfg_HOTLINE').value;
     const email = document.getElementById('cfg_SUPPORT_EMAIL').value;
     const maint = document.getElementById('cfg_MAINTENANCE_MODE').checked;
-    
+
     const payload = [
         { key: 'HOTLINE', value: hotline },
         { key: 'SUPPORT_EMAIL', value: email },
         { key: 'MAINTENANCE_MODE', value: maint ? 'true' : 'false' }
     ];
-    
+
     await updateSettingsApi(payload);
 }
 

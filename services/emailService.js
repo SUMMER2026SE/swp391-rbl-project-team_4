@@ -3,14 +3,44 @@
 // ============================================================
 const nodemailer = require('nodemailer');
 
-// ─── Cấu hình Gmail SMTP ───
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_APP_PASSWORD, // Gmail App Password (không phải password thường)
-  },
-});
+let etherealTransporter = null;
+
+// ─── Cấu hình Gmail SMTP động / Tự động dùng Ethereal Email khi dev ───
+async function getTransporter() {
+  const email = process.env.SMTP_EMAIL;
+  const pass = process.env.SMTP_APP_PASSWORD;
+
+  if (email && pass && !email.includes('your-gmail') && !pass.includes('your-gmail-app-password')) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: email,
+        pass: pass,
+      },
+    });
+  }
+
+  if (etherealTransporter) return etherealTransporter;
+
+  try {
+    console.log('[EmailService] ℹ️ Đang tự động khởi tạo tài khoản giả lập Ethereal Email...');
+    const testAccount = await nodemailer.createTestAccount();
+    etherealTransporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+    console.log(`[EmailService] ✅ Khởi tạo tài khoản giả lập Ethereal thành công: User=${testAccount.user}`);
+    return etherealTransporter;
+  } catch (err) {
+    console.error('[EmailService] ❌ Không thể khởi tạo tài khoản giả lập Ethereal Email:', err.message);
+    return null;
+  }
+}
 
 /**
  * Gửi email chứa mã OTP theo phong cách D-Cinema
@@ -19,8 +49,14 @@ const transporter = nodemailer.createTransport({
  * @returns {Promise<object>} - Kết quả gửi email
  */
 async function sendOTPEmail(toEmail, otpCode) {
+  const transporter = await getTransporter();
+  if (!transporter) {
+    console.log(`[EmailService] Bỏ qua gửi mã OTP đến ${toEmail} (Chưa cấu hình SMTP)`);
+    return { success: false, reason: 'SMTP_NOT_CONFIGURED' };
+  }
+
   const mailOptions = {
-    from: `"D-Cinema" <${process.env.SMTP_EMAIL}>`,
+    from: `"D-Cinema" <${process.env.SMTP_EMAIL || 'no-reply@dcinema.vn'}>`,
     to: toEmail,
     subject: '🔐 Mã xác nhận đặt lại mật khẩu — D-Cinema',
     html: `
@@ -104,6 +140,10 @@ async function sendOTPEmail(toEmail, otpCode) {
   try {
     const info = await transporter.sendMail(mailOptions);
     console.log('[EmailService] ✅ OTP email sent to:', toEmail, '| MessageID:', info.messageId);
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log('\x1b[32m%s\x1b[0m', `[EmailService] 🔗 Xem trước OTP email tại: ${previewUrl}`);
+    }
     return { success: true, messageId: info.messageId };
   } catch (err) {
     console.error('[EmailService] ❌ Failed to send OTP email:', err.message);
@@ -117,8 +157,14 @@ async function sendOTPEmail(toEmail, otpCode) {
  * @param {object} bookingInfo - Thông tin đặt vé
  */
 async function sendBookingEmail(toEmail, bookingInfo) {
+  const transporter = await getTransporter();
+  if (!transporter) {
+    console.log(`[EmailService] Bỏ qua gửi email vé đến ${toEmail} (Chưa cấu hình SMTP)`);
+    return { success: false, reason: 'SMTP_NOT_CONFIGURED' };
+  }
+
   const mailOptions = {
-    from: `"D-Cinema" <${process.env.SMTP_EMAIL}>`,
+    from: `"D-Cinema" <${process.env.SMTP_EMAIL || 'no-reply@dcinema.vn'}>`,
     to: toEmail,
     subject: '🎟️ Xác nhận đặt vé thành công — D-Cinema',
     html: `
@@ -189,6 +235,10 @@ async function sendBookingEmail(toEmail, bookingInfo) {
   try {
     const info = await transporter.sendMail(mailOptions);
     console.log('[EmailService] ✅ Booking email sent to:', toEmail);
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log('\x1b[32m%s\x1b[0m', `[EmailService] 🔗 Xem trước booking email tại: ${previewUrl}`);
+    }
     return { success: true };
   } catch (err) {
     console.error('[EmailService] ❌ Failed to send booking email:', err.message);
@@ -196,8 +246,14 @@ async function sendBookingEmail(toEmail, bookingInfo) {
 }
 
 async function sendShowtimeReminderEmail(toEmail, reminderInfo) {
+  const transporter = await getTransporter();
+  if (!transporter) {
+    console.log(`[EmailService] Bỏ qua gửi nhắc lịch chiếu đến ${toEmail} (Chưa cấu hình SMTP)`);
+    return { success: false, reason: 'SMTP_NOT_CONFIGURED' };
+  }
+
   const mailOptions = {
-    from: `"D-Cinema" <${process.env.SMTP_EMAIL}>`,
+    from: `"D-Cinema" <${process.env.SMTP_EMAIL || 'no-reply@dcinema.vn'}>`,
     to: toEmail,
     subject: `Nhắc lịch chiếu: ${reminderInfo.movieTitle} - D-Cinema`,
     html: `
@@ -263,6 +319,10 @@ async function sendShowtimeReminderEmail(toEmail, reminderInfo) {
   try {
     const info = await transporter.sendMail(mailOptions);
     console.log('[EmailService] Showtime reminder email sent to:', toEmail, '| MessageID:', info.messageId);
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log('\x1b[32m%s\x1b[0m', `[EmailService] 🔗 Xem trước reminder email tại: ${previewUrl}`);
+    }
     return { success: true, messageId: info.messageId };
   } catch (err) {
     console.error('[EmailService] Failed to send showtime reminder email:', err.message);
@@ -270,4 +330,96 @@ async function sendShowtimeReminderEmail(toEmail, reminderInfo) {
   }
 }
 
-module.exports = { sendOTPEmail, sendBookingEmail, sendShowtimeReminderEmail };
+/**
+ * Gửi email thông báo check-in/xác thực vé thành công
+ * @param {string} toEmail - Email người nhận
+ * @param {object} checkInInfo - Thông tin check-in
+ */
+async function sendTicketCheckInEmail(toEmail, checkInInfo) {
+  const transporter = await getTransporter();
+  if (!transporter) {
+    console.log(`[EmailService] Bỏ qua gửi thông báo check-in đến ${toEmail} (Chưa cấu hình SMTP)`);
+    return { success: false, reason: 'SMTP_NOT_CONFIGURED' };
+  }
+
+  const mailOptions = {
+    from: `"D-Cinema" <${process.env.SMTP_EMAIL || 'no-reply@dcinema.vn'}>`,
+    to: toEmail,
+    subject: '✅ Xác thực vé thành công (Checked-in) — D-Cinema',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+      </head>
+      <body style="margin:0;padding:0;background-color:#06060a;font-family:'Segoe UI',Arial,sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#06060a;padding:40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color:#0d0d14;border-radius:16px;border:1px solid rgba(255,255,255,0.06);overflow:hidden;">
+                <!-- Header -->
+                <tr>
+                  <td style="background:linear-gradient(135deg,#10b981,#059669);padding:32px 40px;text-align:center;">
+                    <h1 style="margin:0;color:#fff;font-size:28px;font-weight:900;letter-spacing:3px;">
+                      <span style="font-size:32px;">D</span>-CINEMA
+                    </h1>
+                    <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:13px;letter-spacing:2px;">
+                      XÁC NHẬN VÀO PHÒNG CHIẾU
+                    </p>
+                  </td>
+                </tr>
+                <!-- Body -->
+                <tr>
+                  <td style="padding:40px;">
+                    <h2 style="margin:0 0 16px;color:#f1f1f4;font-size:20px;font-weight:700;">
+                      Xin chào ${checkInInfo.customerName},
+                    </h2>
+                    <p style="margin:0 0 24px;color:#b7b7c8;font-size:15px;line-height:1.6;">
+                      Vé của bạn đã được xác thực thành công tại rạp. Chúc bạn có những giây phút xem phim tuyệt vời!
+                    </p>
+                    
+                    <div style="background:#1a1a24; padding:20px; border-radius:12px; margin-bottom:20px; border:1px solid rgba(255,255,255,0.06);">
+                      <h3 style="color:#10b981; margin-top:0;">🎥 ${checkInInfo.movieTitle}</h3>
+                      <p style="color:#f1f1f4; margin:5px 0;"><strong>Rạp:</strong> ${checkInInfo.cinemaName} - ${checkInInfo.roomName}</p>
+                      <p style="color:#f1f1f4; margin:5px 0;"><strong>Thời gian chiếu:</strong> ${checkInInfo.showtime}</p>
+                      <p style="color:#f1f1f4; margin:5px 0;"><strong>Ghế:</strong> <span style="color:#fbbf24; font-size:18px; font-weight:bold;">${checkInInfo.seats}</span></p>
+                      <p style="color:#f1f1f4; margin:5px 0;"><strong>Thời gian quét vé:</strong> ${checkInInfo.checkedAt}</p>
+                      <p style="color:#f1f1f4; margin:5px 0;"><strong>Mã đặt vé:</strong> ${checkInInfo.bookingId}</p>
+                    </div>
+
+                    <div style="text-align:center; padding:15px; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); border-radius:8px;">
+                      <span style="color:#10b981; font-weight:bold; font-size:16px;">Vé hợp lệ và đã qua cổng kiểm soát.</span>
+                    </div>
+                  </td>
+                </tr>
+                <!-- Footer -->
+                <tr>
+                  <td style="padding:24px 40px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+                    <p style="margin:0;color:#55556a;font-size:12px;">
+                      © 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('[EmailService] ✅ Ticket check-in email sent to:', toEmail);
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log('\x1b[32m%s\x1b[0m', `[EmailService] 🔗 Xem trước check-in email tại: ${previewUrl}`);
+    }
+    return { success: true };
+  } catch (err) {
+    console.error('[EmailService] ❌ Failed to send check-in email:', err.message);
+  }
+}
+
+module.exports = { sendOTPEmail, sendBookingEmail, sendShowtimeReminderEmail, sendTicketCheckInEmail };
