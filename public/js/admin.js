@@ -920,11 +920,12 @@ function navigate(page, btn) {
     const topbarTitle = document.getElementById('topbarTitle');
     const ttabs = document.querySelector('.topbar-tabs');
     if (page === 'cinema') {
+        topbarTitle.innerHTML = '<span data-i18n="admin.iqhled">SƠ ĐỒ GHẾ NGỒI</span>';
         topbarTitle.style.display = 'block';
         ttabs.style.display = 'flex';
         hideDashboardFilters();
     } else if (page === 'schedule') {
-        topbarTitle.textContent = 'LỊCH CHIẾU';
+        topbarTitle.innerHTML = '<span data-i18n="admin.wh05ea">LỊCH CHIẾU</span>';
         topbarTitle.style.display = 'block';
         ttabs.style.display = 'flex';
         hideDashboardFilters();
@@ -936,6 +937,9 @@ function navigate(page, btn) {
         topbarTitle.style.display = 'none';
         ttabs.style.display = 'flex';
         hideDashboardFilters();
+    }
+    if (typeof i18n !== 'undefined' && typeof i18n.updateDOM === 'function') {
+        setTimeout(() => i18n.updateDOM(), 10);
     }
 
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1484,7 +1488,6 @@ function updateStaffKPIs() {
     const totalCount = STAFF_DATA.length;
     const activeCount = STAFF_DATA.filter(u => u.IsActive).length;
     const adminCount = STAFF_DATA.filter(u => u.RoleName === 'Admin').length;
-    const managerCount = STAFF_DATA.filter(u => u.RoleName === 'Manager').length;
     const customerCount = STAFF_DATA.filter(u => u.RoleName === 'Customer').length;
 
     const valNodes = document.querySelectorAll('.sh-stat .shs-val');
@@ -1494,11 +1497,9 @@ function updateStaffKPIs() {
     }
 
     const kpiCards = document.querySelectorAll('.staff-kpis .skpi-desc');
-    if (kpiCards.length >= 4) {
+    if (kpiCards.length >= 2) {
         kpiCards[0].innerHTML = `${adminCount} <span data-i18n="admin.authorized_persons">người được ủy quyền</span>`;
-        kpiCards[1].innerHTML = `${managerCount} <span data-i18n="admin.authorized_persons">người được ủy quyền</span>`;
-        kpiCards[2].innerHTML = `0 <span data-i18n="admin.authorized_persons">người được ủy quyền</span>`;
-        kpiCards[3].innerHTML = `${customerCount} <span data-i18n="admin.customers">khách hàng</span>`;
+        kpiCards[1].innerHTML = `${customerCount} <span data-i18n="admin.customers">khách hàng</span>`;
     }
 }
 
@@ -1521,9 +1522,7 @@ function applyStaffFilters() {
         let roleMatch = true;
         if (currentStaffRoleFilter !== 'Tất cả') {
             if (currentStaffRoleFilter === 'Admin') roleMatch = (u.RoleName === 'Admin');
-            if (currentStaffRoleFilter === 'Quản lý') roleMatch = (u.RoleName === 'Manager');
             if (currentStaffRoleFilter === 'Khách hàng') roleMatch = (u.RoleName === 'Customer');
-            if (currentStaffRoleFilter === 'Nhân viên') roleMatch = (u.RoleName === 'Staff');
         }
 
         let statusMatch = true;
@@ -1546,7 +1545,7 @@ function renderStaffTable() {
     }
 
     body.innerHTML = FILTERED_STAFF.map(user => {
-        let roleClass = user.RoleName.toLowerCase() === 'admin' ? 'admin' : (user.RoleName.toLowerCase() === 'manager' ? 'manager' : 'staff');
+        let roleClass = user.RoleName.toLowerCase() === 'admin' ? 'admin' : 'customer';
 
         return `
         <tr>
@@ -1562,7 +1561,6 @@ function renderStaffTable() {
             <td>
                 <select class="st-role ${roleClass}" style="background:transparent; border:none; cursor:pointer;" onchange="changeStaffRole(${user.UserID}, this.value)">
                     <option value="Admin" ${user.RoleName === 'Admin' ? 'selected' : ''}>ADMIN</option>
-                    <option value="Manager" ${user.RoleName === 'Manager' ? 'selected' : ''}>MANAGER</option>
                     <option value="Customer" ${user.RoleName === 'Customer' ? 'selected' : ''}>CUSTOMER</option>
                 </select>
             </td>
@@ -1581,7 +1579,7 @@ function renderStaffTable() {
     `}).join('');
 
     const pgInfo = document.getElementById('staffPgInfo');
-    if (pgInfo) pgInfo.innerHTML = `<span data-i18n="admin.showing">Hiển thị</span> <strong>${FILTERED_STAFF.length}</strong> <span data-i18n="admin.staff_lowercase">nhân viên</span>`;
+    if (pgInfo) pgInfo.innerHTML = `<span data-i18n="admin.showing">Hiển thị</span> <strong>${FILTERED_STAFF.length}</strong> <span data-i18n="admin.staff_lowercase">tài khoản</span>`;
 }
 
 async function changeStaffRole(userId, newRole) {

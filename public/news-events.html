@@ -87,7 +87,7 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" id="newsSearchInput" placeholder="Tìm tin tức, sự kiện...">
+                    <input type="text" id="newsSearchInput" placeholder="Tìm tin tức, sự kiện..." data-i18n-placeholder="news.searchPlaceholder">
                 </div>
             </div>
         </div>
@@ -186,18 +186,21 @@
 
     <!-- Page Logic -->
     <script>
-        // Data for news and events
         const newsData = [
             {
                 id: 1,
                 type: "events",
                 badge: "Hot Event",
+                badge_en: "Hot Event",
                 badgeClass: "badge-hot",
                 title: "Live Viewing BTS World Tour \"Arirang\" In Busan tại Việt Nam",
+                title_en: "Live Viewing BTS World Tour \"Arirang\" In Busan in Vietnam",
                 desc: "Trải nghiệm concert lớn nhất lịch sử K-Pop của BTS phát sóng trực tiếp trên màn ảnh rộng 4K cùng âm thanh vòm chuẩn rạp chiếu phim.",
+                desc_en: "Experience BTS's biggest K-Pop concert in history broadcast live on 4K big screens with standard cinema surround sound.",
                 date: "13/06/2026",
                 img: "images/movie_bts_arirang.png",
                 author: "D-Cinema Events",
+                author_en: "D-Cinema Events",
                 content: `
                     <p>Hành trình lịch sử tiếp tục được viết nên. Những biểu tượng nhạc pop toàn cầu <strong>BTS</strong> sẽ trở lại sân vận động Busan Asiad Main Stadium trong một đêm concert mang ý nghĩa đặc biệt mang tên <strong>"ARIRANG"</strong>. Đêm diễn sẽ được phát sóng trực tiếp (Live Viewing) đến các rạp chiếu phim D-Cinema trên toàn quốc vào ngày 13 và 14 tháng 6 năm 2026.</p>
                     <h3>Thông tin chi tiết suất chiếu:</h3>
@@ -208,35 +211,60 @@
                     <h3>Trải nghiệm đỉnh cao tại rạp:</h3>
                     <p>Khán giả sẽ được đắm chìm trong không gian âm nhạc hoành tráng với thiết kế sân khấu 360 độ cực kỳ choáng ngợp. Chất lượng hình ảnh 4K sắc nét và hệ thống âm thanh vòm đỉnh cao của D-Cinema giúp bạn cảm thấy như đang đứng ngay tại sân vận động Busan.</p>
                     <p>Đặc biệt, mỗi vé xem phim sẽ đi kèm với <strong>01 bộ quà tặng độc quyền</strong> bao gồm photocard của các thành viên BTS và sticker lưu niệm chính hãng. Army Bomb (lightstick) cũng được khuyến khích mang vào phòng chiếu để tạo hiệu ứng ánh sáng đồng bộ tuyệt đẹp.</p>
+                `,
+                content_en: `
+                    <p>The historic journey continues to be written. Global pop icons <strong>BTS</strong> will return to the Busan Asiad Main Stadium for a special concert titled <strong>"ARIRANG"</strong>. The event will be broadcast live (Live Viewing) to D-Cinema theaters nationwide on June 13 and 14, 2026.</p>
+                    <h3>Showtime Details:</h3>
+                    <ul>
+                        <li><strong>LIVE Showtime (Live Broadcast):</strong> 16:45 on June 13, 2026</li>
+                        <li><strong>REBROADCAST Showtime (Replay):</strong> 16:45 on June 14, 2026</li>
+                    </ul>
+                    <h3>Peak Cinematic Experience:</h3>
+                    <p>Audiences will be immersed in an epic musical space with a stunning 360-degree stage design. The crisp 4K image quality and top-notch surround sound system of D-Cinema will make you feel like you're standing right in the Busan stadium.</p>
+                    <p>Specially, every movie ticket comes with <strong>01 exclusive gift set</strong> including BTS members' photocards and official souvenir stickers. Army Bombs (lightsticks) are also encouraged in the screening room to create a beautiful synchronized light effect.</p>
                 `
             },
             {
                 id: 2,
                 type: "news",
                 badge: "Tin Mới",
+                badge_en: "New News",
                 badgeClass: "badge-news",
                 title: "Doraemon Movie 45: Nobita Và Lâu Đài Dưới Đáy Biển khởi chiếu 2026",
+                title_en: "Doraemon Movie 45: Nobita and the Castle of the Deep Sea premieres in 2026",
                 desc: "Phần phim điện ảnh thứ 45 của chú mèo máy Doraemon đưa nhóm bạn Nobita phiêu lưu khám phá đại dương bao la, đối đầu thử thách lớn.",
+                desc_en: "The 45th movie of the robotic cat Doraemon takes Nobita and friends on an adventure to explore the vast ocean and face great challenges.",
                 date: "15/06/2026",
                 img: "images/doraemon_sea.png",
                 author: "Điện Ảnh Việt",
+                author_en: "Vietnam Cinema",
                 content: `
                     <p>Bước vào kỳ nghỉ hè sôi động, Doraemon cùng nhóm bạn Nobita đã đưa ra một quyết định táo bạo: cắm trại giữa lòng đại dương sâu thẳm! Nhờ những bảo bối thần kỳ của Doraemon như <em>“xe Buggy chạy dưới nước”</em> và <em>“đèn pin thích nghi”</em>, 5 bạn nhỏ đã có chuyến phiêu lưu kỳ thú dưới đáy biển sâu.</p>
                     <p>Tại đây, họ phát hiện ra một chiếc tàu đắm kỳ bí và gặp gỡ El - một chàng trai trẻ sinh sống tại liên bang đáy biển cổ xưa mang tên "Mu". Từ những xung đột ban đầu, nhóm bạn đã dần chiếm được lòng tin của cư dân đại dương nhờ lòng dũng cảm và chân thành.</p>
                     <p>Tuy nhiên, mối đe dọa cực lớn ập đến khi <strong>"Lâu đài quỷ"</strong> dưới đáy biển bắt đầu hồi sinh và đe dọa đến sự tồn vong của toàn bộ Trái Đất. Nobita và những người bạn phải cùng nhau đồng lòng giải cứu thế giới.</p>
                     <p><strong>Doraemon Movie 45</strong> hứa hẹn sẽ mang đến những bài học ý nghĩa sâu sắc về tình bạn, bảo vệ môi trường biển cùng phần kỹ xảo đồ họa cực kỳ lung linh và đẹp mắt. Movies chính thức ra mắt tại toàn bộ hệ thống D-Cinema với nhiều ưu đãi combo bắp nước chủ đề Doraemon hấp dẫn!</p>
+                `,
+                content_en: `
+                    <p>Entering an exciting summer vacation, Doraemon and Nobita's group made a bold decision: camping in the deep ocean! Thanks to Doraemon's magical gadgets like the <em>"underwater Buggy"</em> and the <em>"adaptation flashlight"</em>, the 5 kids embarked on a fantastic adventure deep under the sea.</p>
+                    <p>Here, they discover a mysterious shipwreck and meet El - a young man living in the ancient undersea federation called "Mu". From initial conflicts, the group gradually gains the trust of the ocean's inhabitants through their courage and sincerity.</p>
+                    <p>However, a massive threat arises when the <strong>"Demon Castle"</strong> under the sea begins to resurrect and threatens the survival of the entire Earth. Nobita and his friends must unite to save the world.</p>
+                    <p><strong>Doraemon Movie 45</strong> promises to deliver profound lessons about friendship and marine environmental protection along with extremely shimmering and beautiful graphical effects. The movie officially premieres across the entire D-Cinema system with many attractive Doraemon-themed popcorn combo offers!</p>
                 `
             },
             {
                 id: 3,
                 type: "news",
                 badge: "Đánh Giá",
+                badge_en: "Review",
                 badgeClass: "badge-news",
                 title: "Review phim Lầu Chú Hỏa: Streamer đột nhập biệt thự cổ ma quái họ Hứa",
+                title_en: "Ghost of the Fire Building Review: Streamers break into the haunted Hua family mansion",
                 desc: "Cốt truyện giật gân, những màn trả nghiệp rùng rợn của các streamer câu view tại căn biệt thự bỏ hoang nổi tiếng nhất Sài Gòn.",
+                desc_en: "A thrilling plot featuring terrifying karmic retributions of view-baiting streamers in Saigon's most famous abandoned mansion.",
                 date: "12/06/2026",
                 img: "images/movie_lau_chu_hoa.png",
                 author: "Phê Movies",
+                author_en: "Phe Movies",
                 content: `
                     <p><strong>Lầu Chú Hỏa</strong> là bộ phim kinh dị tâm linh Việt Nam đang thu hút sự chú ý rất lớn từ công chúng. Movies theo chân một nhóm streamer trẻ tuổi quyết định đột nhập vào Lầu Chú Hỏa - căn biệt thự cổ kính bỏ hoang gắn liền với truyền thuyết đô thị về con ma nhà họ Hứa - nhằm mục đích livestream câu view kiếm tiền.</p>
                     <p>Tuy nhiên, ngay từ những phút đầu tiên khi bước chân vào ngôi biệt thự, các hiện tượng siêu nhiên liên tiếp xảy ra nằm ngoài tầm kiểm soát. Buổi livestream vui vẻ nhanh chóng biến thành cuộc chiến sinh tồn rùng rợn, buộc mỗi thành viên phải đối mặt với những tội lỗi thầm kín của bản thân trong quá khứ.</p>
@@ -247,18 +275,33 @@
                         <li><strong>Diễn xuất tròn vai:</strong> Dàn diễn viên Trần Kỳ Anh, Nguyễn Minh Thời và Ngọc Chí Bảo đã lột tả thành công tâm lý hoảng loạn, sợ hãi tột cùng của nhân vật.</li>
                     </ul>
                     <p>Dù có một vài điểm trừ nhỏ ở phần giải quyết nút thắt cuối phim, <em>Lầu Chú Hỏa</em> vẫn là một tác phẩm kinh dị Việt Nam vô cùng đáng xem trong mùa hè này. Hãy đến rạp D-Cinema gần nhất và trải nghiệm nỗi sợ hãi đỉnh cao!</p>
+                `,
+                content_en: `
+                    <p><strong>Ghost of the Fire Building</strong> is a Vietnamese spiritual horror film drawing huge public attention. The movie follows a group of young streamers who decide to break into the Hua family mansion - an abandoned ancient villa tied to the urban legend of the Hua family ghost - to livestream for views and money.</p>
+                    <p>However, from the very first minutes they step into the mansion, supernatural phenomena occur successively out of control. The cheerful livestream quickly turns into a horrifying battle for survival, forcing each member to face their own hidden sins of the past.</p>
+                    <h3>Major Plus Points of the Film:</h3>
+                    <ul>
+                        <li><strong>Gloomy, realistic atmosphere:</strong> The movie excellently recreates the eerie, dark vibe of the ancient villa with sweeping camera angles down long corridors.</li>
+                        <li><strong>Excellent sound:</strong> Whispers, footsteps, and dramatic background music keep the audience constantly startled with goosebumps.</li>
+                        <li><strong>Solid acting:</strong> The cast including Tran Ky Anh, Nguyen Minh Thoi, and Ngoc Chi Bao successfully portrays the characters' panic and extreme fear.</li>
+                    </ul>
+                    <p>Despite a few minor flaws in resolving the film's climax, <em>Ghost of the Fire Building</em> is still a highly worthwhile Vietnamese horror film to watch this summer. Visit your nearest D-Cinema and experience ultimate fear!</p>
                 `
             },
             {
                 id: 4,
                 type: "events",
                 badge: "Sự Kiện",
+                badge_en: "Event",
                 badgeClass: "badge-event",
                 title: "Student Monday - Đồng giá vé 2D chỉ 45.000đ cho Học Sinh Sinh Viên",
+                title_en: "Student Monday - Flat 2D ticket rate of only 45,000 VND for Students",
                 desc: "Khởi động tuần mới tràn đầy năng lượng cùng D-Cinema. Mang thẻ HSSV để nhận vé xem phim giá cực ưu đãi mỗi thứ hai.",
+                desc_en: "Kick off the new week full of energy with D-Cinema. Bring your Student ID to get discounted movie tickets every Monday.",
                 date: "Hàng Tuần",
                 img: "images/promo_student.png",
                 author: "D-Cinema Marketing",
+                author_en: "D-Cinema Marketing",
                 content: `
                     <p>Để tiếp thêm động lực cho các bạn học sinh, sinh viên sau những giờ học tập căng thẳng, D-Cinema mang đến chương trình ưu đãi định kỳ siêu hấp dẫn mang tên <strong>Student Monday</strong>.</p>
                     <h3>Nội dung ưu đãi:</h3>
@@ -269,35 +312,60 @@
                     <h3><span data-i18n="auto.1xvh8u">Điều kiện áp dụng:</span></h3>
                     <p>Khách hàng chỉ cần xuất trình <strong>Thẻ Học sinh - Sinh viên</strong> còn hiệu lực (hoặc thẻ ứng dụng định danh cá nhân VNeID đối với học sinh chưa có thẻ) tại quầy vé của D-Cinema để nhận giá vé ưu đãi này. Mỗi thẻ được mua tối đa 02 vé ưu đãi trong ngày.</p>
                     <p>Chương trình không áp dụng đồng thời với các khuyến mãi khác hoặc các suất chiếu đặc biệt/phòng chiếu IMAX, VIP. Lên lịch ngay cùng hội bạn thân để không bỏ lỡ ngày hội điện ảnh thứ Hai tuần này nhé!</p>
+                `,
+                content_en: `
+                    <p>To give extra motivation to students after stressful studying hours, D-Cinema brings a super attractive recurring promotion program called <strong>Student Monday</strong>.</p>
+                    <h3>Promotion Details:</h3>
+                    <ul>
+                        <li><strong>Flat 2D Ticket Rate:</strong> Only <strong>45,000 VND/ticket</strong> for all showing movies (applicable before 17:00 every Monday).</li>
+                        <li><strong>Popcorn Combo Discount:</strong> Extra 20% discount when purchasing Combo Solo or Combo Couple along with the ticket.</li>
+                    </ul>
+                    <h3>Conditions Apply:</h3>
+                    <p>Customers just need to present a valid <strong>Student ID</strong> (or VNeID personal identification app for students without an ID) at the D-Cinema ticket counter to receive this discounted ticket rate. Each ID can purchase a maximum of 02 discounted tickets per day.</p>
+                    <p>The program cannot be combined with other promotions or applied to special screenings/IMAX, VIP screening rooms. Schedule a date with your besties now so you don't miss out on this Monday's cinema festival!</p>
                 `
             },
             {
                 id: 5,
                 type: "news",
                 badge: "Tin Mới",
+                badge_en: "New News",
                 badgeClass: "badge-news",
                 title: "D-Cinema Sense City Cần Thơ khai trương phòng chiếu IMAX Laser",
+                title_en: "D-Cinema Sense City Can Tho opens IMAX Laser screening room",
                 desc: "Mang công nghệ điện ảnh hiện đại bậc nhất thế giới với độ tương phản vượt trội và âm thanh 12 kênh sống động đến với khán giả miền Tây.",
+                desc_en: "Bringing the world's most modern cinema technology with outstanding contrast and vivid 12-channel sound to audiences in the West.",
                 date: "10/06/2026",
                 img: "images/promo_imax_weekend.png",
                 author: "D-Cinema Tech",
+                author_en: "D-Cinema Tech",
                 content: `
                     <p>Cột mốc mới trong hành trình nâng tầm trải nghiệm điện ảnh Việt Nam: D-Cinema chính thức đưa phòng chiếu <strong>IMAX Laser</strong> đầu tiên đi vào hoạt động tại chi nhánh Sense City Cần Thơ.</p>
                     <p>Hệ thống chiếu IMAX thế hệ mới sử dụng nguồn sáng Laser tiên tiến, đem lại hình ảnh có độ phân giải siêu sắc nét, độ tương phản sâu vượt trội hơn 60% so với rạp chiếu phim thông thường, mở ra thế giới điện ảnh vô cùng chân thực và sống động.</p>
                     <p>Bên cạnh đó, hệ thống âm thanh 12 kênh thế hệ mới của IMAX mang lại công suất âm thanh cực đại và định vị âm thanh chuẩn xác, giúp người xem cảm nhận rõ ràng từng chi tiết âm thanh nhỏ nhất, từ tiếng lá rơi xào xạc đến những vụ nổ kinh thiên động địa của các bộ phim hành động bom tấn.</p>
                     <p>Trong tuần lễ khai trương từ ngày 10/06 đến ngày 18/06/2026, tất cả khách hàng mua vé phòng chiếu IMAX Laser sẽ được tham gia chương trình <strong>vòng quay may mắn trúng thưởng 100%</strong> các phần quà hấp dẫn như: bình nước IMAX phiên bản giới hạn, voucher xem phim miễn phí và combo bắp nước thượng hạng.</p>
+                `,
+                content_en: `
+                    <p>A new milestone in the journey to elevate the cinematic experience in Vietnam: D-Cinema officially puts the first <strong>IMAX Laser</strong> screening room into operation at the Sense City Can Tho branch.</p>
+                    <p>The new-generation IMAX projection system uses advanced Laser light sources, delivering super sharp resolution images, with deep contrast exceeding 60% compared to standard cinemas, opening up an incredibly realistic and vivid cinematic world.</p>
+                    <p>Furthermore, the new-generation 12-channel sound system from IMAX provides maximum sound capacity and precise sound positioning, helping viewers clearly feel every smallest sound detail, from rustling leaves to earth-shattering explosions of blockbuster action films.</p>
+                    <p>During the opening week from June 10 to June 18, 2026, all customers purchasing tickets for the IMAX Laser screening room can participate in a <strong>100% winning lucky spin</strong> program with attractive gifts such as: limited edition IMAX water bottles, free movie vouchers, and premium popcorn combos.</p>
                 `
             },
             {
                 id: 6,
                 type: "events",
                 badge: "Sự Kiện",
+                badge_en: "Event",
                 badgeClass: "badge-event",
                 title: "Fan Meeting & Giao lưu dàn diễn viên phim Dưới Bóng Điện Hạ",
+                title_en: "Fan Meeting & Interaction with the cast of Under the Queen's Umbrella",
                 desc: "Cơ hội giao lưu và nhận poster có chữ ký của đạo diễn cùng dàn sao chính tại cụm rạp D-Cinema Landmark 81.",
+                desc_en: "Opportunity to interact and receive signed posters from the director and main cast at D-Cinema Landmark 81.",
                 date: "20/06/2026",
                 img: "images/movie_duoibongdienha.png",
                 author: "D-Cinema PR",
+                author_en: "D-Cinema PR",
                 content: `
                     <p>Chào đón cơn sốt phòng vé Hàn Quốc tại Việt Nam, D-Cinema tự hào tổ chức buổi giao lưu độc quyền <strong>Fan Meeting phim Dưới Bóng Điện Hạ (Under the Queen's Umbrella)</strong> tại cụm rạp D-Cinema Landmark 81.</p>
                     <p>Sự kiện sẽ có sự góp mặt đặc biệt của đạo diễn tài năng <strong>Chang Hang Jun</strong> cùng hai nam diễn viên chính đang được yêu mến nồng nhiệt là nam thần <strong>Park Ji-hoon</strong> và diễn viên kỳ cựu <strong>Yoo Hai-jin</strong>.</p>
@@ -308,9 +376,30 @@
                         <li><strong>19:30 - 21:30:</strong> Công chiếu suất chiếu đặc biệt của bộ phim và ký tặng poster chính thức dành cho 100 khách hàng mua vé Combo Fan Meeting sớm nhất.</li>
                     </ul>
                     <p>Vé cho sự kiện đặc biệt này sẽ được mở bán online độc quyền trên website và ứng dụng D-Cinema từ 12:00 ngày 17/06/2026. Hãy chuẩn bị sẵn sàng để sở hữu tấm vé gặp gỡ thần tượng của mình!</p>
+                `,
+                content_en: `
+                    <p>Welcoming the Korean box office fever to Vietnam, D-Cinema proudly organizes an exclusive <strong>Fan Meeting for the movie Under the Queen's Umbrella</strong> at the D-Cinema Landmark 81 complex.</p>
+                    <p>The event will feature special appearances by talented director <strong>Chang Hang Jun</strong> along with the two warmly loved lead actors: male god <strong>Park Ji-hoon</strong> and veteran actor <strong>Yoo Hai-jin</strong>.</p>
+                    <h3>Detailed Event Schedule:</h3>
+                    <ul>
+                        <li><strong>18:00 - 18:30:</strong> Red carpet event and photo taking at the main lobby of D-Cinema Landmark 81.</li>
+                        <li><strong>18:30 - 19:30:</strong> Direct interaction with the film crew, listening to interesting behind-the-scenes stories, and participating in mini-games to receive souvenirs.</li>
+                        <li><strong>19:30 - 21:30:</strong> Screening of the special showtime of the movie and official poster signing for the first 100 customers purchasing Fan Meeting Combo tickets.</li>
+                    </ul>
+                    <p>Tickets for this special event will be exclusively sold online on the D-Cinema website and app starting from 12:00 on June 17, 2026. Get ready to grab a ticket to meet your idols!</p>
                 `
             }
         ];
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe.toString()
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
 
         // Elements
         const newsGrid = document.getElementById('newsGrid');
@@ -326,10 +415,14 @@
         function renderNews() {
             newsGrid.innerHTML = '';
 
+            const isEn = typeof i18n !== 'undefined' && i18n.lang === 'en';
+
             const filteredData = newsData.filter(item => {
                 const matchesFilter = currentFilter === 'all' || item.type === currentFilter;
-                const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    item.desc.toLowerCase().includes(searchQuery.toLowerCase());
+                const titleToSearch = isEn ? (item.title_en || item.title) : item.title;
+                const descToSearch = isEn ? (item.desc_en || item.desc) : item.desc;
+                const matchesSearch = titleToSearch.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    descToSearch.toLowerCase().includes(searchQuery.toLowerCase());
                 return matchesFilter && matchesSearch;
             });
 
@@ -340,29 +433,35 @@
                             <circle cx="11" cy="11" r="8"/>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                         </svg>
-                        <p>${typeof i18n !== 'undefined' && i18n.lang === 'en' ? 'No matching news or events found.' : 'Không tìm thấy tin tức hoặc sự kiện nào phù hợp.'}</p>
+                        <p>${isEn ? 'No matching news or events found.' : 'Không tìm thấy tin tức hoặc sự kiện nào phù hợp.'}</p>
                     </div>
                 `;
                 return;
             }
 
             filteredData.forEach(item => {
+                const badge = isEn ? (item.badge_en || item.badge) : item.badge;
+                const title = isEn ? (item.title_en || item.title) : item.title;
+                const desc = isEn ? (item.desc_en || item.desc) : item.desc;
+                const author = isEn ? (item.author_en || item.author) : item.author;
+                const seeDetail = isEn ? "View details" : "Xem chi tiết";
+
                 const card = document.createElement('div');
                 card.className = 'news-card';
                 card.innerHTML = `
                     <div class="card-img-wrapper">
-                        <span class="card-badge ${item.badgeClass}">${escapeHtml(item.badge)}</span>
-                        <img src="${item.img}" alt="${escapeHtml(item.title)}">
+                        <span class="card-badge ${item.badgeClass}">${escapeHtml(badge)}</span>
+                        <img src="${item.img}" alt="${escapeHtml(title)}">
                     </div>
                     <div class="card-content">
                         <div class="card-meta">
                             <span>🕒 ${item.date}</span>
-                            <span data-i18n="newsData.news_${item.id}_author">✍ ${item.author}</span>
+                            <span>✍ ${author}</span>
                         </div>
-                        <h3 class="card-title">${escapeHtml(item.title)}</h3>
-                        <p class="card-desc">${escapeHtml(item.desc)}</p>
+                        <h3 class="card-title">${escapeHtml(title)}</h3>
+                        <p class="card-desc">${escapeHtml(desc)}</p>
                         <div class="card-btn-more" onclick="openDetail(${item.id})">
-                            <span data-i18n="news.seeDetail">Xem chi tiết</span>
+                            <span>${seeDetail}</span>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <path d="M5 12h14M12 5l7 7-7 7"/>
                             </svg>
@@ -372,7 +471,12 @@
                 newsGrid.appendChild(card);
             });
 
-            if (typeof i18n !== 'undefined') i18n.updateDOM();
+            // Handle the search placeholder explicitly to bypass async i18n bugs
+            if (isEn && searchInput) {
+                searchInput.placeholder = "Search news, events...";
+            } else if (searchInput) {
+                searchInput.placeholder = "Tìm tin tức, sự kiện...";
+            }
         }
 
         // Open modal detail
@@ -380,23 +484,26 @@
             const item = newsData.find(x => x.id === id);
             if (!item) return;
 
+            const isEn = typeof i18n !== 'undefined' && i18n.lang === 'en';
+            const title = isEn ? (item.title_en || item.title) : item.title;
+            const content = isEn ? (item.content_en || item.content) : item.content;
+            const author = isEn ? (item.author_en || item.author) : item.author;
+            const badge = isEn ? (item.badge_en || item.badge) : item.badge;
+
             document.getElementById('modalBanner').querySelector('img').src = item.img;
-            document.getElementById('modalBanner').querySelector('img').alt = item.title;
-            document.getElementById('modalCategory').textContent = item.badge.toUpperCase();
+            document.getElementById('modalBanner').querySelector('img').alt = title;
+            document.getElementById('modalCategory').textContent = badge.toUpperCase();
             document.getElementById('modalCategory').className = `card-badge ${item.badgeClass}`;
-            document.getElementById('modalDate').textContent = typeof i18n !== 'undefined' && i18n.lang === 'en' ? `Date: ${item.date} | Author: ${item.author}` : `Ngày đăng: ${item.date} | Người viết: ${item.author}`;
+            document.getElementById('modalDate').textContent = isEn ? `Date: ${item.date} | Author: ${author}` : `Ngày đăng: ${item.date} | Người viết: ${author}`;
 
             const modalTitle = document.getElementById('modalTitle');
-            modalTitle.textContent = item.title;
-            modalTitle.setAttribute('data-i18n', `newsData.news_${item.id}_title`);
+            modalTitle.textContent = title;
 
             const modalText = document.getElementById('modalText');
-            modalText.innerHTML = item.content;
-            modalText.setAttribute('data-i18n', `newsData.news_${item.id}_content`);
+            modalText.innerHTML = content;
 
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
-            if (typeof i18n !== 'undefined') i18n.updateDOM();
         }
 
         // Close modal

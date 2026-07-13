@@ -910,7 +910,23 @@
             card.dataset.desc = p.Description || '';
             card.dataset.price = p.Price;
 
-            const displayImage = p.ImageURL || 'images/combo_mega.png';
+            // Fallback mapping nếu DB trả về hình mặc định hoặc rỗng
+            const fnbImageMap = {
+                1: 'images/combo_solo.png',
+                2: 'images/combo_couple.png',
+                3: 'images/combo_mega.png',
+                4: 'images/combo_popcorn.png',
+                5: 'images/combo_popcorn.png',
+                6: 'images/snack_nachos.png',
+                7: 'images/drink_coca_cola.png',
+                8: 'images/drink_peach_tea.png',
+                9: 'images/drink_water.png'
+            };
+
+            let displayImage = p.ImageURL;
+            if (!displayImage || displayImage.includes('default_poster.svg')) {
+                displayImage = fnbImageMap[p.FnBID] || 'images/combo_mega.png';
+            }
 
             // Badge HTML
             let badgeHtml = '';

@@ -360,7 +360,7 @@
         "f6okic": "Rạp chiếu",
         "wh05ea": "Lịch chiếu",
         "80ebwg": "Đồ ăn & Nước",
-        "staff": "Nhân viên",
+        "staff": "Tài khoản",
         "tpdils": "Giá vé",
         "promotions": "Tin tức &amp; KM",
         "03h9ke": "Bán vé nhanh",
@@ -486,9 +486,9 @@
         "3jmu6h": "NGÀY BẮT ĐẦU",
         "dx5ibk": "NGÀY KẾT THÚC",
         "eamzn5": "Tạo Voucher",
-        "scqw45": "QUẢN LÝ NHÂN SỰ",
-        "snjnir": "Quản lý quyền truy cập, theo dõi hoạt động nhân viên.",
-        "f1cn6u": "TỔNG NHÂN VIÊN",
+        "scqw45": "QUẢN LÝ TÀI KHOẢN",
+        "snjnir": "Quản lý quyền truy cập, theo dõi hoạt động người dùng.",
+        "f1cn6u": "TỔNG TÀI KHOẢN",
         "aueh8v": "ĐANG HOẠT ĐỘNG",
         "ch2api": "LỌC NHANH",
         "n88ios": "THEO VAI TRÒ",
@@ -501,7 +501,7 @@
         "hpu8hc": "VAI TRÒ",
         "kikzhc": "ĐĂNG NHẬP CUỐI",
         "showing": "Hiển thị",
-        "staff_lowercase": "nhân viên",
+        "staff_lowercase": "tài khoản",
         "e0m1un": "Quyền Quản trị",
         "bhllf6": "3 người được ủy quyền",
         "fwgs8q": "Vận hành Đồ ăn",
@@ -703,7 +703,8 @@
         "newsTab": "Tin tức",
         "eventsTab": "Sự kiện",
         "desc": "Khám phá các sự kiện đặc biệt, tin tức điện ảnh nóng hổi và trải nghiệm điện ảnh độc quyền cùng D-Cinema.",
-        "seeDetail": "Xem chi tiết"
+        "seeDetail": "Xem chi tiết",
+        "searchPlaceholder": "Tìm tin tức, sự kiện..."
     },
     "auth": {
         "registerBtn": "ĐĂNG KÝ",
@@ -788,7 +789,11 @@
         "calcSolo": "Combo Solo (1 Bắp + 1 Nước)",
         "calcCoupleCombo": "Combo Couple (1 Bắp + 2 Nước)",
         "calcFamily": "Combo Gia Đình (2 Bắp + 4 Nước)",
-        "calcTotal": "Tổng chi phí ước tính"
+        "calcTotal": "Tổng chi phí ước tính",
+        "policyChild": "<strong>Chính sách Trẻ em:</strong> Trẻ em cao dưới 0.9m được miễn phí vé (ngồi cùng ghế với người lớn đi kèm). Trẻ em từ 0.9m đến 1.3m áp dụng mức giá trẻ em.",
+        "policyStudent": "<strong>Chính sách HSSV:</strong> Áp dụng khi mua vé trực tiếp tại quầy và xuất trình thẻ học sinh, sinh viên có ảnh và còn hạn.",
+        "policyTime": "<strong>Thời gian áp dụng:</strong> Khung giá cuối tuần được áp dụng tính từ suất chiếu đầu tiên của ngày Thứ Sáu đến suất chiếu cuối cùng của ngày Chủ Nhật.",
+        "policyHoliday": "<strong>Vé lễ tết:</strong> Áp dụng giá vé cuối tuần đối với các ngày nghỉ lễ quốc gia theo quy định của nhà nước."
     },
     "sections": {
         "moviesTitle": "PHIM",
@@ -826,5 +831,43 @@
         "fnb_coca_l": "Coca-Cola Lớn",
         "fnb_bottled_water": "Nước Suối / Dasani",
         "fnb_peach_tea": "Trà Đào Cam Sả"
+    },
+    "newsData": {
+        "news_1_badge": "Hot Event",
+        "news_1_title": "Live Viewing BTS World Tour \"Arirang\" In Busan tại Việt Nam",
+        "news_1_desc": "Trải nghiệm concert lớn nhất lịch sử K-Pop của BTS phát sóng trực tiếp trên màn ảnh rộng 4K cùng âm thanh vòm chuẩn rạp chiếu phim.",
+        "news_1_author": "D-Cinema Events",
+        "news_2_badge": "Tin Mới",
+        "news_2_title": "Doraemon Movie 45: Nobita Và Lâu Đài Dưới Đáy Biển khởi chiếu 2026",
+        "news_2_desc": "Phần phim điện ảnh thứ 45 của chú mèo máy Doraemon đưa nhóm bạn Nobita phiêu lưu khám phá đại dương bao la, đối đầu thử thách lớn.",
+        "news_2_author": "Điện Ảnh Việt",
+        "news_3_badge": "Đánh Giá",
+        "news_3_title": "Review phim Lầu Chú Hỏa: Streamer đột nhập biệt thự cổ ma quái họ Hứa",
+        "news_3_desc": "Cốt truyện giật gân, những màn trả nghiệp rùng rợn của các streamer câu view tại căn biệt thự bỏ hoang nổi tiếng nhất Sài Gòn.",
+        "news_3_author": "Phê Movies",
+        "news_4_badge": "Sự Kiện",
+        "news_4_title": "Student Monday - Đồng giá vé 2D chỉ 45.000đ cho Học Sinh Sinh Viên",
+        "news_4_desc": "Khởi động tuần mới tràn đầy năng lượng cùng D-Cinema. Mang thẻ HSSV để nhận vé xem phim giá cực ưu đãi mỗi thứ hai.",
+        "news_4_author": "D-Cinema Marketing",
+        "news_5_badge": "Tin Mới",
+        "news_5_title": "D-Cinema Sense City Cần Thơ khai trương phòng chiếu IMAX Laser",
+        "news_5_desc": "Mang công nghệ điện ảnh hiện đại bậc nhất thế giới với độ tương phản vượt trội và âm thanh 12 kênh sống động đến với khán giả miền Tây.",
+        "news_5_author": "D-Cinema Tech",
+        "news_6_badge": "Sự Kiện",
+        "news_6_title": "Fan Meeting & Giao lưu dàn diễn viên phim Dưới Bóng Điện Hạ",
+        "news_6_desc": "Cơ hội giao lưu và nhận poster có chữ ký của đạo diễn cùng dàn sao chính tại cụm rạp D-Cinema Landmark 81.",
+        "news_6_author": "D-Cinema PR",
+        "news_1_content": "<p>Hành trình lịch sử tiếp tục được viết nên...</p>",
+        "news_2_content": "<p>Bước vào kỳ nghỉ hè sôi động...</p>",
+        "news_3_content": "<p><strong>Lầu Chú Hỏa</strong> là bộ phim kinh dị...</p>",
+        "news_4_content": "<p>Để tiếp thêm động lực...</p>",
+        "news_5_content": "<p>Cột mốc mới trong hành trình...</p>",
+        "news_6_content": "<p>Chào đón cơn sốt phòng vé...</p>"
+    },
+    "reviews": {
+        "title": "Đánh giá phim",
+        "noReviews": "Chưa có đánh giá",
+        "checkingAccount": "Đang kiểm tra tài khoản...",
+        "loading": "Đang tải đánh giá..."
     }
 }

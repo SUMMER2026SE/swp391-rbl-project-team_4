@@ -873,7 +873,7 @@ const app = {
         async init() {
             if (this.lang !== 'vi') {
                 try {
-                    const res = await fetch(`/locales/${this.lang}.json`);
+                    const res = await fetch(`/locales/${this.lang}.json?v=` + new Date().getTime());
                     this.dict = await res.json();
                 } catch (err) {
                     console.error("Failed to load language dict", err);
@@ -887,14 +887,14 @@ const app = {
             window.location.reload();
         },
         t(key, fallback) {
-            if (this.lang === 'vi') return fallback || key;
+            if (this.lang === 'vi') return fallback !== undefined ? fallback : '';
             const keys = key.split('.');
             let val = this.dict;
             for (const k of keys) {
                 if (val && val[k]) val = val[k];
-                else return fallback || key;
+                else return fallback !== undefined ? fallback : '';
             }
-            return val || fallback || key;
+            return val || (fallback !== undefined ? fallback : '');
         },
         updateDOM() {
             if (this.lang === 'vi') return;
