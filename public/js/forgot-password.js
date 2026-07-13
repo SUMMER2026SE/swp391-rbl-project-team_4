@@ -375,18 +375,18 @@
     let hasError = false;
 
     if (!email) {
-      setError(dom.forgotEmail, 'Vui lòng nhập địa chỉ email.');
+      setError(dom.forgotEmail, 'Vui l\u00f2ng nh\u1eadp \u0111\u1ecba ch\u1ec9 email.');
       hasError = true;
     } else if (!validateEmail(email)) {
-      setError(dom.forgotEmail, 'Email không hợp lệ.');
+      setError(dom.forgotEmail, 'Email kh\u00f4ng h\u1ee3p l\u1ec7.');
       hasError = true;
     }
 
     if (!captcha) {
-      setError(dom.captchaInput, 'Vui lòng nhập mã captcha.');
+      setError(dom.captchaInput, 'Vui l\u00f2ng nh\u1eadp m\u00e3 captcha.');
       hasError = true;
     } else if (captcha.toLowerCase() !== captchaCode.toLowerCase()) {
-      setError(dom.captchaInput, 'Mã captcha không đúng.');
+      setError(dom.captchaInput, 'M\u00e3 captcha kh\u00f4ng \u0111\u00fang.');
       generateCaptcha();
       dom.captchaInput.value = '';
       hasError = true;
@@ -411,7 +411,7 @@
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        showToast(data.message || 'Có lỗi xảy ra.', 'error');
+        showToast(data.message || 'C\u00f3 l\u1ed7i x\u1ea3y ra.', 'error');
         setLoading(dom.btnSubmitStep1, false);
         generateCaptcha();
         dom.captchaInput.value = '';
@@ -422,7 +422,7 @@
       showToast(data.message, 'success');
 
       // Update method message
-      dom.otpMethodMsg.textContent = `Mã OTP 6 chữ số đã được gửi đến email ${maskValue(email)}.`;
+      dom.otpMethodMsg.textContent = `M\u00e3 OTP 6 ch\u1eef s\u1ed1 \u0111\u00e3 \u0111\u01b0\u1ee3c g\u1eedi \u0111\u1ebfn email ${maskValue(email)}.`;
 
       goToStep(2);
       clearOtpBoxes();
@@ -431,7 +431,7 @@
 
     } catch (err) {
       console.error('[ForgotPassword] Error:', err);
-      showToast('Không thể kết nối tới server.', 'error');
+      showToast('Kh\u00f4ng th\u1ec3 k\u1ebft n\u1ed1i t\u1edbi server.', 'error');
     } finally {
       setLoading(dom.btnSubmitStep1, false);
     }
@@ -448,7 +448,7 @@
 
     if (otp.length < 6) {
       dom.otpBoxes.forEach(b => b.classList.add('error'));
-      showToast('Vui lòng nhập đủ 6 chữ số OTP.', 'error');
+      showToast('Vui l\u00f2ng nh\u1eadp \u0111\u1ee7 6 ch\u1eef s\u1ed1 OTP.', 'error');
       return;
     }
 
@@ -464,7 +464,7 @@
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        showToast(data.message || 'Mã OTP không đúng.', 'error');
+        showToast(data.message || 'M\u00e3 OTP kh\u00f4ng \u0111\u00fang.', 'error');
         dom.otpBoxes.forEach(b => b.classList.add('error'));
         setLoading(dom.btnSubmitOtp, false);
         return;
@@ -481,7 +481,7 @@
 
     } catch (err) {
       console.error('[VerifyOTP] Error:', err);
-      showToast('Không thể kết nối tới server.', 'error');
+      showToast('Kh\u00f4ng th\u1ec3 k\u1ebft n\u1ed1i t\u1edbi server.', 'error');
     } finally {
       setLoading(dom.btnSubmitOtp, false);
     }
@@ -494,7 +494,7 @@
     if (!lastSubmittedInput) return;
 
     dom.btnResendOtp.disabled = true;
-    dom.btnResendOtp.textContent = 'Đang gửi...';
+    dom.btnResendOtp.textContent = '\u0110ang g\u1eedi...';
 
     try {
       const res = await fetch(`${API_BASE}/forgot-password`, {
@@ -505,7 +505,7 @@
 
       const data = await res.json();
       if (data.success) {
-        showToast('Đã gửi lại mã OTP!', 'success');
+        showToast('\u0110\u00e3 g\u1eedi l\u1ea1i m\u00e3 OTP!', 'success');
         clearOtpBoxes();
         dom.otpBoxes[0]?.focus();
         startOtpCountdown();
@@ -514,7 +514,7 @@
         dom.btnResendOtp.disabled = false;
       }
     } catch (err) {
-      showToast('Không thể kết nối tới server.', 'error');
+      showToast('Kh\u00f4ng th\u1ec3 k\u1ebft n\u1ed1i t\u1edbi server.', 'error');
       dom.btnResendOtp.disabled = false;
     }
 
@@ -543,24 +543,24 @@
     let hasError = false;
 
     if (!newPass) {
-      setError(dom.newPassword, 'Vui lòng nhập mật khẩu mới.');
+      setError(dom.newPassword, 'Vui l\u00f2ng nh\u1eadp m\u1eadt kh\u1ea9u m\u1edbi.');
       hasError = true;
     } else if (newPass.length < 6) {
-      setError(dom.newPassword, 'Mật khẩu phải có ít nhất 6 ký tự.');
+      setError(dom.newPassword, 'M\u1eadt kh\u1ea9u ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t 6 k\u00fd t\u1ef1.');
       hasError = true;
     } else if (!/^[A-Z]/.test(newPass)) {
-      setError(dom.newPassword, 'Chữ cái đầu tiên phải viết hoa.');
+      setError(dom.newPassword, 'Ch\u1eef c\u00e1i \u0111\u1ea7u ti\u00ean ph\u1ea3i vi\u1ebft hoa.');
       hasError = true;
     } else if (!/\d/.test(newPass)) {
-      setError(dom.newPassword, 'Mật khẩu phải chứa ít nhất 1 chữ số.');
+      setError(dom.newPassword, 'M\u1eadt kh\u1ea9u ph\u1ea3i ch\u1ee9a \u00edt nh\u1ea5t 1 ch\u1eef s\u1ed1.');
       hasError = true;
     } else if (!/[._!@#$%^&*()\-+=<>?]/.test(newPass)) {
-      setError(dom.newPassword, 'Mật khẩu phải chứa ký tự đặc biệt (VD: ., _, @).');
+      setError(dom.newPassword, 'M\u1eadt kh\u1ea9u ph\u1ea3i ch\u1ee9a k\u00fd t\u1ef1 \u0111\u1eb7c bi\u1ec7t (VD: ., _, @).');
       hasError = true;
     }
 
     if (!confirmPass) {
-      setError(dom.confirmPassword, 'Vui lòng xác nhận mật khẩu.');
+      setError(dom.confirmPassword, 'M\u1eadt kh\u1ea9u x\u00e1c nh\u1eadn kh\u00f4ng kh\u1edbp.');
       hasError = true;
     } else if (newPass !== confirmPass) {
       setError(dom.confirmPassword, 'Mật khẩu xác nhận không khớp.');
@@ -596,7 +596,7 @@
 
     } catch (err) {
       console.error('[ResetPassword] Error:', err);
-      showToast('Không thể kết nối tới server.', 'error');
+      showToast('Kh\u00f4ng th\u1ec3 k\u1ebft n\u1ed1i t\u1edbi server.', 'error');
     } finally {
       setLoading(dom.btnResetPassword, false);
     }
