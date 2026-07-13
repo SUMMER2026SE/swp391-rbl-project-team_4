@@ -3,6 +3,31 @@ const { sql, getPool } = require('../config/db');
 let schemaReady = false;
 let genreSchemaReady = false;
 let reviewSchemaReady = false;
+let roomTypeSchemaReady = false;
+
+// 4 loại phòng hợp lệ duy nhất trong hệ thống
+const VALID_ROOM_TYPES = ['Standard', 'IMAX Laser', '2D', '3D'];
+
+async function ensureRoomTypeSchema() {
+  if (roomTypeSchemaReady) return;
+  const pool = await getPool();
+
+  // 1. Migrate dữ liệu cũ về 4 loại chuẩn
+  await pool.request().query(`
+    UPDATE Rooms SET RoomType = 'Standard'
+    WHERE RoomType IS NULL
+       OR RoomType = ''
+       OR RoomType = '2D Standard'
+       OR RoomType = '4DX'
+       OR RoomType = 'ScreenX';
+
+    UPDATE Rooms SET RoomType = 'IMAX Laser'
+    WHERE RoomType = 'IMAX';
+  `);
+
+  roomTypeSchemaReady = true;
+  console.log('[AdminModel] Room type schema ensured: Standard, IMAX Laser, 2D, 3D');
+}
 
 async function ensureMovieReviewsTable() {
   if (reviewSchemaReady) return;
@@ -436,9 +461,12 @@ class AdminModel {
   }
 
   static async getRooms() {
+    await ensureRoomTypeSchema();
     const pool = await getPool();
     const result = await pool.request().query(`
       SELECT r.RoomID, r.RoomName, r.TotalSeats,
+             ISNULL(r.RoomType, 'Standard') AS RoomType,
+             r.CinemaID, c.CinemaName, c.Address
              CASE
                WHEN r.RoomName LIKE '%3D%' THEN '3D'
                WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
@@ -458,15 +486,28 @@ class AdminModel {
     const result = await pool.request()
       .input('roomId', sql.Int, roomId)
       .query(`
-        SELECT SeatID, RoomID, SeatRow, SeatNumber, SeatType, PriceMultiplier
-        FROM Seats
-        WHERE RoomID = @roomId
-        ORDER BY SeatRow, SeatNumber
+        SELECT s.SeatID, s.RoomID, s.SeatRow, s.SeatNumber, s.SeatType, s.PriceMultiplier,
+               CASE WHEN EXISTS (
+                   SELECT 1 
+                   FROM Tickets t 
+                   JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+                   WHERE t.SeatID = s.SeatID AND st.StartTime > GETUTCDATE()
+                     AND t.Status IN ('confirmed', 'pending', 'refund_requested', 'used')
+               ) THEN 1 ELSE 0 END AS IsBooked
+        FROM Seats s
+        WHERE s.RoomID = @roomId
+        ORDER BY s.SeatRow, s.SeatNumber
       `);
     return result.recordset;
   }
 
   static async saveSeats(roomId, seatsArray, roomType) {
+    // Validate roomType nếu được cung cấp
+    if (roomType && !VALID_ROOM_TYPES.includes(roomType)) {
+      throw new Error(`Loại phòng "${roomType}" không hợp lệ. Chỉ chấp nhận: ${VALID_ROOM_TYPES.join(', ')}.`);
+    }
+    const normalizedRoomType = roomType || 'Standard';
+
     const pool = await getPool();
     const transaction = new sql.Transaction(pool);
     await transaction.begin();
@@ -474,9 +515,7 @@ class AdminModel {
     try {
       const request = new sql.Request(transaction);
       request.input('roomId', sql.Int, roomId);
-      if (roomType) {
-          request.input('roomType', sql.NVarChar, roomType);
-      }
+      request.input('roomType', sql.NVarChar, normalizedRoomType);
 
       // 1. Get currently booked seats for this room to avoid deleting/modifying booked seats.
       const bookedSeatsResult = await request.query(`
@@ -525,6 +564,11 @@ class AdminModel {
         `);
       }
 
+      // 4. Update the room's TotalSeats count and RoomType (always update both)
+      await request.query(`
+        UPDATE Rooms 
+        SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None'),
+            RoomType = @roomType
       await request.query(`
         UPDATE Rooms
         SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None')
@@ -998,11 +1042,12 @@ class AdminModel {
     const result = await pool.request()
       .input('cinemaId', sql.Int, data.cinemaId)
       .input('name', sql.NVarChar, data.name)
+      .input('roomType', sql.VarChar, data.roomType || 'Standard')
       .input('totalSeats', sql.Int, data.totalSeats || 0)
       .query(`
-        INSERT INTO Rooms (CinemaID, RoomName, TotalSeats)
+        INSERT INTO Rooms (CinemaID, RoomName, RoomType, TotalSeats)
         OUTPUT INSERTED.*
-        VALUES (@cinemaId, @name, @totalSeats)
+        VALUES (@cinemaId, @name, @roomType, @totalSeats)
       `);
     return result.recordset[0];
   }
@@ -1013,8 +1058,9 @@ class AdminModel {
     const result = await pool.request()
       .input('id', sql.Int, roomId)
       .input('name', sql.NVarChar, data.name)
+      .input('roomType', sql.VarChar, data.roomType || 'Standard')
       .query(`
-        UPDATE Rooms SET RoomName = @name WHERE RoomID = @id;
+        UPDATE Rooms SET RoomName = @name, RoomType = @roomType WHERE RoomID = @id;
         SELECT r.*, c.CinemaName FROM Rooms r JOIN Cinemas c ON r.CinemaID = c.CinemaID WHERE r.RoomID = @id;
       `);
     return result.recordset[0];

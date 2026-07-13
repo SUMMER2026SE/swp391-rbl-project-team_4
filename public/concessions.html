@@ -240,6 +240,28 @@
             transition: border-color 0.2s;
         }
         .sort-select:focus { border-color: rgba(255,255,255,0.2); }
+        .nav-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        .nav-back-btn:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
     </style>
     <link rel="stylesheet" href="css/chatbot.css">
 </head>
@@ -290,6 +312,12 @@
 
         <!-- ══ LEFT COLUMN ══ -->
         <section class="left-col">
+
+            <!-- Top-Left Back Button -->
+            <button class="nav-back-btn" onclick="backToSeats()" style="margin-bottom: 16px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Quay lại
+            </button>
 
             <!-- Page Heading -->
             <div class="page-heading">
@@ -417,6 +445,12 @@
                 <button class="btn-skip" id="btnSkip" onclick="skipFnB()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                     Bỏ qua, tiếp tục thanh toán
+                </button>
+
+                <!-- Back to Seats -->
+                <button class="btn-skip" id="btnBackToSeats" onclick="backToSeats()" style="margin-top: 10px; border-color: rgba(255, 255, 255, 0.08); background: rgba(255,255,255,0.02);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transform: rotate(180deg);"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    Quay lại chọn ghế
                 </button>
 
                 <p class="terms-note">Khi bấm tiếp tục, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a>.</p>
@@ -798,6 +832,16 @@
         totalEl.textContent = (BASE_TICKET + fbTotal).toLocaleString('vi-VN') + ' VND';
     }
 
+    /* ── BACK TO SEATS ── */
+    function backToSeats() {
+        if (booking && booking.showtimeId) {
+            window.location.href = `seats.html?showtimeId=${booking.showtimeId}`;
+        } else {
+            window.location.href = 'booking.html';
+        }
+    }
+    window.backToSeats = backToSeats;
+
     /* ── SKIP F&B ── */
     function skipFnB() {
         if (!booking || !booking.showtimeId) {
@@ -893,7 +937,13 @@
         }
 
         dbProducts.forEach(p => {
-            quantities[p.FnBID] = 0;
+            // Khôi phục số lượng bắp nước nếu đã được chọn từ trước (khi Back từ trang Checkout)
+            let savedQty = 0;
+            if (booking && Array.isArray(booking.foodItems)) {
+                const savedItem = booking.foodItems.find(item => item.fnbId === p.FnBID);
+                if (savedItem) savedQty = savedItem.quantity;
+            }
+            quantities[p.FnBID] = savedQty;
 
             const tab = getCategoryForTab(p.Category);
             const container = tab === 'combos' ? tabCombos : tab === 'drinks' ? tabDrinks : tabSnacks;
@@ -940,7 +990,7 @@
                             <button class="qty-btn minus" onclick="changeQty(${p.FnBID}, -1)" aria-label="Giảm" ${disabled}>
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             </button>
-                            <input type="number" class="qty-num" id="qty-${p.FnBID}" value="0" min="0" max="${maxAllowed}"
+                            <input type="number" class="qty-num" id="qty-${p.FnBID}" value="${savedQty}" min="0" max="${maxAllowed}"
                                 oninput="inputQty(${p.FnBID}, this.value)"
                                 onblur="if(this.value.trim()===''){this.value=0;inputQty(${p.FnBID},0);}"
                                 ${disabled} ${isOutOfStock ? 'style="opacity:0.45"' : ''}>
@@ -955,6 +1005,7 @@
                 </div>
             `;
             container.appendChild(card);
+            _syncCardUI(p.FnBID);
         });
 
         applySearchFilter();
@@ -1056,6 +1107,13 @@
         }
 
         updateOrderSummary();
+    });
+
+    // Bắt sự kiện Pageshow để tự động reload lại trang nếu load từ bộ nhớ đệm (Browser Back button)
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            window.location.reload();
+        }
     });
     </script>
 

@@ -567,6 +567,25 @@
         .slot-price { display:block; font-size:0.72rem; font-weight:750; color:var(--gold); }
         .slot-room { display:block; font-size:0.65rem; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:86px; }
 
+        /* Room type badge on slots */
+        .slot-type-badge {
+            display:inline-block; font-size:0.55rem; font-weight:800;
+            letter-spacing:0.5px; text-transform:uppercase;
+            padding:1px 5px; border-radius:3px; margin-top:2px;
+        }
+        .badge-standard  { background:rgba(100,116,139,0.2); color:#94a3b8; border:1px solid rgba(100,116,139,0.3); }
+        .badge-imax      { background:rgba(245,158,11,0.18); color:#f59e0b; border:1px solid rgba(245,158,11,0.35); }
+        .badge-3d        { background:rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35); }
+        .badge-2d        { background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35); }
+
+        /* IMAX Laser slot special glow */
+        .slot.imax-slot { border-color:rgba(245,158,11,0.35); }
+        .slot.imax-slot:hover { border-color:var(--gold); background:rgba(245,158,11,0.07); box-shadow:0 6px 24px rgba(245,158,11,0.22); }
+        .slot.imax-slot:hover .slot-time { color:var(--gold); }
+        .slot.d3-slot { border-color:rgba(59,130,246,0.3); }
+        .slot.d3-slot:hover { border-color:#60a5fa; background:rgba(59,130,246,0.07); box-shadow:0 6px 20px rgba(59,130,246,0.2); }
+        .slot.d3-slot:hover .slot-time { color:#60a5fa; }
+
         /* ── Skeleton ── */
         .sk-wrap { display:flex; flex-direction:column; gap:20px; }
         .sk-card {
@@ -1479,18 +1498,35 @@
                     const endT = new Date(st.EndTime);
                     const endStr = endT.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',hour12:false});
                     const price = (st.Price || 0).toLocaleString('vi-VN');
-                    const room = st.RoomName ? (st.RoomType && st.RoomType !== '2D Standard' ? '['+st.RoomType+'] '+st.RoomName : st.RoomName) : 'Cinema';
-                    const isVip = (st.RoomType && (st.RoomType.includes('IMAX') || st.RoomType.includes('VIP'))) || room.toLowerCase().includes('vip') || room.toLowerCase().includes('imax');
+                    const rType = (st.RoomType || 'Standard').trim();
+                    const room = st.RoomName ? (rType !== 'Standard' ? '['+rType+'] '+st.RoomName : st.RoomName) : 'Cinema';
+                    const isImax = rType === 'IMAX Laser';
+                    const is3D   = rType === '3D';
+                    const isVip  = isImax;
                     const available = st.AvailableSeats != null ? st.AvailableSeats : (st.TotalSeats || 0) - (st.TicketsSold || 0);
                     const fewSeats = available > 0 && available <= 15;
 
-                    return `<button class="slot${isVip ? ' vip-slot' : ''}${fewSeats ? ' few-seats' : ''}"
+                    // Room type badge
+                    let badgeClass = 'badge-standard';
+                    if (isImax) badgeClass = 'badge-imax';
+                    else if (is3D) badgeClass = 'badge-3d';
+                    else if (rType === '2D') badgeClass = 'badge-2d';
+
+                    // Slot class
+                    let slotClass = 'slot';
+                    if (isImax) slotClass += ' imax-slot';
+                    else if (is3D) slotClass += ' d3-slot';
+                    else if (isVip) slotClass += ' vip-slot';
+                    if (fewSeats) slotClass += ' few-seats';
+
+                    return `<button class="${slotClass}"
                         onclick="goToSeats(${st.ShowtimeID})"
                         title="Phòng ${room} • ${timeStr}-${endStr} • ${price}đ • Còn ${available} ghế">
                         <div class="slot-time">${timeStr}</div>
                         <div class="slot-meta">
                             <span class="slot-price">${price}đ</span>
-                            <span class="slot-room">${room}</span>
+                            <span class="slot-room">${st.RoomName || 'Cinema'}</span>
+                            <span class="slot-type-badge ${badgeClass}">${rType}</span>
                         </div>
                     </button>`;
                 }).join('');
@@ -1566,9 +1602,15 @@
                 const t = new Date(st.StartTime);
                 const timeStr = t.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',hour12:false});
                 const price = (st.Price||0).toLocaleString('vi-VN');
+                const rType = (st.RoomType || 'Standard').trim();
+                const roomLabel = st.RoomName ? (rType !== 'Standard' ? '['+rType+'] '+st.RoomName : st.RoomName) : 'Cinema';
+                let badgeClass = 'badge-standard';
+                if (rType === 'IMAX Laser') badgeClass = 'badge-imax';
+                else if (rType === '3D') badgeClass = 'badge-3d';
+                else if (rType === '2D') badgeClass = 'badge-2d';
                 return `<button class="slot" onclick="closeMovieModal();goToSeats(${st.ShowtimeID})" style="min-width:76px;">
                     <div class="slot-time">${timeStr}</div>
-                    <div class="slot-meta"><span class="slot-price">${price}đ</span><span class="slot-room">${st.RoomName ? (st.RoomType && st.RoomType !== '2D Standard' ? '['+st.RoomType+'] '+st.RoomName : st.RoomName) : 'Cinema'}</span></div>
+                    <div class="slot-meta"><span class="slot-price">${price}đ</span><span class="slot-room">${st.RoomName || 'Cinema'}</span><span class="slot-type-badge ${badgeClass}">${rType}</span></div>
                 </button>`;
             }).join('');
             document.getElementById('modalSlots').innerHTML = slotsHTML || '<span style="color:var(--muted);font-size:0.85rem;">Không có suất chiếu.</span>';

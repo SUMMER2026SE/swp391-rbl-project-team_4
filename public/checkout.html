@@ -1092,13 +1092,17 @@
                 </div>
 
                 <!-- Pay button -->
-                <div class="btn-pay-now-wrap" style="padding-top:14px;">
+                <div class="btn-pay-now-wrap" style="padding-top:14px; display:flex; flex-direction:column; gap:10px;">
                     <button class="btn-pay-now" id="btnPayNow" onclick="processPayment()">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
                             <line x1="1" y1="10" x2="23" y2="10"/>
                         </svg>
                         THANH TOÁN NGAY
+                    </button>
+                    <!-- Quay lại chọn bắp nước -->
+                    <button class="btn-pay-now" id="btnBackToConcessions" onclick="backToConcessions()" style="background:transparent; border:1px solid rgba(255,255,255,0.08); color:#a1a5b0;">
+                        Quay lại chọn bắp nước
                     </button>
                 </div>
                 <p class="pay-note">Bằng cách nhấn thanh toán, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách bảo mật</a> của chúng tôi.</p>
@@ -1110,7 +1114,7 @@
                 <div class="countdown-title">⏱ Thời gian giữ vé</div>
                 <div class="countdown-row">
                     <div class="countdown-unit">
-                        <div class="countdown-num" id="cdMin">10</div>
+                        <div class="countdown-num" id="cdMin">05</div>
                         <div class="countdown-label">Phút</div>
                     </div>
                     <div class="countdown-sep">:</div>
@@ -1619,30 +1623,36 @@
 
         if (!code) { showToast('Vui lòng nhập mã.', 'error'); return; }
 
-        // Call validate-voucher API
+        // Call calculate-price API to apply voucher securely from Backend
         try {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            const res = await fetch('/api/bookings/validate-voucher', {
+            const res = await fetch('/api/bookings/calculate-price', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ voucherCode: code })
+                body: JSON.stringify({
+                    showtimeId: booking.showtimeId,
+                    seatIds: booking.seatIds,
+                    foodItems: booking.foodItems || [],
+                    voucherCode: code
+                })
             });
             const json = await res.json();
-            if (json.success && json.voucher) {
-                const v = json.voucher;
-                const orderVal = booking.totalAmount || 0;
-                if (orderVal < (v.minOrderValue || 0)) {
-                    showToast(`Đơn hàng tối thiểu ${(v.minOrderValue).toLocaleString('vi-VN')}đ.`, 'error');
-                    return;
-                }
-                let disc = 0;
-                if (v.discountType === 'percent') {
-                    disc = Math.min(orderVal * v.discountValue / 100, v.maxDiscount || Infinity);
-                } else {
-                    disc = Math.min(v.discountValue, orderVal);
-                }
+            if (json.success && json.data) {
+                const data = json.data;
                 appliedVoucherCode = code;
-                applyDiscountAmount(disc, `Voucher: ${code}`, key);
+                booking.voucherCode = code;
+                discountAmount = data.discountAmount;
+                booking.discountAmount = data.discountAmount;
+                booking.finalAmount = data.finalAmount;
+
+                // Badge
+                const badge = document.getElementById('badge-' + key);
+                if (badge) badge.style.display = 'inline-block';
+                const wrap = document.getElementById('input-' + key);
+                if (wrap) wrap.classList.remove('open');
+
+                updateSummaryUI();
+                showToast(`✓ Đã áp dụng! Giảm ${data.discountAmount.toLocaleString('vi-VN')}đ`, 'success');
             } else {
                 showToast(json.message || 'Mã không hợp lệ hoặc đã hết hạn.', 'error');
             }
@@ -1650,22 +1660,6 @@
             console.error(e);
             showToast('Lỗi kết nối. Vui lòng thử lại.', 'error');
         }
-    }
-
-    function applyDiscountAmount(amount, label, key) {
-        discountAmount = amount;
-        booking.voucherCode = appliedVoucherCode;
-        booking.discountAmount = amount;
-        booking.finalAmount = Math.max(0, (booking.totalAmount || 0) - amount);
-
-        // Badge
-        const badge = document.getElementById('badge-' + key);
-        if (badge) badge.style.display = 'inline-block';
-        const wrap = document.getElementById('input-' + key);
-        if (wrap) wrap.classList.remove('open');
-
-        updateSummaryUI();
-        showToast(`✓ Đã áp dụng! Giảm ${amount.toLocaleString('vi-VN')}đ`, 'success');
     }
 
     function resetDiscounts() {
@@ -1714,8 +1708,13 @@
         document.getElementById('totalFinalVal').textContent = finalAmount.toLocaleString('vi-VN') + ' VND';
     }
 
+    /* ─── BACK TO CONCESSIONS ─── */
+    function backToConcessions() {
+        window.location.href = 'concessions.html';
+    }
+
     /* ─── COUNTDOWN ─── */
-    let countdownSecs = 10 * 60; // 10 minutes
+    let countdownSecs = 5 * 60; // 5 minutes
     const cdMin = document.getElementById('cdMin');
     const cdSec = document.getElementById('cdSec');
     const cdWarning = document.getElementById('cdWarning');
@@ -1931,7 +1930,11 @@
         // ─── KHỚI TẠO SOCKET.IO ───
         // Kết nối tới server để nhận push notification real-time khi thanh toán thành công
         if (typeof io !== 'undefined') {
-            checkoutSocket = io({ transports: ['websocket', 'polling'] });
+            const sessId = sessionStorage.getItem('bookingSessionId');
+            checkoutSocket = io({ 
+                transports: ['websocket', 'polling'],
+                query: { bookingSessionId: sessId }
+            });
 
             checkoutSocket.on('connect', () => {
                 console.log('[Socket] 🟢 Kết nối Socket.IO thành công. ID:', checkoutSocket.id);
@@ -2042,6 +2045,43 @@
             if (btn) btn.disabled = true;
         }
 
+        // ─── ĐỒNG BỘ GIÁ VÉ TẬP TRUNG TỪ BACKEND ───
+        if (booking.showtimeId && booking.seatIds && booking.seatIds.length > 0) {
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const calcRes = await fetch('/api/bookings/calculate-price', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        showtimeId: booking.showtimeId,
+                        seatIds: booking.seatIds,
+                        foodItems: booking.foodItems || [],
+                        voucherCode: appliedVoucherCode || null
+                    })
+                });
+                const calcJson = await calcRes.json();
+                if (calcJson.success && calcJson.data) {
+                    const data = calcJson.data;
+                    booking.ticketTotal = data.ticketTotal;
+                    booking.fnbTotal = data.fnbTotal;
+                    booking.totalAmount = data.ticketTotal + data.fnbTotal;
+                    booking.finalAmount = data.finalAmount;
+                    booking.discountAmount = data.discountAmount;
+                    
+                    // Cập nhật lại discountAmount toàn cục
+                    discountAmount = data.discountAmount;
+                    
+                    // Lưu lại cấu hình chuẩn từ Backend vào storage
+                    sessionStorage.setItem('booking', JSON.stringify(booking));
+                    localStorage.setItem('booking', JSON.stringify(booking));
+                    
+                    console.log('[Checkout] Đồng bộ giá từ Backend thành công:', data);
+                }
+            } catch (err) {
+                console.warn('[Checkout] Lỗi khi đồng bộ giá từ Backend, dùng giá tạm thời ở client:', err.message);
+            }
+        }
+
         // Fill info
         if (booking.poster) {
             const poster = document.getElementById('summaryPoster');
@@ -2079,6 +2119,13 @@
             createdTicketIds = booking.ticketIds;
             const finalAmt = booking.finalAmount || (booking.totalAmount || 0) - discountAmount;
             openQrModal(booking.paymentMethod || currentPayment, finalAmt, booking.ticketIds);
+        }
+    });
+
+    // Bắt sự kiện Pageshow để tự động reload lại trang nếu load từ bộ nhớ đệm (Browser Back button)
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            window.location.reload();
         }
     });
     </script>
