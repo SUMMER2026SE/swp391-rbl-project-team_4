@@ -1247,7 +1247,7 @@
             <h2 style="font-size:1.4rem; font-weight:900; color:#22c55e; margin-bottom:10px; letter-spacing:-0.3px;">Đặt vé thành công!</h2>
             <p style="font-size:0.88rem; color:#c5c8cf; line-height:1.6; margin-bottom:8px;">Hệ thống đã nhận được thanh toán và xác nhận vé của bạn. Cảm ơn bạn!</p>
             <p id="successRedirectNote" style="font-size:0.78rem;color:#8a8f9a;margin-bottom:20px;">Tự động chuyển trang sau <strong style="color:#f0f0f0;"><span id="redirectCountdown">3</span></strong> giây…</p>
-            <button onclick="window.location.href='payment-success.html?v=' + Date.now()" style="width:100%; padding:13px; background:#22c55e; color:#fff; border:none; border-radius:10px; font-size:0.92rem; font-weight:800; cursor:pointer; font-family:'Inter',sans-serif; letter-spacing:0.3px; transition:all 0.2s;" onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">Xem vé của tôi ngay →</button>
+            <button onclick="window.location.replace('payment-success.html?v=' + Date.now())" style="width:100%; padding:13px; background:#22c55e; color:#fff; border:none; border-radius:10px; font-size:0.92rem; font-weight:800; cursor:pointer; font-family:'Inter',sans-serif; letter-spacing:0.3px; transition:all 0.2s;" onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">Xem vé của tôi ngay →</button>
         </div>
     </div>
 
@@ -1574,7 +1574,7 @@
             if (cdEl) cdEl.textContent = secs;
             if (secs <= 0) {
                 clearInterval(autoRedirect);
-                window.location.href = 'payment-success.html?v=' + Date.now();
+                window.location.replace('payment-success.html?v=' + Date.now());
             }
         }, 1000);
     }
@@ -1710,7 +1710,7 @@
 
     /* ─── BACK TO CONCESSIONS ─── */
     function backToConcessions() {
-        window.location.href = 'concessions.html';
+        window.location.replace('concessions.html');
     }
 
     /* ─── COUNTDOWN ─── */
@@ -1828,7 +1828,8 @@
                 seatIds: booking.seatIds,
                 foodItems: booking.foodItems || [],
                 voucherCode: appliedVoucherCode || null,
-                paymentMethod: currentPayment
+                paymentMethod: currentPayment,
+                sessionId: sessionStorage.getItem('bookingSessionId')
             };
 
             console.log('[Payment] Gửi yêu cầu tạo vé:', payload);

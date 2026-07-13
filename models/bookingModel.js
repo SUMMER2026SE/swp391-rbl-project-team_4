@@ -96,7 +96,7 @@ class BookingModel {
     return voucher;
   }
 
-  static async createBooking(userId, { showtimeId, seatIds, foodItems, voucherCode, paymentMethod }) {
+  static async createBooking(userId, { showtimeId, seatIds, foodItems, voucherCode, paymentMethod, sessionId }) {
     // Tự động dọn dẹp các vé pending hết hạn trước khi đặt ghế mới
     await BookingModel.cleanupExpiredPendingBookings();
 
@@ -141,6 +141,20 @@ class BookingModel {
         const seatCheck = await seatCheckReq.query(`SELECT TicketID FROM Tickets WITH (UPDLOCK) WHERE SeatID = @sid AND ShowtimeID = @stid AND Status IN ('confirmed','pending')`);
         if (seatCheck.recordset.length > 0) {
           throw new Error(`Ghế ID ${seatId} đã được đặt.`);
+        }
+
+        // Kiểm tra xem ghế có đang bị khóa bởi session khác không
+        if (sessionId) {
+          const lockCheckReq = transaction.request();
+          lockCheckReq.input('sid', sql.Int, seatId);
+          lockCheckReq.input('stid', sql.Int, showtimeId);
+          const lockCheck = await lockCheckReq.query(`SELECT SessionID FROM SeatLocks WITH (UPDLOCK) WHERE SeatID = @sid AND ShowtimeID = @stid AND ExpiresAt > GETDATE()`);
+          if (lockCheck.recordset.length > 0) {
+            const lockSessionId = lockCheck.recordset[0].SessionID;
+            if (lockSessionId !== sessionId) {
+               throw new Error(`Ghế ID ${seatId} đã bị người khác chọn.`);
+            }
+          }
         }
 
         const seatReq = transaction.request();
@@ -323,6 +337,17 @@ class BookingModel {
             WHERE VoucherID = @voucherId
               AND UserID = @userId
               AND IsUsed = 0
+          `);
+      }
+
+      // Xóa locks của session hiện tại cho những ghế đã mua thành công
+      if (sessionId) {
+          const delLockReq = transaction.request();
+          delLockReq.input('stid', sql.Int, showtimeId);
+          delLockReq.input('sessId', sql.NVarChar, sessionId);
+          await delLockReq.query(`
+            DELETE FROM SeatLocks 
+            WHERE ShowtimeID = @stid AND SessionID = @sessId AND SeatID IN (${seatIds.map(id => parseInt(id)).join(',')})
           `);
       }
 
@@ -578,6 +603,9 @@ class BookingModel {
   static async cleanupExpiredPendingBookings() {
     const pool = await getPool();
     try {
+      // 0. Xóa các khóa ghế đã hết hạn
+      await pool.request().query(`DELETE FROM SeatLocks WHERE ExpiresAt <= GETDATE()`);
+
       // 1. Tìm các vé pending quá 10 phút
       const expiredTicketsResult = await pool.request().query(`
         SELECT TicketID, UserID, VoucherID FROM Tickets
@@ -855,6 +883,88 @@ class BookingModel {
       seatPriceDetails,
       fnbDetails
     };
+  }
+
+  // ==========================================
+  // REAL-TIME SEAT LOCKING VIA DB
+  // ==========================================
+
+  static async holdSeatDB(showtimeId, seatId, sessionId, socketId, expiryMinutes = 5) {
+    const pool = await getPool();
+    try {
+      const result = await pool.request()
+        .input('showtimeId', sql.Int, showtimeId)
+        .input('seatId', sql.Int, seatId)
+        .input('sessionId', sql.NVarChar, sessionId)
+        .input('socketId', sql.NVarChar, socketId)
+        .input('expiryMins', sql.Int, expiryMinutes)
+        .query(`
+          INSERT INTO SeatLocks (ShowtimeID, SeatID, SessionID, SocketID, ExpiresAt)
+          VALUES (@showtimeId, @seatId, @sessionId, @socketId, DATEADD(minute, @expiryMins, GETDATE()))
+        `);
+      return true;
+    } catch (err) {
+      // 2627 or 2601 is Violation of UNIQUE KEY constraint (already locked)
+      if (err.number === 2627 || err.number === 2601) {
+        return false; // already locked
+      }
+      throw err;
+    }
+  }
+
+  static async releaseSeatDB(showtimeId, seatId, sessionId) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('showtimeId', sql.Int, showtimeId)
+      .input('seatId', sql.Int, seatId)
+      .input('sessionId', sql.NVarChar, sessionId)
+      .query(`
+        DELETE FROM SeatLocks 
+        WHERE ShowtimeID = @showtimeId AND SeatID = @seatId AND SessionID = @sessionId
+      `);
+    return result.rowsAffected[0] > 0;
+  }
+
+  static async reclaimSeatsDB(showtimeId, seatIds, sessionId, newSocketId) {
+    if (!seatIds || seatIds.length === 0) return 0;
+    const pool = await getPool();
+    const seatIdList = seatIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+    if (seatIdList.length === 0) return 0;
+    
+    const result = await pool.request()
+      .input('showtimeId', sql.Int, showtimeId)
+      .input('sessionId', sql.NVarChar, sessionId)
+      .input('newSocketId', sql.NVarChar, newSocketId)
+      .query(`
+        UPDATE SeatLocks
+        SET SocketID = @newSocketId, ExpiresAt = DATEADD(minute, 5, GETDATE())
+        WHERE ShowtimeID = @showtimeId AND SessionID = @sessionId AND SeatID IN (${seatIdList.join(',')})
+      `);
+    return result.rowsAffected[0];
+  }
+
+  static async releaseAllSeatsBySession(sessionId) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('sessionId', sql.NVarChar, sessionId)
+      .query(`
+        -- Lấy ra danh sách ghế sẽ bị xóa để có thể broadcast
+        SELECT ShowtimeID, SeatID FROM SeatLocks WHERE SessionID = @sessionId;
+        
+        DELETE FROM SeatLocks WHERE SessionID = @sessionId;
+      `);
+    return result.recordset || []; // Trả về danh sách ghế bị giải phóng để emit socket
+  }
+
+  static async getLockedSeatsDB(showtimeId) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('showtimeId', sql.Int, showtimeId)
+      .query(`
+        SELECT SeatID, SessionID FROM SeatLocks 
+        WHERE ShowtimeID = @showtimeId AND ExpiresAt > GETDATE()
+      `);
+    return result.recordset || [];
   }
 }
 

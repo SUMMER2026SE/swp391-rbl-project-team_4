@@ -510,7 +510,7 @@
 
         <!-- Top Header with Back Button -->
         <header class="vt-header no-print" style="display:flex; justify-content:space-between; align-items:center; width:100%; max-width:480px; margin:0 auto 16px;">
-            <button onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.href='payment-success.html' + (id ? '?id=' + id : '');" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:30px; color:#fff; font-size:0.82rem; font-weight:700; cursor:pointer; backdrop-filter:blur(8px); transition:all 0.2s;" onmouseover="this.style.background='rgba(240,192,64,0.2)';this.style.borderColor='#ffd770';this.style.color='#ffd770';" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#fff';">
+            <button onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.replace('payment-success.html' + (id ? '?id=' + id : ''));" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:30px; color:#fff; font-size:0.82rem; font-weight:700; cursor:pointer; backdrop-filter:blur(8px); transition:all 0.2s;" onmouseover="this.style.background='rgba(240,192,64,0.2)';this.style.borderColor='#ffd770';this.style.color='#ffd770';" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#fff';">
                 ← Quay lại trang vé
             </button>
             <div style="display:flex; align-items:center; gap:8px;">
@@ -780,10 +780,10 @@
 
                 <!-- Actions -->
                 <div class="tp-anim-fade-up tp-delay-5" style="display:flex; gap:10px;">
-                    <button class="vt-btn vt-btn-ghost" onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.href='payment-success.html' + (id ? '?id=' + id : '');" style="flex:1;">
+                    <button class="vt-btn vt-btn-ghost" onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.replace('payment-success.html' + (id ? '?id=' + id : ''));" style="flex:1;">
                         ← Quay lại trang vé
                     </button>
-                    <button class="vt-btn vt-btn-ghost" onclick="window.location.href='index.html'" style="flex:1;">
+                    <button class="vt-btn vt-btn-ghost" onclick="window.location.replace('index.html')" style="flex:1;">
                         🏠 Trang chủ
                     </button>
                 </div>
@@ -809,7 +809,7 @@
             </div>
             <div class="vt-details-wrap">
                 <button class="vt-btn vt-btn-ghost" onclick="window.close()">Đóng cửa sổ</button>
-                <button class="vt-btn vt-btn-ghost" style="margin-top:8px;" onclick="window.location.href='index.html'">
+                <button class="vt-btn vt-btn-ghost" style="margin-top:8px;" onclick="window.location.replace('index.html')">
                     🏠 Về trang chủ
                 </button>
             </div>

@@ -207,7 +207,7 @@ exports.validateVoucher = async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 exports.createBooking = async (req, res) => {
   try {
-    const { showtimeId, seatIds, foodItems = [], voucherCode, paymentMethod = 'online' } = req.body;
+    const { showtimeId, seatIds, foodItems = [], voucherCode, paymentMethod = 'online', sessionId } = req.body;
 
     if (!showtimeId || !seatIds || seatIds.length === 0) {
       return res.status(400).json({ success: false, message: 'Vui lòng cung cấp showtimeId và seatIds.' });
@@ -218,7 +218,8 @@ exports.createBooking = async (req, res) => {
       seatIds,
       foodItems,
       voucherCode,
-      paymentMethod
+      paymentMethod,
+      sessionId
     });
 
     const io = req.app.get('io');

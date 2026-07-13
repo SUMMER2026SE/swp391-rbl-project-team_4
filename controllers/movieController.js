@@ -129,17 +129,24 @@ const socketManager = require('../sockets/socketManager');
 exports.getSeatsByShowtime = async (req, res) => {
   try {
     const data = await MovieModel.getSeatsByShowtime(req.params.showtimeId);
+    const sessionId = req.query.sessionId;
     
-    if (socketManager.getLockedSeats) {
-      const lockedSeats = socketManager.getLockedSeats(req.params.showtimeId);
-      const lockedSet = new Set(lockedSeats.map(id => parseInt(id)));
-      
-      data.forEach(seat => {
-        if (seat.SeatStatus === 'available' && lockedSet.has(seat.SeatID)) {
-          seat.SeatStatus = 'locked';
-        }
-      });
-    }
+    const BookingModel = require('../models/bookingModel');
+    const lockedSeatsDB = await BookingModel.getLockedSeatsDB(req.params.showtimeId);
+    
+    // Only mark seats as locked if they are locked by a DIFFERENT session
+    const lockedSet = new Set();
+    lockedSeatsDB.forEach(s => {
+      if (s.SessionID !== sessionId) {
+        lockedSet.add(s.SeatID);
+      }
+    });
+    
+    data.forEach(seat => {
+      if (seat.SeatStatus === 'available' && lockedSet.has(seat.SeatID)) {
+        seat.SeatStatus = 'locked';
+      }
+    });
 
     res.json({ success: true, data });
   } catch (err) {
