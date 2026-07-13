@@ -1591,7 +1591,7 @@
 
         if (!showtimeId) {
             alert('Không tìm thấy thông tin suất chiếu!');
-            window.location.href = 'booking.html';
+            window.location.replace('booking.html');
         }
 
         // ──────────────────────────────────────────────
@@ -1642,7 +1642,7 @@
                     countdownInterval = null;
                     releaseAllHeldSeats();
                     alert('Thời gian giữ ghế đã hết. Vui lòng thực hiện chọn lại ghế!');
-                    window.location.href = 'booking.html';
+                    window.location.replace('booking.html');
                 }
             }, 1000);
         }
@@ -1711,7 +1711,7 @@
             await loadShowtimeDetails();
             if (showtimeData && new Date(showtimeData.StartTime) < new Date()) {
                 alert('Suất chiếu này đã qua. Vui lòng chọn suất khác.');
-                window.location.href = 'booking.html';
+                window.location.replace('booking.html');
                 return;
             }
             initSocket();
@@ -1751,12 +1751,12 @@
                     renderSidebar();
                 } else {
                     alert('Không tìm thấy thông tin suất chiếu.');
-                    window.location.href = 'booking.html';
+                    window.location.replace('booking.html');
                 }
             } catch (err) {
                 console.error(err);
                 alert('Lỗi kết nối server.');
-                window.location.href = 'booking.html';
+                window.location.replace('booking.html');
             }
         }
 
@@ -1845,7 +1845,8 @@
         // ──────────────────────────────────────────────
         async function loadSeats() {
             try {
-                const res = await fetch(`/api/movies/showtimes/${showtimeId}/seats`);
+                const sessId = sessionStorage.getItem('bookingSessionId') || '';
+                const res = await fetch(`/api/movies/showtimes/${showtimeId}/seats?sessionId=${encodeURIComponent(sessId)}`);
                 const json = await res.json();
                 if (json.success && json.data) {
                     seatsList = json.data;
@@ -1854,7 +1855,14 @@
                     try {
                         const savedBooking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
                         if (savedBooking && parseInt(savedBooking.showtimeId, 10) === showtimeId && Array.isArray(savedBooking.seatIds)) {
-                            savedBooking.seatIds.forEach(id => selectedSeats.add(parseInt(id, 10)));
+                            savedBooking.seatIds.forEach(id => {
+                                const parsedId = parseInt(id, 10);
+                                const seatData = seatsList.find(s => s.SeatID === parsedId);
+                                // Chỉ khôi phục nếu ghế thực sự còn trống (hoặc thuộc quyền khóa của mình)
+                                if (seatData && seatData.SeatStatus === 'available') {
+                                    selectedSeats.add(parsedId);
+                                }
+                            });
                             console.log('[Seats] Đã khôi phục các ghế đã chọn từ trước:', Array.from(selectedSeats));
                         }
                     } catch (e) {
@@ -2127,27 +2135,22 @@
                     if (!segment.some(s => proposedSet.has(s.SeatID))) continue;
                     const segLen = segment.length;
 
-                    // Rule 1: selected seats must be contiguous (no available gap between them)
-                    const selIdxs = segment.map((s,idx) => proposedSet.has(s.SeatID) ? idx : -1).filter(idx => idx !== -1);
-                    for (let i = selIdxs[0]; i <= selIdxs[selIdxs.length - 1]; i++) {
-                        const s = segment[i];
-                        if (!proposedSet.has(s.SeatID) && s.SeatStatus !== 'booked' && !lockedByOthers.has(s.SeatID)) {
-                            return { valid: false, message: `Ghế ${row}${s.SeatNumber} bị bỏ trống giữa ghế đã chọn — phải liền kề nhau!` };
-                        }
-                    }
-
-                    // Rule 2: No isolated (orphaned) single empty seat in segment (skip for Couple seats)
+                    // Check for exactly 1 empty seat (Galaxy Cinema Logic)
                     for (let i = 0; i < segLen; i++) {
                         const s = segment[i];
-                        if (proposedSet.has(s.SeatID)) continue;
-                        if (s.SeatStatus === 'booked' || lockedByOthers.has(s.SeatID)) continue;
+                        
+                        // We only care if the seat is EMPTY (not selected, booked, or locked)
+                        if (proposedSet.has(s.SeatID) || s.SeatStatus === 'booked' || lockedByOthers.has(s.SeatID)) continue;
                         if (s.SeatType && s.SeatType.toLowerCase().includes('couple')) continue;
 
-                        const leftBarrier  = i === 0        || proposedSet.has(segment[i-1].SeatID) || segment[i-1].SeatStatus === 'booked' || lockedByOthers.has(segment[i-1].SeatID);
-                        const rightBarrier = i === segLen-1 || proposedSet.has(segment[i+1].SeatID) || segment[i+1].SeatStatus === 'booked' || lockedByOthers.has(segment[i+1].SeatID);
+                        const leftSeat = i > 0 ? segment[i-1] : null;
+                        const rightSeat = i < segLen - 1 ? segment[i+1] : null;
 
-                        if (leftBarrier && rightBarrier) {
-                            return { valid: false, message: `Ghế ${row}${s.SeatNumber} sẽ bị cô lập (bỏ trống 1 ghế đơn). Hãy chọn thêm hoặc điều chỉnh!` };
+                        const isLeftBlocked = leftSeat && (proposedSet.has(leftSeat.SeatID) || leftSeat.SeatStatus === 'booked' || lockedByOthers.has(leftSeat.SeatID));
+                        const isRightBlocked = rightSeat && (proposedSet.has(rightSeat.SeatID) || rightSeat.SeatStatus === 'booked' || lockedByOthers.has(rightSeat.SeatID));
+
+                        if (isLeftBlocked && isRightBlocked) {
+                            return { valid: false, message: "GalaxyAlert", isGalaxyAlert: true };
                         }
                     }
                 }
@@ -2159,31 +2162,9 @@
         function updateSeatDimming() {
             if (!seatsList || seatsList.length === 0) return;
 
+            // User requested that unselected seats should be bright (not dimmed)
             document.querySelectorAll('.seat').forEach(el => {
                 el.classList.remove('dimmed');
-            });
-
-            seatsList.forEach(seat => {
-                if (seat.SeatStatus === 'booked' || lockedByOthers.has(seat.SeatID) || seat.SeatType === 'None') return;
-                if (selectedSeats.has(seat.SeatID)) return;
-
-                const el = getSeatEl(seat.SeatID);
-                if (!el) return;
-
-                const proposedSet = new Set(selectedSeats);
-                if (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) {
-                    const pairNum = seat.SeatNumber % 2 === 0 ? seat.SeatNumber - 1 : seat.SeatNumber + 1;
-                    const pairSeat = seatsList.find(s => s.SeatRow === seat.SeatRow && s.SeatNumber === pairNum);
-                    proposedSet.add(seat.SeatID);
-                    if (pairSeat) proposedSet.add(pairSeat.SeatID);
-                } else {
-                    proposedSet.add(seat.SeatID);
-                }
-
-                const res = validateSeatSelection(proposedSet);
-                if (!res.valid) {
-                    el.classList.add('dimmed');
-                }
             });
         }
 
@@ -2193,17 +2174,17 @@
         function handleSingleSeat(el, seatId) {
             if (el.classList.contains('booked') || el.classList.contains('locked') || lockedByOthers.has(seatId)) return;
 
-            if (el.classList.contains('dimmed')) {
-                const proposedSet = new Set(selectedSeats);
-                proposedSet.add(seatId);
-                const valRes = validateSeatSelection(proposedSet);
-                showToast(valRes.message || 'Không thể chọn ghế này!', 'warn');
-                return;
-            }
-
-
-
             if (selectedSeats.has(seatId)) {
+                // Validate deselection
+                const proposedSet = new Set(selectedSeats);
+                proposedSet.delete(seatId);
+                const valRes = validateSeatSelection(proposedSet);
+                if (!valRes.valid) {
+                    if (valRes.isGalaxyAlert) showGalaxyAlert();
+                    else showToast(valRes.message, 'warn');
+                    return;
+                }
+
                 selectedSeats.delete(seatId);
                 el.classList.remove('selected');
                 if (socket) socket.emit('releaseSeat', { showtimeId, seatId });
@@ -2212,7 +2193,8 @@
                 proposedSet.add(seatId);
                 const valRes = validateSeatSelection(proposedSet);
                 if (!valRes.valid) {
-                    showToast(valRes.message, 'warn');
+                    if (valRes.isGalaxyAlert) showGalaxyAlert();
+                    else showToast(valRes.message, 'warn');
                     return;
                 }
 
@@ -2232,20 +2214,20 @@
         function handleCoupleSeat(el, seatId1, seatId2) {
             if (el.classList.contains('booked') || el.classList.contains('locked') || lockedByOthers.has(seatId1) || lockedByOthers.has(seatId2)) return;
 
-            if (el.classList.contains('dimmed')) {
-                const proposedSet = new Set(selectedSeats);
-                proposedSet.add(seatId1);
-                proposedSet.add(seatId2);
-                const valRes = validateSeatSelection(proposedSet);
-                showToast(valRes.message || 'Không thể chọn ghế này!', 'warn');
-                return;
-            }
-
-
-
             const alreadySelected = selectedSeats.has(seatId1) && selectedSeats.has(seatId2);
 
             if (alreadySelected) {
+                // Validate deselection
+                const proposedSet = new Set(selectedSeats);
+                proposedSet.delete(seatId1);
+                proposedSet.delete(seatId2);
+                const valRes = validateSeatSelection(proposedSet);
+                if (!valRes.valid) {
+                    if (valRes.isGalaxyAlert) showGalaxyAlert();
+                    else showToast(valRes.message, 'warn');
+                    return;
+                }
+
                 selectedSeats.delete(seatId1);
                 selectedSeats.delete(seatId2);
                 el.classList.remove('selected');
@@ -2259,7 +2241,8 @@
                 proposedSet.add(seatId2);
                 const valRes = validateSeatSelection(proposedSet);
                 if (!valRes.valid) {
-                    showToast(valRes.message, 'warn');
+                    if (valRes.isGalaxyAlert) showGalaxyAlert();
+                    else showToast(valRes.message, 'warn');
                     return;
                 }
 
@@ -2523,6 +2506,70 @@
             sessionStorage.removeItem('concessionItems');
 
             window.location.href = 'concessions.html';
+        }
+
+        function showGalaxyAlert() {
+            let modal = document.getElementById('galaxy-alert-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'galaxy-alert-modal';
+                modal.innerHTML = `
+                    <div class="galaxy-modal-overlay"></div>
+                    <div class="galaxy-modal-content">
+                        <div class="galaxy-modal-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#f58020" stroke-width="2"/>
+                                <path d="M12 8V13" stroke="#f58020" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="12" cy="16.5" r="1" fill="#f58020"/>
+                            </svg>
+                        </div>
+                        <h3 class="galaxy-modal-title">Thông báo</h3>
+                        <p class="galaxy-modal-desc">Việc chọn vị trí ghế của bạn không được để trống 1 ghế ở bên trái, giữa hoặc bên phải trên cùng hàng ghế mà bạn vừa chọn.</p>
+                        <button class="galaxy-modal-btn" onclick="document.getElementById('galaxy-alert-modal').style.display='none'">Đóng</button>
+                    </div>
+                `;
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    #galaxy-alert-modal {
+                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                        z-index: 9999; display: flex; align-items: center; justify-content: center;
+                        font-family: 'Inter', sans-serif;
+                    }
+                    .galaxy-modal-overlay {
+                        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                        background: rgba(0, 0, 0, 0.6);
+                    }
+                    .galaxy-modal-content {
+                        position: relative; background: #fff; width: 320px; border-radius: 8px;
+                        padding: 24px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                        z-index: 1;
+                    }
+                    .galaxy-modal-icon {
+                        width: 60px; height: 60px; margin: 0 auto 16px;
+                    }
+                    .galaxy-modal-icon svg {
+                        width: 100%; height: 100%;
+                    }
+                    .galaxy-modal-title {
+                        color: #333; font-size: 1.25rem; font-weight: 600; margin: 0 0 12px;
+                    }
+                    .galaxy-modal-desc {
+                        color: #555; font-size: 0.95rem; line-height: 1.5; margin: 0 0 24px;
+                    }
+                    .galaxy-modal-btn {
+                        background: #f58020; color: #fff; border: none; border-radius: 4px;
+                        padding: 10px 0; width: 100%; font-size: 1rem; font-weight: 500;
+                        cursor: pointer; transition: background 0.2s;
+                    }
+                    .galaxy-modal-btn:hover {
+                        background: #e06d1b;
+                    }
+                `;
+                document.head.appendChild(style);
+                document.body.appendChild(modal);
+            }
+            modal.style.display = 'flex';
         }
 
         // ──────────────────────────────────────────────

@@ -838,7 +838,9 @@
     <script>
     // Tự động chuyển hướng thêm cache-buster nếu URL chưa có tham số v để chống cache cứng đầu
     if (!window.location.search.includes('v=')) {
-        window.location.replace(window.location.pathname + '?v=' + Date.now());
+        const url = new URL(window.location.href);
+        url.searchParams.set('v', Date.now());
+        window.location.replace(url.toString());
     }
     
     let booking = {};

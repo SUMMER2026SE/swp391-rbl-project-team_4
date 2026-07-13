@@ -837,7 +837,7 @@
         if (booking && booking.showtimeId) {
             window.location.href = `seats.html?showtimeId=${booking.showtimeId}`;
         } else {
-            window.location.href = 'booking.html';
+            window.location.replace('booking.html');
         }
     }
     window.backToSeats = backToSeats;
@@ -846,7 +846,7 @@
     function skipFnB() {
         if (!booking || !booking.showtimeId) {
             showToast('Không tìm thấy thông tin đặt vé! Vui lòng chọn phim và ghế trước.', 'error');
-            setTimeout(() => { window.location.href = 'booking.html'; }, 2000);
+            setTimeout(() => { window.location.replace('booking.html'); }, 2000);
             return;
         }
         // Clear any previously selected food
@@ -863,7 +863,7 @@
     function goToPayment() {
         if (!booking || !booking.showtimeId) {
             showToast('Không tìm thấy thông tin đặt vé! Vui lòng chọn phim và ghế trước.', 'error');
-            setTimeout(() => { window.location.href = 'booking.html'; }, 2000);
+            setTimeout(() => { window.location.replace('booking.html'); }, 2000);
             return;
         }
 
