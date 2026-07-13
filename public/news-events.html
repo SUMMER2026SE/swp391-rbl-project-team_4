@@ -168,7 +168,7 @@
 
     <!-- Socket.io & App JS -->
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=7"></script>
 
     <!-- Page Logic -->
     <script>
@@ -329,18 +329,43 @@
                 const json = await response.json();
                 if (!json.success || !Array.isArray(json.data) || json.data.length === 0) return;
 
-                newsData = json.data.map(item => ({
-                    id: item.ArticleID,
-                    type: item.Type,
-                    badge: item.BadgeLabel || (item.Type === 'events' ? 'Sự kiện' : 'Tin tức'),
-                    badgeClass: item.IsFeatured ? 'badge-hot' : (item.Type === 'events' ? 'badge-event' : 'badge-news'),
-                    title: item.Title,
-                    desc: item.Summary || '',
-                    date: formatNewsDate(item.PublishedAt),
-                    img: item.ImageURL || 'images/promo_hero_banner.png',
-                    author: item.Author || 'D-Cinema',
-                    content: item.Content || `<p>${escapeHtml(item.Summary || '')}</p>`
-                }));
+                const apiNews = json.data.map(item => {
+                    const id = item.NewsID || item.ArticleID || Math.random();
+                    let rawType = item.Category || item.Type || 'news';
+                    rawType = String(rawType).toLowerCase();
+                    // map 'event'/'events' to 'events', others to 'news'
+                    const type = (rawType === 'event' || rawType === 'events') ? 'events' : 'news';
+                    
+                    let badge = item.BadgeLabel;
+                    if (!badge) {
+                        if (item.Category === 'Promotion') badge = 'Ưu đãi';
+                        else if (item.Category === 'Event' || rawType === 'events') badge = 'Sự kiện';
+                        else badge = 'Tin tức';
+                    }
+
+                    const isFeatured = item.IsFeatured === true || item.IsFeatured === 1;
+                    const badgeClass = isFeatured ? 'badge-hot' : (type === 'events' ? 'badge-event' : 'badge-news');
+                    const img = item.Thumbnail || item.ImageURL || 'images/promo_hero_banner.png';
+                    
+                    return {
+                        id,
+                        type,
+                        badge,
+                        badgeClass,
+                        title: item.Title || '',
+                        desc: item.Summary || '',
+                        date: formatNewsDate(item.PublishedAt),
+                        img,
+                        author: item.Author || 'D-Cinema',
+                        content: item.Content || `<p>${escapeHtml(item.Summary || '')}</p>`
+                    };
+                });
+
+                // Merge database articles with static fallback ones, avoiding title duplicates
+                const filteredStatic = newsData.filter(staticItem => 
+                    !apiNews.some(apiItem => apiItem.title.toLowerCase().trim() === staticItem.title.toLowerCase().trim())
+                );
+                newsData = [...apiNews, ...filteredStatic];
             } catch (err) {
                 console.warn('Khong the tai tin tuc tu API, dung du lieu mac dinh:', err.message);
             }
@@ -459,3 +484,4 @@
 </body>
 
 </html>
+

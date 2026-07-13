@@ -74,24 +74,25 @@
         .nav-links a:hover, .nav-links a.active { color:var(--primary); }
         .nav-actions { margin-left:auto; display:flex; align-items:center; gap:14px; }
 
-        /* Search */
-        .nav-search {
-            display:flex; align-items:center; gap:8px;
-            background:rgba(26, 31, 43, 0.6);
-            border:1px solid var(--border);
-            border-radius:50px; padding:8px 16px;
-            transition:border-color var(--tr), width var(--tr);
-            width:200px;
+        /* Search & User Actions */
+        .search-box {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px; padding: 8px 16px; transition: border-color var(--tr); width: 220px;
         }
-        .nav-search:focus-within { border-color:var(--primary); width:260px; box-shadow: 0 0 12px var(--primary-glow); }
-        .nav-search svg { color:var(--muted); flex-shrink:0; }
-        .nav-search input { background:none; border:none; color:var(--text); font-size:0.83rem; width:100%; }
-        .nav-search input::placeholder { color:var(--muted); }
+        .search-box:focus-within { border-color: var(--primary); background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 12px var(--primary-glow); }
+        .search-icon { color: rgba(255, 255, 255, 0.8); flex-shrink: 0; }
+        .search-input { background: none; border: none; color: var(--text); font-size: 0.85rem; width: 100%; outline: none; }
+        .search-input::placeholder { color: rgba(255, 255, 255, 0.6); }
 
-        .nav-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--primary),#7f0000); display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:800; color:#fff; cursor:pointer; transition: box-shadow var(--tr); }
-        .nav-avatar:hover { box-shadow:0 0 0 2px var(--primary); }
-        .btn-login { background:linear-gradient(135deg,var(--primary),#b00710); color:#fff; padding:9px 20px; border-radius:7px; font-weight:700; font-size:0.84rem; transition:all var(--tr); box-shadow:0 2px 12px rgba(229,9,20,0.3); }
-        .btn-login:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(229,9,20,0.5); }
+        .nav-user-icon { color: rgba(255, 255, 255, 0.8); display: flex; transition: color var(--tr); align-items: center; }
+        .nav-user-icon:hover { color: var(--primary); }
+
+        .btn-login {
+            background: var(--primary); color: #fff; padding: 8px 20px; border-radius: 6px;
+            font-weight: 700; font-size: 0.85rem; transition: all var(--tr); text-decoration: none;
+        }
+        .btn-login:hover { background: var(--primary-h); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4); }
 
         /* ── Dropdown Menu ── */
         .dropdown {
@@ -722,7 +723,7 @@
             .footer-inner { grid-template-columns:1fr 1fr; }
         }
         @media (max-width:768px) {
-            .nav-links, .nav-search { display:none; }
+            .nav-links, .search-box { display:none; }
             .main-wrap { padding:20px 16px 40px; }
             .booking-hero h1 { font-size:1.8rem; }
             .card-body { flex-direction:column; }
@@ -811,11 +812,20 @@
                 <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
-                <div class="nav-search" id="navSearch">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                    <input type="text" id="movieSearchInput" placeholder="Tìm phim..." autocomplete="off">
+                <div class="search-box">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
                 </div>
-                <div class="nav-avatar" id="navAvatar" title="Tài khoản" onclick="window.location.href='profile.html'">U</div>
+                <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </a>
                 <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
             </div>
         </div>
@@ -920,18 +930,17 @@
                 </div>
                 <div class="genre-chips" id="genreChips">
                     <div class="genre-chip active" data-genre="all">Tất cả</div>
-                    <div class="genre-chip" data-genre="action">Hành động</div>
-                    <div class="genre-chip" data-genre="romance">Tình cảm</div>
-                    <div class="genre-chip" data-genre="horror">Kinh dị</div>
-                    <div class="genre-chip" data-genre="comedy">Hài</div>
-                    <div class="genre-chip" data-genre="scifi">Sci-Fi</div>
-                    <div class="genre-chip" data-genre="animation">Hoạt hình</div>
-                    <div class="genre-chip" data-genre="drama">Tâm lý</div>
-                    <div class="genre-chip" data-genre="adventure">Phiêu lưu</div>
-                    <div class="genre-chip" data-genre="music">Ca Nhạc</div>
-                    <div class="genre-chip" data-genre="mystery">Ly Kì</div>
-                    <div class="genre-chip" data-genre="family">Gia đình</div>
-                    <div class="genre-chip" data-genre="thriller">Giật Gân</div>
+                    <div class="genre-chip" data-genre="Hành động">Hành động</div>
+                    <div class="genre-chip" data-genre="Tình cảm">Tình cảm</div>
+                    <div class="genre-chip" data-genre="Kinh dị">Kinh dị</div>
+                    <div class="genre-chip" data-genre="Hài">Hài</div>
+                    <div class="genre-chip" data-genre="Viễn tưởng">Viễn tưởng</div>
+                    <div class="genre-chip" data-genre="Hoạt hình">Hoạt hình</div>
+                    <div class="genre-chip" data-genre="Tâm lý">Tâm lý</div>
+                    <div class="genre-chip" data-genre="Phiêu lưu">Phiêu lưu</div>
+                    <div class="genre-chip" data-genre="Ca Nhạc">Ca Nhạc</div>
+                    <div class="genre-chip" data-genre="Ly Kì">Ly Kì</div>
+                    <div class="genre-chip" data-genre="Gia đình">Gia đình</div>
                 </div>
             </div>
 
@@ -1082,7 +1091,7 @@
     <div class="toast" id="toastEl"></div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=7"></script>
     <script>
     (function() {
         'use strict';
@@ -1144,11 +1153,13 @@
             });
 
             // Navbar search
-            const searchEl = document.getElementById('movieSearchInput');
-            searchEl.addEventListener('input', () => {
-                searchQuery = searchEl.value.toLowerCase().trim();
-                renderFiltered();
-            });
+            const searchEl = document.getElementById('searchInput');
+            if (searchEl) {
+                searchEl.addEventListener('input', () => {
+                    searchQuery = searchEl.value.toLowerCase().trim();
+                    renderFiltered();
+                });
+            }
 
             // Init Top Banner Carousel
             initBannerCarousel();
@@ -1171,10 +1182,8 @@
             try {
                 const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
                 const btn = document.getElementById('btnLogin');
-                const av = document.getElementById('navAvatar');
                 if (u.fullName) {
                     if (btn) { btn.textContent = u.fullName; btn.href = 'profile.html'; }
-                    if (av) av.textContent = u.fullName.charAt(0).toUpperCase();
                 }
             } catch(e) {}
         }
@@ -1391,29 +1400,23 @@
                 data = data.filter(row => row.Title && row.Title.toLowerCase().includes(searchQuery));
             }
 
-            // Genre filter (basic keyword match on Title / MainCast)
+            // Genre filter
             if (selectedGenre !== 'all') {
-                const genreKeywords = {
-                    action:    ['hành động','action'],
-                    romance:   ['tình cảm','lãng mạn','romance'],
-                    horror:    ['kinh dị','horror'],
-                    comedy:    ['hài','comedy'],
-                    scifi:     ['sci-fi','khoa học','viễn tưởng','science'],
-                    animation: ['hoạt hình','animation'],
-                    drama:     ['tâm lý','drama'],
-                    adventure: ['phiêu lưu','adventure'],
-                    music:     ['ca nhạc','music'],
-                    mystery:   ['ly kì','mystery'],
-                    family:    ['gia đình','family'],
-                    thriller:  ['giật gân','thriller'],
-                };
-                const kws = genreKeywords[selectedGenre] || [];
-                if (kws.length) {
-                    data = data.filter(row => {
-                        const text = ((row.Title || '') + ' ' + (row.MainCast || '') + ' ' + (row.Genre || '')).toLowerCase();
-                        return kws.some(k => text.includes(k));
-                    });
-                }
+                data = data.filter(row => {
+                    const genreStr = row.Genre || "";
+                    if (!genreStr) return false;
+                    const movieGenres = genreStr.split(',').map(g => g.trim().toLowerCase());
+                    const targetGenre = selectedGenre.toLowerCase();
+                    
+                    // Handle spelling variations or synonyms
+                    if (targetGenre === 'ly kì' || targetGenre === 'ly kỳ') {
+                        return movieGenres.includes('ly kì') || movieGenres.includes('ly kỳ') || movieGenres.includes('bí ẩn');
+                    }
+                    if (targetGenre === 'viễn tưởng' || targetGenre === 'sci-fi') {
+                        return movieGenres.includes('viễn tưởng') || movieGenres.includes('sci-fi') || movieGenres.includes('science fiction');
+                    }
+                    return movieGenres.includes(targetGenre);
+                });
             }
 
             if (!data.length) {
@@ -1708,3 +1711,4 @@
     <script src="js/chatbot.js"></script>
 </body>
 </html>
+

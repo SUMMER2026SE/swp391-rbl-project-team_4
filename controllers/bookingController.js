@@ -9,37 +9,120 @@ const { sendBookingEmail } = require('../services/emailService');
 const { emitPaymentConfirmed } = require('../sockets/socketManager');
 const os = require('os');
 
-async function sendBookingConfirmationEmails(ticketIds, source = 'booking') {
-  for (const ticketId of ticketIds) {
+function getVerificationUrl(req, ticketId) {
+  let host = req ? req.get('host') : 'localhost:9999';
+  const protocol = req && req.protocol ? req.protocol : 'http';
+
+  if (host.includes('localhost') || host.includes('127.0.0.1')) {
     try {
-      const ticketDetail = await BookingModel.getBookingDetail(ticketId);
-      if (!ticketDetail || !ticketDetail.UserEmail) {
-        console.warn(`[${source}] Skip booking email for ticket ${ticketId}: missing user email.`);
-        continue;
+      const interfaces = os.networkInterfaces();
+      let candidates = [];
+      for (const devName in interfaces) {
+        if (/virtual|vmware|vbox|vethernet|pseudo/i.test(devName)) continue;
+
+        const iface = interfaces[devName];
+        for (let i = 0; i < iface.length; i++) {
+          const alias = iface[i];
+          if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+            const isWifi = /wi-fi|wifi|wireless|wlan/i.test(devName);
+            candidates.push({ devName, ip: alias.address, isWifi });
+          }
+        }
       }
-
-      const foodStr = Array.isArray(ticketDetail.foodItems) && ticketDetail.foodItems.length > 0
-        ? ticketDetail.foodItems.map(f => `${f.Quantity}x ${f.Name}`).join(', ')
-        : '';
-      const ticketCode = ticketDetail.QRCode || ticketId.toString();
-      const totalAmount = Number(ticketDetail.TotalAmount || 0).toLocaleString('vi-VN') + 'đ';
-
-      await sendBookingEmail(ticketDetail.UserEmail, {
-        customerName: ticketDetail.UserFullName || 'Khach hang',
-        movieTitle: ticketDetail.MovieTitle,
-        cinemaName: ticketDetail.CinemaName,
-        roomName: ticketDetail.RoomName,
-        showtime: new Date(ticketDetail.StartTime).toLocaleString('vi-VN'),
-        seats: `${ticketDetail.SeatRow}${ticketDetail.SeatNumber}`,
-        food: foodStr,
-        totalAmount,
-        ticketCode,
-        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ticketCode)}`
-      });
-    } catch (emailErr) {
-      console.error(`[${source}] Failed to send booking email for ticket ${ticketId}:`, emailErr.message);
+      candidates.sort((a, b) => (b.isWifi ? 1 : 0) - (a.isWifi ? 1 : 0));
+      if (candidates.length > 0) {
+        const ipAddress = candidates[0].ip;
+        const port = host.split(':')[1] || '9999';
+        host = `${ipAddress}:${port}`;
+      }
+    } catch (err) {
+      console.error('Error replacing localhost with LAN IP:', err.message);
     }
   }
+
+  return `${protocol}://${host}/verify-ticket.html?id=${ticketId}`;
+}
+
+async function sendGroupedBookingEmail(ticketIds, req) {
+  if (!ticketIds || ticketIds.length === 0) return;
+
+  try {
+    const pool = await getPool();
+
+    // 1. Lấy thông tin chi tiết của nhóm vé
+    const result = await pool.request().query(`
+      SELECT t.TicketID, t.Status, t.TicketPrice, t.TotalAmount, t.PaymentMethod,
+             m.Title AS MovieTitle, m.PosterURL, m.Duration,
+             CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
+             CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
+             r.RoomName,
+             c.CinemaName, c.Address,
+             s.SeatRow, s.SeatNumber, s.SeatType,
+             u.FullName AS CustomerName, u.Email AS UserEmail, u.Phone AS CustomerPhone
+      FROM   Tickets t
+      JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
+      JOIN   Movies    m  ON st.MovieID   = m.MovieID
+      JOIN   Rooms     r  ON st.RoomID    = r.RoomID
+      JOIN   Cinemas   c  ON r.CinemaID   = c.CinemaID
+      JOIN   Seats     s  ON t.SeatID     = s.SeatID
+      JOIN   Users     u  ON t.UserID     = u.UserID
+      WHERE  t.TicketID IN (${ticketIds.join(',')})
+    `);
+
+    if (result.recordset.length === 0) {
+      console.warn(`[sendGroupedBookingEmail] Không tìm thấy chi tiết vé cho IDs: ${ticketIds.join(', ')}`);
+      return;
+    }
+
+    const recordset = result.recordset;
+    const first = recordset[0];
+    const userEmail = first.UserEmail;
+    if (!userEmail) {
+      console.warn(`[sendGroupedBookingEmail] Người dùng không có email cho nhóm vé: ${ticketIds.join(', ')}`);
+      return;
+    }
+
+    const seatsList = recordset.map(r => `${r.SeatRow}${r.SeatNumber}`).sort();
+    const uniqueSeats = [...new Set(seatsList)];
+    const ticketSum = recordset.reduce((sum, item) => sum + parseFloat(item.TotalAmount || 0), 0);
+
+    // 2. Lấy thông tin đồ ăn F&B đi kèm
+    const fnbResult = await pool.request().query(`
+      SELECT fb.Name, tf.Quantity, fb.Price
+      FROM   Ticket_FnB tf
+      JOIN   FoodBeverages fb ON tf.FnBID = fb.FnBID
+      WHERE  tf.TicketID IN (${ticketIds.join(',')})
+    `);
+
+    const foodDisplayItems = fnbResult.recordset.map(item => `${item.Quantity}x ${item.Name}`);
+    const fnbSum = fnbResult.recordset.reduce((sum, item) => sum + (item.Quantity * parseFloat(item.Price || 0)), 0);
+    const grandTotal = ticketSum + fnbSum;
+
+    const bookingId = 'DC-' + ticketIds.sort((a, b) => a - b).join('-');
+    const verifyIdsStr = ticketIds.sort((a, b) => a - b).join(',');
+    const verifyUrl = getVerificationUrl(req, verifyIdsStr);
+
+    const bookingInfo = {
+      customerName: first.CustomerName || 'Khách hàng',
+      movieTitle: first.MovieTitle,
+      cinemaName: first.CinemaName,
+      roomName: first.RoomName,
+      showtime: new Date(first.StartTime).toLocaleString('vi-VN'),
+      seats: uniqueSeats.join(', '),
+      food: foodDisplayItems.join(', ') || '',
+      totalAmount: grandTotal.toLocaleString('vi-VN') + 'đ',
+      ticketCode: bookingId,
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`
+    };
+
+    await sendBookingEmail(userEmail, bookingInfo);
+  } catch (err) {
+    console.error(`[sendGroupedBookingEmail] ❌ Lỗi khi gửi email nhóm vé:`, err.message);
+  }
+}
+
+async function sendBookingConfirmationEmails(ticketIds, source = 'booking', req = null) {
+  await sendGroupedBookingEmail(ticketIds, req);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -207,7 +290,7 @@ exports.validateVoucher = async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 exports.createBooking = async (req, res) => {
   try {
-    const { showtimeId, seatIds, foodItems = [], voucherCode, paymentMethod = 'online', sessionId } = req.body;
+    const { showtimeId, seatIds, foodItems = [], voucherCode, paymentMethod = 'qrpay', sessionId } = req.body;
 
     if (!showtimeId || !seatIds || seatIds.length === 0) {
       return res.status(400).json({ success: false, message: 'Vui lòng cung cấp showtimeId và seatIds.' });
@@ -240,13 +323,17 @@ exports.createBooking = async (req, res) => {
     console.error('[bookingController] createBooking:', err.message);
     // Phân loại lỗi trả về từ Model để set status code phù hợp
     if (
-      err.message.includes('đã được đặt') ||
       err.message.includes('không tồn tại') ||
       err.message.includes('chưa được thiết lập giá') ||
       err.message.includes('không hợp lệ') ||
-      err.message.includes('không đủ số lượng') ||
       err.message.includes('đã ngừng bán') ||
-      err.message.includes('không được hỗ trợ') ||
+      err.message.includes('không được hỗ trợ')
+    ) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    if (
+      err.message.includes('đã được đặt') ||
+      err.message.includes('không đủ số lượng') ||
       err.message.includes('Voucher')
     ) {
       return res.status(409).json({ success: false, message: err.message });
@@ -380,7 +467,7 @@ exports.checkBookingStatus = async (req, res) => {
                     console.warn('[Polling] emitPaymentConfirmed failed (non-critical):', emitErr.message);
                   }
 
-                  await sendBookingConfirmationEmails(ids, 'Polling');
+                  await sendBookingConfirmationEmails(ids, 'Polling', req);
                 } catch (dbErr) {
                   if (dbErr.code === 'DUPLICATE_TRANSACTION') {
                     console.log(`[SePay Polling Check] Giao dịch trùng lặp đã được xử lý thành công trước đó.`);
@@ -440,8 +527,10 @@ exports.receivePaymentWebhook = async (req, res) => {
   try {
     console.log('[Payment Webhook] Received payment notification body:', JSON.stringify(req.body));
 
-    // 1. Kiểm tra Token bảo mật (nếu có cấu hình trong .env)
+    // 1. Kiểm tra token bảo mật. Local simulator có thể chạy không token trong development,
+    // nhưng production phải có token đúng để tránh xác nhận thanh toán giả.
     const secretToken = process.env.PAYMENT_WEBHOOK_SECRET || 'dev_webhook_secret_token';
+    const isProduction = process.env.NODE_ENV === 'production';
     let reqToken = req.headers['x-api-key'] || req.query.token;
     if (!reqToken && req.headers['authorization']) {
       reqToken = req.headers['authorization']
@@ -450,9 +539,18 @@ exports.receivePaymentWebhook = async (req, res) => {
         .trim();
     }
 
-    if (process.env.PAYMENT_WEBHOOK_SECRET && reqToken !== secretToken) {
-      console.warn(`[Webhook Warning] Unauthorized webhook attempt. Provided token: ${reqToken}`);
+    if (reqToken && reqToken !== secretToken) {
+      console.warn('[Webhook Warning] Token không hợp lệ.');
       return res.status(401).json({ success: false, message: 'Unauthorized webhook request.' });
+    }
+    if (!reqToken) {
+      if (isProduction) {
+        console.warn('[Webhook Warning] Thiếu token xác thực trong production.');
+        return res.status(401).json({ success: false, message: 'Unauthorized webhook request.' });
+      }
+      console.log('[Webhook] Không có token xác thực - chỉ chấp nhận trong development/simulator.');
+    } else {
+      console.log('[Webhook] Xác thực token thành công.');
     }
 
     // 2. Trích xuất thông tin giao dịch từ các định dạng khác nhau (SePay, PayOS hoặc Simulator)
@@ -470,8 +568,10 @@ exports.receivePaymentWebhook = async (req, res) => {
       transactionDate = req.body.transactionDate || new Date();
       accountNumber = req.body.accountNumber || '';
       amountIn = parseFloat(req.body.transferAmount || req.body.amount_in || req.body.amountIn || 0);
-      referenceNumber = req.body.code || req.body.referenceCode || req.body.referenceNumber || `TX-${Date.now()}`;
-      transactionContent = req.body.content || req.body.transactionContent || '';
+      // Ưu tiên mã giao dịch ngân hàng thực tế (referenceCode/referenceNumber) để tránh trùng lặp
+      referenceNumber = req.body.referenceCode || req.body.referenceNumber || req.body.code || `TX-${Date.now()}`;
+      // SePay gửi nội dung qua 'content' và mô tả ngân hàng qua 'description'
+      transactionContent = req.body.content || req.body.transactionContent || req.body.description || '';
     } else if (req.body.data && req.body.data.reference) {
       // Định dạng PayOS Webhook
       const d = req.body.data;
@@ -488,7 +588,7 @@ exports.receivePaymentWebhook = async (req, res) => {
       accountNumber = req.body.accountNumber || '0949391487';
       amountIn = parseFloat(req.body.amountIn || req.body.amount || 0);
       referenceNumber = req.body.referenceNumber || req.body.code || `SIM-${Date.now()}`;
-      transactionContent = req.body.transactionContent || req.body.content || '';
+      transactionContent = req.body.transactionContent || req.body.content || req.body.description || '';
     }
 
     const paymentMethod = transactionContent.toLowerCase().includes('momo') ? 'momo' : 'qrpay';
@@ -496,7 +596,13 @@ exports.receivePaymentWebhook = async (req, res) => {
     console.log(`[Payment Webhook] Extracted: Gateway=${gateway}, RefNo=${referenceNumber}, Amount=${amountIn}, Content="${transactionContent}"`);
 
     // 3. Phân tích nội dung chuyển khoản để tìm mã vé (DCVIP + ticketIds nối bằng chữ T)
-    const match = transactionContent.match(/DCVIP(\d+(?:T\d+)*)/i);
+    // Kiểm tra cả trong content lẫn các trường phụ để tăng độ tin cậy
+    const allContent = [
+      transactionContent,
+      req.body.description || '',
+      req.body.content || ''
+    ].join(' ');
+    const match = allContent.match(/DCVIP(\d+(?:T\d+)*)/i);
     if (!match) {
       console.log(`[Payment Webhook] Nội dung chuyển khoản không chứa mã vé phù hợp: "${transactionContent}". Bỏ qua.`);
       return res.status(200).json({ success: false, message: 'Nội dung chuyển khoản không chứa mã vé hợp lệ (DCVIP...).' });
@@ -563,36 +669,11 @@ exports.receivePaymentWebhook = async (req, res) => {
         console.warn('[Webhook] emitPaymentConfirmed failed (non-critical):', emitErr.message);
       }
 
-      // 📧 GỬI EMAIL XÁC NHẬN VÉ ĐIỆN TỬ
+      // 📧 GỬI EMAIL XÁC NHẬN VÉ ĐIỆN TỬ (GROUPED)
       try {
-        for (const ticketId of ticketIds) {
-          const ticketDetail = await BookingModel.getBookingDetail(ticketId);
-          if (ticketDetail && ticketDetail.UserEmail) {
-
-            // Format food items if any
-            let foodStr = '';
-            if (ticketDetail.foodItems && ticketDetail.foodItems.length > 0) {
-              foodStr = ticketDetail.foodItems.map(f => `${f.Quantity}x ${f.Name}`).join(', ');
-            }
-
-            const bookingInfo = {
-              customerName: ticketDetail.UserFullName || 'Khách hàng',
-              movieTitle: ticketDetail.MovieTitle,
-              cinemaName: ticketDetail.CinemaName,
-              roomName: ticketDetail.RoomName,
-              showtime: new Date(ticketDetail.StartTime).toLocaleString('vi-VN'),
-              seats: `${ticketDetail.SeatRow}${ticketDetail.SeatNumber}`,
-              food: foodStr,
-              totalAmount: ticketDetail.TotalAmount.toLocaleString('vi-VN') + 'đ',
-              ticketCode: ticketDetail.QRCode || ticketId.toString(),
-              qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticketDetail.QRCode}`
-            };
-
-            await sendBookingEmail(ticketDetail.UserEmail, bookingInfo);
-          }
-        }
+        await sendGroupedBookingEmail(ticketIds, req);
       } catch (emailErr) {
-        console.error('[Webhook] Lỗi khi gửi email vé:', emailErr.message);
+        console.error('[Webhook] Lỗi khi gửi email nhóm vé:', emailErr.message);
       }
 
 
@@ -747,11 +828,12 @@ exports.getPublicBookingDetails = async (req, res) => {
     const result = await pool.request().query(`
       SELECT t.TicketID, t.Status, t.TicketPrice, t.TotalAmount, t.PaymentMethod,
              m.Title AS MovieTitle, m.PosterURL, m.Duration,
-             st.StartTime, st.EndTime,
+             CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
+             CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
              r.RoomName,
              c.CinemaName, c.Address,
              s.SeatRow, s.SeatNumber, s.SeatType,
-             u.FullName AS CustomerName, u.Email AS CustomerEmail, u.Phone AS CustomerPhone
+             u.FullName AS CustomerName
       FROM   Tickets t
       JOIN   Showtimes st ON t.ShowtimeID = st.ShowtimeID
       JOIN   Movies    m  ON st.MovieID   = m.MovieID
@@ -790,8 +872,6 @@ exports.getPublicBookingDetails = async (req, res) => {
       data: {
         bookingId: 'DC-' + ids.sort((a, b) => a - b).join('-'),
         customerName: first.CustomerName,
-        customerEmail: first.CustomerEmail,
-        customerPhone: first.CustomerPhone || 'Chưa cung cấp',
         movieTitle: first.MovieTitle,
         poster: first.PosterURL,
         duration: first.Duration,
@@ -822,7 +902,7 @@ exports.getServerIP = (req, res) => {
     let candidates = [];
     for (const devName in interfaces) {
       if (/virtual|vmware|vbox|vethernet|pseudo/i.test(devName)) continue;
-      
+
       const iface = interfaces[devName];
       for (let i = 0; i < iface.length; i++) {
         const alias = iface[i];
@@ -832,7 +912,7 @@ exports.getServerIP = (req, res) => {
         }
       }
     }
-    
+
     candidates.sort((a, b) => (b.isWifi ? 1 : 0) - (a.isWifi ? 1 : 0));
     const ipAddress = candidates.length > 0 ? candidates[0].ip : 'localhost';
     res.json({ success: true, ip: ipAddress });
@@ -852,7 +932,7 @@ exports.requestCancelBooking = async (req, res) => {
       return res.status(400).json({ success: false, message: 'TicketID không hợp lệ.' });
     }
 
-    await BookingModel.cancelConfirmedBooking(ticketId, req.user.userId);
+    await BookingModel.cancelConfirmedBooking(ticketId, req.user.userId, req.body || {});
 
     res.json({ success: true, message: 'Hủy vé thành công.' });
   } catch (err) {
@@ -865,5 +945,29 @@ exports.requestCancelBooking = async (req, res) => {
       return res.status(400).json({ success: false, message: err.message });
     }
     res.status(500).json({ success: false, message: 'Lỗi server khi hủy vé.' });
+  }
+};
+
+exports.requestRefundBooking = async (req, res) => {
+  try {
+    const { ticketIds } = req.body || {};
+    const created = await BookingModel.requestRefund(req.user.userId, ticketIds, req.body || {});
+    res.json({
+      success: true,
+      message: 'Đã gửi yêu cầu hoàn tiền. Vui lòng chờ admin xử lý.',
+      data: created
+    });
+  } catch (err) {
+    console.error('[bookingController] requestRefundBooking:', err.message);
+    if (
+      err.message.includes('không hợp lệ') ||
+      err.message.includes('Không tìm thấy') ||
+      err.message.includes('Chỉ') ||
+      err.message.includes('Vui lòng') ||
+      err.message.includes('đã có yêu cầu')
+    ) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    res.status(500).json({ success: false, message: 'Lỗi server khi gửi yêu cầu hoàn tiền.' });
   }
 };

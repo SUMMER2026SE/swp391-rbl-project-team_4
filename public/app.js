@@ -511,9 +511,7 @@ const app = {
                 const json = await res.json();
                 if (json.success && json.data) {
                     window.allMoviesData = json.data;
-                    app.renderMoviesGrid(json.data);
-                    app.initMovieFilters();
-                    this.allMovies = json.data;
+                    app.allMovies = json.data;
                     
                     // Parse query parameters to pre-fill filters
                     const urlParams = new URLSearchParams(window.location.search);
@@ -521,21 +519,24 @@ const app = {
                     const searchParam = urlParams.get('search');
                     
                     if (statusParam === 'showing' || statusParam === 'Now Showing') {
-                        this.filterState.status = 'Now Showing';
+                        app.filterState.status = 'Now Showing';
                     } else if (statusParam === 'coming' || statusParam === 'Coming Soon') {
-                        this.filterState.status = 'Coming Soon';
+                        app.filterState.status = 'Coming Soon';
                     } else {
-                        this.filterState.status = 'Now Showing'; // Default view
+                        app.filterState.status = 'Now Showing'; // Default view
                     }
                     
                     if (searchParam) {
-                        this.filterState.search = searchParam;
+                        app.filterState.search = searchParam;
                         const searchInput = document.getElementById('searchInput');
                         if (searchInput) searchInput.value = searchParam;
                     }
                     
-                    this.updateTabUI();
-                    this.filterAndRenderMovies();
+                    // Render filtered movies and update tab UI
+                    app.updateTabUI();
+                    app.filterAndRenderMovies();
+                    // NOTE: Event listeners for filters are set up in the DOMContentLoaded block below
+                    // to avoid duplicate listeners that could override status-tab filtering.
                 }
             } catch (err) {
                 console.error('Failed to load all movies:', err);
@@ -574,16 +575,16 @@ const app = {
     },
 
     switchMovieStatusTab(status) {
-        this.filterState.status = status;
-        this.updateTabUI();
-        this.filterAndRenderMovies();
+        app.filterState.status = status;
+        app.updateTabUI();
+        app.filterAndRenderMovies();
     },
 
     updateTabUI() {
         const tabNowShowing = document.getElementById('tab-now-showing');
         const tabComingSoon = document.getElementById('tab-coming-soon');
         if (tabNowShowing && tabComingSoon) {
-            if (this.filterState.status === 'Now Showing') {
+            if (app.filterState.status === 'Now Showing') {
                 tabNowShowing.classList.add('active');
                 tabComingSoon.classList.remove('active');
             } else {
@@ -595,16 +596,16 @@ const app = {
 
     filterAndRenderMovies() {
         const allMoviesGrid = document.querySelector('.movies-grid');
-        if (!allMoviesGrid || !this.allMovies) return;
+        if (!allMoviesGrid || !app.allMovies) return;
 
         // Collect checked genre & format filter values
         const selectedGenres = Array.from(document.querySelectorAll('input[name="genre"]:checked')).map(cb => cb.value);
         const selectedFormats = Array.from(document.querySelectorAll('input[name="format"]:checked')).map(cb => cb.value);
         const searchQuery = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
 
-        const filtered = this.allMovies.filter(movie => {
+        const filtered = app.allMovies.filter(movie => {
             // 1. Status Tab filter
-            if (movie.Status !== this.filterState.status) {
+            if (movie.Status !== app.filterState.status) {
                 return false;
             }
 

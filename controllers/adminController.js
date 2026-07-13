@@ -3,6 +3,8 @@
 //  Dành cho: Quản lý (Role: Admin, Manager)
 // ============================================================
 const AdminModel = require('../models/adminModel');
+const ComboModel = require('../models/comboModel');
+const RefundModel = require('../models/refundModel');
 const PDFDocument = require('pdfkit');
 
 function formatReportDate(value) {
@@ -510,10 +512,15 @@ exports.getAllFnB = async (req, res) => {
 
 exports.createFnB = async (req, res) => {
   try {
-    const { name, price } = req.body;
-    if (!name || price == null) {
+    const { name, category, price, description, stock, isAvailable } = req.body;
+    if (!name || price == null || !category) {
       return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc.' });
     }
+
+    const trimmedName = name.trim();
+    const parsedPrice = parseFloat(price);
+    const parsedStock = parseInt(stock) || 0;
+    const isAvail = isAvailable !== 'false' && isAvailable !== false;
 
     let imageURL = 'images/default_fnb.png';
     if (req.file) {
@@ -522,14 +529,50 @@ exports.createFnB = async (req, res) => {
       imageURL = req.body.imageURL;
     }
 
-    const fnbData = {
-      ...req.body,
-      imageURL,
-      isAvailable: req.body.isAvailable !== 'false'
-    };
+    if (category === 'Combos') {
+      // Validate duplicate combo
+      const existing = await ComboModel.getByName(trimmedName);
+      if (existing) {
+        return res.status(400).json({ success: false, message: 'Tên combo đã tồn tại.' });
+      }
 
-    const fnb = await AdminModel.createFnB(fnbData);
-    res.status(201).json({ success: true, message: 'Tạo mặt hàng thành công!', data: fnb });
+      const combo = await ComboModel.create({
+        comboName: trimmedName,
+        description: description ? description.trim() : null,
+        price: parsedPrice,
+        imageURL,
+        status: isAvail ? 'Active' : 'Inactive',
+        stock: parsedStock
+      });
+
+      // Fetch the synchronized FoodBeverages record to return
+      const pool = await require('../config/db').getPool();
+      const fnbRes = await pool.request()
+        .input('comboId', require('../config/db').sql.Int, combo.ComboID)
+        .query("SELECT * FROM FoodBeverages WHERE ComboID = @comboId");
+      const fnb = fnbRes.recordset[0];
+
+      return res.status(201).json({ success: true, message: 'Tạo combo thành công!', data: fnb });
+    } else {
+      // Validate duplicate snack/drink
+      const existing = await AdminModel.getFnBByNameAndCategory(trimmedName, category);
+      if (existing) {
+        return res.status(400).json({ success: false, message: 'Tên mặt hàng đã tồn tại trong danh mục này.' });
+      }
+
+      const fnbData = {
+        name: trimmedName,
+        description: description ? description.trim() : null,
+        category,
+        price: parsedPrice,
+        stock: parsedStock,
+        imageURL,
+        isAvailable: isAvail
+      };
+
+      const fnb = await AdminModel.createFnB(fnbData);
+      return res.status(201).json({ success: true, message: 'Tạo mặt hàng thành công!', data: fnb });
+    }
   } catch (err) {
     console.error('[adminController] createFnB:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
@@ -538,17 +581,72 @@ exports.createFnB = async (req, res) => {
 
 exports.updateFnB = async (req, res) => {
   try {
-    const updateData = { ...req.body };
-    if (req.file) {
-      updateData.imageURL = 'images/' + req.file.filename;
-    }
-    if (updateData.isAvailable !== undefined) {
-      updateData.isAvailable = updateData.isAvailable !== 'false';
+    const id = parseInt(req.params.id);
+    const currentItem = await AdminModel.getFnBById(id);
+    if (!currentItem) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
     }
 
-    const fnb = await AdminModel.updateFnB(parseInt(req.params.id), updateData);
-    if (!fnb) return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
-    res.json({ success: true, message: 'Cập nhật mặt hàng thành công!', data: fnb });
+    const { name, category, price, description, stock, isAvailable } = req.body;
+
+    let imageURL = req.body.imageURL;
+    if (req.file) {
+      imageURL = 'images/' + req.file.filename;
+    }
+
+    const isAvail = isAvailable !== undefined ? (isAvailable !== 'false' && isAvailable !== false) : undefined;
+    const parsedPrice = price !== undefined ? parseFloat(price) : undefined;
+    const parsedStock = stock !== undefined ? parseInt(stock) : undefined;
+
+    if (currentItem.ComboID !== null) {
+      // It's a Combo
+      if (name !== undefined) {
+        const trimmedName = name.trim();
+        if (trimmedName.toLowerCase() !== currentItem.Name.toLowerCase()) {
+          const existing = await ComboModel.getByName(trimmedName);
+          if (existing) {
+            return res.status(400).json({ success: false, message: 'Tên combo đã tồn tại.' });
+          }
+        }
+      }
+
+      const updateData = {
+        comboName: name !== undefined ? name.trim() : undefined,
+        description,
+        price: parsedPrice,
+        imageURL,
+        status: isAvail !== undefined ? (isAvail ? 'Active' : 'Inactive') : undefined,
+        stock: parsedStock
+      };
+
+      await ComboModel.update(currentItem.ComboID, updateData);
+      const updated = await AdminModel.getFnBById(id);
+      return res.json({ success: true, message: 'Cập nhật combo thành công!', data: updated });
+    } else {
+      // It's a normal item (Snack/Drink)
+      const checkName = name !== undefined ? name.trim() : currentItem.Name;
+      const checkCategory = category !== undefined ? category : currentItem.Category;
+
+      if (checkName.toLowerCase() !== currentItem.Name.toLowerCase() || checkCategory !== currentItem.Category) {
+        const existing = await AdminModel.getFnBByNameAndCategory(checkName, checkCategory);
+        if (existing) {
+          return res.status(400).json({ success: false, message: 'Tên mặt hàng đã tồn tại trong danh mục này.' });
+        }
+      }
+
+      const updateData = {
+        name: name !== undefined ? name.trim() : undefined,
+        description,
+        category,
+        price: parsedPrice,
+        stock: parsedStock,
+        imageURL,
+        isAvailable: isAvail
+      };
+
+      const fnb = await AdminModel.updateFnB(id, updateData);
+      return res.json({ success: true, message: 'Cập nhật mặt hàng thành công!', data: fnb });
+    }
   } catch (err) {
     console.error('[adminController] updateFnB:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
@@ -557,7 +655,17 @@ exports.updateFnB = async (req, res) => {
 
 exports.deleteFnB = async (req, res) => {
   try {
-    await AdminModel.deleteFnB(parseInt(req.params.id));
+    const id = parseInt(req.params.id);
+    const currentItem = await AdminModel.getFnBById(id);
+    if (!currentItem) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
+    }
+
+    if (currentItem.ComboID !== null) {
+      await ComboModel.softDelete(currentItem.ComboID);
+    } else {
+      await AdminModel.deleteFnB(id);
+    }
     res.json({ success: true, message: 'Xóa mặt hàng thành công!' });
   } catch (err) {
     console.error('[adminController] deleteFnB:', err.message);
@@ -573,9 +681,19 @@ exports.deleteFnB = async (req, res) => {
 
 exports.toggleFnBAvailability = async (req, res) => {
   try {
-    const fnb = await AdminModel.toggleFnBAvailability(parseInt(req.params.id));
-    if (!fnb) return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
-    res.json({ success: true, message: 'Đã thay đổi trạng thái khả dụng.', data: fnb });
+    const id = parseInt(req.params.id);
+    const currentItem = await AdminModel.getFnBById(id);
+    if (!currentItem) return res.status(404).json({ success: false, message: 'Không tìm thấy mặt hàng.' });
+
+    let updated;
+    if (currentItem.ComboID !== null) {
+      const newStatus = currentItem.IsAvailable ? 'Inactive' : 'Active';
+      await ComboModel.update(currentItem.ComboID, { status: newStatus });
+      updated = await AdminModel.getFnBById(id);
+    } else {
+      updated = await AdminModel.toggleFnBAvailability(id);
+    }
+    res.json({ success: true, message: 'Đã thay đổi trạng thái khả dụng.', data: updated });
   } catch (err) {
     console.error('[adminController] toggleFnBAvailability:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
@@ -936,6 +1054,51 @@ exports.deleteGenre = async (req, res) => {
   }
 };
 
+exports.getRefundRequests = async (req, res) => {
+  try {
+    const data = await RefundModel.getAdminRefunds(req.query || {});
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[adminController] getRefundRequests:', err.message);
+    res.status(500).json({ success: false, message: 'Lỗi server khi tải danh sách hoàn tiền.' });
+  }
+};
+
+exports.updateRefundRequest = async (req, res) => {
+  try {
+    const action = req.body && req.body.action;
+    const data = await RefundModel.updateRefundStatus(req.params.id, req.user.userId, action, req.body || {});
+    const normalizedAction = String(action || '').toLowerCase();
+    const messages = {
+      approve: 'Đã duyệt yêu cầu hoàn tiền. Vui lòng chuyển khoản cho khách, sau đó bấm "Đã chuyển" để xác nhận hoàn tiền.',
+      reject: 'Đã từ chối yêu cầu hoàn tiền. Trạng thái vé đã được khôi phục.',
+      complete: 'Đã xác nhận chuyển tiền hoàn tất. Vé đã được hủy và ghế đã được mở lại.'
+    };
+    const nextActions = {
+      approve: 'transfer_money',
+      reject: 'none',
+      complete: 'none'
+    };
+    res.json({
+      success: true,
+      message: messages[normalizedAction] || 'Đã cập nhật yêu cầu hoàn tiền.',
+      nextAction: nextActions[normalizedAction] || 'none',
+      data
+    });
+  } catch (err) {
+    console.error('[adminController] updateRefundRequest:', err.message);
+    const known =
+      err.message.includes('không hợp lệ') ||
+      err.message.includes('Không tìm thấy') ||
+      err.message.includes('Chỉ') ||
+      err.message.includes('không thể') ||
+      err.message.includes('Không thể') ||
+      err.message.includes('Vui lòng') ||
+      err.message.includes('đã');
+    res.status(known ? 400 : 500).json({ success: false, message: known ? err.message : 'Lỗi server khi cập nhật hoàn tiền.' });
+  }
+};
+
 exports.exportCsv = async (req, res) => {
   try {
     const report = await buildReportData(req.query);
@@ -975,6 +1138,13 @@ exports.getRevenueChartData = async (req, res) => {
     const cinemaId = req.query.cinemaId || null;
 
     const data = await AdminModel.getRevenueChartData({ period, cinemaId });
+    const localDateKey = (value) => {
+      const d = new Date(value);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
 
     let labels = [];
     let ticketData = [];
@@ -1006,6 +1176,26 @@ exports.getRevenueChartData = async (req, res) => {
       labels.push(labels.shift());
       ticketData.push(ticketData.shift());
       fnbData.push(fnbData.shift());
+
+      const today = new Date();
+      const weekDays = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(today);
+        d.setDate(today.getDate() - 6 + i);
+        d.setHours(0, 0, 0, 0);
+        return d;
+      });
+      labels = weekDays.map(d => d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }));
+      ticketData = new Array(7).fill(0);
+      fnbData = new Array(7).fill(0);
+
+      data.forEach(t => {
+        const bookedKey = localDateKey(t.BookedAt);
+        const index = weekDays.findIndex(d => localDateKey(d) === bookedKey);
+        if (index >= 0) {
+          ticketData[index] += t.TotalAmount || 0;
+          fnbData[index] += t.FnBRevenue || 0;
+        }
+      });
 
     } else if (period === 'month') {
       const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();

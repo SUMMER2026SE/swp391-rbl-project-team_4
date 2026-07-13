@@ -467,6 +467,13 @@ class AdminModel {
       SELECT r.RoomID, r.RoomName, r.TotalSeats,
              ISNULL(r.RoomType, 'Standard') AS RoomType,
              r.CinemaID, c.CinemaName, c.Address
+             CASE
+               WHEN r.RoomName LIKE '%3D%' THEN '3D'
+               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
+               ELSE '2D Standard'
+             END AS RoomType,
+             r.CinemaID,
+             c.CinemaName, c.Address
       FROM   Rooms r
       JOIN   Cinemas c ON r.CinemaID = c.CinemaID
       ORDER BY c.CinemaName, r.RoomName
@@ -512,7 +519,7 @@ class AdminModel {
 
       // 1. Get currently booked seats for this room to avoid deleting/modifying booked seats.
       const bookedSeatsResult = await request.query(`
-        SELECT DISTINCT s.SeatID, s.SeatRow, s.SeatNumber
+        SELECT DISTINCT s.SeatID
         FROM Seats s
         JOIN Tickets t ON t.SeatID = s.SeatID
         JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
@@ -520,21 +527,7 @@ class AdminModel {
           AND t.Status IN ('confirmed', 'pending', 'used')
       `);
 
-      const bookedSeats = bookedSeatsResult.recordset;
-      const bookedSeatIds = bookedSeats.map(r => r.SeatID);
-
-      // Validate: Check if any booked seat is missing from the incoming layout array OR changed to 'None'
-      const invalidSeats = [];
-      for (const bs of bookedSeats) {
-        const matchingInputSeat = seatsArray.find(s => s.SeatRow === bs.SeatRow && s.SeatNumber === bs.SeatNumber);
-        if (!matchingInputSeat || matchingInputSeat.SeatType === 'None') {
-          invalidSeats.push(`${bs.SeatRow}${bs.SeatNumber}`);
-        }
-      }
-
-      if (invalidSeats.length > 0) {
-        throw new Error(`Không thể xóa hoặc đặt thành ô trống các ghế đang có vé đặt: ${invalidSeats.join(', ')}`);
-      }
+      const bookedSeatIds = bookedSeatsResult.recordset.map(r => r.SeatID);
 
       // 2. Clear existing seats that are NOT currently booked in upcoming showtimes
       if (bookedSeatIds.length > 0) {
@@ -575,6 +568,9 @@ class AdminModel {
         UPDATE Rooms 
         SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None'),
             RoomType = @roomType
+      await request.query(`
+        UPDATE Rooms
+        SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None')
         WHERE RoomID = @roomId
       `);
 
@@ -851,6 +847,35 @@ class AdminModel {
 
 
   // --- F&B MANAGEMENT ---
+  static async getFnBByNameAndCategory(name, category, excludeId = null) {
+    const pool = await getPool();
+    const request = pool.request()
+      .input('name', sql.NVarChar, name)
+      .input('category', sql.NVarChar, category);
+    
+    let query = `
+      SELECT * FROM FoodBeverages 
+      WHERE LOWER(LTRIM(RTRIM(Name))) = LOWER(LTRIM(RTRIM(@name))) 
+        AND Category = @category
+    `;
+    
+    if (excludeId !== null) {
+      request.input('excludeId', sql.Int, excludeId);
+      query += " AND FnBID != @excludeId";
+    }
+    
+    const result = await request.query(query);
+    return result.recordset[0] || null;
+  }
+
+  static async getFnBById(id) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, id)
+      .query('SELECT * FROM FoodBeverages WHERE FnBID = @id');
+    return result.recordset[0] || null;
+  }
+
   static async getAllFnB() {
     const pool = await getPool();
     const result = await pool.request().query(`
@@ -1279,13 +1304,13 @@ class AdminModel {
 
     let dateFilter = '';
     if (period === 'today') {
-      dateFilter = 'CAST(t.BookedAt AS DATE) = CAST(GETUTCDATE() AS DATE)';
+      dateFilter = 'CAST(t.BookedAt AS DATE) = CAST(GETDATE() AS DATE)';
     } else if (period === 'week') {
-      dateFilter = 't.BookedAt >= DATEADD(wk, DATEDIFF(wk, 0, GETUTCDATE()), 0)';
+      dateFilter = 'CAST(t.BookedAt AS DATE) >= CAST(DATEADD(day, -6, GETDATE()) AS DATE)';
     } else if (period === 'month') {
-      dateFilter = 'MONTH(t.BookedAt) = MONTH(GETUTCDATE()) AND YEAR(t.BookedAt) = YEAR(GETUTCDATE())';
+      dateFilter = 'MONTH(t.BookedAt) = MONTH(GETDATE()) AND YEAR(t.BookedAt) = YEAR(GETDATE())';
     } else {
-      dateFilter = 'YEAR(t.BookedAt) = YEAR(GETUTCDATE())'; // all = this year
+      dateFilter = 'YEAR(t.BookedAt) = YEAR(GETDATE())'; // all = this year
     }
 
     const result = await request.query(`

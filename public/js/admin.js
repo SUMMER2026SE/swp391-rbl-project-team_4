@@ -520,6 +520,28 @@ function buildChart(chartData) {
         chartInstance.destroy();
     }
 
+    const allValues = [...ticketData, ...fnbData].map(v => Number(v || 0));
+    const maxValue = Math.max(0, ...allValues);
+    const suggestedMax = maxValue > 0 ? Math.ceil(maxValue * 1.2) : 100000;
+
+    function formatChartMoney(value) {
+        const amount = Number(value || 0);
+        if (amount === 0) return '0đ';
+        if (Math.abs(amount) >= 1000000000) {
+            const val = amount / 1000000000;
+            return `${Number.isInteger(val) ? val : val.toFixed(1)} Tỷ`;
+        }
+        if (Math.abs(amount) >= 1000000) {
+            const val = amount / 1000000;
+            return `${Number.isInteger(val) ? val : val.toFixed(1)} Tr`;
+        }
+        if (Math.abs(amount) >= 1000) {
+            const val = amount / 1000;
+            return `${Number.isInteger(val) ? val : val.toFixed(0)}K`;
+        }
+        return `${amount.toLocaleString('vi-VN')}đ`;
+    }
+
     chartInstance = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
@@ -558,7 +580,7 @@ function buildChart(chartData) {
                     borderColor: 'rgba(255,255,255,0.08)',
                     borderWidth: 1,
                     callbacks: {
-                        label: ctx => ` ${formatCurrency(ctx.raw)} đ`
+                        label: ctx => ` ${formatChartMoney(ctx.raw)}`
                     }
                 }
             },
@@ -569,10 +591,13 @@ function buildChart(chartData) {
                     border: { display: false }
                 },
                 y: {
-                    grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                    beginAtZero: true,
+                    suggestedMax,
+                    grid: { color: 'rgba(148,163,184,0.18)', drawBorder: false },
                     ticks: {
                         color: '#9ca3af', font: { size: 11 },
-                        callback: v => (v / 1000000) + ' Tr'
+                        maxTicksLimit: 6,
+                        callback: v => formatChartMoney(v)
                     },
                     border: { display: false }
                 }
@@ -837,7 +862,7 @@ function closeAddMovieModal() {
 function filterMovies(filter, btn) {
     document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-    
+
     if (filter === 'Tất cả') {
         filteredMovies = [...MOVIE_DATA];
     } else {
@@ -972,7 +997,7 @@ function navigate(page, btn) {
         loadPromotions();
         loadNewsArticles();
     }
-    
+
     if (page === 'pricing' || page === 'settings') {
         loadSettings();
     }
@@ -983,6 +1008,20 @@ function navigate(page, btn) {
 
     if (page === 'combos') {
         loadCombos();
+    }
+
+    if (page === 'refunds') {
+        ensureRefundActionModal();
+        loadAdminRefunds();
+    }
+
+    if (page === 'voucher') {
+        if (typeof loadVouchers === 'function') {
+            loadVouchers();
+        }
+        if (typeof initVoucherForm === 'function') {
+            initVoucherForm();
+        }
     }
 }
 
@@ -1006,6 +1045,14 @@ function adminLogout() {
    F&B MANAGEMENT
 ══════════════════════════ */
 let FNB_DATA = [];
+let currentFnbFilter = 'Tất cả';
+
+function filterFnB(filter, btn) {
+    document.querySelectorAll('.fnb-filter-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    currentFnbFilter = filter;
+    renderFnB();
+}
 
 async function loadFnB(search = '') {
     try {
@@ -1014,8 +1061,8 @@ async function loadFnB(search = '') {
             FNB_DATA = res.data;
             if (search) {
                 const term = search.toLowerCase();
-                FNB_DATA = FNB_DATA.filter(item => 
-                    item.Name.toLowerCase().includes(term) || 
+                FNB_DATA = FNB_DATA.filter(item =>
+                    item.Name.toLowerCase().includes(term) ||
                     (item.Description && item.Description.toLowerCase().includes(term))
                 );
             }
@@ -1032,13 +1079,18 @@ function renderFnB() {
     const container = document.getElementById('fnbTableBody');
     if (!container) return;
 
-    if (FNB_DATA.length === 0) {
-        container.innerHTML = '<tr><td colspan="7" style="padding:24px;color:#9ca3af;text-align:center;">Chưa có đồ ăn/nước uống nào.</td></tr>';
+    let itemsToRender = FNB_DATA;
+    if (currentFnbFilter !== 'Tất cả') {
+        itemsToRender = FNB_DATA.filter(item => item.Category === currentFnbFilter);
+    }
+
+    if (itemsToRender.length === 0) {
+        container.innerHTML = '<tr><td colspan="7" style="padding:24px;color:#9ca3af;text-align:center;">Chưa có mặt hàng nào thuộc danh mục này.</td></tr>';
         return;
     }
 
     let html = '';
-    FNB_DATA.forEach(item => {
+    itemsToRender.forEach(item => {
         html += `
             <tr style="border-bottom: 1px solid var(--border); opacity: ${item.IsAvailable ? 1 : 0.5};">
                 <td style="padding: 12px 16px;">
@@ -1052,7 +1104,7 @@ function renderFnB() {
                 </td>
                 <td style="padding: 12px 16px;">
                     <span style="font-size: 0.8rem; padding: 4px 8px; background: var(--bg); border-radius: 4px; color: var(--text2); font-weight: 500;">
-                        ${item.Category}
+                        ${item.Category === 'Combos' ? 'Combo' : item.Category}
                     </span>
                 </td>
                 <td style="padding: 12px 16px; font-weight: 700; color: var(--accent);">
@@ -1097,8 +1149,22 @@ function editFnB(id) {
     document.getElementById('btnCancelFnb').style.display = 'block';
 
     const dropZoneText = document.getElementById('fnbDropZoneText');
-    if (dropZoneText) {
-        dropZoneText.textContent = item.ImageURL ? `Hình hiện tại: ${item.ImageURL.split('/').pop()}` : 'Chọn file hoặc kéo thả vào đây';
+    const previewImg = document.getElementById('fnbPreviewImg');
+    const uploadIcon = document.getElementById('fnbUploadIcon');
+    if (item.ImageURL) {
+        if (previewImg) {
+            previewImg.src = item.ImageURL;
+            previewImg.style.display = 'block';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'none';
+        if (dropZoneText) dropZoneText.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
     }
 
     document.querySelector('.fnb-form-side').scrollIntoView({ behavior: 'smooth' });
@@ -1114,6 +1180,14 @@ function cancelEditFnB() {
     document.getElementById('btnCancelFnb').style.display = 'none';
     const dropZoneText = document.getElementById('fnbDropZoneText');
     if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
+
+    const previewImg = document.getElementById('fnbPreviewImg');
+    const uploadIcon = document.getElementById('fnbUploadIcon');
+    if (previewImg) {
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+    }
+    if (uploadIcon) uploadIcon.style.display = 'block';
 }
 
 async function deleteFnB(id) {
@@ -1299,8 +1373,22 @@ function editCombo(id) {
     document.getElementById('btnCancelCombo').style.display = 'block';
 
     const dropZoneText = document.getElementById('comboDropZoneText');
-    if (dropZoneText) {
-        dropZoneText.textContent = item.ImageURL ? `Hình hiện tại: ${item.ImageURL.split('/').pop()}` : 'Chọn file hoặc kéo thả vào đây';
+    const previewImg = document.getElementById('comboPreviewImg');
+    const uploadIcon = document.getElementById('comboUploadIcon');
+    if (item.ImageURL) {
+        if (previewImg) {
+            previewImg.src = item.ImageURL;
+            previewImg.style.display = 'block';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'none';
+        if (dropZoneText) dropZoneText.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
     }
 
     document.querySelector('#page-combos .fnb-form-side').scrollIntoView({ behavior: 'smooth' });
@@ -1317,6 +1405,14 @@ function cancelEditCombo() {
     document.getElementById('btnCancelCombo').style.display = 'none';
     const dropZoneText = document.getElementById('comboDropZoneText');
     if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
+
+    const previewImg = document.getElementById('comboPreviewImg');
+    const uploadIcon = document.getElementById('comboUploadIcon');
+    if (previewImg) {
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+    }
+    if (uploadIcon) uploadIcon.style.display = 'block';
 }
 
 async function saveCombo() {
@@ -1402,20 +1498,56 @@ async function toggleComboStatus(id) {
     }
 }
 
+function showImagePreview(file, previewImgId, iconId, textId, defaultText = 'Chọn file hoặc kéo thả vào đây') {
+    const previewImg = document.getElementById(previewImgId);
+    const uploadIcon = iconId ? document.getElementById(iconId) : null;
+    const textEl = textId ? document.getElementById(textId) : null;
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            if (previewImg) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+            }
+            if (uploadIcon) uploadIcon.style.display = 'none';
+            if (textEl) {
+                if (textId && textId.includes('DropZone')) {
+                    textEl.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+                } else {
+                    textEl.textContent = file.name;
+                }
+            }
+        };
+        reader.readAsDataURL(file);
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (textEl) textEl.textContent = defaultText;
+    }
+}
+
 function handleFnbFileSelect(input) {
     const file = input.files[0];
-    const text = document.getElementById('fnbDropZoneText');
-    if (file && text) {
-        text.textContent = `Đã chọn: ${file.name}`;
-    }
+    showImagePreview(file, 'fnbPreviewImg', 'fnbUploadIcon', 'fnbDropZoneText');
 }
 
 function handleComboFileSelect(input) {
     const file = input.files[0];
-    const text = document.getElementById('comboDropZoneText');
-    if (file && text) {
-        text.textContent = `Đã chọn: ${file.name}`;
-    }
+    showImagePreview(file, 'comboPreviewImg', 'comboUploadIcon', 'comboDropZoneText');
+}
+
+function handleNewsFileSelect(input) {
+    const file = input.files[0];
+    showImagePreview(file, 'newsPreviewImg', null, 'newsFileName', 'Chưa chọn file');
+}
+
+function handlePromoFileSelect(input) {
+    const file = input.files[0];
+    showImagePreview(file, 'promoPreviewImg', null, 'promoFileName', 'Chưa chọn file');
 }
 
 let dragDropInitialized = false;
@@ -1450,7 +1582,7 @@ function initDragAndDrop() {
             const files = dt.files;
             if (files.length) {
                 fileInput.files = files;
-                if (textVal) textVal.textContent = `Đã chọn: ${files[0].name}`;
+                showImagePreview(files[0], `${prefix}PreviewImg`, `${prefix}UploadIcon`, `${prefix}DropZoneText`);
             }
         }, false);
     });
@@ -1753,8 +1885,8 @@ function updateStaffKPIs() {
     if (kpiCards.length >= 4) {
         kpiCards[0].textContent = `${adminCount} người được ủy quyền`;
         kpiCards[1].textContent = `${managerCount} người được ủy quyền`;
-        kpiCards[2].textContent = `0 người được ủy quyền`; 
-        kpiCards[3].textContent = `${customerCount} khách hàng`; 
+        kpiCards[2].textContent = `0 người được ủy quyền`;
+        kpiCards[3].textContent = `${customerCount} khách hàng`;
     }
 }
 
@@ -1781,7 +1913,7 @@ function applyStaffFilters() {
             if (currentStaffRoleFilter === 'Khách hàng') roleMatch = (u.RoleName === 'Customer');
             if (currentStaffRoleFilter === 'Nhân viên') roleMatch = (u.RoleName === 'Staff');
         }
-        
+
         let statusMatch = true;
         if (currentStaffStatusFilter !== 'Tất cả') {
             if (currentStaffStatusFilter === 'Active') statusMatch = u.IsActive === 1;
@@ -1795,7 +1927,7 @@ function applyStaffFilters() {
 function renderStaffTable() {
     const body = document.getElementById('staffTableBody');
     if (!body) return;
-    
+
     if (FILTERED_STAFF.length === 0) {
         body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px;">Không có dữ liệu nhân sự</td></tr>';
         return;
@@ -2496,7 +2628,7 @@ window.selectCinemaForBuilder = function (cinemaId, el) {
     if (ws) ws.style.display = 'none';
     if (detail) {
         detail.style.display = 'flex';
-        
+
         // Find cinema object
         const c = allCinemas.find(x => x.CinemaID === cinemaId);
         if (c) {
@@ -2584,7 +2716,7 @@ window.selectRoomForBuilder = async function (roomId, el) {
     if (el) el.classList.add('active');
 
     currentBuilderRoomId = roomId;
-    
+
     // Toggle Workspace visibility vs Detail visibility
     const ws = document.getElementById('cinemaWorkspace');
     const detail = document.getElementById('cinemaDetail');
@@ -2626,7 +2758,7 @@ window.selectRoomForBuilder = async function (roomId, el) {
 };
 
 // --- Cinema CRUD ---
-window.openAddCinemaModal = function() {
+window.openAddCinemaModal = function () {
     document.getElementById('cinemaModalTitle').innerText = 'Thêm cụm rạp mới';
     document.getElementById('cinemaId').value = '';
     document.getElementById('cinemaForm').reset();
@@ -2634,7 +2766,7 @@ window.openAddCinemaModal = function() {
     document.getElementById('cinemaModal').style.display = 'block';
 };
 
-window.openEditCinemaModal = function(id) {
+window.openEditCinemaModal = function (id) {
     const c = allCinemas.find(x => x.CinemaID === id);
     if (!c) return;
     document.getElementById('cinemaModalTitle').innerText = 'Sửa thông tin cụm rạp';
@@ -2646,12 +2778,12 @@ window.openEditCinemaModal = function(id) {
     document.getElementById('cinemaModal').style.display = 'block';
 };
 
-window.closeCinemaModal = function() {
+window.closeCinemaModal = function () {
     document.getElementById('cinemaModalOverlay').style.display = 'none';
     document.getElementById('cinemaModal').style.display = 'none';
 };
 
-window.saveCinema = async function(e) {
+window.saveCinema = async function (e) {
     if (e) e.preventDefault();
     const id = document.getElementById('cinemaId').value;
     const name = document.getElementById('cinemaNameInput').value.trim();
@@ -2706,7 +2838,7 @@ window.saveCinema = async function(e) {
     }
 };
 
-window.deleteCinema = async function(id) {
+window.deleteCinema = async function (id) {
     const c = allCinemas.find(x => x.CinemaID === id);
     if (!c) return;
     if (!confirm(`Bạn có chắc chắn muốn xóa cụm rạp "${c.CinemaName}"? Hành động này không thể hoàn tác.`)) {
@@ -2745,7 +2877,7 @@ window.deleteCinema = async function(id) {
 };
 
 // --- Room CRUD ---
-window.openAddRoomModal = function(cinemaId) {
+window.openAddRoomModal = function (cinemaId) {
     document.getElementById('roomModalTitle').innerText = 'Thêm phòng chiếu mới';
     document.getElementById('roomId').value = '';
     document.getElementById('roomCinemaId').value = cinemaId;
@@ -2758,6 +2890,8 @@ window.openAddRoomModal = function(cinemaId) {
 window.openEditRoomModal = function(id, currentName) {
     const r = ROOM_DATA.find(x => x.RoomID === id);
     document.getElementById('roomModalTitle').innerText = 'Sửa phòng chiếu';
+window.openEditRoomModal = function (id, currentName) {
+    document.getElementById('roomModalTitle').innerText = 'Sửa tên phòng chiếu';
     document.getElementById('roomId').value = id;
     document.getElementById('roomCinemaId').value = r ? r.CinemaID : '';
     document.getElementById('roomNameInput').value = currentName;
@@ -2766,12 +2900,12 @@ window.openEditRoomModal = function(id, currentName) {
     document.getElementById('roomModal').style.display = 'block';
 };
 
-window.closeRoomModal = function() {
+window.closeRoomModal = function () {
     document.getElementById('roomModalOverlay').style.display = 'none';
     document.getElementById('roomModal').style.display = 'none';
 };
 
-window.saveRoom = async function(e) {
+window.saveRoom = async function (e) {
     if (e) e.preventDefault();
     const id = document.getElementById('roomId').value;
     const cinemaId = document.getElementById('roomCinemaId').value;
@@ -2816,7 +2950,7 @@ window.saveRoom = async function(e) {
     }
 };
 
-window.deleteRoom = async function(id) {
+window.deleteRoom = async function (id) {
     const r = ROOM_DATA.find(x => x.RoomID === id);
     if (!r) return;
     if (!confirm(`Bạn có chắc chắn muốn xóa phòng "${r.RoomName}"? Hành động này sẽ xóa tất cả ghế trong phòng.`)) {
@@ -2881,9 +3015,9 @@ window.updateBuilderRoomType = async function(newType) {
 
 /* ─── Helpers: update builder seat count stats ─── */
 function updateBuilderStats() {
-    const total  = builderSeats.filter(s => s.SeatType !== 'None').length;
+    const total = builderSeats.filter(s => s.SeatType !== 'None').length;
     const normal = builderSeats.filter(s => s.SeatType === 'Normal').length;
-    const vip    = builderSeats.filter(s => s.SeatType === 'VIP').length;
+    const vip = builderSeats.filter(s => s.SeatType === 'VIP').length;
     const couple = builderSeats.filter(s => s.SeatType === 'Couple').length;
     const tEl = document.getElementById('totalSeatCount');
     const nEl = document.getElementById('normalSeatCount');
@@ -2903,6 +3037,10 @@ function updateBuilderStats() {
             '2D':          { bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.3)',  color: '#4ade80' },
             'Standard':    { bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.3)', color: '#94a3b8' }
         };
+    if (cEl) cEl.textContent = Math.floor(couple / 2) + ' cap (' + couple + ' ghe)';
+    const bar = document.getElementById('seatStatsBar');
+    if (bar && currentBuilderRoomId) {
+        const room = (typeof ROOM_DATA !== 'undefined') ? ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId) : null;
 
         let typeSelectHtml = '';
         if (room) {
@@ -2942,6 +3080,16 @@ function updateBuilderStats() {
             </span>
             ${sep}
             <span style="color:#4ade80;font-weight:800;font-size:0.88rem;margin-left:2px;">Tổng: ${total} ghế</span>`;
+            <span style="color:#fff;font-weight:700;">${room ? room.RoomName : 'Phong da chon'}</span>
+            ${typeSelectHtml}
+            <span style="color:#4b5563;">|</span>
+            <span>Thuong: <strong style="color:#64748b;">${normal}</strong></span>
+            <span style="color:#4b5563;">|</span>
+            <span>VIP: <strong style="color:#f59e0b;">&#9733; ${vip}</strong></span>
+            <span style="color:#4b5563;">|</span>
+            <span>Cap doi: <strong style="color:#ec4899;">&#9829; ${Math.floor(couple / 2)} cap</strong></span>
+            <span style="color:#4b5563;">|</span>
+            <span style="color:#4ade80;font-weight:800;">Tong: ${total} ghe</span>`;
     }
 }
 
@@ -2950,6 +3098,8 @@ function updateBuilderStats() {
    Mirrors exactly what customers see in seats.html
    ═════════════════════════════════════════ */
 window.renderSeatMatrix = function() {
+═════════════════════════════════════════ */
+window.renderSeatMatrix = function () {
     const matrix = document.getElementById('seatMatrix');
     if (!matrix) return;
 
@@ -3031,6 +3181,17 @@ window.renderSeatMatrix = function() {
                         <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${rowChar}${c}</span>
                     </button>`;
                 }
+                const num2 = (c2 <= maxCol) ? c2 : c;
+                const lbl = (c2 <= maxCol) ? `${rowChar}${c}-${num2}` : `${rowChar}${c}`;
+
+                html += `<button class="seat-btn couple"
+                    onclick="toggleCoupleSeat('${rowChar}', ${c}, this)"
+                    data-row="${rowChar}" data-col1="${c}" data-col2="${num2}"
+                    title="Ghế cặp đôi ${lbl}">
+                    <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${lbl}</span>
+                </button>`;
+
+                if (c2 <= maxCol) c++; // skip next column if it was part of the pair
             } else {
                 let sClass = 'blocked';
                 let inner = `<span style="color:rgba(255,255,255,0.04);position:relative;z-index:2;">${c}</span>`;
@@ -3067,6 +3228,8 @@ window.renderSeatMatrix = function() {
 /* Toggle a single (Normal/VIP/None) seat */
 window.toggleSeat = function(rowChar, colNum, btn) {
     if (!currentBuilderRoomId) { alert('Vui lòng chọn phòng trước!'); return; }
+window.toggleSeat = function (rowChar, colNum, btn) {
+    if (!currentBuilderRoomId) { alert('Vui long chon mot phong truoc!'); return; }
     const tool = document.querySelector('input[name="seat_tool"]:checked').value;
 
     let seat = builderSeats.find(s => s.SeatRow === rowChar && s.SeatNumber === colNum);
@@ -3095,6 +3258,8 @@ window.toggleSeat = function(rowChar, colNum, btn) {
 /* Toggle a couple seat pair */
 window.toggleCoupleSeat = function(rowChar, col1, btn) {
     if (!currentBuilderRoomId) { alert('Vui lòng chọn phòng trước!'); return; }
+window.toggleCoupleSeat = function (rowChar, col1, btn) {
+    if (!currentBuilderRoomId) { alert('Vui long chon mot phong truoc!'); return; }
     const tool = document.querySelector('input[name="seat_tool"]:checked').value;
     const col2 = col1 + 1;
 
@@ -3112,14 +3277,8 @@ window.toggleCoupleSeat = function(rowChar, col1, btn) {
         [col1, col2].forEach((cn, idx) => {
             if (cn > maxCol) return;
             let s = builderSeats.find(x => x.SeatRow === rowChar && x.SeatNumber === cn);
-            const mult = tool === 'VIP' ? 1.2 : (tool === 'Couple' ? 1.5 : 1.0);
-            if (!s) {
-                s = { SeatRow: rowChar, SeatNumber: cn, SeatType: tool, PriceMultiplier: mult };
-                builderSeats.push(s);
-            } else {
-                s.SeatType = tool;
-                s.PriceMultiplier = mult;
-            }
+            if (!s) { s = { SeatRow: rowChar, SeatNumber: cn, SeatType: 'Couple', PriceMultiplier: 1.5 }; builderSeats.push(s); }
+            else { s.SeatType = 'Couple'; s.PriceMultiplier = 1.5; }
         });
     }
     renderSeatMatrix();
@@ -3351,6 +3510,15 @@ window.validateCoupleSeats = function() {
 window.clearSeatMap = function() {
     if (!confirm('Bạn có chắc chắn muốn làm mới toàn bộ sơ đồ ghế? Toàn bộ ghế sẽ được xóa (ngoại trừ các ghế đã bán vé).')) return;
     builderSeats = builderSeats.filter(s => s.IsBooked);
+window.adminZoomIn = function () { adminBuilderZoom = Math.min(2.0, adminBuilderZoom + 0.12); const c = document.querySelector('.cw-canvas'); if (c) c.style.transform = `scale(${adminBuilderZoom})`; };
+window.adminZoomOut = function () { adminBuilderZoom = Math.max(0.45, adminBuilderZoom - 0.12); const c = document.querySelector('.cw-canvas'); if (c) c.style.transform = `scale(${adminBuilderZoom})`; };
+
+window.addSeatRow = function () { maxRow++; renderSeatMatrix(); };
+window.addSeatCol = function () { maxCol++; renderSeatMatrix(); };
+
+window.clearSeatMap = function () {
+    if (!confirm('Ban co chac muon lam moi toan bo so do (xoa trang)?')) return;
+    builderSeats = [];
     renderSeatMatrix();
 };
 
@@ -3359,6 +3527,10 @@ window.previewCustomerView = function() {
     if (!currentBuilderRoomId) { alert('Vui lòng chọn một phòng!'); return; }
     const physicalSeats = builderSeats.filter(s => s.SeatType !== 'None');
     if (physicalSeats.length === 0) { alert('Phòng này chưa có ghế nào!'); return; }
+window.previewCustomerView = function () {
+    if (!currentBuilderRoomId) { alert('Vui long chon mot phong!'); return; }
+    const validSeats = builderSeats.filter(s => s.SeatType !== 'None');
+    if (validSeats.length === 0) { alert('Phong nay chua co ghe nao!'); return; }
 
     const room = (typeof ROOM_DATA !== 'undefined') ? ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId) : null;
     const roomName = room ? room.RoomName : 'Phòng chiếu';
@@ -3375,7 +3547,6 @@ window.previewCustomerView = function() {
 
     // Build preview
     const rowsMap = {};
-    const validSeats = builderSeats;
     validSeats.forEach(s => { if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = []; rowsMap[s.SeatRow].push(s); });
     const allRows = Object.keys(rowsMap).sort();
     const coupleRowSet = new Set(validSeats.filter(s => s.SeatType === 'Couple').map(s => s.SeatRow));
@@ -3389,7 +3560,7 @@ window.previewCustomerView = function() {
     const S = {
         base: 'width:36px;height:34px;border-radius:8px 8px 6px 6px;display:inline-flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:0.7rem;font-weight:800;position:relative;flex-shrink:0;border:1px solid rgba(255,255,255,0.08);box-shadow:0 3px 6px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.12);cursor:default;',
         normal: 'background:linear-gradient(180deg,#475569,#1e293b);color:#cbd5e1;',
-        vip:    'background:linear-gradient(180deg,#e28a18,#8a4805);color:#fef08a;border-color:rgba(252,211,77,0.3);',
+        vip: 'background:linear-gradient(180deg,#e28a18,#8a4805);color:#fef08a;border-color:rgba(252,211,77,0.3);',
         couple: 'width:80px;height:34px;border-radius:9px 9px 6px 6px;background:linear-gradient(180deg,#db2777,#7d0e3d);color:#fce7f3;border-color:rgba(251,207,232,0.3);',
         locked: 'background:linear-gradient(180deg,#181d24,#0b0e12);color:#ef4444;border-color:rgba(239,68,68,0.3);opacity:0.8;'
     };
@@ -3397,11 +3568,14 @@ window.previewCustomerView = function() {
     let seatsHtml = '';
     sortedRows.forEach(row => {
         const rowSeats = rowsMap[row].sort((a,b) => a.SeatNumber - b.SeatNumber);
+        const rowSeats = rowsMap[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
+        const isCpl = coupleRowSet.has(row);
         seatsHtml += `<div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;">`;
         seatsHtml += `<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:800;color:#6b7280;font-size:0.75rem;flex-shrink:0;">${row}</div>`;
 
         const total = rowSeats.length;
         const half = Math.floor(total/2);
+        const half = Math.floor(total / 2);
 
         for (let i = 0; i < total; i++) {
             const s = rowSeats[i];
@@ -3420,6 +3594,10 @@ window.previewCustomerView = function() {
                     seatsHtml += `<div style="${S.base}${s.SeatType==='VIP'?S.vip:S.normal}${S.locked}" title="${row}${s.SeatNumber} (Đã đặt)"><span style="position:relative;z-index:2;">🔒 ${s.SeatNumber}</span></div>`;
                 }
             } else if (s.SeatType === 'Couple') {
+            // Center aisle gap
+            if (total > 4 && i === half) seatsHtml += `<div style="width:20px;"></div>`;
+
+            if (s.SeatType === 'Couple') {
                 const s2 = rowSeats[i + 1];
                 if (s2 && s2.SeatType === 'Couple' && s2.SeatNumber === s.SeatNumber + 1 && !s2.IsBooked) {
                     const lbl = `${row}${s.SeatNumber}-${s2.SeatNumber}`;
@@ -3431,7 +3609,7 @@ window.previewCustomerView = function() {
             } else {
                 const isVip = s.SeatType === 'VIP';
                 const st = isVip ? S.vip : S.normal;
-                seatsHtml += `<div style="${S.base}${st}" title="${row}${s.SeatNumber}${isVip?' (VIP)':''}"><span style="position:relative;z-index:2;">${isVip?'<span style="position:absolute;top:-12px;right:-1px;font-size:0.48rem;color:#fbbf24;">&#9733;</span>':''} ${s.SeatNumber}</span></div>`;
+                seatsHtml += `<div style="${S.base}${st}" title="${row}${s.SeatNumber}${isVip ? ' (VIP)' : ''}"><span style="position:relative;z-index:2;">${isVip ? '<span style="position:absolute;top:-12px;right:-1px;font-size:0.48rem;color:#fbbf24;">&#9733;</span>' : ''} ${s.SeatNumber}</span></div>`;
             }
         }
         seatsHtml += `<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:800;color:#6b7280;font-size:0.75rem;flex-shrink:0;">${row}</div>`;
@@ -3441,6 +3619,9 @@ window.previewCustomerView = function() {
     const nCnt = validSeats.filter(s => s.SeatType==='Normal' && s.SeatType !== 'None').length;
     const vCnt = validSeats.filter(s => s.SeatType==='VIP').length;
     const cCnt = validSeats.filter(s => s.SeatType==='Couple').length;
+    const nCnt = validSeats.filter(s => s.SeatType === 'Normal').length;
+    const vCnt = validSeats.filter(s => s.SeatType === 'VIP').length;
+    const cCnt = validSeats.filter(s => s.SeatType === 'Couple').length;
 
     modal.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
@@ -3469,7 +3650,7 @@ window.previewCustomerView = function() {
             </span>
             <span style="display:flex;align-items:center;gap:7px;font-size:0.8rem;color:#ec4899;">
                 <span style="width:52px;height:20px;border-radius:3px;background:linear-gradient(180deg,#db2777,#7d0e3d);display:inline-block;"></span>
-                Cap doi +50% (${Math.floor(cCnt/2)} cap)
+                Cap doi +50% (${Math.floor(cCnt / 2)} cap)
             </span>
         </div>`;
 
@@ -3477,7 +3658,7 @@ window.previewCustomerView = function() {
     document.body.appendChild(ov);
 };
 
-window.saveSeatLayout = async function() {
+window.saveSeatLayout = async function () {
     if (!currentBuilderRoomId) {
         alert('Vui lòng chọn phòng trước khi lưu.');
         return;
@@ -3493,6 +3674,8 @@ window.saveSeatLayout = async function() {
 
     const payload = builderSeats;
     
+    const payload = builderSeats.filter(s => s.SeatType !== 'None');
+
     let roomType = null;
     const room = ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId);
     if (room) {
@@ -3516,6 +3699,7 @@ window.saveSeatLayout = async function() {
                 container.appendChild(toast);
                 setTimeout(() => toast.remove(), 4000);
             } else { showToast('Lưu sơ đồ ghế thành công!'); }
+            } else { alert('Luu so do ghe thanh cong!'); }
             await loadRooms();
             renderCinemaSidebar();
             const cRoom = ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId);
@@ -3531,6 +3715,10 @@ window.saveSeatLayout = async function() {
     } catch(err) {
         console.error(err);
         showToast('Lỗi kết nối khi lưu sơ đồ.', 'error');
+        } else { alert('Loi: ' + (res.message || 'Khong xac dinh')); }
+    } catch (err) {
+        console.error(err);
+        alert('Loi ket noi khi luu so do.');
     } finally {
         if (saveBtn) { saveBtn.innerHTML = oldHtml || '💾 Lưu bố cục'; saveBtn.disabled = false; }
     }
@@ -3843,10 +4031,10 @@ function renderQsSeatMap() {
         </div>`;
 
     sortedRows.forEach(rk => {
-        const rowSeats = [...rowsMap[rk]].sort((a,b) => a.SeatNumber - b.SeatNumber);
+        const rowSeats = [...rowsMap[rk]].sort((a, b) => a.SeatNumber - b.SeatNumber);
         const isCouple = coupleRowSet.has(rk);
         const total = rowSeats.length;
-        const half  = Math.floor(total / 2);
+        const half = Math.floor(total / 2);
 
         html += `<div style="display:flex;align-items:center;gap:7px;justify-content:center;margin-bottom:8px;">`;
         // Left label
@@ -3854,13 +4042,11 @@ function renderQsSeatMap() {
 
         for (let i = 0; i < total; i++) {
             const seat = rowSeats[i];
-            
+
             // Center aisle gap
             if (total > 4 && i === half) html += `<div style="width:18px;flex-shrink:0;"></div>`;
 
-            if (seat.SeatType === 'None') {
-                html += `<div style="width:33px;height:31px;visibility:hidden;pointer-events:none;flex-shrink:0;"></div>`;
-            } else if (seat.SeatType === 'Couple') {
+            if (seat.SeatType === 'Couple') {
                 const s1 = seat;
                 const s2 = rowSeats[i + 1];
                 if (s2 && s2.SeatType === 'Couple' && s2.SeatNumber === s1.SeatNumber + 1) {
@@ -3868,7 +4054,7 @@ function renderQsSeatMap() {
                     const sold = s1.Status !== 'available' || s2.Status !== 'available';
                     const lbl = `${rk}${s1.SeatNumber}-${s2.SeatNumber}`;
 
-                    const bg  = sel  ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
+                    const bg = sel ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
                     const border = sel ? '1px solid rgba(255,50,80,0.6)' : sold ? '1px dashed rgba(255,255,255,0.08)' : '1px solid rgba(251,207,232,0.25)';
                     const shadow = sel ? '0 0 14px rgba(229,9,20,0.6)' : sold ? 'none' : '0 3px 6px rgba(0,0,0,0.5),0 0 6px rgba(219,39,119,0.15)';
                     const onclick = (!sold) ? `onclick="toggleQsSeat(${s1.SeatID}, ${s2.SeatID}, '${lbl}')"` : '';
@@ -3880,9 +4066,9 @@ function renderQsSeatMap() {
                         box-shadow:${shadow};cursor:${cursor};
                         display:inline-flex;align-items:flex-end;justify-content:center;
                         padding-bottom:3px;font-size:0.6rem;font-weight:800;
-                        color:${sel?'#fff':sold?'rgba(255,255,255,0.15)':'#fce7f3'};
+                        color:${sel ? '#fff' : sold ? 'rgba(255,255,255,0.15)' : '#fce7f3'};
                         transition:all 0.2s;flex-shrink:0;position:relative;"
-                        ${onclick} title="${lbl}${sold?' (Đã bán)':''}">
+                        ${onclick} title="${lbl}${sold ? ' (Đã bán)' : ''}">
                         <span style="position:relative;z-index:5;">${lbl}</span>
                     </div>`;
                     i++; // skip next
@@ -3890,7 +4076,7 @@ function renderQsSeatMap() {
                     const sel = qsState.selectedSeatIds.includes(s1.SeatID);
                     const sold = s1.Status !== 'available';
                     const lbl = `${rk}${s1.SeatNumber}`;
-                    const bg  = sel  ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
+                    const bg = sel ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
                     const border = sel ? '1px solid rgba(255,50,80,0.6)' : sold ? '1px dashed rgba(255,255,255,0.08)' : '1px solid rgba(251,207,232,0.25)';
                     const shadow = sel ? '0 0 14px rgba(229,9,20,0.6)' : sold ? 'none' : '0 3px 6px rgba(0,0,0,0.5),0 0 6px rgba(219,39,119,0.15)';
                     const onclick = (!sold) ? `onclick="toggleQsSeat(${s1.SeatID}, null, '${lbl}')"` : '';
@@ -3902,14 +4088,14 @@ function renderQsSeatMap() {
                         box-shadow:${shadow};cursor:${cursor};
                         display:inline-flex;align-items:flex-end;justify-content:center;
                         padding-bottom:3px;font-size:0.6rem;font-weight:800;
-                        color:${sel?'#fff':sold?'rgba(255,255,255,0.15)':'#fce7f3'};
+                        color:${sel ? '#fff' : sold ? 'rgba(255,255,255,0.15)' : '#fce7f3'};
                         transition:all 0.2s;flex-shrink:0;position:relative;"
-                        ${onclick} title="${lbl}${sold?' (Đã bán)':''}">
+                        ${onclick} title="${lbl}${sold ? ' (Đã bán)' : ''}">
                         <span style="position:relative;z-index:5;">${lbl}</span>
                     </div>`;
                 }
             } else {
-                const sel  = qsState.selectedSeatIds.includes(seat.SeatID);
+                const sel = qsState.selectedSeatIds.includes(seat.SeatID);
                 const sold = seat.Status !== 'available';
                 const isVip = seat.SeatType === 'VIP';
 
@@ -3946,7 +4132,7 @@ function renderQsSeatMap() {
                     justify-content:center;padding-bottom:3px;
                     font-size:0.68rem;font-weight:800;color:${color};
                     transition:all 0.2s;flex-shrink:0;position:relative;"
-                    ${onclick} title="${rk}${seat.SeatNumber}${isVip?' (VIP)':''}${sold?' (Đã bán)':''}">
+                    ${onclick} title="${rk}${seat.SeatNumber}${isVip ? ' (VIP)' : ''}${sold ? ' (Đã bán)' : ''}">
                     ${isVip && !sold ? `<span style="position:absolute;top:0px;right:2px;font-size:0.44rem;color:#fbbf24;z-index:5;">★</span>` : ''}
                     <span style="position:relative;z-index:2;">${seat.SeatNumber}</span>
                 </div>`;
@@ -4306,8 +4492,8 @@ function renderAdminReviewTable() {
                 </td>
                 <td>
                     ${review.IsVisible
-                        ? '<span class="status-badge active">Đang hiển thị</span>'
-                        : '<span class="status-badge finished">Đã ẩn</span>'}
+                ? '<span class="status-badge active">Đang hiển thị</span>'
+                : '<span class="status-badge finished">Đã ẩn</span>'}
                 </td>
                 <td>
                     <div class="table-actions">
@@ -4355,6 +4541,248 @@ async function deleteAdminReview(reviewId) {
     }
 }
 
+let REFUND_DATA = [];
+let refundSearchTimer = null;
+
+function formatAdminVnd(value) {
+    return Number(value || 0).toLocaleString('vi-VN') + 'đ';
+}
+
+function getRefundFilters() {
+    const params = new URLSearchParams();
+    const status = document.getElementById('refundStatusFilter')?.value;
+    const search = document.getElementById('refundSearchInput')?.value.trim();
+    if (status) params.set('status', status);
+    if (search) params.set('search', search);
+    return params.toString();
+}
+
+async function loadAdminRefunds() {
+    const body = document.getElementById('refundAdminBody');
+    if (body) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải yêu cầu hoàn tiền...</td></tr>';
+    }
+    try {
+        const query = getRefundFilters();
+        const res = await apiFetch('/api/admin/refunds' + (query ? '?' + query : ''));
+        if (!res.success) {
+            if (body) body.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">${adminEscape(res.message || 'Không thể tải yêu cầu hoàn tiền.')}</td></tr>`;
+            return;
+        }
+        REFUND_DATA = (res.data && res.data.refunds) || [];
+        renderAdminRefundSummary(res.data && res.data.summary);
+        renderAdminRefundTable();
+    } catch (err) {
+        console.error('[Admin] loadAdminRefunds:', err);
+        if (body) body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">Lỗi kết nối server.</td></tr>';
+    }
+}
+
+function debouncedLoadAdminRefunds() {
+    clearTimeout(refundSearchTimer);
+    refundSearchTimer = setTimeout(loadAdminRefunds, 350);
+}
+
+function renderAdminRefundSummary(summary = {}) {
+    const totalEl = document.getElementById('refundKpiTotal');
+    const pendingEl = document.getElementById('refundKpiPending');
+    const approvedEl = document.getElementById('refundKpiApproved');
+    const amountEl = document.getElementById('refundKpiPendingAmount');
+    if (totalEl) totalEl.textContent = summary.totalRefunds || 0;
+    if (pendingEl) pendingEl.textContent = summary.pendingRefunds || 0;
+    if (approvedEl) approvedEl.textContent = summary.approvedRefunds || 0;
+    if (amountEl) amountEl.textContent = formatAdminVnd(summary.pendingAmount || 0);
+}
+
+function renderRefundStatus(status) {
+    const labels = {
+        pending: 'Chờ xử lý',
+        approved: 'Đã duyệt',
+        completed: 'Đã hoàn tiền',
+        rejected: 'Đã từ chối'
+    };
+    const colors = {
+        pending: 'background:rgba(245,158,11,0.12);color:#d97706;',
+        approved: 'background:rgba(59,130,246,0.12);color:#2563eb;',
+        completed: 'background:rgba(16,185,129,0.12);color:#059669;',
+        rejected: 'background:rgba(239,68,68,0.12);color:#dc2626;'
+    };
+    return `<span class="status-badge" style="${colors[status] || ''}">${labels[status] || status}</span>`;
+}
+
+function renderAdminRefundTable() {
+    const body = document.getElementById('refundAdminBody');
+    if (!body) return;
+
+    if (!REFUND_DATA.length) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có yêu cầu hoàn tiền phù hợp.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = REFUND_DATA.map(item => {
+        const seat = `${item.SeatRow || ''}${item.SeatNumber || ''}`;
+        const showtime = item.StartTime ? formatAdminDate(item.StartTime) : '';
+        const actionButtons = item.Status === 'pending'
+            ? `
+                <a class="tb-icon-sm refund-action-btn" href="admin-refund-action.html?refundId=${item.RefundID}&action=approve" data-refund-id="${item.RefundID}" data-refund-action="approve" title="Duyệt yêu cầu" style="color:#2563eb;text-decoration:none;">Duyệt</a>
+                <a class="tb-icon-sm danger refund-action-btn" href="admin-refund-action.html?refundId=${item.RefundID}&action=reject" data-refund-id="${item.RefundID}" data-refund-action="reject" title="Từ chối" style="color:#dc2626;text-decoration:none;">Từ chối</a>
+              `
+            : item.Status === 'approved'
+                ? `<a class="tb-icon-sm refund-action-btn" href="admin-refund-action.html?refundId=${item.RefundID}&action=complete" data-refund-id="${item.RefundID}" data-refund-action="complete" title="Đã chuyển khoản" style="color:#059669;text-decoration:none;">Đã chuyển</a>`
+                : '<span style="color:var(--text3);font-size:0.78rem;">Đã xử lý</span>';
+
+        return `
+            <tr class="txn-row">
+                <td>
+                    <div style="font-weight:800;color:var(--text);font-size:0.88rem;">#${item.TicketID} - ${adminEscape(item.MovieTitle)}</div>
+                    <div style="font-size:0.74rem;color:var(--text2);margin-top:4px;">${adminEscape(showtime)} • ${adminEscape(item.CinemaName || '')} • ${adminEscape(item.RoomName || '')} • Ghế ${adminEscape(seat)}</div>
+                </td>
+                <td>
+                    <div style="font-weight:700;color:var(--text);font-size:0.86rem;">${adminEscape(item.FullName)}</div>
+                    <div style="font-size:0.75rem;color:var(--text2);margin-top:4px;">${adminEscape(item.Email || '')}</div>
+                    <div style="font-size:0.75rem;color:var(--text2);margin-top:2px;">${adminEscape(item.Phone || '')}</div>
+                </td>
+                <td style="font-weight:900;color:var(--accent);">${formatAdminVnd(item.RefundAmount)}</td>
+                <td>
+                    <div style="font-weight:800;color:var(--text);">${adminEscape(item.BankName)}</div>
+                    <div style="font-size:0.8rem;color:var(--text2);margin-top:4px;">STK: ${adminEscape(item.BankAccountNumber)}</div>
+                    <div style="font-size:0.8rem;color:var(--text2);margin-top:2px;">Chủ TK: ${adminEscape(item.BankAccountHolder)}</div>
+                    ${item.RefundTransactionCode ? `<div style="font-size:0.75rem;color:#059669;margin-top:4px;">Mã GD: ${adminEscape(item.RefundTransactionCode)}</div>` : ''}
+                </td>
+                <td style="max-width:260px;">
+                    <div style="font-size:0.84rem;line-height:1.45;white-space:normal;color:var(--text);">${adminEscape(item.Reason || 'Không có lý do.')}</div>
+                    ${item.AdminNote ? `<div style="font-size:0.75rem;color:var(--text2);margin-top:6px;">Admin: ${adminEscape(item.AdminNote)}</div>` : ''}
+                </td>
+                <td>
+                    ${renderRefundStatus(item.Status)}
+                    <div style="font-size:0.72rem;color:var(--text2);margin-top:6px;">${formatAdminDate(item.RequestedAt)}</div>
+                </td>
+                <td><div class="table-actions" style="gap:6px;flex-wrap:wrap;">${actionButtons}</div></td>
+            </tr>
+        `;
+    }).join('');
+    bindRefundActionButtons();
+}
+
+let refundActionState = null;
+let refundActionSubmitting = false;
+
+function getRefundActionConfig(action) {
+    return {
+        approve: {
+            title: '\u0110\u00e3 duy\u1ec7t y\u00eau c\u1ea7u ho\u00e0n ti\u1ec1n',
+            desc: 'Sau khi duy\u1ec7t, admin c\u1ea7n chuy\u1ec3n kho\u1ea3n cho kh\u00e1ch r\u1ed3i b\u1ea5m "\u0110\u00e3 chuy\u1ec3n".',
+            noteLabel: 'Ghi ch\u00fa duy\u1ec7t',
+            notePlaceholder: 'C\u00f3 th\u1ec3 b\u1ecf tr\u1ed1ng ho\u1eb7c nh\u1eadp ghi ch\u00fa...',
+            submitLabel: 'Duy\u1ec7t y\u00eau c\u1ea7u',
+            showTxCode: false,
+            submitColor: '#ef1b2d'
+        },
+        reject: {
+            title: 'T\u1eeb ch\u1ed1i ho\u00e0n ti\u1ec1n',
+            desc: 'Nh\u1eadp l\u00fd do t\u1eeb ch\u1ed1i \u0111\u1ec3 l\u01b0u l\u1ecbch s\u1eed x\u1eed l\u00fd.',
+            noteLabel: 'L\u00fd do t\u1eeb ch\u1ed1i *',
+            notePlaceholder: 'VD: V\u00e9 kh\u00f4ng \u0111\u1ee7 \u0111i\u1ec1u ki\u1ec7n ho\u00e0n ti\u1ec1n...',
+            submitLabel: 'T\u1eeb ch\u1ed1i y\u00eau c\u1ea7u',
+            showTxCode: false,
+            submitColor: '#dc2626'
+        },
+        complete: {
+            title: 'X\u00e1c nh\u1eadn \u0111\u00e3 chuy\u1ec3n kho\u1ea3n',
+            desc: 'Nh\u1eadp m\u00e3 giao d\u1ecbch sau khi admin \u0111\u00e3 chuy\u1ec3n kho\u1ea3n ho\u00e0n ti\u1ec1n.',
+            noteLabel: 'Ghi ch\u00fa ho\u00e0n ti\u1ec1n',
+            notePlaceholder: 'C\u00f3 th\u1ec3 b\u1ecf tr\u1ed1ng ho\u1eb7c nh\u1eadp ghi ch\u00fa...',
+            submitLabel: 'X\u00e1c nh\u1eadn \u0111\u00e3 chuy\u1ec3n',
+            showTxCode: true,
+            submitColor: '#059669'
+        }
+    }[action] || null;
+}
+
+function ensureRefundActionModal() {
+    if (document.getElementById('refundActionOverlay') && document.getElementById('refundActionModal')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'refundActionOverlay';
+    overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:520;backdrop-filter:blur(3px);';
+    overlay.addEventListener('click', () => closeRefundActionModal());
+
+    const modal = document.createElement('div');
+    modal.id = 'refundActionModal';
+    modal.style.cssText = 'display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:521;background:#fff;border-radius:14px;width:520px;max-width:94vw;box-shadow:0 24px 70px rgba(15,23,42,0.35);overflow:hidden;';
+    modal.innerHTML = [
+        '<div style="padding:22px 26px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:16px;">',
+        '<div><h2 id="refundActionTitle" style="margin:0;color:#111827;font-size:1.2rem;font-weight:900;text-transform:uppercase;">X\u1eed l\u00fd ho\u00e0n ti\u1ec1n</h2>',
+        '<p id="refundActionDesc" style="margin:6px 0 0;color:#6b7280;font-size:0.9rem;line-height:1.45;">Nh\u1eadp th\u00f4ng tin x\u1eed l\u00fd y\u00eau c\u1ea7u ho\u00e0n ti\u1ec1n.</p></div>',
+        '<button type="button" onclick="closeRefundActionModal()" style="width:36px;height:36px;border:none;border-radius:50%;background:#f3f4f6;color:#475569;font-size:1.4rem;line-height:1;cursor:pointer;">&times;</button>',
+        '</div>',
+        '<form id="refundActionForm" style="padding:24px 26px;display:flex;flex-direction:column;gap:16px;">',
+        '<div id="refundTxCodeGroup" style="display:none;"><label for="refundTxCodeInput" style="display:block;margin-bottom:8px;color:#374151;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">M\u00e3 giao d\u1ecbch chuy\u1ec3n kho\u1ea3n *</label><input id="refundTxCodeInput" type="text" autocomplete="off" placeholder="VD: MBVCB240709001" style="width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;color:#111827;font-size:0.95rem;"></div>',
+        '<div><label id="refundNoteLabel" for="refundNoteInput" style="display:block;margin-bottom:8px;color:#374151;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">Ghi ch\u00fa</label><textarea id="refundNoteInput" rows="4" placeholder="Nh\u1eadp ghi ch\u00fa cho y\u00eau c\u1ea7u n\u00e0y..." style="width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;color:#111827;font-size:0.95rem;font-family:inherit;resize:vertical;"></textarea><div id="refundActionError" style="display:none;margin-top:8px;color:#dc2626;font-size:0.84rem;font-weight:600;"></div></div>',
+        '<div style="display:flex;justify-content:flex-end;gap:12px;margin-top:4px;"><button type="button" onclick="closeRefundActionModal()" style="padding:11px 22px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#475569;font-weight:800;cursor:pointer;">H\u1ee7y</button><button id="refundActionSubmitBtn" type="submit" style="padding:11px 24px;border:none;border-radius:8px;background:#ef1b2d;color:#fff;font-weight:900;cursor:pointer;">X\u00e1c nh\u1eadn</button></div>',
+        '</form>'
+    ].join('');
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
+}
+
+function getRefundModalParts() {
+    return { overlay: document.getElementById('refundActionOverlay'), modal: document.getElementById('refundActionModal'), title: document.getElementById('refundActionTitle'), desc: document.getElementById('refundActionDesc'), txGroup: document.getElementById('refundTxCodeGroup'), txInput: document.getElementById('refundTxCodeInput'), noteLabel: document.getElementById('refundNoteLabel'), noteInput: document.getElementById('refundNoteInput'), error: document.getElementById('refundActionError'), submitBtn: document.getElementById('refundActionSubmitBtn') };
+}
+
+function openRefundActionModal(refundId, action) {
+    const parsedRefundId = Number.parseInt(refundId, 10);
+    const config = getRefundActionConfig(action);
+    if (!Number.isInteger(parsedRefundId) || parsedRefundId <= 0 || !config) { showAdminToast('Kh\u00f4ng th\u1ec3 m\u1edf x\u1eed l\u00fd ho\u00e0n ti\u1ec1n v\u00ec d\u1eef li\u1ec7u kh\u00f4ng h\u1ee3p l\u1ec7.', 'error'); return false; }
+    ensureRefundActionModal();
+    const p = getRefundModalParts();
+    if (!p.overlay || !p.modal || !p.title || !p.desc || !p.txGroup || !p.txInput || !p.noteLabel || !p.noteInput || !p.error || !p.submitBtn) { showAdminToast('Kh\u00f4ng th\u1ec3 m\u1edf h\u1ed9p x\u1eed l\u00fd ho\u00e0n ti\u1ec1n. H\u00e3y t\u1ea3i l\u1ea1i trang admin.', 'error'); return false; }
+    refundActionState = { refundId: parsedRefundId, action }; refundActionSubmitting = false;
+    p.title.textContent = config.title; p.desc.textContent = config.desc; p.noteLabel.textContent = config.noteLabel; p.noteInput.placeholder = config.notePlaceholder; p.noteInput.value = ''; p.txInput.value = ''; p.txGroup.style.display = config.showTxCode ? 'block' : 'none'; p.error.textContent = ''; p.error.style.display = 'none'; p.submitBtn.disabled = false; p.submitBtn.textContent = config.submitLabel; p.submitBtn.style.background = config.submitColor; p.overlay.style.display = 'block'; p.modal.style.display = 'block';
+    setTimeout(() => (config.showTxCode ? p.txInput : p.noteInput).focus(), 0);
+    return false;
+}
+
+function closeRefundActionModal() { const p = getRefundModalParts(); if (p.overlay) p.overlay.style.display = 'none'; if (p.modal) p.modal.style.display = 'none'; refundActionState = null; refundActionSubmitting = false; }
+
+async function submitRefundActionModal(event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    if (refundActionSubmitting) return false;
+    if (!refundActionState) { showAdminToast('Ch\u01b0a ch\u1ecdn y\u00eau c\u1ea7u ho\u00e0n ti\u1ec1n \u0111\u1ec3 x\u1eed l\u00fd.', 'error'); return false; }
+    const p = getRefundModalParts(); const { refundId, action } = refundActionState; const note = (p.noteInput && p.noteInput.value.trim()) || ''; const txCode = (p.txInput && p.txInput.value.trim()) || '';
+    const fail = msg => { if (p.error) { p.error.textContent = msg; p.error.style.display = 'block'; } };
+    if (action === 'reject' && !note) { fail('Vui l\u00f2ng nh\u1eadp l\u00fd do t\u1eeb ch\u1ed1i ho\u00e0n ti\u1ec1n.'); return false; }
+    if (action === 'complete' && !txCode) { fail('Vui l\u00f2ng nh\u1eadp m\u00e3 giao d\u1ecbch ho\u00e0n ti\u1ec1n.'); return false; }
+    const payload = { action }; if (note) payload.adminNote = note; if (txCode) payload.refundTransactionCode = txCode;
+    refundActionSubmitting = true; if (p.submitBtn) { p.submitBtn.disabled = true; p.submitBtn.textContent = '\u0110ang x\u1eed l\u00fd...'; }
+    try {
+        const res = await apiFetch('/api/admin/refunds/' + refundId, { method: 'PATCH', body: JSON.stringify(payload) });
+        if (res.success) { showAdminToast(res.message || '\u0110\u00e3 c\u1eadp nh\u1eadt y\u00eau c\u1ea7u ho\u00e0n ti\u1ec1n.', 'success'); closeRefundActionModal(); loadAdminRefunds(); } else { fail(res.message || 'Kh\u00f4ng th\u1ec3 c\u1eadp nh\u1eadt y\u00eau c\u1ea7u ho\u00e0n ti\u1ec1n.'); }
+    } catch (err) { console.error('[Admin] submitRefundActionModal:', err); fail('L\u1ed7i k\u1ebft n\u1ed1i server.'); }
+    finally { if (refundActionState && p.submitBtn) { const config = getRefundActionConfig(action); p.submitBtn.disabled = false; p.submitBtn.textContent = (config && config.submitLabel) || 'X\u00e1c nh\u1eadn'; refundActionSubmitting = false; } }
+    return false;
+}
+
+function adminRefundAction(refundId, action) {
+    return openRefundActionModal(refundId, action);
+}
+function handleRefundActionClick(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    const button = (event && event.target && event.target.closest && event.target.closest('.refund-action-btn')) || (event && event.currentTarget);
+    if (!button) return false;
+    return adminRefundAction(button.getAttribute('data-refund-id'), button.getAttribute('data-refund-action'));
+}
+function updateAdminRefund(refundId, action) { return adminRefundAction(refundId, action); }
+function bindRefundActionButtons() {
+    document.querySelectorAll('button.refund-action-btn').forEach(button => {
+        if (button.dataset.refundBound === '1') return;
+        button.dataset.refundBound = '1';
+        button.addEventListener('click', handleRefundActionClick);
+    });
+}
+document.addEventListener('submit', event => { if (event.target && event.target.id === 'refundActionForm') submitRefundActionModal(event); }, true);
+window.adminRefundAction = adminRefundAction; window.openRefundActionModal = openRefundActionModal; window.closeRefundActionModal = closeRefundActionModal; window.submitRefundActionModal = submitRefundActionModal; window.updateAdminRefund = updateAdminRefund; window.handleRefundActionClick = handleRefundActionClick; window.bindRefundActionButtons = bindRefundActionButtons; window.loadAdminRefunds = loadAdminRefunds;
 let NEWS_DATA = [];
 
 function adminEscape(value) {
@@ -4393,6 +4821,7 @@ async function loadNewsArticles() {
 function renderNewsAdminTable() {
     const body = document.getElementById('newsAdminBody');
     if (!body) return;
+
     if (!NEWS_DATA.length) {
         body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có bài viết nào.</td></tr>';
         return;
@@ -4427,6 +4856,12 @@ function openNewsModal(id) {
     document.getElementById('newsFeatured').checked = false;
     document.getElementById('newsId').value = '';
     document.getElementById('newsModalTitle').textContent = 'THÊM TIN TỨC';
+    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('newsPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
     if (id) {
         const item = NEWS_DATA.find(x => x.ArticleID === id);
         if (!item) return;
@@ -4442,7 +4877,13 @@ function openNewsModal(id) {
         document.getElementById('newsSort').value = item.SortOrder || 0;
         document.getElementById('newsFeatured').checked = !!item.IsFeatured;
         document.getElementById('newsActive').checked = !!item.IsActive;
-        if (item.ImageURL) document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
+        if (item.ImageURL) {
+            document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
+            if (preview) {
+                preview.src = item.ImageURL;
+                preview.style.display = 'block';
+            }
+        }
     }
     document.getElementById('newsModalOverlay').style.display = 'block';
     document.getElementById('newsAdminModal').style.display = 'block';
@@ -4451,6 +4892,14 @@ function openNewsModal(id) {
 function closeNewsModal() {
     document.getElementById('newsModalOverlay').style.display = 'none';
     document.getElementById('newsAdminModal').style.display = 'none';
+
+    document.getElementById('newsImage').value = '';
+    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('newsPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 }
 
 async function saveNewsArticle(event) {
@@ -4596,6 +5045,12 @@ function renderPromoTable() {
 function openPromoModal(id) {
     document.getElementById('promoForm').reset();
     document.getElementById('promoCurrentImg').innerHTML = '';
+    document.getElementById('promoFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('promoPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 
     if (id) {
         const p = PROMO_DATA.find(x => x.PromotionID === id);
@@ -4611,6 +5066,10 @@ function openPromoModal(id) {
         document.getElementById('promoActive').checked = !!p.IsActive;
         if (p.ImageURL) {
             document.getElementById('promoCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${p.ImageURL}" target="_blank" style="color:var(--accent);">${p.ImageURL}</a>`;
+            if (preview) {
+                preview.src = p.ImageURL;
+                preview.style.display = 'block';
+            }
         }
     } else {
         document.getElementById('promoModalTitle').textContent = 'THÊM KHUYẾN MÃI';
@@ -4625,6 +5084,14 @@ function openPromoModal(id) {
 function closePromoModal() {
     document.getElementById('promoModalOverlay').style.display = 'none';
     document.getElementById('promoModal').style.display = 'none';
+
+    document.getElementById('promoImage').value = '';
+    document.getElementById('promoFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('promoPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 }
 
 async function savePromo(event) {
@@ -4707,13 +5174,13 @@ async function loadSettings() {
         const res = await apiFetch('/api/admin/settings');
         if (res.success) {
             const data = res.data;
-            if(document.getElementById('cfg_BASE_TICKET_PRICE')) document.getElementById('cfg_BASE_TICKET_PRICE').value = data.BASE_TICKET_PRICE || '';
-            if(document.getElementById('cfg_VIP_MULTIPLIER')) document.getElementById('cfg_VIP_MULTIPLIER').value = data.VIP_MULTIPLIER || '';
-            if(document.getElementById('cfg_COUPLE_MULTIPLIER')) document.getElementById('cfg_COUPLE_MULTIPLIER').value = data.COUPLE_MULTIPLIER || '';
-            
-            if(document.getElementById('cfg_HOTLINE')) document.getElementById('cfg_HOTLINE').value = data.HOTLINE || '';
-            if(document.getElementById('cfg_SUPPORT_EMAIL')) document.getElementById('cfg_SUPPORT_EMAIL').value = data.SUPPORT_EMAIL || '';
-            if(document.getElementById('cfg_MAINTENANCE_MODE')) document.getElementById('cfg_MAINTENANCE_MODE').checked = (data.MAINTENANCE_MODE === 'true');
+            if (document.getElementById('cfg_BASE_TICKET_PRICE')) document.getElementById('cfg_BASE_TICKET_PRICE').value = data.BASE_TICKET_PRICE || '';
+            if (document.getElementById('cfg_VIP_MULTIPLIER')) document.getElementById('cfg_VIP_MULTIPLIER').value = data.VIP_MULTIPLIER || '';
+            if (document.getElementById('cfg_COUPLE_MULTIPLIER')) document.getElementById('cfg_COUPLE_MULTIPLIER').value = data.COUPLE_MULTIPLIER || '';
+
+            if (document.getElementById('cfg_HOTLINE')) document.getElementById('cfg_HOTLINE').value = data.HOTLINE || '';
+            if (document.getElementById('cfg_SUPPORT_EMAIL')) document.getElementById('cfg_SUPPORT_EMAIL').value = data.SUPPORT_EMAIL || '';
+            if (document.getElementById('cfg_MAINTENANCE_MODE')) document.getElementById('cfg_MAINTENANCE_MODE').checked = (data.MAINTENANCE_MODE === 'true');
         }
     } catch (e) {
         console.error('Failed to load settings', e);
@@ -4724,15 +5191,15 @@ async function savePricingSettings() {
     const basePrice = document.getElementById('cfg_BASE_TICKET_PRICE').value;
     const vipM = document.getElementById('cfg_VIP_MULTIPLIER').value;
     const coupleM = document.getElementById('cfg_COUPLE_MULTIPLIER').value;
-    
-    if(!basePrice || !vipM || !coupleM) return showToast('Lỗi', 'Vui lòng điền đủ thông tin');
-    
+
+    if (!basePrice || !vipM || !coupleM) return showToast('Lỗi', 'Vui lòng điền đủ thông tin');
+
     const payload = [
         { key: 'BASE_TICKET_PRICE', value: basePrice },
         { key: 'VIP_MULTIPLIER', value: vipM },
         { key: 'COUPLE_MULTIPLIER', value: coupleM }
     ];
-    
+
     await updateSettingsApi(payload);
 }
 
@@ -4740,13 +5207,13 @@ async function saveSystemSettings() {
     const hotline = document.getElementById('cfg_HOTLINE').value;
     const email = document.getElementById('cfg_SUPPORT_EMAIL').value;
     const maint = document.getElementById('cfg_MAINTENANCE_MODE').checked;
-    
+
     const payload = [
         { key: 'HOTLINE', value: hotline },
         { key: 'SUPPORT_EMAIL', value: email },
         { key: 'MAINTENANCE_MODE', value: maint ? 'true' : 'false' }
     ];
-    
+
     await updateSettingsApi(payload);
 }
 

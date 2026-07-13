@@ -22,6 +22,14 @@ class ComboModel {
     return result.recordset[0] || null;
   }
 
+  static async getByName(name) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('name', sql.NVarChar, name)
+      .query("SELECT * FROM Combo WHERE LOWER(ComboName) = LOWER(@name) AND Status != 'Deleted'");
+    return result.recordset[0] || null;
+  }
+
   static async create(data) {
     const pool = await getPool();
     const result = await pool.request()

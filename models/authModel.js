@@ -38,7 +38,7 @@ class AuthModel {
     const result = await pool.request()
       .input('email', sql.NVarChar, email)
       .query(`
-        SELECT u.UserID, u.FullName, u.Email, u.PasswordHash, u.Phone, u.RoleID, u.AvatarURL,
+        SELECT u.UserID, u.FullName, u.Email, u.PasswordHash, u.Phone, u.RoleID, u.AvatarURL, u.IsActive,
                r.RoleName
         FROM   Users u
         JOIN   Roles r ON u.RoleID = r.RoleID
@@ -52,7 +52,7 @@ class AuthModel {
     const result = await pool.request()
       .input('userId', sql.Int, userId)
       .query(`
-        SELECT u.UserID, u.FullName, u.Email, u.Phone, u.CreatedAt, u.RoleID,
+        SELECT u.UserID, u.FullName, u.Email, u.Phone, u.CreatedAt, u.RoleID, u.IsActive,
                u.AvatarURL, r.RoleName
         FROM   Users u
         JOIN   Roles r ON u.RoleID = r.RoleID

@@ -7,6 +7,14 @@ const bcrypt = require('bcryptjs');
 
 const SALT_ROUNDS = 10;
 
+function validatePasswordPolicy(password) {
+  if (!password || password.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự.';
+  if (!/^[A-Z]/.test(password)) return 'Chữ cái đầu tiên phải viết hoa.';
+  if (!/\d/.test(password)) return 'Mật khẩu phải chứa ít nhất 1 chữ số.';
+  if (!/[._!@#$%^&*()\-+=<>?]/.test(password)) return 'Mật khẩu phải chứa ký tự đặc biệt (VD: ., _, @).';
+  return null;
+}
+
 // ─────────────────────────────────────────────────────────────
 // GET /api/users/profile
 // Get current user profile information
@@ -64,6 +72,10 @@ exports.updatePassword = async (req, res) => {
 
     if (!oldPassword || !newPassword) {
       return res.status(400).json({ success: false, message: 'Vui lòng cung cấp mật khẩu cũ và mới.' });
+    }
+    const passwordError = validatePasswordPolicy(newPassword);
+    if (passwordError) {
+      return res.status(400).json({ success: false, message: passwordError });
     }
 
     const currentHash = await UserModel.getPasswordHash(userId);
