@@ -64,6 +64,7 @@ CREATE TABLE Rooms (
     CinemaID   INT NOT NULL,
     RoomName   NVARCHAR(50) NOT NULL,
     TotalSeats INT NOT NULL,
+    RoomType   VARCHAR(50) DEFAULT '2D Standard',
     FOREIGN KEY (CinemaID) REFERENCES Cinemas(CinemaID)
 );
 -- 6. BẢNG SƠ ĐỒ GHẾ NGỒI
@@ -338,10 +339,13 @@ GO
 -- ═══════════════════ THỂ LOẠI PHIM ═══════════════════
 INSERT INTO Genres (GenreName) VALUES
 (N'Hành động'), (N'Hài'), (N'Kinh dị'), (N'Tình cảm'),
-(N'Viễn tưởng'), (N'Hoạt hình'), (N'Tâm lý'), (N'Phiêu lưu'), (N'Ca Nhạc'), (N'Ly Kì'), (N'Gia đình');
+(N'Viễn tưởng'), (N'Hoạt hình'), (N'Tâm lý'), (N'Phiêu lưu');
 GO
 -- ═══════════════════ PHIM ═══════════════════
 INSERT INTO Movies (Title, Description, Director, Duration, AgeRating, TrailerURL, PosterURL, Status, MainCast) VALUES
+(N'Lật Mặt 8', N'Phần tiếp theo của loạt phim Lật Mặt nổi tiếng.', N'Lý Hải', 130, '13+', 'https://www.youtube.com/embed/2Tz8aA0c0V0', 'images/movie_neon_dreams.png', 'Coming Soon', N'Lý Hải, Trường Giang'),
+(N'Avengers: Doomsday', N'Biệt đội siêu anh hùng đối đầu với mối đe dọa cuối cùng.', N'Russo Brothers', 180, '13+', 'https://www.youtube.com/embed/73_1biulkIE', 'images/movie_neon_dreams.png', 'Coming Soon', N'Robert Downey Jr., Scarlett Johansson'),
+(N'Inside Out 3', N'Tiếp tục hành trình cảm xúc đầy màu sắc.', N'Pete Docter', 100, 'P', 'https://www.youtube.com/embed/LEjhYKPUtEs', 'images/movie_neon_dreams.png', 'Coming Soon', N'Amy Poehler'),
 (N'Ốc Mượn Hồn', N'Câu chuyện kể về Quân – một người chồng đau khổ khi vợ qua đời trong một tai nạn bất ngờ. Hạnh phúc tưởng chừng được hồi sinh khi linh hồn vợ anh "trở về" trong thân xác của cô đồng nghiệp, người gặp tai nạn chung với vợ Quân nhưng may mắn sống sót. Giống như những con ốc mượn hồn, họ đều bám víu - lệ thuộc vào chiếc vỏ khác để tồn tại cũng như cố lẩn tránh nỗi đau của cuộc đời. Niềm vui ngắn ngủi tan biến khi một bí mật kinh hoàng liên quan đến cái chết của vợ anh được hé lộ, đặt Quân trước lựa chọn giữa việc tiếp tục bám víu, chấp nhận chiếc vỏ của hạnh phúc tự tạo hay phanh phui sự thật kinh hoàng bên trong chính chiếc vỏ này.', N'Đinh Tuấn Vũ', 109, 'T16', 'https://www.youtube.com/embed/XQs8E1QFaxs', 'images/movie_ocmuonhon.png', 'Now Showing', N'Quốc Trường, Trần Tiểu Vy, Anh Phạm'),
 (N'Ma Xó', N'Trong cái nghèo cùng cực và nỗi sợ mất con sau một lần sảy thai, cuộc sống của vợ chồng Phú và Thảo (đang mang thai) trở nên tăm tối hơn bao giờ hết khi bà Thuận (mẹ Phú) qua đời vì không có tiền chữa bệnh. Giữa lúc tuyệt vọng, Thảo nghe lời bà Tánh – một người hàng xóm làm nghề cúng – quyết định thực hiện nghi thức thỉnh "vong cô hồn" về làm ma xó để trấn giữ ngôi nhà và bảo vệ thai nhi. Khi thực thể trong xó nhà bắt đầu "đòi nợ", Thảo mới bàng hoàng nhận ra: thứ cô rước về để bảo vệ gia đình, thực chất là một cơn ác mộng không có đường lui.', N'Phan Bá Hỷ', 102, 'T18', 'https://www.youtube.com/watch?v=MmE_ks7V1S0', 'images/movie_maxo.png', 'Now Showing', N'Lê Khánh, Tín Nguyễn, Avin Lu, Hạnh Thúy'),
 (N'Dưới Bóng Điện Hạ', N'Lấy mốc năm 1457 dưới triều đại Joseon, Dưới Bóng Điện Hạ khắc họa số phận nghiệt ngã của vua Danjong - vị quân vương thứ sáu của triều đại (Park Ji-hoon thủ vai). Lên ngôi khi tuổi đời còn non trẻ, Danjong nhanh chóng trở thành quân cờ trong vòng xoáy quyền lực tàn khốc. Bị chính người chú lật đổ, phế truất và đày đến vùng Cheongnyeongpo heo hút, cuộc đời của vị vua trẻ rẽ sang một ngã rẽ đầy u uất. Tại chốn lưu đày, ông gặp trưởng làng Eom Heung Do (Yoo Hai-jin thủ vai) - người đã chủ động biến ngôi làng nghèo thành nơi giam giữ nhà vua, đổi lại hy vọng cứu vãn sinh kế cho dân làng. Từ hai thân phận tưởng chừng đối lập, một cựu đế vương và một thường dân, bộ phim dần hé mở mối liên kết lặng lẽ nhưng sâu sắc - nơi lòng trung thành, sự che chở âm thầm và những phận người nhỏ bé cùng trôi dạt giữa cơn sóng lớn của lịch sử.', N'Chang Hang Jun', 117, 'T16', 'https://www.youtube.com/watch?v=aPsEOR-WK6U', 'images/movie_duoibongdienha.png', 'Now Showing', N'Yoo Hai Jin, Park Ji Hoon, Yoo Ji Tae'),
@@ -350,118 +354,57 @@ INSERT INTO Movies (Title, Description, Director, Duration, AgeRating, TrailerUR
 (N'Doraemon Movie 45 (2026): Nobita Và Lâu Đài Dưới Đáy Biển', N'Bước vào kì nghỉ hè, Nobita và các bạn tranh cãi chí chóe về địa điểm cắm trại. Theo đề xuất của Doraemon, cả nhóm quyết định cắm trại giữa lòng đại dương! Sử dụng bảo bối thần kì “xe Buggy chạy dưới nước” và “đèn pin thích nghi”, 5 bạn nhỏ tận hưởng chuyến cắm trại dưới biển, gặp gỡ vô vàn sinh vật lí thú trên đường đi. Sau khi phát hiện một chiếc tàu đắm, nhóm bạn đã gặp chàng thanh niên bí ẩn El. Thật bất ngờ, anh ta lại là cư dân đáy biển, sống tại “liên bang Mu”, một vùng biển rộng lớn! Vốn căm ghét người mặt đất, cư dân đáy biển không thể nào tin tưởng Nobita và các bạn. Đúng lúc đó, lời thông báo “lâu đài quỷ… đã bắt đầu phục sinh!!” được truyền tới. “Lâu đài quỷ” khiến cư dân đáy biển khiếp sợ, rốt cuộc là gì? Đặt trọn niềm tin vào bè bạn trong lồng ngực, chuyến phiêu lưu vĩ đại quyết định số phận của trái đất, bắt đầu!', N'Tetsuo Yajima', 101, 'P', 'https://www.youtube.com/watch?v=u3JgYkmuK78&t=1s', 'images/doraemon_sea.png', 'Now Showing', N'Wasabi Mizuta, Megumi Oohara, Yumi Kakazu, Subaru Kimura, Tomokazu Seki'),
 (N'BTS World Tour ''Arirang'' In Busan: Live Viewing', N'Hành trình lịch sử tiếp tục được viết nên. Sau màn khởi động phá vỡ mọi kỷ lục của World Tour “ARIRANG”, những biểu tượng nhạc pop BTS sẽ trở lại sân vận động Busan Asiad Main Stadium trong một đêm concert mang ý nghĩa đặc biệt, được truyền hình trực tiếp đến các rạp chiếu phim trên toàn thế giới. Đây cũng là lần trở lại đầy xúc động tại chính địa điểm mà nhóm đã có sân khấu biểu diễn đầy đủ thành viên cuối cùng trước thời gian nhập ngũ cách đây 3 năm 8 tháng.Đi qua 34 thành phố với 85 đêm diễn, tour diễn này thiết lập cột mốc mới khi trở thành chuyến lưu diễn quy mô lớn nhất từng được thực hiện bởi một nghệ sĩ Hàn Quốc. Đặc biệt hơn, concert diễn ra vào ngày 13 tháng 6 — ngày kỷ niệm debut của BTS — càng khiến sự kiện mang thêm ý nghĩa sâu sắc khi nhóm nhìn lại loạt thành tựu đã cùng nhau tạo dựng và hướng tới tương lai phía trước. Mang tên “ARIRANG”, tour diễn đồng hành cùng album phòng thu thứ năm của BTS, đan xen những góc nhìn nội tâm chân thật cùng các chủ đề phổ quát về nỗi nhớ và tình yêu sâu đậm — những yếu tố làm nên bản sắc riêng của nhóm. Với thiết kế sân khấu 360 độ đặc trưng đầy choáng ngợp, concert mang đến trải nghiệm nhập vai, đưa khán giả trở thành một phần trong khoảnh khắc lễ hội ấy. Cùng nhau hòa mình vào những khoảnh khắc bùng nổ trong màn tái xuất mang tính biểu tượng của BTS trên màn ảnh rộng toàn cầu — với 2 sự kiện cực đại: Ngày 13/6 và 14/6 được PHÁT TRỰC TIẾP TỪ BUSAN. Phim mới BTS WORLD TOUR ‘ARIRANG’ IN BUSAN: LIVE VIEWING có suất chiếu LIVE - Phát Sóng Trực Tiếp vào 16:45 ngày 13.06 và REBROADCAST - Phát Lại vào 16:45 ngày 14.06.2026 tại các rạp chiếu phim toàn quốc.', N'Đang cập nhật', 0, 'P', 'https://www.youtube.com/watch?v=3DxPbeFtoDI&t=1s', 'images/movie_bts_arirang.png', 'Now Showing', N'BTS'),
 (N'Lầu Chú Hỏa', N'Để câu view, một nhóm streamer livestream khám phá Lầu Chú Hỏa, dinh thự bỏ hoang gắn với truyền thuyết về con ma nhà họ Hứa. Nhưng ngay từ những phút đầu, mọi thứ đã vượt khỏi tầm kiểm soát. Hiện tượng siêu nhiên liên tiếp xảy ra, kéo cả nhóm vào vòng xoáy ám ảnh không lối thoát. Buổi livestream nhanh chóng biến thành nơi “tạo nghiệp – trả nghiệp”, khi từng người phải trả giá cho lòng tham và sự báng bổ trước linh hồn oan khuất của cô tiểu thư họ Hứa.', N'Hùng Trấn', 94, 'T18', 'https://www.youtube.com/watch?v=iYH9lUytbmA', 'images/movie_lau_chu_hoa.png', 'Now Showing', N'Trần Kỳ Anh, Nguyễn Minh Thời, Ngọc Chí Bảo'),
-(N'Cơn Thịnh Nộ', N'Phim xoay quanh Wang Wei (Xie Miao), một người bán hàng bị câm, đang sinh sống ở Hồng Kông cùng con gái Rainy (Yang Enyou). Một ngày nọ, Rainy bị một đường dây buôn bán trẻ em bắt cóc. Wei tìm đến cảnh sát giúp đỡ nhưng bị từ chối vì cảnh sát ở đây đều đã bị tha hóa. Wei bắt đầu một cuộc trả thù không ngừng nghỉ để giải cứu con gái. Anh liên minh với Navin (Joe Taslim), một nhà báo có vợ mất tích khi đang điều tra cùng một đường dây buôn người.', N'Tanigaki Kenji', 110, 'T18', 'https://www.youtube.com/watch?v=F3PxYKjTVTA', 'images/movie_con_thinh_no.png', 'Now Showing', N'Tạ Miêu, Joe Taslim, Yang Enyou'),
-(N'Câu Chuyện Đồ Chơi 5', N'Các món đồ chơi đã trở lại trong Toy Story 5 của Disney và Pixar, và lần này sẽ là cuộc đối đầu giữa đồ chơi và công nghệ. Buzz, Woody, Jessie cùng cả nhóm đồ chơi quen thuộc sẽ phải đối mặt với thử thách khó khăn hơn gấp bội khi chạm trán một mối đe dọa ảnh hưởng đến toàn bộ thế giới đồ chơi.', N'Andrew Stanton', 102, 'P', 'https://www.youtube.com/watch?v=BXN2fTDtak8', 'images/movie_toy_story_5.png', 'Coming Soon', N'Tom Hanks, Keanu Reeves, Bonnie Hunt'),
-(N'Trường Hè, 2001', N'Lấy bối cảnh mùa hè năm 2001, phim theo chân Kiên - cậu thanh niên 17 tuổi từ Việt Nam trở về đoàn tụ với gia đình tại khu chợ nhộn nhịp ở thị trấn Cheb sau 10 năm xa cách. Chuyến trở về mở ra nhiều mâu thuẫn liên thế hệ, cảm giác lạc lõng và nỗi khao khát được thấu hiểu trong gia đình nhập cư.', N'Dužan Duong', 0, 'P', 'https://www.youtube.com/watch?v=j4cUB08ASNE', 'images/movie_truong_he_2001.png', 'Coming Soon', N'Doãn Hoàng Anh, Tiến Tài, Bùi Thế Dương, Lê Quỳnh Lan, Ngô Xuân Thắng');
+(N'Cơn Thịnh Nộ', N'Phim xoay quanh Wang Wei (Xie Miao), một người bán hàng bị câm, đang sinh sống ở Hồng Kông cùng con gái Rainy (Yang Enyou). Một ngày nọ, Rainy bị một đường dây buôn bán trẻ em bắt cóc. Wei tìm đến cảnh sát giúp đỡ nhưng bị từ chối vì cảnh sát ở đây đều đã bị tha hóa. Vì vậy, Wei bắt đầu một cuộc trả thù không ngừng nghỉ để giải cứu con gái. Anh liên minh với Navin (Joe Taslim), một nhà báo có vợ mất tích khi đang điều tra cùng một đường dây buôn người.', N'Tanigaki Kenji', 110, 'T18', 'https://www.youtube.com/watch?v=F3PxYKjTVTA', 'images/movie_con_thinh_no.png', 'Now Showing', N'Tạ Miêu, Joe Taslim, Yang Enyou');
 GO
 -- Gắn thể loại cho phim
 INSERT INTO Movie_Genres (MovieID, GenreID) VALUES
-(1, 7), (1, 3), -- Ốc Mượn Hồn: Tâm lý, Kinh dị
-(2, 3),          -- Ma Xó: Kinh dị
-(3, 7),          -- Dưới Bóng Điện Hạ: Tâm lý
-(4, 2), (4, 8), -- Siêu Quậy Marsupilami: Hài, Phiêu lưu
-(5, 1),          -- John Wick 4: Hành động
-(6, 6), (6, 8), (6, 5), -- Doraemon 45: Hoạt hình, Phiêu lưu, Viễn tưởng
-(7, 9), -- BTS: Ca Nhạc
-(8, 3), (8, 10), -- Lầu Chú Hỏa: Kinh dị, Ly Kì
-(9, 1), -- Cơn Thịnh Nộ: Hành động
-(10, 6), (10, 8), (10, 2), -- Câu Chuyện Đồ Chơi 5: Hoạt hình, Phiêu lưu, Hài
-(11, 7), (11, 11); -- Trường Hè, 2001: Tâm lý, Gia đình
+(1, 1), (1, 2), -- Lật Mặt 8: Hành động, Hài
+(2, 1), (2, 5), -- Avengers: Hành động, Viễn tưởng
+(3, 6), (3, 2), -- Inside Out 3: Hoạt hình, Hài
+(4, 7), (4, 3), -- Ốc Mượn Hồn: Tâm lý, Kinh dị
+(5, 3),          -- Ma Xó: Kinh dị
+(6, 7),          -- Dưới Bóng Điện Hạ: Tâm lý
+(7, 2), (7, 8), -- Siêu Quậy Marsupilami: Hài, Phiêu lưu
+(8, 1),          -- John Wick 4: Hành động
+(9, 6), (9, 8), (9, 5), -- Doraemon 45: Hoạt hình, Phiêu lưu, Viễn tưởng
+(10, 9), -- BTS: Ca Nhạc
+(11, 3), (11, 10), -- Lầu Chú Hỏa: Kinh dị, Ly Kì
+(12, 1); -- Cơn Thịnh Nộ: Hành động
 GO
 -- ═══════════════════ LỊCH CHIẾU ═══════════════════
-DECLARE @Today DATETIME = CAST(CAST(GETDATE() AS DATE) AS DATETIME);
-DECLARE @CinemaID INT, @RoomID INT, @MovieID INT;
-DECLARE @DayOffset INT;
-DECLARE @StartTime DATETIME, @EndTime DATETIME;
-
--- Table variable to temporarily hold room info with row index for partition distribution
-DECLARE @CinemaRooms TABLE (
-    CinemaID INT,
-    RoomID INT,
-    RowIdx INT
-);
-
-INSERT INTO @CinemaRooms (CinemaID, RoomID, RowIdx)
-SELECT CinemaID, RoomID, 
-       ROW_NUMBER() OVER (PARTITION BY CinemaID ORDER BY RoomID) - 1
-FROM Rooms;
-
--- Generate showtimes for the next 7 days (day 0 to day 6)
-SET @DayOffset = 0;
-WHILE @DayOffset <= 6
-BEGIN
-    -- Loop through each Cinema
-    DECLARE cinema_cursor CURSOR FOR SELECT CinemaID FROM Cinemas;
-    OPEN cinema_cursor;
-    FETCH NEXT FROM cinema_cursor INTO @CinemaID;
-    WHILE @@FETCH_STATUS = 0
-    BEGIN
-        -- Get rooms count for this cinema
-        DECLARE @RoomCount INT = (SELECT COUNT(*) FROM @CinemaRooms WHERE CinemaID = @CinemaID);
-        
-        -- Loop through all Now Showing movies
-        DECLARE movie_cursor CURSOR FOR SELECT MovieID, Duration FROM Movies WHERE Status = 'Now Showing';
-        OPEN movie_cursor;
-        DECLARE @Duration INT;
-        FETCH NEXT FROM movie_cursor INTO @MovieID, @Duration;
-        WHILE @@FETCH_STATUS = 0
-        BEGIN
-            -- Distribute movies across the cinema's rooms
-            IF @RoomCount > 0
-            BEGIN
-                SET @RoomID = (SELECT RoomID FROM @CinemaRooms WHERE CinemaID = @CinemaID AND RowIdx = (@MovieID % @RoomCount));
-                
-                -- Slot 1: 10:00 AM
-                SET @StartTime = DATEADD(minute, 600, DATEADD(day, @DayOffset, @Today));
-                SET @EndTime = DATEADD(minute, COALESCE(NULLIF(@Duration, 0), 120), @StartTime);
-                INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, BasePrice, Status)
-                VALUES (@MovieID, @RoomID, @StartTime, @EndTime, 90000, 'active');
-                
-                -- Slot 2: 3:00 PM
-                SET @StartTime = DATEADD(minute, 900, DATEADD(day, @DayOffset, @Today));
-                SET @EndTime = DATEADD(minute, COALESCE(NULLIF(@Duration, 0), 120), @StartTime);
-                INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, BasePrice, Status)
-                VALUES (@MovieID, @RoomID, @StartTime, @EndTime, 90000, 'active');
-                
-                -- Slot 3: 8:00 PM
-                SET @StartTime = DATEADD(minute, 1200, DATEADD(day, @DayOffset, @Today));
-                SET @EndTime = DATEADD(minute, COALESCE(NULLIF(@Duration, 0), 120), @StartTime);
-                INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, BasePrice, Status)
-                VALUES (@MovieID, @RoomID, @StartTime, @EndTime, 110000, 'active');
-            END
-            
-            FETCH NEXT FROM movie_cursor INTO @MovieID, @Duration;
-        END
-        CLOSE movie_cursor;
-        DEALLOCATE movie_cursor;
-        
-        FETCH NEXT FROM cinema_cursor INTO @CinemaID;
-    END
-    CLOSE cinema_cursor;
-    DEALLOCATE cinema_cursor;
-    
-    SET @DayOffset = @DayOffset + 1;
-END
+DECLARE @Today DATE = GETDATE();
+INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, BasePrice, Status) VALUES
+-- Ngày hôm nay
+(1, 1, DATEADD(hour, 9,  CAST(@Today AS DATETIME)), DATEADD(hour, 11, CAST(@Today AS DATETIME)), 85000,  'active'),
+(1, 4, DATEADD(hour, 14, CAST(@Today AS DATETIME)), DATEADD(hour, 16, CAST(@Today AS DATETIME)), 90000,  'active'),
+(2, 2, DATEADD(hour, 10, CAST(@Today AS DATETIME)), DATEADD(hour, 12, CAST(@Today AS DATETIME)), 90000,  'active'),
+(2, 7, DATEADD(hour, 19, CAST(@Today AS DATETIME)), DATEADD(hour, 21, CAST(@Today AS DATETIME)), 120000, 'active'),
+(3, 3, DATEADD(hour, 13, CAST(@Today AS DATETIME)), DATEADD(hour, 15, CAST(@Today AS DATETIME)), 75000,  'active'),
+(4, 7, DATEADD(hour, 15, CAST(@Today AS DATETIME)), DATEADD(hour, 18, CAST(@Today AS DATETIME)), 120000, 'active'),
+(5, 8, DATEADD(hour, 20, CAST(@Today AS DATETIME)), DATEADD(hour, 22, CAST(@Today AS DATETIME)), 95000,  'active'),
+-- Ngày mai
+(1, 1, DATEADD(hour, 33, CAST(@Today AS DATETIME)), DATEADD(hour, 35, CAST(@Today AS DATETIME)), 85000,  'active'),
+(3, 2, DATEADD(hour, 34, CAST(@Today AS DATETIME)), DATEADD(hour, 36, CAST(@Today AS DATETIME)), 75000,  'active'),
+(4, 3, DATEADD(hour, 38, CAST(@Today AS DATETIME)), DATEADD(hour, 41, CAST(@Today AS DATETIME)), 120000, 'active');
 GO
 -- ═══════════════════ ĐỒ ĂN & NƯỚC UỐNG ═══════════════════
 INSERT INTO FoodBeverages (Name, Description, Category, Price, Stock, ImageURL, IsAvailable) VALUES
-(N'Combo Solo',        N'1 Bắp ngọt nhỏ + 1 Nước ngọt lớn',        N'Combos',            55000,  200, 'images/combo_solo.png', 1),
-(N'Combo Couple',      N'1 Bắp ngọt lớn + 2 Nước ngọt lớn',        N'Combos',            95000,  150, 'images/combo_couple.png', 1),
-(N'Combo Family',      N'2 Bắp ngọt lớn + 4 Nước ngọt lớn',        N'Combos',            175000, 100, 'images/combo_mega.png', 1),
-(N'Bắp Ngọt Lớn',     N'Bắp rang bơ caramel size lớn',             N'Bắp rang & Snack',  45000,  300, 'images/combo_popcorn.png', 1),
-(N'Bắp Phô Mai',      N'Bắp rang rắc phô mai đặc biệt',           N'Bắp rang & Snack',  50000,  200, 'images/combo_popcorn.png', 1),
-(N'Nachos Grande',     N'Nachos giòn kèm sốt phô mai và salsa',    N'Bắp rang & Snack',  60000,  80,  'images/snack_nachos.png', 1),
-(N'Coca-Cola Lớn',     N'Coca-Cola 500ml',                          N'Nước uống',         30000,  500, 'images/drink_coca_cola.png', 1),
-(N'Trà Đào Cam Sả',   N'Trà đào thanh mát vị cam và sả',          N'Nước uống',         35000,  300, 'images/drink_peach_tea.png', 1),
-(N'Nước Suối',         N'Nước suối tinh khiết 500ml',               N'Nước uống',         15000,  1000,'images/drink_water.png', 1);
+(N'Combo Solo',        N'1 Bắp ngọt nhỏ + 1 Nước ngọt lớn',        N'Combos',            55000,  200, 'images/default_poster.svg', 1),
+(N'Combo Couple',      N'1 Bắp ngọt lớn + 2 Nước ngọt lớn',        N'Combos',            95000,  150, 'images/default_poster.svg', 1),
+(N'Combo Family',      N'2 Bắp ngọt lớn + 4 Nước ngọt lớn',        N'Combos',            175000, 100, 'images/default_poster.svg', 1),
+(N'Bắp Ngọt Lớn',     N'Bắp rang bơ caramel size lớn',             N'Bắp rang & Snack',  45000,  300, 'images/default_poster.svg', 1),
+(N'Bắp Phô Mai',      N'Bắp rang rắc phô mai đặc biệt',           N'Bắp rang & Snack',  50000,  200, 'images/default_poster.svg', 1),
+(N'Nachos Grande',     N'Nachos giòn kèm sốt phô mai và salsa',    N'Bắp rang & Snack',  60000,  80,  'images/default_poster.svg', 1),
+(N'Coca-Cola Lớn',     N'Coca-Cola 500ml',                          N'Nước uống',         30000,  500, 'images/default_poster.svg', 1),
+(N'Trà Đào Cam Sả',   N'Trà đào thanh mát vị cam và sả',          N'Nước uống',         35000,  300, 'images/default_poster.svg', 1),
+(N'Nước Suối',         N'Nước suối tinh khiết 500ml',               N'Nước uống',         15000,  1000,'images/default_poster.svg', 1);
 GO
 -- ═══════════════════ MÃ KHUYẾN MÃI ═══════════════════
 INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxDiscount, UsageLimit, StartDate, EndDate, IsActive) VALUES
 ('GIAM20K',    'fixed',   20000, 100000, NULL,   100, GETDATE(), DATEADD(day, 30, GETDATE()), 1),
 ('GIAM10PT',   'percent', 10,    150000, 50000,  50,  GETDATE(), DATEADD(day, 30, GETDATE()), 1),
 ('WELCOME50',  'percent', 50,    200000, 100000, 200, GETDATE(), DATEADD(day, 60, GETDATE()), 1),
-('HEQUA2025',  'fixed',   30000, 80000,  NULL,   500, GETDATE(), DATEADD(day, 90, GETDATE()), 1),
-('GIAM50K',    'fixed',   50,    1,      NULL,   50,  '2026-06-15', '2026-06-20', 1);
+('HEQUA2025',  'fixed',   30000, 80000,  NULL,   500, GETDATE(), DATEADD(day, 90, GETDATE()), 1);
 GO
 -- ═══════════════════ GIAO DỊCH MẪU (BOOKINGS) ═══════════════════
 -- Tìm CustomerRoleID theo tên để tránh hardcode số
@@ -528,7 +471,457 @@ INSERT INTO Reviews (UserID, MovieID, Rating, Comment) VALUES
 (@R1, 3, 7,  N'Phim hài nhẹ nhàng, phù hợp gia đình.');
 GO
 
--- ═══════════════════ BẢNG COMBO BẮP NƯỚC ═══════════════════
+-- 1. ĐẢM BẢO CÓ ÍT NHẤT 1 BỘ PHIM VÀ 1 MÓN F&B
+IF NOT EXISTS (SELECT * FROM Movies)
+BEGIN
+    INSERT INTO Movies (Title, Description, Duration, AgeRating, Status) 
+    VALUES (N'Lật Mặt 7: Một Điều Ước', N'Phim gia đình cảm động', 120, 'T13', 'showing');
+END
+DECLARE @MovieID INT = (SELECT TOP 1 MovieID FROM Movies);
+IF NOT EXISTS (SELECT * FROM FoodBeverages)
+BEGIN
+    INSERT INTO FoodBeverages (Name, Category, Price, Stock, IsAvailable)
+    VALUES (N'Combo Bắp Nước', N'Combo', 105000, 100, 1);
+END
+DECLARE @FnBID INT = (SELECT TOP 1 FnBID FROM FoodBeverages);
+-- 1.5 ĐẢM BẢO CÓ RẠP (CINEMAS) ĐỂ BƠM DỮ LIỆU
+IF NOT EXISTS (SELECT * FROM Cinemas)
+BEGIN
+    INSERT INTO Cinemas (CinemaName, Address, City) VALUES 
+    (N'D-CINEMA GO! Đà Nẵng', N'Tầng 3 GO!, Vĩnh Trung, Thanh Khê', N'Đà Nẵng'),
+    (N'D-CINEMA Vincom Đà Nẵng', N'Tầng 4 Vincom Plaza, Ngô Quyền, Sơn Trà', N'Đà Nẵng'),
+    (N'D-CINEMA Lotte Center Hà Nội', N'Tầng 6 Lotte Center, Đào Tấn, Ba Đình', N'Hà Nội'),
+    (N'D-CINEMA Giga Mall', N'Tầng 5 Giga Mall, Phạm Văn Đồng', N'Hồ Chí Minh');
+END
+-- 2. DÙNG CURSOR ĐỂ DUYỆT QUA TẤT CẢ CÁC RẠP
+DECLARE @Now DATETIME = GETDATE();
+DECLARE @LastMonth DATETIME = DATEADD(month, -1, @Now);
+DECLARE @CurrentCinemaID INT;
+DECLARE cinema_cursor CURSOR FOR SELECT CinemaID FROM Cinemas;
+OPEN cinema_cursor;
+FETCH NEXT FROM cinema_cursor INTO @CurrentCinemaID;
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    -- 2a. Đảm bảo mỗi rạp có ít nhất 1 phòng
+    DECLARE @RoomID INT = (SELECT TOP 1 RoomID FROM Rooms WHERE CinemaID = @CurrentCinemaID);
+    IF @RoomID IS NULL
+    BEGIN
+        INSERT INTO Rooms (CinemaID, RoomName, TotalSeats) VALUES (@CurrentCinemaID, 'Room VIP', 100);
+        SET @RoomID = SCOPE_IDENTITY();
+    END
+    -- 2b. Tạo 1 lịch chiếu Live cho mỗi rạp
+    DECLARE @ShowtimeLive INT;
+    INSERT INTO Showtimes (MovieID, RoomID, StartTime, EndTime, BasePrice, Status)
+    VALUES (@MovieID, @RoomID, DATEADD(minute, -40, @Now), DATEADD(minute, 80, @Now), 80000, 'active');
+    SET @ShowtimeLive = SCOPE_IDENTITY();
+    -- 2c. Tạo 10 vé cho tháng trước
+    DECLARE @i INT = 1;
+    WHILE @i <= 10
+    BEGIN
+        INSERT INTO Tickets (ShowtimeID, SeatID, TicketPrice, TotalAmount, Status, BookedAt)
+        VALUES (@ShowtimeLive, @i, 80000, 185000, 'confirmed', @LastMonth);
+        
+        -- Kèm bắp nước
+        INSERT INTO Ticket_FnB (TicketID, FnBID, Quantity) VALUES (SCOPE_IDENTITY(), @FnBID, 1);
+        SET @i = @i + 1;
+    END
+    -- 2d. Tạo 15 vé cho tháng này
+    SET @i = 1;
+    WHILE @i <= 15
+    BEGIN
+        INSERT INTO Tickets (ShowtimeID, SeatID, TicketPrice, TotalAmount, Status, BookedAt)
+        VALUES (@ShowtimeLive, @i + 20, 80000, 80000, 'confirmed', @Now);
+        
+        -- Một nửa mua bắp nước
+        IF @i <= 7
+        BEGIN
+            INSERT INTO Ticket_FnB (TicketID, FnBID, Quantity) VALUES (SCOPE_IDENTITY(), @FnBID, 1);
+        END
+        SET @i = @i + 1;
+    END
+    -- 2e. Tạo 3 vé phát hiện tại cho "Giao dịch gần đây"
+    SET @i = 1;
+    WHILE @i <= 3
+    BEGIN
+        INSERT INTO Tickets (ShowtimeID, SeatID, TicketPrice, TotalAmount, Status, BookedAt)
+        VALUES (@ShowtimeLive, @i + 50, 80000, 185000, 'confirmed', DATEADD(minute, -@i, @Now));
+        
+        INSERT INTO Ticket_FnB (TicketID, FnBID, Quantity) VALUES (SCOPE_IDENTITY(), @FnBID, 1);
+        SET @i = @i + 1;
+    END
+    FETCH NEXT FROM cinema_cursor INTO @CurrentCinemaID;
+END
+CLOSE cinema_cursor;
+DEALLOCATE cinema_cursor;
+
+-- ─── Xóa bảng nếu đã tồn tại và tạo lại mới ─────────────────────
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PaymentQRImages')
+BEGIN
+    DROP TABLE PaymentQRImages;
+    PRINT N'Đã xóa bảng cũ PaymentQRImages.';
+END
+GO
+
+CREATE TABLE PaymentQRImages (
+    QRImageID     INT            IDENTITY(1,1) PRIMARY KEY,
+    PaymentMethod NVARCHAR(50)   NOT NULL UNIQUE,
+    ImagePath     NVARCHAR(500)  NOT NULL,           -- Đường dẫn file ảnh static (fallback)
+    DisplayName   NVARCHAR(200)  NOT NULL,
+    Description   NVARCHAR(1000),
+    AccountName   NVARCHAR(200),                     -- Tên chủ tài khoản
+    AccountNumber NVARCHAR(100),                     -- Số tài khoản / SĐT
+    BankName      NVARCHAR(200),                     -- Tên ngân hàng / ví
+    BankCode      NVARCHAR(20),                      -- Mã ngân hàng theo chuẩn VietQR (VD: MB, VCB, TCB)
+    IsActive      BIT            DEFAULT 1,
+    CreatedAt     DATETIME       DEFAULT GETDATE(),
+    UpdatedAt     DATETIME       DEFAULT GETDATE()
+);
+PRINT N'Đã tạo mới bảng PaymentQRImages.';
+GO
+
+-- ─── Xoá dữ liệu cũ để seed lại sạch ─────────────────────────
+DELETE FROM PaymentQRImages WHERE PaymentMethod IN ('qrpay', 'momo');
+GO
+
+-- ─── Seed 2 phương thức thanh toán với thông tin tài khoản thật ───
+INSERT INTO PaymentQRImages (PaymentMethod, ImagePath, DisplayName, Description, AccountName, AccountNumber, BankName, BankCode)
+VALUES
+(
+    'qrpay',
+    '/images/qr_vietqr_mb.png',
+    N'QR Pay (VietQR / MB Bank)',
+    N'Thanh toán nhanh qua VietQR – hỗ trợ 40+ ngân hàng qua Napas 247. Số tiền được điền tự động khi quét.',
+    N'NGUYEN MINH HUY',
+    N'0949391487',
+    N'MB Bank',
+    N'MB'
+),
+(
+    'momo',
+    '/images/qr_momo.png',
+    N'Ví điện tử MoMo',
+    N'Quét mã QR bằng ứng dụng MoMo hoặc ứng dụng Ngân hàng. Số tiền và nội dung chuyển khoản được điền tự động.',
+    N'NGUYEN MINH HUY',
+    N'PSP2605012400000587',
+    N'MoMo',
+    N'MOMO'
+);
+GO
+
+PRINT N'Seed PaymentQRImages hoàn tất.';
+PRINT N'';
+PRINT N'Thông tin tài khoản:';
+PRINT N'  MB Bank  | STK: 0949391487 | Chủ TK: NGUYEN MINH HUY | BankCode: MB';
+PRINT N'  MoMo     | SĐT: 0949391487 | Chủ TK: NGUYEN MINH HUY';
+PRINT N'';
+PRINT N'VietQR URL mẫu (MB Bank):';
+PRINT N'  https://img.vietqr.io/image/MB-0949391487-qr_only.png?amount=90000&addInfo=DCVIP123456&accountName=NGUYEN+MINH+HUY';
+GO
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PaymentTransactions')
+BEGIN
+    CREATE TABLE PaymentTransactions (
+        TransactionID     INT            IDENTITY(1,1) PRIMARY KEY,
+        Gateway           NVARCHAR(100)  NOT NULL,           -- Cổng thanh toán (SePay, PayOS, MBBank, MoMo, etc.)
+        TransactionDate   DATETIME       NOT NULL,           -- Thời gian giao dịch phía ngân hàng
+        AccountNumber     NVARCHAR(100)  NOT NULL,           -- Số tài khoản nhận tiền
+        AmountIn          DECIMAL(18,2)  NOT NULL,           -- Số tiền nhận vào
+        ReferenceNumber   NVARCHAR(200)  NOT NULL UNIQUE,    -- Mã tham chiếu duy nhất của ngân hàng (mã giao dịch FT...)
+        TransactionContent NVARCHAR(1000) NOT NULL,          -- Nội dung chuyển khoản để đối soát
+        PaymentMethod     NVARCHAR(50)   NOT NULL,           -- 'qrpay' hoặc 'momo'
+        RawData           NVARCHAR(MAX),                     -- JSON dữ liệu gốc từ webhook
+        CreatedAt         DATETIME       DEFAULT GETDATE()
+    );
+    PRINT N'Đã tạo bảng PaymentTransactions.';
+END
+ELSE
+BEGIN
+    PRINT N'Bảng PaymentTransactions đã tồn tại.';
+END
+GO
+ALTER TABLE Tickets
+ADD CONSTRAINT UQ_Tickets_Showtime_Seat UNIQUE (ShowtimeID, SeatID);
+
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='SystemSettings' AND xtype='U')
+BEGIN
+    CREATE TABLE SystemSettings (
+        SettingKey VARCHAR(50) PRIMARY KEY,
+        SettingValue NVARCHAR(MAX),
+        Description NVARCHAR(255),
+        UpdatedAt DATETIME DEFAULT GETDATE()
+    );
+
+    INSERT INTO SystemSettings (SettingKey, SettingValue, Description) VALUES
+    ('BASE_TICKET_PRICE', '50000', N'Giá vé cơ bản mặc định (VNĐ)'),
+    ('VIP_MULTIPLIER', '1.2', N'Hệ số nhân cho ghế VIP'),
+    ('COUPLE_MULTIPLIER', '1.5', N'Hệ số nhân cho ghế Couple/Sweetbox'),
+    ('MAINTENANCE_MODE', 'false', N'Bật chế độ bảo trì hệ thống (true/false)'),
+    ('HOTLINE', '1900 1234', N'Hotline liên hệ hệ thống rạp'),
+    ('SUPPORT_EMAIL', 'support@dcinema.vn', N'Email hỗ trợ khách hàng');
+    
+    PRINT 'Table SystemSettings created and defaults inserted.';
+END
+ELSE
+BEGIN
+    PRINT 'Table SystemSettings already exists.';
+END
+
+IF COL_LENGTH('dbo.Tickets', 'ReminderSentAt') IS NULL
+BEGIN
+    ALTER TABLE dbo.Tickets
+    ADD ReminderSentAt DATETIME NULL;
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_Tickets_ReminderScan'
+      AND object_id = OBJECT_ID('dbo.Tickets')
+)
+BEGIN
+    CREATE INDEX IX_Tickets_ReminderScan
+    ON dbo.Tickets (Status, ReminderSentAt, ShowtimeID, UserID)
+    INCLUDE (SeatID, QRCode);
+END
+GO
+
+CREATE TABLE Promotions (
+    PromotionID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    Title NVARCHAR(255) NOT NULL,
+    Description NVARCHAR(1000) NULL,
+    BadgeLabel NVARCHAR(80) NULL,
+    ImageURL VARCHAR(500) NULL,
+    LinkURL VARCHAR(500) NULL,
+    IsFeatured BIT NOT NULL CONSTRAINT DF_Promotions_IsFeatured DEFAULT 0,
+    IsActive BIT NOT NULL CONSTRAINT DF_Promotions_IsActive DEFAULT 1,
+    SortOrder INT NOT NULL CONSTRAINT DF_Promotions_SortOrder DEFAULT 0,
+    CreatedAt DATETIME NOT NULL CONSTRAINT DF_Promotions_CreatedAt DEFAULT GETDATE(),
+    UpdatedAt DATETIME NULL
+);
+
+/* Bổ sung cột CreatedAt cho bảng Genres nếu còn thiếu */
+IF OBJECT_ID('dbo.Genres', 'U') IS NOT NULL
+   AND COL_LENGTH('dbo.Genres', 'CreatedAt') IS NULL
+BEGIN
+    ALTER TABLE dbo.Genres
+    ADD CreatedAt DATETIME NOT NULL
+        CONSTRAINT DF_Genres_CreatedAt DEFAULT GETDATE();
+END;
+GO
+
+/* Đảm bảo các thể loại mặc định có đủ, không insert trùng */
+IF OBJECT_ID('dbo.Genres', 'U') IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Hành động')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Hành động');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Phiêu lưu')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Phiêu lưu');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Hài')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Hài');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Tình cảm')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Tình cảm');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Tâm lý')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Tâm lý');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Kinh dị')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Kinh dị');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Hoạt hình')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Hoạt hình');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Gia đình')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Gia đình');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Viễn tưởng')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Viễn tưởng');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Khoa học viễn tưởng')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Khoa học viễn tưởng');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Tội phạm')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Tội phạm');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Genres WHERE GenreName = N'Tài liệu')
+        INSERT INTO dbo.Genres (GenreName) VALUES (N'Tài liệu');
+END;
+GO
+
+/* Index hỗ trợ phần đánh giá phim */
+IF OBJECT_ID('dbo.MovieReviews', 'U') IS NOT NULL
+   AND NOT EXISTS (
+        SELECT 1 FROM sys.indexes
+        WHERE name = 'IX_MovieReviews_MovieID_IsVisible'
+          AND object_id = OBJECT_ID('dbo.MovieReviews')
+   )
+BEGIN
+    CREATE INDEX IX_MovieReviews_MovieID_IsVisible
+    ON dbo.MovieReviews (MovieID, IsVisible)
+    INCLUDE (Rating, CreatedAt, UpdatedAt);
+END;
+GO
+
+/* Index hỗ trợ phần tin tức & sự kiện */
+IF OBJECT_ID('dbo.NewsArticles', 'U') IS NOT NULL
+   AND NOT EXISTS (
+        SELECT 1 FROM sys.indexes
+        WHERE name = 'IX_NewsArticles_Public'
+          AND object_id = OBJECT_ID('dbo.NewsArticles')
+   )
+BEGIN
+    CREATE INDEX IX_NewsArticles_Public
+    ON dbo.NewsArticles (IsActive, Type, PublishedAt DESC, SortOrder)
+    INCLUDE (Title, Summary, ImageURL, BadgeLabel, Author, IsFeatured);
+END;
+GO
+
+IF COL_LENGTH('dbo.Tickets', 'ReminderSentAt') IS NULL
+BEGIN
+    ALTER TABLE dbo.Tickets
+    ADD ReminderSentAt DATETIME NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_Tickets_ReminderScan'
+      AND object_id = OBJECT_ID('dbo.Tickets')
+)
+BEGIN
+    CREATE INDEX IX_Tickets_ReminderScan
+    ON dbo.Tickets (Status, ReminderSentAt, ShowtimeID, UserID)
+    INCLUDE (SeatID, QRCode);
+END;
+GO
+
+UPDATE Showtimes
+SET StartTime = DATEADD(minute, 6, GETUTCDATE()),
+    EndTime = DATEADD(minute, 126, GETUTCDATE()),
+    Status = 'active'
+WHERE ShowtimeID = 33;
+
+UPDATE Tickets
+SET ReminderSentAt = NULL,
+    Status = 'confirmed'
+WHERE TicketID = 365;
+
+/* 1. Đảm bảo điểm user không bị NULL */
+UPDATE Users
+SET RewardPoints = 0
+WHERE RewardPoints IS NULL;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.default_constraints dc
+    JOIN sys.columns c ON dc.parent_object_id = c.object_id
+                         AND dc.parent_column_id = c.column_id
+    WHERE dc.parent_object_id = OBJECT_ID('dbo.Users')
+      AND c.name = 'RewardPoints'
+)
+BEGIN
+    ALTER TABLE dbo.Users
+    ADD CONSTRAINT DF_Users_RewardPoints DEFAULT 0 FOR RewardPoints;
+END;
+GO
+
+/* 2. Đánh dấu vé đã được cộng điểm hay chưa */
+IF COL_LENGTH('dbo.Tickets', 'PointsEarned') IS NULL
+BEGIN
+    ALTER TABLE dbo.Tickets
+    ADD PointsEarned INT NOT NULL
+        CONSTRAINT DF_Tickets_PointsEarned DEFAULT 0;
+END;
+GO
+
+IF COL_LENGTH('dbo.Tickets', 'PointsAwardedAt') IS NULL
+BEGIN
+    ALTER TABLE dbo.Tickets
+    ADD PointsAwardedAt DATETIME NULL;
+END;
+GO
+
+/* 3. Lịch sử cộng/trừ điểm */
+IF OBJECT_ID('dbo.RewardPointTransactions', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.RewardPointTransactions (
+        TransactionID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        UserID INT NOT NULL,
+        TicketID INT NULL,
+        VoucherID INT NULL,
+        PointsChange INT NOT NULL,
+        BalanceAfter INT NOT NULL,
+        TransactionType VARCHAR(30) NOT NULL,
+        Description NVARCHAR(255) NULL,
+        CreatedAt DATETIME NOT NULL CONSTRAINT DF_RewardPointTransactions_CreatedAt DEFAULT GETDATE(),
+
+        CONSTRAINT FK_RewardPointTransactions_Users
+            FOREIGN KEY (UserID) REFERENCES dbo.Users(UserID),
+
+        CONSTRAINT FK_RewardPointTransactions_Tickets
+            FOREIGN KEY (TicketID) REFERENCES dbo.Tickets(TicketID),
+
+        CONSTRAINT FK_RewardPointTransactions_Vouchers
+            FOREIGN KEY (VoucherID) REFERENCES dbo.Vouchers(VoucherID),
+
+        CONSTRAINT CK_RewardPointTransactions_Type
+            CHECK (TransactionType IN ('earn', 'redeem', 'adjust'))
+    );
+END;
+GO
+
+/* 4. Voucher nào thuộc user nào sau khi đổi điểm */
+IF OBJECT_ID('dbo.UserVouchers', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.UserVouchers (
+        UserVoucherID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        UserID INT NOT NULL,
+        VoucherID INT NOT NULL,
+        PointsSpent INT NOT NULL CONSTRAINT DF_UserVouchers_PointsSpent DEFAULT 0,
+        Source VARCHAR(30) NOT NULL CONSTRAINT DF_UserVouchers_Source DEFAULT 'reward',
+        RedeemedAt DATETIME NOT NULL CONSTRAINT DF_UserVouchers_RedeemedAt DEFAULT GETDATE(),
+        IsUsed BIT NOT NULL CONSTRAINT DF_UserVouchers_IsUsed DEFAULT 0,
+        UsedAt DATETIME NULL,
+
+        CONSTRAINT FK_UserVouchers_Users
+            FOREIGN KEY (UserID) REFERENCES dbo.Users(UserID),
+
+        CONSTRAINT FK_UserVouchers_Vouchers
+            FOREIGN KEY (VoucherID) REFERENCES dbo.Vouchers(VoucherID),
+
+        CONSTRAINT UQ_UserVouchers_User_Voucher
+            UNIQUE (UserID, VoucherID)
+    );
+END;
+GO
+
+/* 5. Index hỗ trợ truy vấn nhanh */
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_RewardPointTransactions_UserID_CreatedAt'
+      AND object_id = OBJECT_ID('dbo.RewardPointTransactions')
+)
+BEGIN
+    CREATE INDEX IX_RewardPointTransactions_UserID_CreatedAt
+    ON dbo.RewardPointTransactions (UserID, CreatedAt DESC);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_UserVouchers_UserID_IsUsed'
+      AND object_id = OBJECT_ID('dbo.UserVouchers')
+)
+BEGIN
+    CREATE INDEX IX_UserVouchers_UserID_IsUsed
+    ON dbo.UserVouchers (UserID, IsUsed)
+    INCLUDE (VoucherID, PointsSpent, RedeemedAt);
+END;
+GO
+
+-- ═══════════════════ BẢNG COMBO BẮP NƯỚC ═══════════════════ --Thêm --
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Combo')
 BEGIN
     CREATE TABLE Combo (
@@ -551,7 +944,7 @@ BEGIN
 END
 GO
 
--- ═══════════════════ BẢNG VOUCHER KHUYẾN MÃI ═══════════════════
+-- ═══════════════════ BẢNG VOUCHER KHUYẾN MÃI ═══════════════════ -- thêm --
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Voucher')
 BEGIN
     CREATE TABLE Voucher (
@@ -578,5 +971,3 @@ BEGIN
     ('KMEXPIRED', N'Khuyến mãi đã hết hạn', 'Percentage', 20.00, 50000.00, 20000.00, 20, 20, '2026-01-01', '2026-03-01', 'Expired', N'Chương trình giảm giá đầu năm.');
 END
 GO
-
-

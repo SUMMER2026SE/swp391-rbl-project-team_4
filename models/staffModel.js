@@ -13,7 +13,7 @@ class StaffModel {
       JOIN   Movies  m ON st.MovieID = m.MovieID
       JOIN   Rooms   r ON st.RoomID  = r.RoomID
       JOIN   Cinemas c ON r.CinemaID = c.CinemaID
-      WHERE  CAST(st.StartTime AS DATE) = CAST(GETDATE() AS DATE)
+      WHERE  CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = CAST(GETDATE() AS DATE)
         AND  st.Status = 'active'
       ORDER BY st.StartTime ASC
     `);
@@ -50,6 +50,7 @@ class StaffModel {
       // --- Kiểm tra ghế còn trống và tính tiền ---
       let ticketTotal = 0;
       const couplePairsCharged = new Set();
+      const seatPrices = {};
       
       for (const seatId of seatIds) {
         const sReq = transaction.request();
@@ -58,7 +59,7 @@ class StaffModel {
         const sCheck = await sReq.query(`
           SELECT s.SeatRow, s.SeatNumber, s.SeatType, s.PriceMultiplier, t.TicketID 
           FROM Seats s WITH (UPDLOCK)
-          LEFT JOIN Tickets t WITH (UPDLOCK) ON t.SeatID = s.SeatID AND t.ShowtimeID = @showtimeId AND t.Status IN ('confirmed','pending')
+          LEFT JOIN Tickets t WITH (UPDLOCK) ON t.SeatID = s.SeatID AND t.ShowtimeID = @showtimeId AND t.Status IN ('confirmed','pending','refund_requested')
           WHERE s.SeatID = @seatId
         `);
         if (sCheck.recordset.length === 0) {
@@ -85,6 +86,7 @@ class StaffModel {
         } else {
            seatPrice = ticketPrice * parseFloat(seat.PriceMultiplier || 1.0);
         }
+        seatPrices[seatId] = seatPrice;
         ticketTotal += seatPrice;
       }
 
@@ -134,17 +136,23 @@ class StaffModel {
       }
 
       const finalAmount = totalAmount - discountAmount;
+      const ticketFinalTotal = Math.max(0, finalAmount - fnbTotal);
 
       // --- Tạo vé với trạng thái 'confirmed' ngay (bán tại quầy) ---
       const createdTickets = [];
+      let isFirstTicket = true;
       for (const seatId of seatIds) {
+        const currentSeatPrice = seatPrices[seatId] || (ticketPrice * 1.0);
+        const discountRatio = ticketTotal > 0 ? (currentSeatPrice / ticketTotal) : 0;
+        const currentSeatTotalAmount = ticketFinalTotal * discountRatio;
+
         const tReq = transaction.request();
         tReq.input('userId',        sql.Int,      customerId);
         tReq.input('showtimeId',    sql.Int,      showtimeId);
         tReq.input('seatId',        sql.Int,      seatId);
         tReq.input('voucherId',     sql.Int,      voucherId);
         tReq.input('ticketPrice',   sql.Decimal,  ticketPrice);
-        tReq.input('totalAmount',   sql.Decimal,  finalAmount / seatIds.length);
+        tReq.input('totalAmount',   sql.Decimal,  currentSeatTotalAmount);
         tReq.input('paymentMethod', sql.NVarChar, paymentMethod);
         tReq.input('soldBy',        sql.Int,      staffId); // Staff ID
 
@@ -158,15 +166,18 @@ class StaffModel {
         const ticketId = tResult.recordset[0].TicketID;
         createdTickets.push(ticketId);
 
-        for (const item of foodItems) {
-          const fReq2 = transaction.request();
-          fReq2.input('ticketId', sql.Int, ticketId);
-          fReq2.input('fnbId',    sql.Int, item.fnbId);
-          fReq2.input('quantity', sql.Int, item.quantity);
-          await fReq2.query(`
-            INSERT INTO Ticket_FnB (TicketID, FnBID, Quantity)
-            VALUES (@ticketId, @fnbId, @quantity)
-          `);
+        if (isFirstTicket) {
+          for (const item of foodItems) {
+            const fReq2 = transaction.request();
+            fReq2.input('ticketId', sql.Int, ticketId);
+            fReq2.input('fnbId',    sql.Int, item.fnbId);
+            fReq2.input('quantity', sql.Int, item.quantity);
+            await fReq2.query(`
+              INSERT INTO Ticket_FnB (TicketID, FnBID, Quantity)
+              VALUES (@ticketId, @fnbId, @quantity)
+            `);
+          }
+          isFirstTicket = false;
         }
       }
 
@@ -231,7 +242,7 @@ class StaffModel {
 
     const result = await request.query(`
       SELECT t.TicketID, t.Status, t.BookedAt, t.CheckedAt,
-             u.FullName AS CustomerName, u.Phone AS CustomerPhone,
+             u.FullName AS CustomerName, u.Phone AS CustomerPhone, u.Email AS CustomerEmail,
              m.Title AS MovieTitle,
              st.StartTime, st.EndTime,
              r.RoomName, r.RoomType,

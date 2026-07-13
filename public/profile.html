@@ -401,7 +401,7 @@
     </footer>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=7"></script>
     <script>
     /* ─── Load user data ─── */
     document.addEventListener('DOMContentLoaded', async () => {
@@ -775,6 +775,11 @@
                             RoomName: rTypePf !== 'Standard' ? `[${rTypePf}] ${t.RoomName}` : t.RoomName,
                             RoomType: rTypePf,
                             Status: t.Status,
+                            RefundStatus: t.RefundStatus,
+                            RefundRequestStatus: t.RefundRequestStatus,
+                            RefundReason: t.RefundReason,
+                            RefundTransactionCode: t.RefundTransactionCode,
+                            AdminNote: t.AdminNote,
                             TotalAmount: 0,
                             Seats: [],
                             TicketIDs: []
@@ -813,10 +818,34 @@
                         btnClass = 'btn-view-ticket secondary';
                         btnText = 'N/A';
                     }
+                    if (b.Status === 'refund_requested' || b.RefundRequestStatus === 'pending') {
+                        statusClass = 'upcoming';
+                        statusText = 'Chờ hoàn tiền';
+                        btnClass = 'btn-view-ticket secondary';
+                        btnText = 'View Ticket';
+                    }
+                    if (b.RefundRequestStatus === 'approved') {
+                        statusClass = 'upcoming';
+                        statusText = 'Đã duyệt hoàn tiền';
+                    }
+                    if (b.RefundRequestStatus === 'rejected') {
+                        statusClass = 'cancelled';
+                        statusText = 'Từ chối hoàn tiền';
+                    }
+                    if (b.RefundRequestStatus === 'completed') {
+                        statusClass = 'cancelled';
+                        statusText = 'Đã hoàn tiền';
+                        btnText = 'N/A';
+                    }
                     
                     const priceFormatted = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(b.TotalAmount);
                     
-                    const isCancelable = b.Status !== 'cancelled' && (st.getTime() - Date.now() > 2 * 60 * 60 * 1000);
+                    const isCancelable = b.Status === 'confirmed'
+                        && !b.RefundRequestStatus
+                        && (st.getTime() - Date.now() > 2 * 60 * 60 * 1000);
+                    const refundNote = b.RefundRequestStatus
+                        ? `<div style="font-size: 0.78rem; color: #9ca3af; margin-top: 6px;">${b.AdminNote ? 'Ghi chú admin: ' + b.AdminNote : 'Yêu cầu hoàn tiền đang được xử lý.'}${b.RefundTransactionCode ? ' Mã GD: ' + b.RefundTransactionCode : ''}</div>`
+                        : '';
                     
                     html += `
                         <div class="ticket-item">
@@ -834,13 +863,14 @@
                                     </span>
                                     <span>Seats: ${b.Seats.join(', ')}</span>
                                 </div>
+                                ${refundNote}
                             </div>
                             <div class="t-right">
                                 <div class="t-status ${statusClass}">${statusText}</div>
                                 <div class="t-price">${priceFormatted}</div>
                                 <div style="display: flex; gap: 8px;">
                                     ${isCancelable ? `
-                                    <button class="btn-view-ticket secondary" style="color: #dc2626; border-color: rgba(220, 38, 38, 0.3);" onclick="cancelTicket(${b.TicketIDs[0]})">
+                                    <button class="btn-view-ticket secondary" style="color: #dc2626; border-color: rgba(220, 38, 38, 0.3);" onclick="cancelTicket('${b.TicketIDs.join(',')}')">
                                         Hủy vé
                                     </button>
                                     ` : ''}
@@ -1022,6 +1052,16 @@
     }
 
     /* ─── Cancel Ticket ─── */
+    function openRefundRequest(ticketIdsCsv) {
+        const ids = String(ticketIdsCsv || '')
+            .split(',')
+            .map(id => parseInt(id, 10))
+            .filter(Boolean);
+        if (!ids.length) return;
+        sessionStorage.setItem('refundTicketIds', ids.join(','));
+        window.location.href = 'refund-request.html?ticketIds=' + encodeURIComponent(ids.join(','));
+    }
+
     async function cancelTicket(ticketId) {
         if (!confirm("Bạn có chắc chắn muốn hủy vé này?\\nSố tiền sẽ được hoàn lại vào tài khoản ngân hàng của bạn trong vòng 3-5 ngày làm việc.")) {
             return;
@@ -1047,6 +1087,52 @@
             alert('Có lỗi xảy ra khi hủy vé.');
         }
     }
+    async function cancelTicket(ticketIdsCsv) {
+        const ticketIds = String(ticketIdsCsv || '')
+            .split(',')
+            .map(id => parseInt(id, 10))
+            .filter(Boolean);
+        if (!ticketIds.length) return;
+
+        const reason = prompt('Nhập lý do hủy vé / hoàn tiền:');
+        if (!reason || !reason.trim()) return;
+
+        const bankName = prompt('Nhập tên ngân hàng nhận hoàn tiền. Ví dụ: MB Bank, Vietcombank');
+        if (!bankName || !bankName.trim()) return;
+
+        const bankAccountNumber = prompt('Nhập số tài khoản ngân hàng:');
+        if (!bankAccountNumber || !bankAccountNumber.trim()) return;
+
+        const bankAccountHolder = prompt('Nhập tên chủ tài khoản:');
+        if (!bankAccountHolder || !bankAccountHolder.trim()) return;
+
+        if (!confirm('Gửi yêu cầu hoàn tiền cho đơn vé này? Admin sẽ chuyển khoản thủ công và cập nhật trạng thái sau khi hoàn tất.')) return;
+
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        try {
+            const res = await fetch('/api/bookings/request-refund', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ ticketIds, reason, bankName, bankAccountNumber, bankAccountHolder })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                alert('Đã gửi yêu cầu hoàn tiền. Vui lòng chờ admin xử lý.');
+                fetchMyBookings();
+            } else {
+                alert('Không thể gửi yêu cầu hoàn tiền: ' + data.message);
+            }
+        } catch (err) {
+            alert('Có lỗi xảy ra khi gửi yêu cầu hoàn tiền.');
+        }
+    }
+    function cancelTicket(ticketIdsCsv) {
+        openRefundRequest(ticketIdsCsv);
+    }
     </script>
 
     <style>
@@ -1056,3 +1142,4 @@
     <script src="js/chatbot.js"></script>
 </body>
 </html>
+

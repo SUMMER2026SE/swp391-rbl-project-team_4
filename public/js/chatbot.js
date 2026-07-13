@@ -1,5 +1,39 @@
 // chatbot.js
+function shouldShowChatbotWidget() {
+    const path = window.location.pathname.split('/').pop() || 'index.html';
+    const allowedPages = new Set([
+        'index.html',
+        'movies.html',
+        'movie-detail.html',
+        'booking.html',
+        'concessions.html',
+        'promotions.html',
+        'promotion-detail.html',
+        'news-events.html',
+        'ticket-prices.html',
+        'auth.html',
+        'forgot-password.html',
+        '404.html'
+    ]);
+
+    let user = null;
+    try {
+        const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+        user = userStr ? JSON.parse(userStr) : null;
+    } catch (err) {
+        user = null;
+    }
+
+    const role = user && user.roleName;
+    if (['Admin', 'Manager', 'Super Admin'].includes(role) || path === 'admin.html') return false;
+
+    const isGuestOrCustomer = !user || role === 'Customer';
+    return isGuestOrCustomer && allowedPages.has(path);
+}
+
 function initChatbotWidget() {
+    if (!shouldShowChatbotWidget() || document.getElementById('moviebot-container')) return;
+
     const chatContainer = document.createElement('div');
     chatContainer.id = 'moviebot-container';
 

@@ -837,7 +837,7 @@ function closeAddMovieModal() {
 function filterMovies(filter, btn) {
     document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-    
+
     if (filter === 'Tất cả') {
         filteredMovies = [...MOVIE_DATA];
     } else {
@@ -972,7 +972,7 @@ function navigate(page, btn) {
         loadPromotions();
         loadNewsArticles();
     }
-    
+
     if (page === 'pricing' || page === 'settings') {
         loadSettings();
     }
@@ -983,6 +983,15 @@ function navigate(page, btn) {
 
     if (page === 'combos') {
         loadCombos();
+    }
+
+    if (page === 'voucher') {
+        if (typeof loadVouchers === 'function') {
+            loadVouchers();
+        }
+        if (typeof initVoucherForm === 'function') {
+            initVoucherForm();
+        }
     }
 }
 
@@ -1006,6 +1015,14 @@ function adminLogout() {
    F&B MANAGEMENT
 ══════════════════════════ */
 let FNB_DATA = [];
+let currentFnbFilter = 'Tất cả';
+
+function filterFnB(filter, btn) {
+    document.querySelectorAll('.fnb-filter-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    currentFnbFilter = filter;
+    renderFnB();
+}
 
 async function loadFnB(search = '') {
     try {
@@ -1014,8 +1031,8 @@ async function loadFnB(search = '') {
             FNB_DATA = res.data;
             if (search) {
                 const term = search.toLowerCase();
-                FNB_DATA = FNB_DATA.filter(item => 
-                    item.Name.toLowerCase().includes(term) || 
+                FNB_DATA = FNB_DATA.filter(item =>
+                    item.Name.toLowerCase().includes(term) ||
                     (item.Description && item.Description.toLowerCase().includes(term))
                 );
             }
@@ -1032,13 +1049,18 @@ function renderFnB() {
     const container = document.getElementById('fnbTableBody');
     if (!container) return;
 
-    if (FNB_DATA.length === 0) {
-        container.innerHTML = '<tr><td colspan="7" style="padding:24px;color:#9ca3af;text-align:center;">Chưa có đồ ăn/nước uống nào.</td></tr>';
+    let itemsToRender = FNB_DATA;
+    if (currentFnbFilter !== 'Tất cả') {
+        itemsToRender = FNB_DATA.filter(item => item.Category === currentFnbFilter);
+    }
+
+    if (itemsToRender.length === 0) {
+        container.innerHTML = '<tr><td colspan="7" style="padding:24px;color:#9ca3af;text-align:center;">Chưa có mặt hàng nào thuộc danh mục này.</td></tr>';
         return;
     }
 
     let html = '';
-    FNB_DATA.forEach(item => {
+    itemsToRender.forEach(item => {
         html += `
             <tr style="border-bottom: 1px solid var(--border); opacity: ${item.IsAvailable ? 1 : 0.5};">
                 <td style="padding: 12px 16px;">
@@ -1052,7 +1074,7 @@ function renderFnB() {
                 </td>
                 <td style="padding: 12px 16px;">
                     <span style="font-size: 0.8rem; padding: 4px 8px; background: var(--bg); border-radius: 4px; color: var(--text2); font-weight: 500;">
-                        ${item.Category}
+                        ${item.Category === 'Combos' ? 'Combo' : item.Category}
                     </span>
                 </td>
                 <td style="padding: 12px 16px; font-weight: 700; color: var(--accent);">
@@ -1097,8 +1119,22 @@ function editFnB(id) {
     document.getElementById('btnCancelFnb').style.display = 'block';
 
     const dropZoneText = document.getElementById('fnbDropZoneText');
-    if (dropZoneText) {
-        dropZoneText.textContent = item.ImageURL ? `Hình hiện tại: ${item.ImageURL.split('/').pop()}` : 'Chọn file hoặc kéo thả vào đây';
+    const previewImg = document.getElementById('fnbPreviewImg');
+    const uploadIcon = document.getElementById('fnbUploadIcon');
+    if (item.ImageURL) {
+        if (previewImg) {
+            previewImg.src = item.ImageURL;
+            previewImg.style.display = 'block';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'none';
+        if (dropZoneText) dropZoneText.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
     }
 
     document.querySelector('.fnb-form-side').scrollIntoView({ behavior: 'smooth' });
@@ -1114,6 +1150,14 @@ function cancelEditFnB() {
     document.getElementById('btnCancelFnb').style.display = 'none';
     const dropZoneText = document.getElementById('fnbDropZoneText');
     if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
+
+    const previewImg = document.getElementById('fnbPreviewImg');
+    const uploadIcon = document.getElementById('fnbUploadIcon');
+    if (previewImg) {
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+    }
+    if (uploadIcon) uploadIcon.style.display = 'block';
 }
 
 async function deleteFnB(id) {
@@ -1299,8 +1343,22 @@ function editCombo(id) {
     document.getElementById('btnCancelCombo').style.display = 'block';
 
     const dropZoneText = document.getElementById('comboDropZoneText');
-    if (dropZoneText) {
-        dropZoneText.textContent = item.ImageURL ? `Hình hiện tại: ${item.ImageURL.split('/').pop()}` : 'Chọn file hoặc kéo thả vào đây';
+    const previewImg = document.getElementById('comboPreviewImg');
+    const uploadIcon = document.getElementById('comboUploadIcon');
+    if (item.ImageURL) {
+        if (previewImg) {
+            previewImg.src = item.ImageURL;
+            previewImg.style.display = 'block';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'none';
+        if (dropZoneText) dropZoneText.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
     }
 
     document.querySelector('#page-combos .fnb-form-side').scrollIntoView({ behavior: 'smooth' });
@@ -1317,6 +1375,14 @@ function cancelEditCombo() {
     document.getElementById('btnCancelCombo').style.display = 'none';
     const dropZoneText = document.getElementById('comboDropZoneText');
     if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
+
+    const previewImg = document.getElementById('comboPreviewImg');
+    const uploadIcon = document.getElementById('comboUploadIcon');
+    if (previewImg) {
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+    }
+    if (uploadIcon) uploadIcon.style.display = 'block';
 }
 
 async function saveCombo() {
@@ -1402,20 +1468,56 @@ async function toggleComboStatus(id) {
     }
 }
 
+function showImagePreview(file, previewImgId, iconId, textId, defaultText = 'Chọn file hoặc kéo thả vào đây') {
+    const previewImg = document.getElementById(previewImgId);
+    const uploadIcon = iconId ? document.getElementById(iconId) : null;
+    const textEl = textId ? document.getElementById(textId) : null;
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            if (previewImg) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+            }
+            if (uploadIcon) uploadIcon.style.display = 'none';
+            if (textEl) {
+                if (textId && textId.includes('DropZone')) {
+                    textEl.textContent = 'Thay đổi ảnh (click hoặc kéo thả file khác)';
+                } else {
+                    textEl.textContent = file.name;
+                }
+            }
+        };
+        reader.readAsDataURL(file);
+    } else {
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (uploadIcon) uploadIcon.style.display = 'block';
+        if (textEl) textEl.textContent = defaultText;
+    }
+}
+
 function handleFnbFileSelect(input) {
     const file = input.files[0];
-    const text = document.getElementById('fnbDropZoneText');
-    if (file && text) {
-        text.textContent = `Đã chọn: ${file.name}`;
-    }
+    showImagePreview(file, 'fnbPreviewImg', 'fnbUploadIcon', 'fnbDropZoneText');
 }
 
 function handleComboFileSelect(input) {
     const file = input.files[0];
-    const text = document.getElementById('comboDropZoneText');
-    if (file && text) {
-        text.textContent = `Đã chọn: ${file.name}`;
-    }
+    showImagePreview(file, 'comboPreviewImg', 'comboUploadIcon', 'comboDropZoneText');
+}
+
+function handleNewsFileSelect(input) {
+    const file = input.files[0];
+    showImagePreview(file, 'newsPreviewImg', null, 'newsFileName', 'Chưa chọn file');
+}
+
+function handlePromoFileSelect(input) {
+    const file = input.files[0];
+    showImagePreview(file, 'promoPreviewImg', null, 'promoFileName', 'Chưa chọn file');
 }
 
 let dragDropInitialized = false;
@@ -1450,7 +1552,7 @@ function initDragAndDrop() {
             const files = dt.files;
             if (files.length) {
                 fileInput.files = files;
-                if (textVal) textVal.textContent = `Đã chọn: ${files[0].name}`;
+                showImagePreview(files[0], `${prefix}PreviewImg`, `${prefix}UploadIcon`, `${prefix}DropZoneText`);
             }
         }, false);
     });
@@ -1753,8 +1855,8 @@ function updateStaffKPIs() {
     if (kpiCards.length >= 4) {
         kpiCards[0].textContent = `${adminCount} người được ủy quyền`;
         kpiCards[1].textContent = `${managerCount} người được ủy quyền`;
-        kpiCards[2].textContent = `0 người được ủy quyền`; 
-        kpiCards[3].textContent = `${customerCount} khách hàng`; 
+        kpiCards[2].textContent = `0 người được ủy quyền`;
+        kpiCards[3].textContent = `${customerCount} khách hàng`;
     }
 }
 
@@ -1781,7 +1883,7 @@ function applyStaffFilters() {
             if (currentStaffRoleFilter === 'Khách hàng') roleMatch = (u.RoleName === 'Customer');
             if (currentStaffRoleFilter === 'Nhân viên') roleMatch = (u.RoleName === 'Staff');
         }
-        
+
         let statusMatch = true;
         if (currentStaffStatusFilter !== 'Tất cả') {
             if (currentStaffStatusFilter === 'Active') statusMatch = u.IsActive === 1;
@@ -1795,7 +1897,7 @@ function applyStaffFilters() {
 function renderStaffTable() {
     const body = document.getElementById('staffTableBody');
     if (!body) return;
-    
+
     if (FILTERED_STAFF.length === 0) {
         body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px;">Không có dữ liệu nhân sự</td></tr>';
         return;
@@ -2496,7 +2598,7 @@ window.selectCinemaForBuilder = function (cinemaId, el) {
     if (ws) ws.style.display = 'none';
     if (detail) {
         detail.style.display = 'flex';
-        
+
         // Find cinema object
         const c = allCinemas.find(x => x.CinemaID === cinemaId);
         if (c) {
@@ -2584,7 +2686,7 @@ window.selectRoomForBuilder = async function (roomId, el) {
     if (el) el.classList.add('active');
 
     currentBuilderRoomId = roomId;
-    
+
     // Toggle Workspace visibility vs Detail visibility
     const ws = document.getElementById('cinemaWorkspace');
     const detail = document.getElementById('cinemaDetail');
@@ -2626,7 +2728,7 @@ window.selectRoomForBuilder = async function (roomId, el) {
 };
 
 // --- Cinema CRUD ---
-window.openAddCinemaModal = function() {
+window.openAddCinemaModal = function () {
     document.getElementById('cinemaModalTitle').innerText = 'Thêm cụm rạp mới';
     document.getElementById('cinemaId').value = '';
     document.getElementById('cinemaForm').reset();
@@ -2634,7 +2736,7 @@ window.openAddCinemaModal = function() {
     document.getElementById('cinemaModal').style.display = 'block';
 };
 
-window.openEditCinemaModal = function(id) {
+window.openEditCinemaModal = function (id) {
     const c = allCinemas.find(x => x.CinemaID === id);
     if (!c) return;
     document.getElementById('cinemaModalTitle').innerText = 'Sửa thông tin cụm rạp';
@@ -2646,12 +2748,12 @@ window.openEditCinemaModal = function(id) {
     document.getElementById('cinemaModal').style.display = 'block';
 };
 
-window.closeCinemaModal = function() {
+window.closeCinemaModal = function () {
     document.getElementById('cinemaModalOverlay').style.display = 'none';
     document.getElementById('cinemaModal').style.display = 'none';
 };
 
-window.saveCinema = async function(e) {
+window.saveCinema = async function (e) {
     if (e) e.preventDefault();
     const id = document.getElementById('cinemaId').value;
     const name = document.getElementById('cinemaNameInput').value.trim();
@@ -2706,7 +2808,7 @@ window.saveCinema = async function(e) {
     }
 };
 
-window.deleteCinema = async function(id) {
+window.deleteCinema = async function (id) {
     const c = allCinemas.find(x => x.CinemaID === id);
     if (!c) return;
     if (!confirm(`Bạn có chắc chắn muốn xóa cụm rạp "${c.CinemaName}"? Hành động này không thể hoàn tác.`)) {
@@ -2745,7 +2847,7 @@ window.deleteCinema = async function(id) {
 };
 
 // --- Room CRUD ---
-window.openAddRoomModal = function(cinemaId) {
+window.openAddRoomModal = function (cinemaId) {
     document.getElementById('roomModalTitle').innerText = 'Thêm phòng chiếu mới';
     document.getElementById('roomId').value = '';
     document.getElementById('roomCinemaId').value = cinemaId;
@@ -2758,6 +2860,8 @@ window.openAddRoomModal = function(cinemaId) {
 window.openEditRoomModal = function(id, currentName) {
     const r = ROOM_DATA.find(x => x.RoomID === id);
     document.getElementById('roomModalTitle').innerText = 'Sửa phòng chiếu';
+window.openEditRoomModal = function (id, currentName) {
+    document.getElementById('roomModalTitle').innerText = 'Sửa tên phòng chiếu';
     document.getElementById('roomId').value = id;
     document.getElementById('roomCinemaId').value = r ? r.CinemaID : '';
     document.getElementById('roomNameInput').value = currentName;
@@ -2766,12 +2870,12 @@ window.openEditRoomModal = function(id, currentName) {
     document.getElementById('roomModal').style.display = 'block';
 };
 
-window.closeRoomModal = function() {
+window.closeRoomModal = function () {
     document.getElementById('roomModalOverlay').style.display = 'none';
     document.getElementById('roomModal').style.display = 'none';
 };
 
-window.saveRoom = async function(e) {
+window.saveRoom = async function (e) {
     if (e) e.preventDefault();
     const id = document.getElementById('roomId').value;
     const cinemaId = document.getElementById('roomCinemaId').value;
@@ -2816,7 +2920,7 @@ window.saveRoom = async function(e) {
     }
 };
 
-window.deleteRoom = async function(id) {
+window.deleteRoom = async function (id) {
     const r = ROOM_DATA.find(x => x.RoomID === id);
     if (!r) return;
     if (!confirm(`Bạn có chắc chắn muốn xóa phòng "${r.RoomName}"? Hành động này sẽ xóa tất cả ghế trong phòng.`)) {
@@ -2881,9 +2985,9 @@ window.updateBuilderRoomType = async function(newType) {
 
 /* ─── Helpers: update builder seat count stats ─── */
 function updateBuilderStats() {
-    const total  = builderSeats.filter(s => s.SeatType !== 'None').length;
+    const total = builderSeats.filter(s => s.SeatType !== 'None').length;
     const normal = builderSeats.filter(s => s.SeatType === 'Normal').length;
-    const vip    = builderSeats.filter(s => s.SeatType === 'VIP').length;
+    const vip = builderSeats.filter(s => s.SeatType === 'VIP').length;
     const couple = builderSeats.filter(s => s.SeatType === 'Couple').length;
     const tEl = document.getElementById('totalSeatCount');
     const nEl = document.getElementById('normalSeatCount');
@@ -2903,6 +3007,10 @@ function updateBuilderStats() {
             '2D':          { bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.3)',  color: '#4ade80' },
             'Standard':    { bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.3)', color: '#94a3b8' }
         };
+    if (cEl) cEl.textContent = Math.floor(couple / 2) + ' cap (' + couple + ' ghe)';
+    const bar = document.getElementById('seatStatsBar');
+    if (bar && currentBuilderRoomId) {
+        const room = (typeof ROOM_DATA !== 'undefined') ? ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId) : null;
 
         let typeSelectHtml = '';
         if (room) {
@@ -2942,6 +3050,16 @@ function updateBuilderStats() {
             </span>
             ${sep}
             <span style="color:#4ade80;font-weight:800;font-size:0.88rem;margin-left:2px;">Tổng: ${total} ghế</span>`;
+            <span style="color:#fff;font-weight:700;">${room ? room.RoomName : 'Phong da chon'}</span>
+            ${typeSelectHtml}
+            <span style="color:#4b5563;">|</span>
+            <span>Thuong: <strong style="color:#64748b;">${normal}</strong></span>
+            <span style="color:#4b5563;">|</span>
+            <span>VIP: <strong style="color:#f59e0b;">&#9733; ${vip}</strong></span>
+            <span style="color:#4b5563;">|</span>
+            <span>Cap doi: <strong style="color:#ec4899;">&#9829; ${Math.floor(couple / 2)} cap</strong></span>
+            <span style="color:#4b5563;">|</span>
+            <span style="color:#4ade80;font-weight:800;">Tong: ${total} ghe</span>`;
     }
 }
 
@@ -2950,6 +3068,8 @@ function updateBuilderStats() {
    Mirrors exactly what customers see in seats.html
    ═════════════════════════════════════════ */
 window.renderSeatMatrix = function() {
+═════════════════════════════════════════ */
+window.renderSeatMatrix = function () {
     const matrix = document.getElementById('seatMatrix');
     if (!matrix) return;
 
@@ -3031,6 +3151,17 @@ window.renderSeatMatrix = function() {
                         <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${rowChar}${c}</span>
                     </button>`;
                 }
+                const num2 = (c2 <= maxCol) ? c2 : c;
+                const lbl = (c2 <= maxCol) ? `${rowChar}${c}-${num2}` : `${rowChar}${c}`;
+
+                html += `<button class="seat-btn couple"
+                    onclick="toggleCoupleSeat('${rowChar}', ${c}, this)"
+                    data-row="${rowChar}" data-col1="${c}" data-col2="${num2}"
+                    title="Ghế cặp đôi ${lbl}">
+                    <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${lbl}</span>
+                </button>`;
+
+                if (c2 <= maxCol) c++; // skip next column if it was part of the pair
             } else {
                 let sClass = 'blocked';
                 let inner = `<span style="color:rgba(255,255,255,0.04);position:relative;z-index:2;">${c}</span>`;
@@ -3067,6 +3198,8 @@ window.renderSeatMatrix = function() {
 /* Toggle a single (Normal/VIP/None) seat */
 window.toggleSeat = function(rowChar, colNum, btn) {
     if (!currentBuilderRoomId) { alert('Vui lòng chọn phòng trước!'); return; }
+window.toggleSeat = function (rowChar, colNum, btn) {
+    if (!currentBuilderRoomId) { alert('Vui long chon mot phong truoc!'); return; }
     const tool = document.querySelector('input[name="seat_tool"]:checked').value;
 
     let seat = builderSeats.find(s => s.SeatRow === rowChar && s.SeatNumber === colNum);
@@ -3095,6 +3228,8 @@ window.toggleSeat = function(rowChar, colNum, btn) {
 /* Toggle a couple seat pair */
 window.toggleCoupleSeat = function(rowChar, col1, btn) {
     if (!currentBuilderRoomId) { alert('Vui lòng chọn phòng trước!'); return; }
+window.toggleCoupleSeat = function (rowChar, col1, btn) {
+    if (!currentBuilderRoomId) { alert('Vui long chon mot phong truoc!'); return; }
     const tool = document.querySelector('input[name="seat_tool"]:checked').value;
     const col2 = col1 + 1;
 
@@ -3112,14 +3247,8 @@ window.toggleCoupleSeat = function(rowChar, col1, btn) {
         [col1, col2].forEach((cn, idx) => {
             if (cn > maxCol) return;
             let s = builderSeats.find(x => x.SeatRow === rowChar && x.SeatNumber === cn);
-            const mult = tool === 'VIP' ? 1.2 : (tool === 'Couple' ? 1.5 : 1.0);
-            if (!s) {
-                s = { SeatRow: rowChar, SeatNumber: cn, SeatType: tool, PriceMultiplier: mult };
-                builderSeats.push(s);
-            } else {
-                s.SeatType = tool;
-                s.PriceMultiplier = mult;
-            }
+            if (!s) { s = { SeatRow: rowChar, SeatNumber: cn, SeatType: 'Couple', PriceMultiplier: 1.5 }; builderSeats.push(s); }
+            else { s.SeatType = 'Couple'; s.PriceMultiplier = 1.5; }
         });
     }
     renderSeatMatrix();
@@ -3351,6 +3480,15 @@ window.validateCoupleSeats = function() {
 window.clearSeatMap = function() {
     if (!confirm('Bạn có chắc chắn muốn làm mới toàn bộ sơ đồ ghế? Toàn bộ ghế sẽ được xóa (ngoại trừ các ghế đã bán vé).')) return;
     builderSeats = builderSeats.filter(s => s.IsBooked);
+window.adminZoomIn = function () { adminBuilderZoom = Math.min(2.0, adminBuilderZoom + 0.12); const c = document.querySelector('.cw-canvas'); if (c) c.style.transform = `scale(${adminBuilderZoom})`; };
+window.adminZoomOut = function () { adminBuilderZoom = Math.max(0.45, adminBuilderZoom - 0.12); const c = document.querySelector('.cw-canvas'); if (c) c.style.transform = `scale(${adminBuilderZoom})`; };
+
+window.addSeatRow = function () { maxRow++; renderSeatMatrix(); };
+window.addSeatCol = function () { maxCol++; renderSeatMatrix(); };
+
+window.clearSeatMap = function () {
+    if (!confirm('Ban co chac muon lam moi toan bo so do (xoa trang)?')) return;
+    builderSeats = [];
     renderSeatMatrix();
 };
 
@@ -3359,6 +3497,10 @@ window.previewCustomerView = function() {
     if (!currentBuilderRoomId) { alert('Vui lòng chọn một phòng!'); return; }
     const physicalSeats = builderSeats.filter(s => s.SeatType !== 'None');
     if (physicalSeats.length === 0) { alert('Phòng này chưa có ghế nào!'); return; }
+window.previewCustomerView = function () {
+    if (!currentBuilderRoomId) { alert('Vui long chon mot phong!'); return; }
+    const validSeats = builderSeats.filter(s => s.SeatType !== 'None');
+    if (validSeats.length === 0) { alert('Phong nay chua co ghe nao!'); return; }
 
     const room = (typeof ROOM_DATA !== 'undefined') ? ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId) : null;
     const roomName = room ? room.RoomName : 'Phòng chiếu';
@@ -3375,7 +3517,6 @@ window.previewCustomerView = function() {
 
     // Build preview
     const rowsMap = {};
-    const validSeats = builderSeats;
     validSeats.forEach(s => { if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = []; rowsMap[s.SeatRow].push(s); });
     const allRows = Object.keys(rowsMap).sort();
     const coupleRowSet = new Set(validSeats.filter(s => s.SeatType === 'Couple').map(s => s.SeatRow));
@@ -3389,7 +3530,7 @@ window.previewCustomerView = function() {
     const S = {
         base: 'width:36px;height:34px;border-radius:8px 8px 6px 6px;display:inline-flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:0.7rem;font-weight:800;position:relative;flex-shrink:0;border:1px solid rgba(255,255,255,0.08);box-shadow:0 3px 6px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.12);cursor:default;',
         normal: 'background:linear-gradient(180deg,#475569,#1e293b);color:#cbd5e1;',
-        vip:    'background:linear-gradient(180deg,#e28a18,#8a4805);color:#fef08a;border-color:rgba(252,211,77,0.3);',
+        vip: 'background:linear-gradient(180deg,#e28a18,#8a4805);color:#fef08a;border-color:rgba(252,211,77,0.3);',
         couple: 'width:80px;height:34px;border-radius:9px 9px 6px 6px;background:linear-gradient(180deg,#db2777,#7d0e3d);color:#fce7f3;border-color:rgba(251,207,232,0.3);',
         locked: 'background:linear-gradient(180deg,#181d24,#0b0e12);color:#ef4444;border-color:rgba(239,68,68,0.3);opacity:0.8;'
     };
@@ -3397,11 +3538,14 @@ window.previewCustomerView = function() {
     let seatsHtml = '';
     sortedRows.forEach(row => {
         const rowSeats = rowsMap[row].sort((a,b) => a.SeatNumber - b.SeatNumber);
+        const rowSeats = rowsMap[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
+        const isCpl = coupleRowSet.has(row);
         seatsHtml += `<div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;">`;
         seatsHtml += `<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:800;color:#6b7280;font-size:0.75rem;flex-shrink:0;">${row}</div>`;
 
         const total = rowSeats.length;
         const half = Math.floor(total/2);
+        const half = Math.floor(total / 2);
 
         for (let i = 0; i < total; i++) {
             const s = rowSeats[i];
@@ -3420,6 +3564,10 @@ window.previewCustomerView = function() {
                     seatsHtml += `<div style="${S.base}${s.SeatType==='VIP'?S.vip:S.normal}${S.locked}" title="${row}${s.SeatNumber} (Đã đặt)"><span style="position:relative;z-index:2;">🔒 ${s.SeatNumber}</span></div>`;
                 }
             } else if (s.SeatType === 'Couple') {
+            // Center aisle gap
+            if (total > 4 && i === half) seatsHtml += `<div style="width:20px;"></div>`;
+
+            if (s.SeatType === 'Couple') {
                 const s2 = rowSeats[i + 1];
                 if (s2 && s2.SeatType === 'Couple' && s2.SeatNumber === s.SeatNumber + 1 && !s2.IsBooked) {
                     const lbl = `${row}${s.SeatNumber}-${s2.SeatNumber}`;
@@ -3431,7 +3579,7 @@ window.previewCustomerView = function() {
             } else {
                 const isVip = s.SeatType === 'VIP';
                 const st = isVip ? S.vip : S.normal;
-                seatsHtml += `<div style="${S.base}${st}" title="${row}${s.SeatNumber}${isVip?' (VIP)':''}"><span style="position:relative;z-index:2;">${isVip?'<span style="position:absolute;top:-12px;right:-1px;font-size:0.48rem;color:#fbbf24;">&#9733;</span>':''} ${s.SeatNumber}</span></div>`;
+                seatsHtml += `<div style="${S.base}${st}" title="${row}${s.SeatNumber}${isVip ? ' (VIP)' : ''}"><span style="position:relative;z-index:2;">${isVip ? '<span style="position:absolute;top:-12px;right:-1px;font-size:0.48rem;color:#fbbf24;">&#9733;</span>' : ''} ${s.SeatNumber}</span></div>`;
             }
         }
         seatsHtml += `<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:800;color:#6b7280;font-size:0.75rem;flex-shrink:0;">${row}</div>`;
@@ -3441,6 +3589,9 @@ window.previewCustomerView = function() {
     const nCnt = validSeats.filter(s => s.SeatType==='Normal' && s.SeatType !== 'None').length;
     const vCnt = validSeats.filter(s => s.SeatType==='VIP').length;
     const cCnt = validSeats.filter(s => s.SeatType==='Couple').length;
+    const nCnt = validSeats.filter(s => s.SeatType === 'Normal').length;
+    const vCnt = validSeats.filter(s => s.SeatType === 'VIP').length;
+    const cCnt = validSeats.filter(s => s.SeatType === 'Couple').length;
 
     modal.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
@@ -3469,7 +3620,7 @@ window.previewCustomerView = function() {
             </span>
             <span style="display:flex;align-items:center;gap:7px;font-size:0.8rem;color:#ec4899;">
                 <span style="width:52px;height:20px;border-radius:3px;background:linear-gradient(180deg,#db2777,#7d0e3d);display:inline-block;"></span>
-                Cap doi +50% (${Math.floor(cCnt/2)} cap)
+                Cap doi +50% (${Math.floor(cCnt / 2)} cap)
             </span>
         </div>`;
 
@@ -3477,7 +3628,7 @@ window.previewCustomerView = function() {
     document.body.appendChild(ov);
 };
 
-window.saveSeatLayout = async function() {
+window.saveSeatLayout = async function () {
     if (!currentBuilderRoomId) {
         alert('Vui lòng chọn phòng trước khi lưu.');
         return;
@@ -3493,6 +3644,8 @@ window.saveSeatLayout = async function() {
 
     const payload = builderSeats;
     
+    const payload = builderSeats.filter(s => s.SeatType !== 'None');
+
     let roomType = null;
     const room = ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId);
     if (room) {
@@ -3516,6 +3669,7 @@ window.saveSeatLayout = async function() {
                 container.appendChild(toast);
                 setTimeout(() => toast.remove(), 4000);
             } else { showToast('Lưu sơ đồ ghế thành công!'); }
+            } else { alert('Luu so do ghe thanh cong!'); }
             await loadRooms();
             renderCinemaSidebar();
             const cRoom = ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId);
@@ -3531,6 +3685,10 @@ window.saveSeatLayout = async function() {
     } catch(err) {
         console.error(err);
         showToast('Lỗi kết nối khi lưu sơ đồ.', 'error');
+        } else { alert('Loi: ' + (res.message || 'Khong xac dinh')); }
+    } catch (err) {
+        console.error(err);
+        alert('Loi ket noi khi luu so do.');
     } finally {
         if (saveBtn) { saveBtn.innerHTML = oldHtml || '💾 Lưu bố cục'; saveBtn.disabled = false; }
     }
@@ -3843,10 +4001,10 @@ function renderQsSeatMap() {
         </div>`;
 
     sortedRows.forEach(rk => {
-        const rowSeats = [...rowsMap[rk]].sort((a,b) => a.SeatNumber - b.SeatNumber);
+        const rowSeats = [...rowsMap[rk]].sort((a, b) => a.SeatNumber - b.SeatNumber);
         const isCouple = coupleRowSet.has(rk);
         const total = rowSeats.length;
-        const half  = Math.floor(total / 2);
+        const half = Math.floor(total / 2);
 
         html += `<div style="display:flex;align-items:center;gap:7px;justify-content:center;margin-bottom:8px;">`;
         // Left label
@@ -3854,13 +4012,11 @@ function renderQsSeatMap() {
 
         for (let i = 0; i < total; i++) {
             const seat = rowSeats[i];
-            
+
             // Center aisle gap
             if (total > 4 && i === half) html += `<div style="width:18px;flex-shrink:0;"></div>`;
 
-            if (seat.SeatType === 'None') {
-                html += `<div style="width:33px;height:31px;visibility:hidden;pointer-events:none;flex-shrink:0;"></div>`;
-            } else if (seat.SeatType === 'Couple') {
+            if (seat.SeatType === 'Couple') {
                 const s1 = seat;
                 const s2 = rowSeats[i + 1];
                 if (s2 && s2.SeatType === 'Couple' && s2.SeatNumber === s1.SeatNumber + 1) {
@@ -3868,7 +4024,7 @@ function renderQsSeatMap() {
                     const sold = s1.Status !== 'available' || s2.Status !== 'available';
                     const lbl = `${rk}${s1.SeatNumber}-${s2.SeatNumber}`;
 
-                    const bg  = sel  ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
+                    const bg = sel ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
                     const border = sel ? '1px solid rgba(255,50,80,0.6)' : sold ? '1px dashed rgba(255,255,255,0.08)' : '1px solid rgba(251,207,232,0.25)';
                     const shadow = sel ? '0 0 14px rgba(229,9,20,0.6)' : sold ? 'none' : '0 3px 6px rgba(0,0,0,0.5),0 0 6px rgba(219,39,119,0.15)';
                     const onclick = (!sold) ? `onclick="toggleQsSeat(${s1.SeatID}, ${s2.SeatID}, '${lbl}')"` : '';
@@ -3880,9 +4036,9 @@ function renderQsSeatMap() {
                         box-shadow:${shadow};cursor:${cursor};
                         display:inline-flex;align-items:flex-end;justify-content:center;
                         padding-bottom:3px;font-size:0.6rem;font-weight:800;
-                        color:${sel?'#fff':sold?'rgba(255,255,255,0.15)':'#fce7f3'};
+                        color:${sel ? '#fff' : sold ? 'rgba(255,255,255,0.15)' : '#fce7f3'};
                         transition:all 0.2s;flex-shrink:0;position:relative;"
-                        ${onclick} title="${lbl}${sold?' (Đã bán)':''}">
+                        ${onclick} title="${lbl}${sold ? ' (Đã bán)' : ''}">
                         <span style="position:relative;z-index:5;">${lbl}</span>
                     </div>`;
                     i++; // skip next
@@ -3890,7 +4046,7 @@ function renderQsSeatMap() {
                     const sel = qsState.selectedSeatIds.includes(s1.SeatID);
                     const sold = s1.Status !== 'available';
                     const lbl = `${rk}${s1.SeatNumber}`;
-                    const bg  = sel  ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
+                    const bg = sel ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
                     const border = sel ? '1px solid rgba(255,50,80,0.6)' : sold ? '1px dashed rgba(255,255,255,0.08)' : '1px solid rgba(251,207,232,0.25)';
                     const shadow = sel ? '0 0 14px rgba(229,9,20,0.6)' : sold ? 'none' : '0 3px 6px rgba(0,0,0,0.5),0 0 6px rgba(219,39,119,0.15)';
                     const onclick = (!sold) ? `onclick="toggleQsSeat(${s1.SeatID}, null, '${lbl}')"` : '';
@@ -3902,14 +4058,14 @@ function renderQsSeatMap() {
                         box-shadow:${shadow};cursor:${cursor};
                         display:inline-flex;align-items:flex-end;justify-content:center;
                         padding-bottom:3px;font-size:0.6rem;font-weight:800;
-                        color:${sel?'#fff':sold?'rgba(255,255,255,0.15)':'#fce7f3'};
+                        color:${sel ? '#fff' : sold ? 'rgba(255,255,255,0.15)' : '#fce7f3'};
                         transition:all 0.2s;flex-shrink:0;position:relative;"
-                        ${onclick} title="${lbl}${sold?' (Đã bán)':''}">
+                        ${onclick} title="${lbl}${sold ? ' (Đã bán)' : ''}">
                         <span style="position:relative;z-index:5;">${lbl}</span>
                     </div>`;
                 }
             } else {
-                const sel  = qsState.selectedSeatIds.includes(seat.SeatID);
+                const sel = qsState.selectedSeatIds.includes(seat.SeatID);
                 const sold = seat.Status !== 'available';
                 const isVip = seat.SeatType === 'VIP';
 
@@ -3946,7 +4102,7 @@ function renderQsSeatMap() {
                     justify-content:center;padding-bottom:3px;
                     font-size:0.68rem;font-weight:800;color:${color};
                     transition:all 0.2s;flex-shrink:0;position:relative;"
-                    ${onclick} title="${rk}${seat.SeatNumber}${isVip?' (VIP)':''}${sold?' (Đã bán)':''}">
+                    ${onclick} title="${rk}${seat.SeatNumber}${isVip ? ' (VIP)' : ''}${sold ? ' (Đã bán)' : ''}">
                     ${isVip && !sold ? `<span style="position:absolute;top:0px;right:2px;font-size:0.44rem;color:#fbbf24;z-index:5;">★</span>` : ''}
                     <span style="position:relative;z-index:2;">${seat.SeatNumber}</span>
                 </div>`;
@@ -4306,8 +4462,8 @@ function renderAdminReviewTable() {
                 </td>
                 <td>
                     ${review.IsVisible
-                        ? '<span class="status-badge active">Đang hiển thị</span>'
-                        : '<span class="status-badge finished">Đã ẩn</span>'}
+                ? '<span class="status-badge active">Đang hiển thị</span>'
+                : '<span class="status-badge finished">Đã ẩn</span>'}
                 </td>
                 <td>
                     <div class="table-actions">
@@ -4355,6 +4511,266 @@ async function deleteAdminReview(reviewId) {
     }
 }
 
+let REFUND_DATA = [];
+let refundSearchTimer = null;
+
+function formatAdminVnd(value) {
+    return Number(value || 0).toLocaleString('vi-VN') + 'đ';
+}
+
+function getRefundFilters() {
+    const params = new URLSearchParams();
+    const status = document.getElementById('refundStatusFilter')?.value;
+    const search = document.getElementById('refundSearchInput')?.value.trim();
+    if (status) params.set('status', status);
+    if (search) params.set('search', search);
+    return params.toString();
+}
+
+async function loadAdminRefunds() {
+    const body = document.getElementById('refundAdminBody');
+    if (body) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải yêu cầu hoàn tiền...</td></tr>';
+    }
+    try {
+        const query = getRefundFilters();
+        const res = await apiFetch('/api/admin/refunds' + (query ? '?' + query : ''));
+        if (!res.success) {
+            if (body) body.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">${adminEscape(res.message || 'Không thể tải yêu cầu hoàn tiền.')}</td></tr>`;
+            return;
+        }
+        REFUND_DATA = (res.data && res.data.refunds) || [];
+        renderAdminRefundSummary(res.data && res.data.summary);
+        renderAdminRefundTable();
+    } catch (err) {
+        console.error('[Admin] loadAdminRefunds:', err);
+        if (body) body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">Lỗi kết nối server.</td></tr>';
+    }
+}
+
+function debouncedLoadAdminRefunds() {
+    clearTimeout(refundSearchTimer);
+    refundSearchTimer = setTimeout(loadAdminRefunds, 350);
+}
+
+function renderAdminRefundSummary(summary = {}) {
+    const totalEl = document.getElementById('refundKpiTotal');
+    const pendingEl = document.getElementById('refundKpiPending');
+    const approvedEl = document.getElementById('refundKpiApproved');
+    const amountEl = document.getElementById('refundKpiPendingAmount');
+    if (totalEl) totalEl.textContent = summary.totalRefunds || 0;
+    if (pendingEl) pendingEl.textContent = summary.pendingRefunds || 0;
+    if (approvedEl) approvedEl.textContent = summary.approvedRefunds || 0;
+    if (amountEl) amountEl.textContent = formatAdminVnd(summary.pendingAmount || 0);
+}
+
+function renderRefundStatus(status) {
+    const labels = {
+        pending: 'Chờ xử lý',
+        approved: 'Đã duyệt',
+        completed: 'Đã hoàn tiền',
+        rejected: 'Đã từ chối'
+    };
+    const colors = {
+        pending: 'background:rgba(245,158,11,0.12);color:#d97706;',
+        approved: 'background:rgba(59,130,246,0.12);color:#2563eb;',
+        completed: 'background:rgba(16,185,129,0.12);color:#059669;',
+        rejected: 'background:rgba(239,68,68,0.12);color:#dc2626;'
+    };
+    return `<span class="status-badge" style="${colors[status] || ''}">${labels[status] || status}</span>`;
+}
+
+function renderAdminRefundTable() {
+    const body = document.getElementById('refundAdminBody');
+    if (!body) return;
+
+    if (!REFUND_DATA.length) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có yêu cầu hoàn tiền phù hợp.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = REFUND_DATA.map(item => {
+        const seat = `${item.SeatRow || ''}${item.SeatNumber || ''}`;
+        const showtime = item.StartTime ? formatAdminDate(item.StartTime) : '';
+        const actionButtons = item.Status === 'pending'
+            ? `
+                <button class="tb-icon-sm" title="Duyệt yêu cầu" onclick="updateAdminRefund(${item.RefundID}, 'approve')" style="color:#2563eb;">Duyệt</button>
+                <button class="tb-icon-sm danger" title="Từ chối" onclick="updateAdminRefund(${item.RefundID}, 'reject')" style="color:#dc2626;">Từ chối</button>
+              `
+            : item.Status === 'approved'
+                ? `<button class="tb-icon-sm" title="Đã chuyển khoản" onclick="updateAdminRefund(${item.RefundID}, 'complete')" style="color:#059669;">Đã chuyển</button>`
+                : '<span style="color:var(--text3);font-size:0.78rem;">Đã xử lý</span>';
+
+        return `
+            <tr class="txn-row">
+                <td>
+                    <div style="font-weight:800;color:var(--text);font-size:0.88rem;">#${item.TicketID} - ${adminEscape(item.MovieTitle)}</div>
+                    <div style="font-size:0.74rem;color:var(--text2);margin-top:4px;">${adminEscape(showtime)} • ${adminEscape(item.CinemaName || '')} • ${adminEscape(item.RoomName || '')} • Ghế ${adminEscape(seat)}</div>
+                </td>
+                <td>
+                    <div style="font-weight:700;color:var(--text);font-size:0.86rem;">${adminEscape(item.FullName)}</div>
+                    <div style="font-size:0.75rem;color:var(--text2);margin-top:4px;">${adminEscape(item.Email || '')}</div>
+                    <div style="font-size:0.75rem;color:var(--text2);margin-top:2px;">${adminEscape(item.Phone || '')}</div>
+                </td>
+                <td style="font-weight:900;color:var(--accent);">${formatAdminVnd(item.RefundAmount)}</td>
+                <td>
+                    <div style="font-weight:800;color:var(--text);">${adminEscape(item.BankName)}</div>
+                    <div style="font-size:0.8rem;color:var(--text2);margin-top:4px;">STK: ${adminEscape(item.BankAccountNumber)}</div>
+                    <div style="font-size:0.8rem;color:var(--text2);margin-top:2px;">Chủ TK: ${adminEscape(item.BankAccountHolder)}</div>
+                    ${item.RefundTransactionCode ? `<div style="font-size:0.75rem;color:#059669;margin-top:4px;">Mã GD: ${adminEscape(item.RefundTransactionCode)}</div>` : ''}
+                </td>
+                <td style="max-width:260px;">
+                    <div style="font-size:0.84rem;line-height:1.45;white-space:normal;color:var(--text);">${adminEscape(item.Reason || 'Không có lý do.')}</div>
+                    ${item.AdminNote ? `<div style="font-size:0.75rem;color:var(--text2);margin-top:6px;">Admin: ${adminEscape(item.AdminNote)}</div>` : ''}
+                </td>
+                <td>
+                    ${renderRefundStatus(item.Status)}
+                    <div style="font-size:0.72rem;color:var(--text2);margin-top:6px;">${formatAdminDate(item.RequestedAt)}</div>
+                </td>
+                <td><div class="table-actions" style="gap:6px;flex-wrap:wrap;">${actionButtons}</div></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+let refundActionModalResolver = null;
+let refundActionModalMode = null;
+
+function openRefundActionModal(action) {
+    const config = {
+        approve: {
+            title: 'Duyệt yêu cầu hoàn tiền',
+            desc: 'Kiểm tra thông tin nhận tiền của khách hàng trước khi duyệt yêu cầu.',
+            noteLabel: 'Ghi chú duyệt',
+            notePlaceholder: 'Có thể bỏ trống hoặc nhập ghi chú cho yêu cầu này...',
+            submitLabel: 'Duyệt yêu cầu',
+            showTxCode: false
+        },
+        reject: {
+            title: 'Từ chối hoàn tiền',
+            desc: 'Nhập lý do từ chối để lưu lại lịch sử xử lý yêu cầu.',
+            noteLabel: 'Lý do từ chối *',
+            notePlaceholder: 'VD: Vé không đủ điều kiện hoàn tiền...',
+            submitLabel: 'Từ chối',
+            showTxCode: false
+        },
+        complete: {
+            title: 'Xác nhận đã chuyển khoản',
+            desc: 'Nhập mã giao dịch sau khi đã hoàn tiền cho khách hàng.',
+            noteLabel: 'Ghi chú hoàn tiền',
+            notePlaceholder: 'Có thể bỏ trống hoặc nhập ghi chú chuyển khoản...',
+            submitLabel: 'Xác nhận đã chuyển',
+            showTxCode: true
+        }
+    }[action];
+
+    if (!config) return Promise.resolve(null);
+
+    const overlay = document.getElementById('refundActionOverlay');
+    const modal = document.getElementById('refundActionModal');
+    const title = document.getElementById('refundActionTitle');
+    const desc = document.getElementById('refundActionDesc');
+    const txGroup = document.getElementById('refundTxCodeGroup');
+    const txInput = document.getElementById('refundTxCodeInput');
+    const noteLabel = document.getElementById('refundNoteLabel');
+    const noteInput = document.getElementById('refundNoteInput');
+    const error = document.getElementById('refundActionError');
+    const submitBtn = document.getElementById('refundActionSubmitBtn');
+
+    if (!overlay || !modal || !title || !desc || !txGroup || !txInput || !noteLabel || !noteInput || !error || !submitBtn) {
+        return Promise.resolve(null);
+    }
+
+    refundActionModalMode = action;
+    title.textContent = config.title;
+    desc.textContent = config.desc;
+    noteLabel.textContent = config.noteLabel;
+    noteInput.placeholder = config.notePlaceholder;
+    noteInput.value = '';
+    txInput.value = '';
+    txGroup.style.display = config.showTxCode ? 'block' : 'none';
+    error.style.display = 'none';
+    error.textContent = '';
+    submitBtn.textContent = config.submitLabel;
+    submitBtn.style.background = action === 'reject' ? '#dc2626' : '#ef1b2d';
+
+    overlay.style.display = 'block';
+    modal.style.display = 'block';
+    setTimeout(() => (config.showTxCode ? txInput : noteInput).focus(), 0);
+
+    return new Promise(resolve => {
+        refundActionModalResolver = resolve;
+    });
+}
+
+function closeRefundActionModal(result) {
+    const overlay = document.getElementById('refundActionOverlay');
+    const modal = document.getElementById('refundActionModal');
+    if (overlay) overlay.style.display = 'none';
+    if (modal) modal.style.display = 'none';
+
+    if (refundActionModalResolver) {
+        refundActionModalResolver(result || null);
+        refundActionModalResolver = null;
+    }
+    refundActionModalMode = null;
+}
+
+function submitRefundActionModal(event) {
+    event.preventDefault();
+
+    const action = refundActionModalMode;
+    const txCode = document.getElementById('refundTxCodeInput')?.value.trim() || '';
+    const note = document.getElementById('refundNoteInput')?.value.trim() || '';
+    const error = document.getElementById('refundActionError');
+
+    const fail = message => {
+        if (error) {
+            error.textContent = message;
+            error.style.display = 'block';
+        }
+    };
+
+    if (action === 'reject' && !note) {
+        fail('Vui lòng nhập lý do từ chối hoàn tiền.');
+        return;
+    }
+
+    if (action === 'complete' && !txCode) {
+        fail('Vui lòng nhập mã giao dịch chuyển khoản.');
+        return;
+    }
+
+    const result = {};
+    if (note) result.adminNote = note;
+    if (txCode) result.refundTransactionCode = txCode;
+    closeRefundActionModal(result);
+}
+
+async function updateAdminRefund(refundId, action) {
+    const payload = { action };
+    const modalResult = await openRefundActionModal(action);
+    if (!modalResult) return;
+    Object.assign(payload, modalResult);
+
+    try {
+        const res = await apiFetch(`/api/admin/refunds/${refundId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (res.success) {
+            showAdminToast(res.message, 'success');
+            loadAdminRefunds();
+        } else {
+            showAdminToast('Lỗi: ' + res.message, 'error');
+        }
+    } catch (err) {
+        console.error('[Admin] updateAdminRefund:', err);
+        showAdminToast('Lỗi kết nối server.', 'error');
+    }
+}
+
 let NEWS_DATA = [];
 
 function adminEscape(value) {
@@ -4393,6 +4809,7 @@ async function loadNewsArticles() {
 function renderNewsAdminTable() {
     const body = document.getElementById('newsAdminBody');
     if (!body) return;
+
     if (!NEWS_DATA.length) {
         body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Chưa có bài viết nào.</td></tr>';
         return;
@@ -4427,6 +4844,12 @@ function openNewsModal(id) {
     document.getElementById('newsFeatured').checked = false;
     document.getElementById('newsId').value = '';
     document.getElementById('newsModalTitle').textContent = 'THÊM TIN TỨC';
+    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('newsPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
     if (id) {
         const item = NEWS_DATA.find(x => x.ArticleID === id);
         if (!item) return;
@@ -4442,7 +4865,13 @@ function openNewsModal(id) {
         document.getElementById('newsSort').value = item.SortOrder || 0;
         document.getElementById('newsFeatured').checked = !!item.IsFeatured;
         document.getElementById('newsActive').checked = !!item.IsActive;
-        if (item.ImageURL) document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
+        if (item.ImageURL) {
+            document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
+            if (preview) {
+                preview.src = item.ImageURL;
+                preview.style.display = 'block';
+            }
+        }
     }
     document.getElementById('newsModalOverlay').style.display = 'block';
     document.getElementById('newsAdminModal').style.display = 'block';
@@ -4451,6 +4880,14 @@ function openNewsModal(id) {
 function closeNewsModal() {
     document.getElementById('newsModalOverlay').style.display = 'none';
     document.getElementById('newsAdminModal').style.display = 'none';
+
+    document.getElementById('newsImage').value = '';
+    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('newsPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 }
 
 async function saveNewsArticle(event) {
@@ -4596,6 +5033,12 @@ function renderPromoTable() {
 function openPromoModal(id) {
     document.getElementById('promoForm').reset();
     document.getElementById('promoCurrentImg').innerHTML = '';
+    document.getElementById('promoFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('promoPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 
     if (id) {
         const p = PROMO_DATA.find(x => x.PromotionID === id);
@@ -4611,6 +5054,10 @@ function openPromoModal(id) {
         document.getElementById('promoActive').checked = !!p.IsActive;
         if (p.ImageURL) {
             document.getElementById('promoCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${p.ImageURL}" target="_blank" style="color:var(--accent);">${p.ImageURL}</a>`;
+            if (preview) {
+                preview.src = p.ImageURL;
+                preview.style.display = 'block';
+            }
         }
     } else {
         document.getElementById('promoModalTitle').textContent = 'THÊM KHUYẾN MÃI';
@@ -4625,6 +5072,14 @@ function openPromoModal(id) {
 function closePromoModal() {
     document.getElementById('promoModalOverlay').style.display = 'none';
     document.getElementById('promoModal').style.display = 'none';
+
+    document.getElementById('promoImage').value = '';
+    document.getElementById('promoFileName').textContent = 'Chưa chọn file';
+    const preview = document.getElementById('promoPreviewImg');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
 }
 
 async function savePromo(event) {
@@ -4707,13 +5162,13 @@ async function loadSettings() {
         const res = await apiFetch('/api/admin/settings');
         if (res.success) {
             const data = res.data;
-            if(document.getElementById('cfg_BASE_TICKET_PRICE')) document.getElementById('cfg_BASE_TICKET_PRICE').value = data.BASE_TICKET_PRICE || '';
-            if(document.getElementById('cfg_VIP_MULTIPLIER')) document.getElementById('cfg_VIP_MULTIPLIER').value = data.VIP_MULTIPLIER || '';
-            if(document.getElementById('cfg_COUPLE_MULTIPLIER')) document.getElementById('cfg_COUPLE_MULTIPLIER').value = data.COUPLE_MULTIPLIER || '';
-            
-            if(document.getElementById('cfg_HOTLINE')) document.getElementById('cfg_HOTLINE').value = data.HOTLINE || '';
-            if(document.getElementById('cfg_SUPPORT_EMAIL')) document.getElementById('cfg_SUPPORT_EMAIL').value = data.SUPPORT_EMAIL || '';
-            if(document.getElementById('cfg_MAINTENANCE_MODE')) document.getElementById('cfg_MAINTENANCE_MODE').checked = (data.MAINTENANCE_MODE === 'true');
+            if (document.getElementById('cfg_BASE_TICKET_PRICE')) document.getElementById('cfg_BASE_TICKET_PRICE').value = data.BASE_TICKET_PRICE || '';
+            if (document.getElementById('cfg_VIP_MULTIPLIER')) document.getElementById('cfg_VIP_MULTIPLIER').value = data.VIP_MULTIPLIER || '';
+            if (document.getElementById('cfg_COUPLE_MULTIPLIER')) document.getElementById('cfg_COUPLE_MULTIPLIER').value = data.COUPLE_MULTIPLIER || '';
+
+            if (document.getElementById('cfg_HOTLINE')) document.getElementById('cfg_HOTLINE').value = data.HOTLINE || '';
+            if (document.getElementById('cfg_SUPPORT_EMAIL')) document.getElementById('cfg_SUPPORT_EMAIL').value = data.SUPPORT_EMAIL || '';
+            if (document.getElementById('cfg_MAINTENANCE_MODE')) document.getElementById('cfg_MAINTENANCE_MODE').checked = (data.MAINTENANCE_MODE === 'true');
         }
     } catch (e) {
         console.error('Failed to load settings', e);
@@ -4724,15 +5179,15 @@ async function savePricingSettings() {
     const basePrice = document.getElementById('cfg_BASE_TICKET_PRICE').value;
     const vipM = document.getElementById('cfg_VIP_MULTIPLIER').value;
     const coupleM = document.getElementById('cfg_COUPLE_MULTIPLIER').value;
-    
-    if(!basePrice || !vipM || !coupleM) return showToast('Lỗi', 'Vui lòng điền đủ thông tin');
-    
+
+    if (!basePrice || !vipM || !coupleM) return showToast('Lỗi', 'Vui lòng điền đủ thông tin');
+
     const payload = [
         { key: 'BASE_TICKET_PRICE', value: basePrice },
         { key: 'VIP_MULTIPLIER', value: vipM },
         { key: 'COUPLE_MULTIPLIER', value: coupleM }
     ];
-    
+
     await updateSettingsApi(payload);
 }
 
@@ -4740,13 +5195,13 @@ async function saveSystemSettings() {
     const hotline = document.getElementById('cfg_HOTLINE').value;
     const email = document.getElementById('cfg_SUPPORT_EMAIL').value;
     const maint = document.getElementById('cfg_MAINTENANCE_MODE').checked;
-    
+
     const payload = [
         { key: 'HOTLINE', value: hotline },
         { key: 'SUPPORT_EMAIL', value: email },
         { key: 'MAINTENANCE_MODE', value: maint ? 'true' : 'false' }
     ];
-    
+
     await updateSettingsApi(payload);
 }
 

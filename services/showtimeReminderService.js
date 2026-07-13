@@ -68,7 +68,6 @@ async function getUpcomingReminderGroups() {
   const pool = await getPool();
   const result = await pool.request()
     .input('minBefore', sql.Int, minBefore)
-    .input('maxBefore', sql.Int, maxBefore)
     .query(`
       SELECT
         u.UserID,
@@ -95,8 +94,8 @@ async function getUpcomingReminderGroups() {
         AND u.Email IS NOT NULL
         AND LTRIM(RTRIM(u.Email)) <> ''
         AND st.Status = 'active'
-        AND st.StartTime >= DATEADD(minute, @minBefore, GETUTCDATE())
-        AND st.StartTime <  DATEADD(minute, @maxBefore, GETUTCDATE())
+        AND st.StartTime <= DATEADD(minute, @minBefore, GETDATE())
+        AND st.StartTime > GETDATE()
       GROUP BY
         u.UserID, u.Email, u.FullName,
         st.ShowtimeID, st.StartTime, st.EndTime,

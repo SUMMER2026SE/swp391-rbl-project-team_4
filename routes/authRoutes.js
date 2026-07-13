@@ -6,11 +6,13 @@ const router = express.Router();
 const {
   register,
   login,
+  getMe,
   googleLogin,
   forgotPassword,
   verifyOTP,
   resetPassword,
 } = require('../controllers/authController');
+const { verifyToken } = require('../middleware/authMiddleware');
 
 // ─────────────────────────────────────────────────────────────
 //  POST /api/auth/register
@@ -25,6 +27,10 @@ router.post('/register', register);
 //  Trả về JWT token nếu xác thực thành công
 // ─────────────────────────────────────────────────────────────
 router.post('/login', login);
+
+// GET /api/auth/me
+// Trả về thông tin user hiện tại từ JWT
+router.get('/me', verifyToken, getMe);
 
 // ─────────────────────────────────────────────────────────────
 //  POST /api/auth/google

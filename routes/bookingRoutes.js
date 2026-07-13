@@ -49,6 +49,9 @@ router.get('/check-status',                 bookingCtrl.checkBookingStatus);
 // POST /api/bookings/cancel                 — Huỷ vé pending ngay lập tức
 router.post('/cancel',                      bookingCtrl.cancelBooking);
 
+// POST /api/bookings/request-refund         — Khách hàng gửi yêu cầu hoàn tiền kèm thông tin ngân hàng
+router.post('/request-refund',              bookingCtrl.requestRefundBooking);
+
 // POST /api/bookings/:ticketId/request-cancel — Khách hàng yêu cầu huỷ vé đã xác nhận
 router.post('/:ticketId/request-cancel',    bookingCtrl.requestCancelBooking);
 
