@@ -1259,13 +1259,13 @@ class AdminModel {
 
     let dateFilter = '';
     if (period === 'today') {
-      dateFilter = 'CAST(t.BookedAt AS DATE) = CAST(GETUTCDATE() AS DATE)';
+      dateFilter = 'CAST(t.BookedAt AS DATE) = CAST(GETDATE() AS DATE)';
     } else if (period === 'week') {
-      dateFilter = 't.BookedAt >= DATEADD(wk, DATEDIFF(wk, 0, GETUTCDATE()), 0)';
+      dateFilter = 'CAST(t.BookedAt AS DATE) >= CAST(DATEADD(day, -6, GETDATE()) AS DATE)';
     } else if (period === 'month') {
-      dateFilter = 'MONTH(t.BookedAt) = MONTH(GETUTCDATE()) AND YEAR(t.BookedAt) = YEAR(GETUTCDATE())';
+      dateFilter = 'MONTH(t.BookedAt) = MONTH(GETDATE()) AND YEAR(t.BookedAt) = YEAR(GETDATE())';
     } else {
-      dateFilter = 'YEAR(t.BookedAt) = YEAR(GETUTCDATE())'; // all = this year
+      dateFilter = 'YEAR(t.BookedAt) = YEAR(GETDATE())'; // all = this year
     }
 
     const result = await request.query(`

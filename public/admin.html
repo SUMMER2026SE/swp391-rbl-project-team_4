@@ -3162,7 +3162,7 @@
             <button type="button" onclick="closeRefundActionModal(false)"
                 style="width:36px;height:36px;border:none;border-radius:50%;background:#f3f4f6;color:#475569;font-size:1.4rem;line-height:1;cursor:pointer;">&times;</button>
         </div>
-        <form id="refundActionForm" onsubmit="submitRefundActionModal(event)" style="padding:24px 26px;display:flex;flex-direction:column;gap:16px;">
+        <form id="refundActionForm" style="padding:24px 26px;display:flex;flex-direction:column;gap:16px;">
             <div id="refundTxCodeGroup" style="display:none;">
                 <label for="refundTxCodeInput" style="display:block;margin-bottom:8px;color:#374151;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">Mã giao dịch chuyển khoản *</label>
                 <input id="refundTxCodeInput" type="text" autocomplete="off"
@@ -3179,14 +3179,14 @@
             <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:4px;">
                 <button type="button" onclick="closeRefundActionModal(false)"
                     style="padding:11px 22px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#475569;font-weight:800;cursor:pointer;">Hủy</button>
-                <button id="refundActionSubmitBtn" type="submit" onclick="submitRefundActionModal(event)"
+                <button id="refundActionSubmitBtn" type="submit"
                     style="padding:11px 24px;border:none;border-radius:8px;background:#ef1b2d;color:#fff;font-weight:900;cursor:pointer;">Xác nhận</button>
             </div>
         </form>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="js/admin.js?v=6"></script>
+    <script src="js/admin.js?v=19"></script>
     <script src="js/admin-voucher.js?v=999"></script>
 
 </body>

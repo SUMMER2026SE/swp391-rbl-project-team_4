@@ -520,6 +520,28 @@ function buildChart(chartData) {
         chartInstance.destroy();
     }
 
+    const allValues = [...ticketData, ...fnbData].map(v => Number(v || 0));
+    const maxValue = Math.max(0, ...allValues);
+    const suggestedMax = maxValue > 0 ? Math.ceil(maxValue * 1.2) : 100000;
+
+    function formatChartMoney(value) {
+        const amount = Number(value || 0);
+        if (amount === 0) return '0đ';
+        if (Math.abs(amount) >= 1000000000) {
+            const val = amount / 1000000000;
+            return `${Number.isInteger(val) ? val : val.toFixed(1)} Tỷ`;
+        }
+        if (Math.abs(amount) >= 1000000) {
+            const val = amount / 1000000;
+            return `${Number.isInteger(val) ? val : val.toFixed(1)} Tr`;
+        }
+        if (Math.abs(amount) >= 1000) {
+            const val = amount / 1000;
+            return `${Number.isInteger(val) ? val : val.toFixed(0)}K`;
+        }
+        return `${amount.toLocaleString('vi-VN')}đ`;
+    }
+
     chartInstance = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
@@ -558,7 +580,7 @@ function buildChart(chartData) {
                     borderColor: 'rgba(255,255,255,0.08)',
                     borderWidth: 1,
                     callbacks: {
-                        label: ctx => ` ${formatCurrency(ctx.raw)} đ`
+                        label: ctx => ` ${formatChartMoney(ctx.raw)}`
                     }
                 }
             },
@@ -569,10 +591,13 @@ function buildChart(chartData) {
                     border: { display: false }
                 },
                 y: {
-                    grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                    beginAtZero: true,
+                    suggestedMax,
+                    grid: { color: 'rgba(148,163,184,0.18)', drawBorder: false },
                     ticks: {
                         color: '#9ca3af', font: { size: 11 },
-                        callback: v => (v / 1000000) + ' Tr'
+                        maxTicksLimit: 6,
+                        callback: v => formatChartMoney(v)
                     },
                     border: { display: false }
                 }
@@ -983,6 +1008,11 @@ function navigate(page, btn) {
 
     if (page === 'combos') {
         loadCombos();
+    }
+
+    if (page === 'refunds') {
+        ensureRefundActionModal();
+        loadAdminRefunds();
     }
 
     if (page === 'voucher') {
@@ -4183,11 +4213,11 @@ function renderAdminRefundTable() {
         const showtime = item.StartTime ? formatAdminDate(item.StartTime) : '';
         const actionButtons = item.Status === 'pending'
             ? `
-                <button class="tb-icon-sm" title="Duyệt yêu cầu" onclick="updateAdminRefund(${item.RefundID}, 'approve')" style="color:#2563eb;">Duyệt</button>
-                <button class="tb-icon-sm danger" title="Từ chối" onclick="updateAdminRefund(${item.RefundID}, 'reject')" style="color:#dc2626;">Từ chối</button>
+                <a class="tb-icon-sm refund-action-btn" href="admin-refund-action.html?refundId=${item.RefundID}&action=approve" data-refund-id="${item.RefundID}" data-refund-action="approve" title="Duyệt yêu cầu" style="color:#2563eb;text-decoration:none;">Duyệt</a>
+                <a class="tb-icon-sm danger refund-action-btn" href="admin-refund-action.html?refundId=${item.RefundID}&action=reject" data-refund-id="${item.RefundID}" data-refund-action="reject" title="Từ chối" style="color:#dc2626;text-decoration:none;">Từ chối</a>
               `
             : item.Status === 'approved'
-                ? `<button class="tb-icon-sm" title="Đã chuyển khoản" onclick="updateAdminRefund(${item.RefundID}, 'complete')" style="color:#059669;">Đã chuyển</button>`
+                ? `<a class="tb-icon-sm refund-action-btn" href="admin-refund-action.html?refundId=${item.RefundID}&action=complete" data-refund-id="${item.RefundID}" data-refund-action="complete" title="Đã chuyển khoản" style="color:#059669;text-decoration:none;">Đã chuyển</a>`
                 : '<span style="color:var(--text3);font-size:0.78rem;">Đã xử lý</span>';
 
         return `
@@ -4220,146 +4250,128 @@ function renderAdminRefundTable() {
             </tr>
         `;
     }).join('');
+    bindRefundActionButtons();
 }
 
-let refundActionModalResolver = null;
-let refundActionModalMode = null;
+let refundActionState = null;
+let refundActionSubmitting = false;
 
-function openRefundActionModal(action) {
-    const config = {
+function getRefundActionConfig(action) {
+    return {
         approve: {
-            title: 'Duyệt yêu cầu hoàn tiền',
-            desc: 'Kiểm tra thông tin nhận tiền của khách hàng trước khi duyệt yêu cầu.',
-            noteLabel: 'Ghi chú duyệt',
-            notePlaceholder: 'Có thể bỏ trống hoặc nhập ghi chú cho yêu cầu này...',
-            submitLabel: 'Duyệt yêu cầu',
-            showTxCode: false
+            title: '\u0110\u00e3 duy\u1ec7t y\u00eau c\u1ea7u ho\u00e0n ti\u1ec1n',
+            desc: 'Sau khi duy\u1ec7t, admin c\u1ea7n chuy\u1ec3n kho\u1ea3n cho kh\u00e1ch r\u1ed3i b\u1ea5m "\u0110\u00e3 chuy\u1ec3n".',
+            noteLabel: 'Ghi ch\u00fa duy\u1ec7t',
+            notePlaceholder: 'C\u00f3 th\u1ec3 b\u1ecf tr\u1ed1ng ho\u1eb7c nh\u1eadp ghi ch\u00fa...',
+            submitLabel: 'Duy\u1ec7t y\u00eau c\u1ea7u',
+            showTxCode: false,
+            submitColor: '#ef1b2d'
         },
         reject: {
-            title: 'Từ chối hoàn tiền',
-            desc: 'Nhập lý do từ chối để lưu lại lịch sử xử lý yêu cầu.',
-            noteLabel: 'Lý do từ chối *',
-            notePlaceholder: 'VD: Vé không đủ điều kiện hoàn tiền...',
-            submitLabel: 'Từ chối',
-            showTxCode: false
+            title: 'T\u1eeb ch\u1ed1i ho\u00e0n ti\u1ec1n',
+            desc: 'Nh\u1eadp l\u00fd do t\u1eeb ch\u1ed1i \u0111\u1ec3 l\u01b0u l\u1ecbch s\u1eed x\u1eed l\u00fd.',
+            noteLabel: 'L\u00fd do t\u1eeb ch\u1ed1i *',
+            notePlaceholder: 'VD: V\u00e9 kh\u00f4ng \u0111\u1ee7 \u0111i\u1ec1u ki\u1ec7n ho\u00e0n ti\u1ec1n...',
+            submitLabel: 'T\u1eeb ch\u1ed1i y\u00eau c\u1ea7u',
+            showTxCode: false,
+            submitColor: '#dc2626'
         },
         complete: {
-            title: 'Xác nhận đã chuyển khoản',
-            desc: 'Nhập mã giao dịch sau khi đã hoàn tiền cho khách hàng.',
-            noteLabel: 'Ghi chú hoàn tiền',
-            notePlaceholder: 'Có thể bỏ trống hoặc nhập ghi chú chuyển khoản...',
-            submitLabel: 'Xác nhận đã chuyển',
-            showTxCode: true
+            title: 'X\u00e1c nh\u1eadn \u0111\u00e3 chuy\u1ec3n kho\u1ea3n',
+            desc: 'Nh\u1eadp m\u00e3 giao d\u1ecbch sau khi admin \u0111\u00e3 chuy\u1ec3n kho\u1ea3n ho\u00e0n ti\u1ec1n.',
+            noteLabel: 'Ghi ch\u00fa ho\u00e0n ti\u1ec1n',
+            notePlaceholder: 'C\u00f3 th\u1ec3 b\u1ecf tr\u1ed1ng ho\u1eb7c nh\u1eadp ghi ch\u00fa...',
+            submitLabel: 'X\u00e1c nh\u1eadn \u0111\u00e3 chuy\u1ec3n',
+            showTxCode: true,
+            submitColor: '#059669'
         }
-    }[action];
+    }[action] || null;
+}
 
-    if (!config) return Promise.resolve(null);
+function ensureRefundActionModal() {
+    if (document.getElementById('refundActionOverlay') && document.getElementById('refundActionModal')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'refundActionOverlay';
+    overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:520;backdrop-filter:blur(3px);';
+    overlay.addEventListener('click', () => closeRefundActionModal());
 
-    const overlay = document.getElementById('refundActionOverlay');
-    const modal = document.getElementById('refundActionModal');
-    const title = document.getElementById('refundActionTitle');
-    const desc = document.getElementById('refundActionDesc');
-    const txGroup = document.getElementById('refundTxCodeGroup');
-    const txInput = document.getElementById('refundTxCodeInput');
-    const noteLabel = document.getElementById('refundNoteLabel');
-    const noteInput = document.getElementById('refundNoteInput');
-    const error = document.getElementById('refundActionError');
-    const submitBtn = document.getElementById('refundActionSubmitBtn');
+    const modal = document.createElement('div');
+    modal.id = 'refundActionModal';
+    modal.style.cssText = 'display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:521;background:#fff;border-radius:14px;width:520px;max-width:94vw;box-shadow:0 24px 70px rgba(15,23,42,0.35);overflow:hidden;';
+    modal.innerHTML = [
+        '<div style="padding:22px 26px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:16px;">',
+        '<div><h2 id="refundActionTitle" style="margin:0;color:#111827;font-size:1.2rem;font-weight:900;text-transform:uppercase;">X\u1eed l\u00fd ho\u00e0n ti\u1ec1n</h2>',
+        '<p id="refundActionDesc" style="margin:6px 0 0;color:#6b7280;font-size:0.9rem;line-height:1.45;">Nh\u1eadp th\u00f4ng tin x\u1eed l\u00fd y\u00eau c\u1ea7u ho\u00e0n ti\u1ec1n.</p></div>',
+        '<button type="button" onclick="closeRefundActionModal()" style="width:36px;height:36px;border:none;border-radius:50%;background:#f3f4f6;color:#475569;font-size:1.4rem;line-height:1;cursor:pointer;">&times;</button>',
+        '</div>',
+        '<form id="refundActionForm" style="padding:24px 26px;display:flex;flex-direction:column;gap:16px;">',
+        '<div id="refundTxCodeGroup" style="display:none;"><label for="refundTxCodeInput" style="display:block;margin-bottom:8px;color:#374151;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">M\u00e3 giao d\u1ecbch chuy\u1ec3n kho\u1ea3n *</label><input id="refundTxCodeInput" type="text" autocomplete="off" placeholder="VD: MBVCB240709001" style="width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;color:#111827;font-size:0.95rem;"></div>',
+        '<div><label id="refundNoteLabel" for="refundNoteInput" style="display:block;margin-bottom:8px;color:#374151;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">Ghi ch\u00fa</label><textarea id="refundNoteInput" rows="4" placeholder="Nh\u1eadp ghi ch\u00fa cho y\u00eau c\u1ea7u n\u00e0y..." style="width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;color:#111827;font-size:0.95rem;font-family:inherit;resize:vertical;"></textarea><div id="refundActionError" style="display:none;margin-top:8px;color:#dc2626;font-size:0.84rem;font-weight:600;"></div></div>',
+        '<div style="display:flex;justify-content:flex-end;gap:12px;margin-top:4px;"><button type="button" onclick="closeRefundActionModal()" style="padding:11px 22px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#475569;font-weight:800;cursor:pointer;">H\u1ee7y</button><button id="refundActionSubmitBtn" type="submit" style="padding:11px 24px;border:none;border-radius:8px;background:#ef1b2d;color:#fff;font-weight:900;cursor:pointer;">X\u00e1c nh\u1eadn</button></div>',
+        '</form>'
+    ].join('');
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
+}
 
-    if (!overlay || !modal || !title || !desc || !txGroup || !txInput || !noteLabel || !noteInput || !error || !submitBtn) {
-        return Promise.resolve(null);
+function getRefundModalParts() {
+    return { overlay: document.getElementById('refundActionOverlay'), modal: document.getElementById('refundActionModal'), title: document.getElementById('refundActionTitle'), desc: document.getElementById('refundActionDesc'), txGroup: document.getElementById('refundTxCodeGroup'), txInput: document.getElementById('refundTxCodeInput'), noteLabel: document.getElementById('refundNoteLabel'), noteInput: document.getElementById('refundNoteInput'), error: document.getElementById('refundActionError'), submitBtn: document.getElementById('refundActionSubmitBtn') };
+}
+
+function openRefundActionModal(refundId, action) {
+    const parsedRefundId = Number.parseInt(refundId, 10);
+    const config = getRefundActionConfig(action);
+    if (!Number.isInteger(parsedRefundId) || parsedRefundId <= 0 || !config) { showAdminToast('Kh\u00f4ng th\u1ec3 m\u1edf x\u1eed l\u00fd ho\u00e0n ti\u1ec1n v\u00ec d\u1eef li\u1ec7u kh\u00f4ng h\u1ee3p l\u1ec7.', 'error'); return false; }
+    ensureRefundActionModal();
+    const p = getRefundModalParts();
+    if (!p.overlay || !p.modal || !p.title || !p.desc || !p.txGroup || !p.txInput || !p.noteLabel || !p.noteInput || !p.error || !p.submitBtn) { showAdminToast('Kh\u00f4ng th\u1ec3 m\u1edf h\u1ed9p x\u1eed l\u00fd ho\u00e0n ti\u1ec1n. H\u00e3y t\u1ea3i l\u1ea1i trang admin.', 'error'); return false; }
+    refundActionState = { refundId: parsedRefundId, action }; refundActionSubmitting = false;
+    p.title.textContent = config.title; p.desc.textContent = config.desc; p.noteLabel.textContent = config.noteLabel; p.noteInput.placeholder = config.notePlaceholder; p.noteInput.value = ''; p.txInput.value = ''; p.txGroup.style.display = config.showTxCode ? 'block' : 'none'; p.error.textContent = ''; p.error.style.display = 'none'; p.submitBtn.disabled = false; p.submitBtn.textContent = config.submitLabel; p.submitBtn.style.background = config.submitColor; p.overlay.style.display = 'block'; p.modal.style.display = 'block';
+    setTimeout(() => (config.showTxCode ? p.txInput : p.noteInput).focus(), 0);
+    return false;
+}
+
+function closeRefundActionModal() { const p = getRefundModalParts(); if (p.overlay) p.overlay.style.display = 'none'; if (p.modal) p.modal.style.display = 'none'; refundActionState = null; refundActionSubmitting = false; }
+
+async function submitRefundActionModal(event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    if (refundActionSubmitting) return false;
+    if (!refundActionState) { showAdminToast('Ch\u01b0a ch\u1ecdn y\u00eau c\u1ea7u ho\u00e0n ti\u1ec1n \u0111\u1ec3 x\u1eed l\u00fd.', 'error'); return false; }
+    const p = getRefundModalParts(); const { refundId, action } = refundActionState; const note = (p.noteInput && p.noteInput.value.trim()) || ''; const txCode = (p.txInput && p.txInput.value.trim()) || '';
+    const fail = msg => { if (p.error) { p.error.textContent = msg; p.error.style.display = 'block'; } };
+    if (action === 'reject' && !note) { fail('Vui l\u00f2ng nh\u1eadp l\u00fd do t\u1eeb ch\u1ed1i ho\u00e0n ti\u1ec1n.'); return false; }
+    if (action === 'complete' && !txCode) { fail('Vui l\u00f2ng nh\u1eadp m\u00e3 giao d\u1ecbch ho\u00e0n ti\u1ec1n.'); return false; }
+    const payload = { action }; if (note) payload.adminNote = note; if (txCode) payload.refundTransactionCode = txCode;
+    refundActionSubmitting = true; if (p.submitBtn) { p.submitBtn.disabled = true; p.submitBtn.textContent = '\u0110ang x\u1eed l\u00fd...'; }
+    try {
+        const res = await apiFetch('/api/admin/refunds/' + refundId, { method: 'PATCH', body: JSON.stringify(payload) });
+        if (res.success) { showAdminToast(res.message || '\u0110\u00e3 c\u1eadp nh\u1eadt y\u00eau c\u1ea7u ho\u00e0n ti\u1ec1n.', 'success'); closeRefundActionModal(); loadAdminRefunds(); } else { fail(res.message || 'Kh\u00f4ng th\u1ec3 c\u1eadp nh\u1eadt y\u00eau c\u1ea7u ho\u00e0n ti\u1ec1n.'); }
+    } catch (err) { console.error('[Admin] submitRefundActionModal:', err); fail('L\u1ed7i k\u1ebft n\u1ed1i server.'); }
+    finally { if (refundActionState && p.submitBtn) { const config = getRefundActionConfig(action); p.submitBtn.disabled = false; p.submitBtn.textContent = (config && config.submitLabel) || 'X\u00e1c nh\u1eadn'; refundActionSubmitting = false; } }
+    return false;
+}
+
+function adminRefundAction(refundId, action) {
+    return openRefundActionModal(refundId, action);
+}
+function handleRefundActionClick(event) {
+    if (event) {
+        event.preventDefault();
     }
-
-    refundActionModalMode = action;
-    title.textContent = config.title;
-    desc.textContent = config.desc;
-    noteLabel.textContent = config.noteLabel;
-    noteInput.placeholder = config.notePlaceholder;
-    noteInput.value = '';
-    txInput.value = '';
-    txGroup.style.display = config.showTxCode ? 'block' : 'none';
-    error.style.display = 'none';
-    error.textContent = '';
-    submitBtn.textContent = config.submitLabel;
-    submitBtn.style.background = action === 'reject' ? '#dc2626' : '#ef1b2d';
-
-    overlay.style.display = 'block';
-    modal.style.display = 'block';
-    setTimeout(() => (config.showTxCode ? txInput : noteInput).focus(), 0);
-
-    return new Promise(resolve => {
-        refundActionModalResolver = resolve;
+    const button = (event && event.target && event.target.closest && event.target.closest('.refund-action-btn')) || (event && event.currentTarget);
+    if (!button) return false;
+    return adminRefundAction(button.getAttribute('data-refund-id'), button.getAttribute('data-refund-action'));
+}
+function updateAdminRefund(refundId, action) { return adminRefundAction(refundId, action); }
+function bindRefundActionButtons() {
+    document.querySelectorAll('button.refund-action-btn').forEach(button => {
+        if (button.dataset.refundBound === '1') return;
+        button.dataset.refundBound = '1';
+        button.addEventListener('click', handleRefundActionClick);
     });
 }
-
-function closeRefundActionModal(result) {
-    const overlay = document.getElementById('refundActionOverlay');
-    const modal = document.getElementById('refundActionModal');
-    if (overlay) overlay.style.display = 'none';
-    if (modal) modal.style.display = 'none';
-
-    if (refundActionModalResolver) {
-        refundActionModalResolver(result || null);
-        refundActionModalResolver = null;
-    }
-    refundActionModalMode = null;
-}
-
-function submitRefundActionModal(event) {
-    event.preventDefault();
-
-    const action = refundActionModalMode;
-    const txCode = document.getElementById('refundTxCodeInput')?.value.trim() || '';
-    const note = document.getElementById('refundNoteInput')?.value.trim() || '';
-    const error = document.getElementById('refundActionError');
-
-    const fail = message => {
-        if (error) {
-            error.textContent = message;
-            error.style.display = 'block';
-        }
-    };
-
-    if (action === 'reject' && !note) {
-        fail('Vui lòng nhập lý do từ chối hoàn tiền.');
-        return;
-    }
-
-    if (action === 'complete' && !txCode) {
-        fail('Vui lòng nhập mã giao dịch chuyển khoản.');
-        return;
-    }
-
-    const result = {};
-    if (note) result.adminNote = note;
-    if (txCode) result.refundTransactionCode = txCode;
-    closeRefundActionModal(result);
-}
-
-async function updateAdminRefund(refundId, action) {
-    const payload = { action };
-    const modalResult = await openRefundActionModal(action);
-    if (!modalResult) return;
-    Object.assign(payload, modalResult);
-
-    try {
-        const res = await apiFetch(`/api/admin/refunds/${refundId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (res.success) {
-            showAdminToast(res.message, 'success');
-            loadAdminRefunds();
-        } else {
-            showAdminToast('Lỗi: ' + res.message, 'error');
-        }
-    } catch (err) {
-        console.error('[Admin] updateAdminRefund:', err);
-        showAdminToast('Lỗi kết nối server.', 'error');
-    }
-}
-
+document.addEventListener('submit', event => { if (event.target && event.target.id === 'refundActionForm') submitRefundActionModal(event); }, true);
+window.adminRefundAction = adminRefundAction; window.openRefundActionModal = openRefundActionModal; window.closeRefundActionModal = closeRefundActionModal; window.submitRefundActionModal = submitRefundActionModal; window.updateAdminRefund = updateAdminRefund; window.handleRefundActionClick = handleRefundActionClick; window.bindRefundActionButtons = bindRefundActionButtons; window.loadAdminRefunds = loadAdminRefunds;
 let NEWS_DATA = [];
 
 function adminEscape(value) {

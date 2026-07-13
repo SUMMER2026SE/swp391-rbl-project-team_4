@@ -1060,12 +1060,23 @@ exports.updateRefundRequest = async (req, res) => {
   try {
     const action = req.body && req.body.action;
     const data = await RefundModel.updateRefundStatus(req.params.id, req.user.userId, action, req.body || {});
+    const normalizedAction = String(action || '').toLowerCase();
     const messages = {
-      approve: 'Đã duyệt yêu cầu hoàn tiền.',
-      reject: 'Đã từ chối yêu cầu hoàn tiền.',
-      complete: 'Đã ghi nhận hoàn tiền thành công.'
+      approve: 'Đã duyệt yêu cầu hoàn tiền. Vui lòng chuyển khoản cho khách, sau đó bấm "Đã chuyển" để xác nhận hoàn tiền.',
+      reject: 'Đã từ chối yêu cầu hoàn tiền. Trạng thái vé đã được khôi phục.',
+      complete: 'Đã xác nhận chuyển tiền hoàn tất. Vé đã được hủy và ghế đã được mở lại.'
     };
-    res.json({ success: true, message: messages[String(action || '').toLowerCase()] || 'Đã cập nhật yêu cầu hoàn tiền.', data });
+    const nextActions = {
+      approve: 'transfer_money',
+      reject: 'none',
+      complete: 'none'
+    };
+    res.json({
+      success: true,
+      message: messages[normalizedAction] || 'Đã cập nhật yêu cầu hoàn tiền.',
+      nextAction: nextActions[normalizedAction] || 'none',
+      data
+    });
   } catch (err) {
     console.error('[adminController] updateRefundRequest:', err.message);
     const known =
@@ -1119,6 +1130,13 @@ exports.getRevenueChartData = async (req, res) => {
     const cinemaId = req.query.cinemaId || null;
 
     const data = await AdminModel.getRevenueChartData({ period, cinemaId });
+    const localDateKey = (value) => {
+      const d = new Date(value);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
 
     let labels = [];
     let ticketData = [];
@@ -1155,6 +1173,7 @@ exports.getRevenueChartData = async (req, res) => {
       const weekDays = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(today);
         d.setDate(today.getDate() - 6 + i);
+        d.setHours(0, 0, 0, 0);
         return d;
       });
       labels = weekDays.map(d => d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }));
@@ -1162,8 +1181,8 @@ exports.getRevenueChartData = async (req, res) => {
       fnbData = new Array(7).fill(0);
 
       data.forEach(t => {
-        const bookedKey = new Date(t.BookedAt).toISOString().slice(0, 10);
-        const index = weekDays.findIndex(d => d.toISOString().slice(0, 10) === bookedKey);
+        const bookedKey = localDateKey(t.BookedAt);
+        const index = weekDays.findIndex(d => localDateKey(d) === bookedKey);
         if (index >= 0) {
           ticketData[index] += t.TotalAmount || 0;
           fnbData[index] += t.FnBRevenue || 0;

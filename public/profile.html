@@ -1060,7 +1060,7 @@
         window.location.href = 'refund-request.html?ticketIds=' + encodeURIComponent(ids.join(','));
     }
 
-    async function cancelTicket(ticketId) {
+    async function legacyCancelTicketImmediate(ticketId) {
         if (!confirm("Bạn có chắc chắn muốn hủy vé này?\\nSố tiền sẽ được hoàn lại vào tài khoản ngân hàng của bạn trong vòng 3-5 ngày làm việc.")) {
             return;
         }
@@ -1085,7 +1085,7 @@
             alert('Có lỗi xảy ra khi hủy vé.');
         }
     }
-    async function cancelTicket(ticketIdsCsv) {
+    async function legacyCancelTicketPrompt(ticketIdsCsv) {
         const ticketIds = String(ticketIdsCsv || '')
             .split(',')
             .map(id => parseInt(id, 10))

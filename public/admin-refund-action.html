@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xử lý hoàn tiền | D-CINEMA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Inter, Arial, sans-serif;
+            background: #f3f6fb;
+            color: #111827;
+            display: grid;
+            place-items: center;
+            padding: 32px 16px;
+        }
+        .card {
+            width: min(620px, 100%);
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
+            overflow: hidden;
+        }
+        .head {
+            padding: 26px 30px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            font-weight: 900;
+            letter-spacing: 0.02em;
+        }
+        .mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            background: #ef1b2d;
+            color: #fff;
+            font-weight: 900;
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.55rem;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+        .desc {
+            margin: 8px 0 0;
+            color: #667085;
+            line-height: 1.5;
+        }
+        .body {
+            padding: 26px 30px 30px;
+        }
+        .summary {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            color: #344054;
+            line-height: 1.55;
+        }
+        .summary b { color: #111827; }
+        label {
+            display: block;
+            margin: 0 0 8px;
+            color: #475467;
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        input, textarea {
+            width: 100%;
+            border: 1px solid #d0d5dd;
+            border-radius: 10px;
+            padding: 13px 14px;
+            font: inherit;
+            color: #111827;
+            outline: none;
+        }
+        textarea {
+            min-height: 118px;
+            resize: vertical;
+        }
+        input:focus, textarea:focus {
+            border-color: #ef1b2d;
+            box-shadow: 0 0 0 3px rgba(239, 27, 45, 0.12);
+        }
+        .field { margin-bottom: 16px; }
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 22px;
+        }
+        .btn {
+            border: 1px solid #d0d5dd;
+            background: #fff;
+            color: #344054;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-weight: 800;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn.primary {
+            border-color: #ef1b2d;
+            background: #ef1b2d;
+            color: #fff;
+            min-width: 180px;
+        }
+        .btn.primary.green {
+            border-color: #059669;
+            background: #059669;
+        }
+        .btn.primary.danger {
+            border-color: #dc2626;
+            background: #dc2626;
+        }
+        .msg {
+            display: none;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 16px;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+        .msg.ok { display: block; background: #ecfdf3; color: #027a48; border: 1px solid #abefc6; }
+        .msg.err { display: block; background: #fef3f2; color: #b42318; border: 1px solid #fecdca; }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <section class="head">
+            <div class="brand"><span class="mark">D</span><span>D-CINEMA ADMIN</span></div>
+            <h1 id="pageTitle">Xử lý hoàn tiền</h1>
+            <p id="pageDesc" class="desc">Kiểm tra thông tin và xác nhận thao tác hoàn tiền.</p>
+        </section>
+        <section class="body">
+            <div id="summary" class="summary">Đang tải thông tin yêu cầu...</div>
+
+            <form id="refundActionPageForm">
+                <div id="txField" class="field" style="display:none;">
+                    <label for="txCode">Mã giao dịch chuyển khoản *</label>
+                    <input id="txCode" autocomplete="off" placeholder="VD: MBVCB240709001">
+                </div>
+                <div class="field">
+                    <label id="noteLabel" for="adminNote">Ghi chú</label>
+                    <textarea id="adminNote" placeholder="Nhập ghi chú xử lý..."></textarea>
+                </div>
+                <div id="message" class="msg"></div>
+                <div class="actions">
+                    <a class="btn" href="admin.html">Quay lại admin</a>
+                    <button id="submitBtn" class="btn primary" type="submit">Xác nhận</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        const params = new URLSearchParams(location.search);
+        const refundId = Number.parseInt(params.get('refundId'), 10);
+        const action = String(params.get('action') || '').toLowerCase();
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+        const configs = {
+            approve: {
+                title: 'Duyệt yêu cầu hoàn tiền',
+                desc: 'Sau khi duyệt, admin chuyển khoản cho khách rồi bấm "Đã chuyển" ở danh sách hoàn tiền.',
+                noteLabel: 'Ghi chú duyệt',
+                submit: 'Duyệt yêu cầu',
+                cls: ''
+            },
+            reject: {
+                title: 'Từ chối hoàn tiền',
+                desc: 'Nhập lý do từ chối để lưu lại lịch sử xử lý.',
+                noteLabel: 'Lý do từ chối *',
+                submit: 'Từ chối yêu cầu',
+                cls: 'danger'
+            },
+            complete: {
+                title: 'Xác nhận đã chuyển khoản',
+                desc: 'Nhập mã giao dịch sau khi đã chuyển khoản hoàn tiền cho khách.',
+                noteLabel: 'Ghi chú hoàn tiền',
+                submit: 'Xác nhận đã chuyển',
+                cls: 'green',
+                tx: true
+            }
+        };
+
+        const cfg = configs[action];
+        const els = {
+            title: document.getElementById('pageTitle'),
+            desc: document.getElementById('pageDesc'),
+            summary: document.getElementById('summary'),
+            form: document.getElementById('refundActionPageForm'),
+            txField: document.getElementById('txField'),
+            txCode: document.getElementById('txCode'),
+            noteLabel: document.getElementById('noteLabel'),
+            note: document.getElementById('adminNote'),
+            msg: document.getElementById('message'),
+            submit: document.getElementById('submitBtn')
+        };
+
+        function showMessage(text, type) {
+            els.msg.textContent = text;
+            els.msg.className = 'msg ' + (type === 'ok' ? 'ok' : 'err');
+        }
+
+        function formatVnd(value) {
+            return Number(value || 0).toLocaleString('vi-VN') + 'đ';
+        }
+
+        async function api(url, options = {}) {
+            const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+            const res = await fetch(url, { ...options, headers });
+            return res.json();
+        }
+
+        async function loadRefundInfo() {
+            if (!token) {
+                showMessage('Bạn cần đăng nhập admin để xử lý hoàn tiền.', 'err');
+                els.submit.disabled = true;
+                return;
+            }
+            if (!refundId || !cfg) {
+                showMessage('Thông tin xử lý hoàn tiền không hợp lệ.', 'err');
+                els.submit.disabled = true;
+                return;
+            }
+            els.title.textContent = cfg.title;
+            els.desc.textContent = cfg.desc;
+            els.noteLabel.textContent = cfg.noteLabel;
+            els.submit.textContent = cfg.submit;
+            if (cfg.cls) els.submit.classList.add(cfg.cls);
+            els.txField.style.display = cfg.tx ? 'block' : 'none';
+
+            try {
+                const data = await api('/api/admin/refunds');
+                const item = data.success && Array.isArray(data.data)
+                    ? data.data.find(x => Number(x.RefundID) === refundId)
+                    : null;
+                if (!item) {
+                    els.summary.innerHTML = '<b>Yêu cầu #' + refundId + '</b><br>Không tìm thấy chi tiết, nhưng bạn vẫn có thể gửi thao tác nếu yêu cầu còn tồn tại.';
+                    return;
+                }
+                const seat = String(item.SeatRow || '') + String(item.SeatNumber || '');
+                els.summary.innerHTML = [
+                    '<b>Yêu cầu #' + item.RefundID + '</b> - Vé #' + item.TicketID,
+                    '<br>Phim: <b>' + (item.MovieTitle || '') + '</b>',
+                    '<br>Khách hàng: <b>' + (item.FullName || '') + '</b> - ' + (item.Email || ''),
+                    '<br>Ghế: <b>' + seat + '</b>',
+                    '<br>Số tiền: <b>' + formatVnd(item.RefundAmount) + '</b>',
+                    '<br>Ngân hàng: <b>' + (item.BankName || '') + '</b> - STK: ' + (item.BankAccountNumber || ''),
+                    '<br>Chủ TK: <b>' + (item.BankAccountHolder || '') + '</b>'
+                ].join('');
+            } catch (err) {
+                els.summary.textContent = 'Không tải được chi tiết yêu cầu hoàn tiền.';
+            }
+        }
+
+        els.form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const adminNote = els.note.value.trim();
+            const refundTransactionCode = els.txCode.value.trim();
+            if (action === 'reject' && !adminNote) {
+                showMessage('Vui lòng nhập lý do từ chối.', 'err');
+                return;
+            }
+            if (action === 'complete' && !refundTransactionCode) {
+                showMessage('Vui lòng nhập mã giao dịch chuyển khoản.', 'err');
+                return;
+            }
+            els.submit.disabled = true;
+            els.submit.textContent = 'Đang xử lý...';
+            try {
+                const payload = { action };
+                if (adminNote) payload.adminNote = adminNote;
+                if (refundTransactionCode) payload.refundTransactionCode = refundTransactionCode;
+                const res = await api('/api/admin/refunds/' + refundId, {
+                    method: 'PATCH',
+                    body: JSON.stringify(payload)
+                });
+                if (res.success) {
+                    showMessage(res.message || 'Đã xử lý yêu cầu hoàn tiền.', 'ok');
+                    setTimeout(() => { location.href = 'admin.html'; }, 1400);
+                } else {
+                    showMessage(res.message || 'Không thể xử lý yêu cầu hoàn tiền.', 'err');
+                    els.submit.disabled = false;
+                    els.submit.textContent = cfg.submit;
+                }
+            } catch (err) {
+                showMessage('Lỗi kết nối server.', 'err');
+                els.submit.disabled = false;
+                els.submit.textContent = cfg.submit;
+            }
+        });
+
+        loadRefundInfo();
+    </script>
+</body>
+</html>
