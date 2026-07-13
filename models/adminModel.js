@@ -466,12 +466,6 @@ class AdminModel {
     const result = await pool.request().query(`
       SELECT r.RoomID, r.RoomName, r.TotalSeats,
              ISNULL(r.RoomType, 'Standard') AS RoomType,
-             r.CinemaID, c.CinemaName, c.Address
-             CASE
-               WHEN r.RoomName LIKE '%3D%' THEN '3D'
-               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
-               ELSE '2D Standard'
-             END AS RoomType,
              r.CinemaID,
              c.CinemaName, c.Address
       FROM   Rooms r

@@ -157,13 +157,8 @@ class MovieModel {
              (SELECT STRING_AGG(CAST(mg.GenreID AS varchar(20)), ',')
               FROM Movie_Genres mg
               WHERE mg.MovieID = m.MovieID) AS GenreIDs,
-             COALESCE((SELECT STRING_AGG(Format, ', ') 
-                       FROM (SELECT DISTINCT ISNULL(r.RoomType, 'Standard') AS Format
-                       FROM (SELECT DISTINCT CASE 
-                               WHEN r.RoomName LIKE '%3D%' THEN '3D'
-                               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
-                               ELSE '2D Standard'
-                             END AS Format
+             COALESCE((SELECT STRING_AGG(RoomType, ', ') 
+                       FROM (SELECT DISTINCT ISNULL(r.RoomType, 'Standard') AS RoomType
                              FROM Showtimes st 
                              JOIN Rooms r ON st.RoomID = r.RoomID 
                              WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), 'Standard') AS Formats
@@ -189,13 +184,8 @@ class MovieModel {
                (SELECT STRING_AGG(CAST(mg.GenreID AS varchar(20)), ',')
                 FROM Movie_Genres mg
                 WHERE mg.MovieID = m.MovieID) AS GenreIDs,
-               COALESCE((SELECT STRING_AGG(Format, ', ') 
-                         FROM (SELECT DISTINCT ISNULL(r.RoomType, 'Standard') AS Format
-                         FROM (SELECT DISTINCT CASE 
-                                 WHEN r.RoomName LIKE '%3D%' THEN '3D'
-                                 WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
-                                 ELSE '2D Standard'
-                               END AS Format
+               COALESCE((SELECT STRING_AGG(RoomType, ', ') 
+                         FROM (SELECT DISTINCT ISNULL(r.RoomType, 'Standard') AS RoomType
                                FROM Showtimes st 
                                JOIN Rooms r ON st.RoomID = r.RoomID 
                                WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), 'Standard') AS Formats

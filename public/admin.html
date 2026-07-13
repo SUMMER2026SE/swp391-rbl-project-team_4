@@ -655,48 +655,7 @@
                 <div id="seatStatsBar" style="display:flex; gap:20px; padding:10px 24px; background:rgba(0,0,0,0.3); border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.8rem; font-weight:600; align-items:center; flex-wrap:wrap;">
                     <span style="color:#6b7280;">Chưa chọn phòng để thiết kế sơ đồ ghế</span>
                 </div>
-                <!-- Main Workspace -->
-                <div class="cin-workspace" id="cinemaWorkspace" style="display: none;">
-                    <div class="cw-toolbar">
-                        <div class="cw-tools-left">
-                            <div class="btn-group-toggle">
-                                <button class="bgt-btn active"><svg width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="8" y1="6" x2="21" y2="6" />
-                                        <line x1="8" y1="12" x2="21" y2="12" />
-                                        <line x1="8" y1="18" x2="21" y2="18" />
-                                        <line x1="3" y1="6" x2="3.01" y2="6" />
-                                        <line x1="3" y1="12" x2="3.01" y2="12" />
-                                        <line x1="3" y1="18" x2="3.01" y2="18" />
-                                    </svg></button>
-                                <button class="bgt-btn" onclick="addSeatRow()"><svg width="16" height="16"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="12" y1="5" x2="12" y2="19" />
-                                        <line x1="5" y1="12" x2="19" y2="12" />
-                                    </svg> Hàng</button>
-                                <button class="bgt-btn" onclick="addSeatCol()"><svg width="16" height="16"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="12" y1="5" x2="12" y2="19" />
-                                        <line x1="5" y1="12" x2="19" y2="12" />
-                                    </svg> Cột</button>
-                            </div>
-                        </div>
-                        <div class="cw-legend-toggles">
-                            <label class="cl-toggle"><input type="radio" name="seat_tool" value="Normal" checked><span
-                                    class="cbox standard"></span>Thường</label>
-                            <label class="cl-toggle"><input type="radio" name="seat_tool" value="VIP"><span
-                                    class="cbox vip"></span>VIP</label>
-                            <label class="cl-toggle"><input type="radio" name="seat_tool" value="Couple"><span
-                                    class="cbox"
-                                    style="background:#ec4899;box-shadow:0 0 8px rgba(236,72,153,0.4)"></span>Couple</label>
-                            <label class="cl-toggle"><input type="radio" name="seat_tool" value="None"><span
-                                    class="cbox blocked"></span>Xóa</label>
-                        </div>
-                        <div class="cw-tools-right">
-                            <button class="btn-outline-red" onclick="clearSeatMap()">Làm mới</button>
-                            <button class="btn-solid-red" onclick="saveSeatLayout()">Lưu bố cục</button>
-                        </div>
-                    </div>
+
 
                     <div class="cw-canvas-area">
                         <div class="cw-canvas-scroll">
