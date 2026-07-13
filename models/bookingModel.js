@@ -456,13 +456,13 @@ class BookingModel {
     try {
       // 1. Lấy thông tin các vé để hoàn trả voucher
       const ticketsResult = await transaction.request().query(`
-        SELECT TicketID, UserID, VoucherID FROM Tickets
+        SELECT TicketID, UserID, VoucherID, ShowtimeID, SeatID FROM Tickets
         WHERE TicketID IN (${ticketIdList.join(',')}) AND Status = 'pending'
       `);
       const tickets = ticketsResult.recordset;
       if (tickets.length === 0) {
         await transaction.rollback();
-        return;
+        return [];
       }
 
       // 2. Hoàn trả F&B stock
@@ -511,6 +511,7 @@ class BookingModel {
       `);
 
       await transaction.commit();
+      return tickets.map(t => ({ showtimeId: t.ShowtimeID, seatId: t.SeatID }));
     } catch (err) {
       await transaction.rollback();
       throw err;
@@ -762,6 +763,143 @@ class BookingModel {
       `);
 
     return { ...ticket, foodItems: fnbResult.recordset };
+  }
+
+  static async calculateBookingPrice(userId, { showtimeId, seatIds, foodItems = [], voucherCode = null }) {
+    const pool = await getPool();
+    
+    // 1. Lấy giá vé từ showtime
+    const stResult = await pool.request()
+      .input('showtimeId', sql.Int, showtimeId)
+      .query(`
+        SELECT COALESCE(Price, BasePrice, 0) AS Price
+        FROM Showtimes
+        WHERE ShowtimeID = @showtimeId AND Status = 'active'
+      `);
+    if (stResult.recordset.length === 0) {
+      throw new Error('Suất chiếu không tồn tại hoặc đã đóng.');
+    }
+    const ticketPrice = stResult.recordset[0].Price;
+    if (!ticketPrice || ticketPrice <= 0) {
+      throw new Error('Suất chiếu chưa được thiết lập giá vé.');
+    }
+
+    // 2. Tính tiền ghế
+    let ticketTotal = 0;
+    const seatPriceDetails = [];
+    const couplePairsCharged = new Set();
+
+    for (const seatId of seatIds) {
+      const seatInfo = await pool.request()
+        .input('sid', sql.Int, seatId)
+        .query(`SELECT SeatRow, SeatNumber, SeatType, PriceMultiplier FROM Seats WHERE SeatID = @sid`);
+      if (seatInfo.recordset.length === 0) {
+        throw new Error(`Ghế ID ${seatId} không tồn tại.`);
+      }
+
+      const seat = seatInfo.recordset[0];
+      let seatPrice;
+
+      if (isCoupleSeat(seat)) {
+        const pairKey = couplePairKey(seat);
+        const halfMult = parseFloat(seat.PriceMultiplier || 1.5) / 2;
+        if (!couplePairsCharged.has(pairKey)) {
+          couplePairsCharged.add(pairKey);
+          seatPrice = ticketPrice * halfMult;
+        } else {
+          seatPrice = ticketPrice * halfMult;
+        }
+      } else {
+        seatPrice = ticketPrice * getSeatMultiplier(seat);
+      }
+
+      ticketTotal += seatPrice;
+      seatPriceDetails.push({ seatId, price: seatPrice, row: seat.SeatRow, number: seat.SeatNumber, type: seat.SeatType });
+    }
+
+    // 3. Cộng tiền F&B
+    let fnbTotal = 0;
+    const fnbDetails = [];
+    for (const item of foodItems) {
+      if (!item.quantity || parseInt(item.quantity) <= 0) {
+        continue;
+      }
+      const fnbResult = await pool.request()
+        .input('fnbId', sql.Int, item.fnbId)
+        .query('SELECT Name, Price, Stock FROM FoodBeverages WHERE FnBID = @fnbId AND IsActive = 1');
+      if (fnbResult.recordset.length === 0) {
+        throw new Error(`Sản phẩm đồ ăn ID ${item.fnbId} không tồn tại hoặc đã ngừng bán.`);
+      }
+      const fnbItem = fnbResult.recordset[0];
+      const qty = parseInt(item.quantity);
+      const subTotal = fnbItem.Price * qty;
+      fnbTotal += subTotal;
+      fnbDetails.push({ fnbId: item.fnbId, name: fnbItem.Name, price: fnbItem.Price, quantity: qty, subTotal });
+    }
+
+    const totalAmount = ticketTotal + fnbTotal;
+
+    // 4. Áp dụng voucher
+    let voucherId = null;
+    let discountAmount = 0;
+    if (voucherCode) {
+      const vResult = await pool.request()
+        .input('code', sql.NVarChar, voucherCode.trim().toUpperCase())
+        .query(`
+          SELECT v.VoucherID, v.Code, v.DiscountType, v.DiscountValue, v.MaxDiscount, v.MinOrderValue,
+                 uv.UserID AS OwnerUserID, uv.IsUsed AS UserVoucherUsed
+          FROM Vouchers v
+          LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID
+          WHERE v.Code = @code AND v.IsActive = 1
+            AND v.StartDate <= GETUTCDATE() AND v.EndDate >= GETUTCDATE()
+            AND (v.UsageLimit IS NULL OR v.UsedCount < v.UsageLimit)
+        `);
+      if (vResult.recordset.length > 0) {
+        const v = vResult.recordset[0];
+
+        if (v.OwnerUserID && v.OwnerUserID !== parseInt(userId, 10)) {
+          throw new Error('Voucher này thuộc tài khoản khác.');
+        }
+
+        if (v.OwnerUserID && v.UserVoucherUsed) {
+          throw new Error('Voucher đổi điểm này đã được sử dụng.');
+        }
+
+        // Check if this user has already used this voucher
+        const checkUsedResult = await pool.request()
+          .input('userId', sql.Int, userId)
+          .input('voucherId', sql.Int, v.VoucherID)
+          .query(`
+            SELECT COUNT(*) as cnt 
+            FROM Tickets 
+            WHERE UserID = @userId 
+              AND VoucherID = @voucherId 
+              AND Status IN ('confirmed', 'used', 'pending')
+          `);
+        if (checkUsedResult.recordset[0].cnt > 0) {
+          throw new Error('Bạn đã sử dụng voucher này rồi. Mỗi khách hàng chỉ được sử dụng mã này 1 lần.');
+        }
+
+        voucherId = v.VoucherID;
+        if (totalAmount >= (v.MinOrderValue || 0)) {
+          discountAmount = v.DiscountType === 'percent'
+            ? Math.min(totalAmount * v.DiscountValue / 100, v.MaxDiscount || Infinity)
+            : Math.min(v.DiscountValue, totalAmount);
+        }
+      }
+    }
+
+    const finalAmount = totalAmount - discountAmount;
+
+    return {
+      ticketPrice,
+      ticketTotal,
+      fnbTotal,
+      discountAmount,
+      finalAmount,
+      seatPriceDetails,
+      fnbDetails
+    };
   }
 }
 
