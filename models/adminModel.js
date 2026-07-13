@@ -564,7 +564,6 @@ class AdminModel {
         `);
       }
 
-      // 4. Update the room's TotalSeats count and RoomType (always update both)
       await request.query(`
         UPDATE Rooms 
         SET TotalSeats = (SELECT COUNT(*) FROM Seats WHERE RoomID = @roomId AND SeatType != 'None'),
