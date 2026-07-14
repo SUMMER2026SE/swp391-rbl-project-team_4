@@ -3155,17 +3155,7 @@ window.renderSeatMatrix = function () {
                         <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${rowChar}${c}</span>
                     </button>`;
                 }
-                const num2 = (c2 <= maxCol) ? c2 : c;
-                const lbl = (c2 <= maxCol) ? `${rowChar}${c}-${num2}` : `${rowChar}${c}`;
 
-                html += `<button class="seat-btn couple"
-                    onclick="toggleCoupleSeat('${rowChar}', ${c}, this)"
-                    data-row="${rowChar}" data-col1="${c}" data-col2="${num2}"
-                    title="Ghế cặp đôi ${lbl}">
-                    <span style="position:relative;z-index:5;margin-top:10px;font-size:0.6rem;font-weight:800;">${lbl}</span>
-                </button>`;
-
-                if (c2 <= maxCol) c++; // skip next column if it was part of the pair
             } else {
                 let sClass = 'blocked';
                 let inner = `<span style="color:rgba(255,255,255,0.04);position:relative;z-index:2;">${c}</span>`;
@@ -3241,16 +3231,25 @@ window.toggleCoupleSeat = function (rowChar, col1, btn) {
         return;
     }
 
-    if (tool === 'None') {
-        builderSeats = builderSeats.filter(s => !(s.SeatRow === rowChar && (s.SeatNumber === col1 || s.SeatNumber === col2)));
-    } else {
-        [col1, col2].forEach((cn, idx) => {
-            if (cn > maxCol) return;
-            let s = builderSeats.find(x => x.SeatRow === rowChar && x.SeatNumber === cn);
-            if (!s) { s = { SeatRow: rowChar, SeatNumber: cn, SeatType: 'Couple', PriceMultiplier: 1.5 }; builderSeats.push(s); }
-            else { s.SeatType = 'Couple'; s.PriceMultiplier = 1.5; }
-        });
-    }
+    [col1, col2].forEach((cn) => {
+        if (cn > maxCol) return;
+        let s = builderSeats.find(x => x.SeatRow === rowChar && x.SeatNumber === cn);
+        if (!s) {
+            s = {
+                SeatRow: rowChar,
+                SeatNumber: cn,
+                SeatType: tool === 'None' ? 'None' : 'Couple',
+                PriceMultiplier: tool === 'None' ? 1.0 : 1.5
+            };
+            builderSeats.push(s);
+        } else if (tool === 'None') {
+            s.SeatType = 'None';
+            s.PriceMultiplier = 1.0;
+        } else {
+            s.SeatType = 'Couple';
+            s.PriceMultiplier = 1.5;
+        }
+    });
     renderSeatMatrix();
 };
 
@@ -3620,7 +3619,20 @@ window.saveSeatLayout = async function () {
         }
     }
 
-    const payload = builderSeats.filter(s => s.SeatType !== 'None');
+    const payload = [];
+    for (let r = 1; r <= maxRow; r++) {
+        const rowChar = String.fromCharCode(64 + r);
+        for (let c = 1; c <= maxCol; c++) {
+            const seat = builderSeats.find(s => s.SeatRow === rowChar && s.SeatNumber === c);
+            payload.push({
+                SeatID: seat && seat.SeatID,
+                SeatRow: rowChar,
+                SeatNumber: c,
+                SeatType: seat ? (seat.SeatType || 'None') : 'None',
+                PriceMultiplier: seat ? (seat.PriceMultiplier || 1.0) : 1.0
+            });
+        }
+    }
 
     let roomType = null;
     const room = ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId);
@@ -3824,489 +3836,6 @@ if (typeof io !== 'undefined') {
     });
 }
 
-
-/* ══════════════════════════════════════
-   QUICK SELL MODAL (POS) LOGIC
-══════════════════════════════════════ */
-
-let qsState = {
-    showtimes: [],
-    selectedShowtimeId: null,
-    seats: [],
-    selectedSeatIds: [],
-    fnbItems: [],
-    selectedFnb: {}, // { fnbId: qty }
-    voucher: null,   // { id, discountType, discountValue, maxDiscount }
-    ticketPrice: 0
-};
-
-function openQuickSellModal() {
-    document.getElementById('quickSellModal').classList.add('show');
-    document.getElementById('quickSellModalOverlay').classList.add('show');
-    resetQsState();
-    loadQsShowtimes();
-    loadQsFnb();
-}
-
-function closeQuickSellModal() {
-    document.getElementById('quickSellModal').classList.remove('show');
-    document.getElementById('quickSellModalOverlay').classList.remove('show');
-}
-
-function resetQsState() {
-    qsState.selectedShowtimeId = null;
-    qsState.seats = [];
-    qsState.selectedSeatIds = [];
-    qsState.selectedFnb = {};
-    qsState.voucher = null;
-    qsState.ticketPrice = 0;
-
-    document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: #9ca3af;">Vui lòng chọn suất chiếu trước</p>';
-    document.getElementById('qsSelectedSeats').textContent = 'Chưa chọn ghế';
-    document.getElementById('qsCustomerPhone').value = '';
-    document.getElementById('qsVoucherCode').value = '';
-    document.getElementById('qsVoucherMessage').textContent = '';
-    document.getElementById('btnSubmitQuickSell').disabled = true;
-    updateQsTotals();
-}
-
-async function loadQsShowtimes() {
-    const listEl = document.getElementById('qsShowtimesList');
-    listEl.innerHTML = '<p style="color: #6b7280; font-size: 0.9rem;">Đang tải suất chiếu...</p>';
-    try {
-        const res = await apiFetch('/api/staff/showtimes/today');
-        if (res.success) {
-            qsState.showtimes = res.data;
-            if (res.data.length === 0) {
-                listEl.innerHTML = '<p style="color: #6b7280; font-size: 0.9rem;">Không có suất chiếu nào trong ngày hôm nay.</p>';
-                return;
-            }
-            let html = '';
-            res.data.forEach(st => {
-                const start = new Date(st.StartTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                const end = new Date(st.EndTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                html += `
-                    <div class="qs-showtime-card" id="qs-st-${st.ShowtimeID}" onclick="selectQsShowtime(${st.ShowtimeID}, ${st.Price})">
-                        <div class="qs-movie-title">${st.MovieTitle}</div>
-                        <div class="qs-room-time">${st.CinemaName} - ${st.RoomName}</div>
-                        <div class="qs-room-time" style="color: var(--accent); margin-top: 5px; font-weight: bold;">
-                            🕒 ${start} - ${end} &nbsp;|&nbsp; 💰 ${formatCurrency(st.Price)}đ
-                        </div>
-                    </div>
-                `;
-            });
-            listEl.innerHTML = html;
-        }
-    } catch (err) {
-        listEl.innerHTML = '<p style="color: red;">Lỗi tải suất chiếu</p>';
-    }
-}
-
-async function selectQsShowtime(showtimeId, price) {
-    qsState.selectedShowtimeId = showtimeId;
-    qsState.ticketPrice = price;
-    qsState.selectedSeatIds = [];
-    qsState.voucher = null;
-
-    // UI selection
-    document.querySelectorAll('.qs-showtime-card').forEach(c => c.classList.remove('selected'));
-    document.getElementById(`qs-st-${showtimeId}`).classList.add('selected');
-
-    document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: #9ca3af;">Đang tải sơ đồ ghế...</p>';
-
-    try {
-        const res = await apiFetch(`/api/staff/showtimes/${showtimeId}/seats`);
-        if (res.success) {
-            qsState.seats = res.data;
-            renderQsSeatMap();
-        }
-    } catch (err) {
-        document.getElementById('qsSeatMapContainer').innerHTML = '<p style="color: red;">Lỗi tải sơ đồ ghế</p>';
-    }
-    updateQsTotals();
-}
-
-function renderQsSeatMap() {
-    const container = document.getElementById('qsSeatMapContainer');
-    if (!qsState.seats || qsState.seats.length === 0) {
-        container.innerHTML = '<p style="color:#9ca3af;padding:24px;">Không có dữ liệu ghế.</p>';
-        return;
-    }
-
-    // Group by row
-    const rowsMap = {};
-    qsState.seats.forEach(s => {
-        if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = [];
-        rowsMap[s.SeatRow].push(s);
-    });
-
-    // Detect couple rows (SeatType.includes('couple'))
-    const coupleRowSet = new Set();
-    qsState.seats.forEach(s => {
-        if (s.SeatType && s.SeatType.toLowerCase().includes('couple')) coupleRowSet.add(s.SeatRow);
-    });
-    const allRows = Object.keys(rowsMap).sort();
-
-    // Sort: Standard (top) → VIP → Couple (bottom), matching seats.html
-    const sortedRows = [...allRows].sort((a, b) => {
-        const pA = coupleRowSet.has(a) ? 1 : (rowsMap[a].some(s => s.SeatType === 'VIP') ? 2 : 3);
-        const pB = coupleRowSet.has(b) ? 1 : (rowsMap[b].some(s => s.SeatType === 'VIP') ? 2 : 3);
-        return pA !== pB ? pB - pA : a.localeCompare(b);
-    });
-
-    // Cinema screen header
-    let html = `
-        <div style="text-align:center; margin-bottom:44px; perspective:600px;">
-            <div style="height:10px; background:linear-gradient(90deg,transparent 5%,rgba(229,9,20,0.2)20%,#ff2a36 50%,rgba(229,9,20,0.2)80%,transparent 95%);
-                border-radius:50%/100% 100% 0 0;
-                box-shadow:0 6px 30px rgba(229,9,20,0.85),0 2px 15px rgba(255,42,54,0.5);
-                width:80%; margin:0 auto; transform:rotateX(-12deg);"></div>
-            <div style="margin-top:14px;font-size:0.68rem;font-weight:800;letter-spacing:9px;color:rgba(255,255,255,0.3);">MÀN HÌNH</div>
-        </div>`;
-
-    sortedRows.forEach(rk => {
-        const rowSeats = [...rowsMap[rk]].sort((a, b) => a.SeatNumber - b.SeatNumber);
-        const isCouple = coupleRowSet.has(rk);
-        const total = rowSeats.length;
-        const half = Math.floor(total / 2);
-
-        html += `<div style="display:flex;align-items:center;gap:7px;justify-content:center;margin-bottom:8px;">`;
-        // Left label
-        html += `<div style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:800;color:#6b7280;font-size:0.72rem;flex-shrink:0;">${rk}</div>`;
-
-        for (let i = 0; i < total; i++) {
-            const seat = rowSeats[i];
-
-            // Center aisle gap
-            if (total > 4 && i === half) html += `<div style="width:18px;flex-shrink:0;"></div>`;
-
-            if (seat.SeatType === 'Couple') {
-                const s1 = seat;
-                const s2 = rowSeats[i + 1];
-                if (s2 && s2.SeatType === 'Couple' && s2.SeatNumber === s1.SeatNumber + 1) {
-                    const sel = qsState.selectedSeatIds.includes(s1.SeatID) || qsState.selectedSeatIds.includes(s2.SeatID);
-                    const sold = s1.Status !== 'available' || s2.Status !== 'available';
-                    const lbl = `${rk}${s1.SeatNumber}-${s2.SeatNumber}`;
-
-                    const bg = sel ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
-                    const border = sel ? '1px solid rgba(255,50,80,0.6)' : sold ? '1px dashed rgba(255,255,255,0.08)' : '1px solid rgba(251,207,232,0.25)';
-                    const shadow = sel ? '0 0 14px rgba(229,9,20,0.6)' : sold ? 'none' : '0 3px 6px rgba(0,0,0,0.5),0 0 6px rgba(219,39,119,0.15)';
-                    const onclick = (!sold) ? `onclick="toggleQsSeat(${s1.SeatID}, ${s2.SeatID}, '${lbl}')"` : '';
-                    const cursor = sold ? 'not-allowed' : 'pointer';
-
-                    html += `<div style="
-                        width:78px;height:32px;border-radius:8px 8px 5px 5px;
-                        background:${bg};border:${border};
-                        box-shadow:${shadow};cursor:${cursor};
-                        display:inline-flex;align-items:flex-end;justify-content:center;
-                        padding-bottom:3px;font-size:0.6rem;font-weight:800;
-                        color:${sel ? '#fff' : sold ? 'rgba(255,255,255,0.15)' : '#fce7f3'};
-                        transition:all 0.2s;flex-shrink:0;position:relative;"
-                        ${onclick} title="${lbl}${sold ? ' (Đã bán)' : ''}">
-                        <span style="position:relative;z-index:5;">${lbl}</span>
-                    </div>`;
-                    i++; // skip next
-                } else {
-                    const sel = qsState.selectedSeatIds.includes(s1.SeatID);
-                    const sold = s1.Status !== 'available';
-                    const lbl = `${rk}${s1.SeatNumber}`;
-                    const bg = sel ? 'linear-gradient(180deg,#e8001a,#990011)' : sold ? 'rgba(10,12,20,0.8)' : 'linear-gradient(180deg,#db2777,#7d0e3d)';
-                    const border = sel ? '1px solid rgba(255,50,80,0.6)' : sold ? '1px dashed rgba(255,255,255,0.08)' : '1px solid rgba(251,207,232,0.25)';
-                    const shadow = sel ? '0 0 14px rgba(229,9,20,0.6)' : sold ? 'none' : '0 3px 6px rgba(0,0,0,0.5),0 0 6px rgba(219,39,119,0.15)';
-                    const onclick = (!sold) ? `onclick="toggleQsSeat(${s1.SeatID}, null, '${lbl}')"` : '';
-                    const cursor = sold ? 'not-allowed' : 'pointer';
-
-                    html += `<div style="
-                        width:78px;height:32px;border-radius:8px 8px 5px 5px;
-                        background:${bg};border:${border};
-                        box-shadow:${shadow};cursor:${cursor};
-                        display:inline-flex;align-items:flex-end;justify-content:center;
-                        padding-bottom:3px;font-size:0.6rem;font-weight:800;
-                        color:${sel ? '#fff' : sold ? 'rgba(255,255,255,0.15)' : '#fce7f3'};
-                        transition:all 0.2s;flex-shrink:0;position:relative;"
-                        ${onclick} title="${lbl}${sold ? ' (Đã bán)' : ''}">
-                        <span style="position:relative;z-index:5;">${lbl}</span>
-                    </div>`;
-                }
-            } else {
-                const sel = qsState.selectedSeatIds.includes(seat.SeatID);
-                const sold = seat.Status !== 'available';
-                const isVip = seat.SeatType === 'VIP';
-
-                let bg, border, shadow, color;
-                if (sel) {
-                    bg = 'linear-gradient(180deg,#e8001a,#990011)';
-                    border = '1px solid rgba(255,50,80,0.5)';
-                    shadow = '0 0 14px rgba(229,9,20,0.55)';
-                    color = '#fff';
-                } else if (sold) {
-                    bg = 'rgba(10,12,20,0.8)';
-                    border = '1px dashed rgba(255,255,255,0.07)';
-                    shadow = 'none';
-                    color = 'rgba(255,255,255,0.12)';
-                } else if (isVip) {
-                    bg = 'linear-gradient(180deg,#e28a18,#8a4805)';
-                    border = '1px solid rgba(252,211,77,0.3)';
-                    shadow = '0 3px 6px rgba(0,0,0,0.5),0 0 5px rgba(245,158,11,0.18)';
-                    color = '#fef08a';
-                } else {
-                    bg = 'linear-gradient(180deg,#475569,#1e293b)';
-                    border = '1px solid rgba(100,116,139,0.3)';
-                    shadow = '0 3px 6px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.12)';
-                    color = '#cbd5e1';
-                }
-
-                const onclick = (!sold) ? `onclick="toggleQsSeat(${seat.SeatID}, null, '${rk}${seat.SeatNumber}')"` : '';
-                const cursor = sold ? 'not-allowed' : 'pointer';
-
-                html += `<div style="
-                    width:33px;height:31px;border-radius:7px 7px 5px 5px;
-                    background:${bg};border:${border};box-shadow:${shadow};
-                    cursor:${cursor};display:inline-flex;align-items:flex-end;
-                    justify-content:center;padding-bottom:3px;
-                    font-size:0.68rem;font-weight:800;color:${color};
-                    transition:all 0.2s;flex-shrink:0;position:relative;"
-                    ${onclick} title="${rk}${seat.SeatNumber}${isVip ? ' (VIP)' : ''}${sold ? ' (Đã bán)' : ''}">
-                    ${isVip && !sold ? `<span style="position:absolute;top:0px;right:2px;font-size:0.44rem;color:#fbbf24;z-index:5;">★</span>` : ''}
-                    <span style="position:relative;z-index:2;">${seat.SeatNumber}</span>
-                </div>`;
-            }
-        }
-
-        // Right label
-        html += `<div style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:800;color:#6b7280;font-size:0.72rem;flex-shrink:0;">${rk}</div>`;
-        html += `</div>`;
-    });
-
-    // Legend
-    html += `
-        <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:20px;padding:12px 20px;background:rgba(255,255,255,0.02);border-radius:30px;border:1px solid rgba(255,255,255,0.06);">
-            <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:#6b7280;">
-                <span style="width:22px;height:16px;border-radius:3px;background:linear-gradient(180deg,#475569,#1e293b);display:inline-block;"></span>Thường
-            </span>
-            <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:#6b7280;">
-                <span style="width:22px;height:16px;border-radius:3px;background:linear-gradient(180deg,#e28a18,#8a4805);display:inline-block;"></span>VIP
-            </span>
-            <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:#6b7280;">
-                <span style="width:44px;height:16px;border-radius:3px;background:linear-gradient(180deg,#db2777,#7d0e3d);display:inline-block;"></span>Cặp đôi
-            </span>
-            <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:#6b7280;">
-                <span style="width:22px;height:16px;border-radius:3px;background:linear-gradient(180deg,#e8001a,#990011);display:inline-block;"></span>Đã chọn
-            </span>
-            <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:#6b7280;">
-                <span style="width:22px;height:16px;border-radius:3px;background:rgba(10,12,20,0.8);border:1px dashed rgba(255,255,255,0.1);display:inline-block;"></span>Đã bán
-            </span>
-        </div>`;
-
-    container.innerHTML = html;
-}
-
-function toggleQsSeat(seatId1, seatId2, seatName) {
-    if (typeof seatId2 === 'string') {
-        seatName = seatId2;
-        seatId2 = null;
-    }
-    const idx1 = qsState.selectedSeatIds.indexOf(seatId1);
-    if (idx1 > -1) {
-        qsState.selectedSeatIds.splice(idx1, 1);
-        if (seatId2) {
-            const idx2 = qsState.selectedSeatIds.indexOf(seatId2);
-            if (idx2 > -1) qsState.selectedSeatIds.splice(idx2, 1);
-        }
-    } else {
-        const addCount = seatId2 ? 2 : 1;
-        if (qsState.selectedSeatIds.length + addCount > 8) {
-            return alert('Chỉ được đặt tối đa 8 ghế một lần!');
-        }
-        qsState.selectedSeatIds.push(seatId1);
-        if (seatId2) qsState.selectedSeatIds.push(seatId2);
-    }
-    renderQsSeatMap();
-    updateQsTotals();
-}
-
-async function loadQsFnb() {
-    try {
-        const res = await apiFetch('/api/admin/fnb'); // Hoặc dùng public route /api/bookings/food-beverages
-        if (res.success) {
-            qsState.fnbItems = res.data.filter(f => f.IsAvailable);
-            renderQsFnb();
-        }
-    } catch (e) { }
-}
-
-function renderQsFnb() {
-    const listEl = document.getElementById('qsFnbList');
-    let html = '';
-    qsState.fnbItems.forEach(f => {
-        const qty = qsState.selectedFnb[f.FnBID] || 0;
-        html += `
-            <div class="qs-fnb-item">
-                <div class="qs-fnb-info">
-                    <div class="qs-fnb-name">${f.Name} <span style="font-size:0.75rem;color:#6b7280;">(Còn ${f.Stock})</span></div>
-                    <div class="qs-fnb-price">${formatCurrency(f.Price)}đ</div>
-                </div>
-                <div class="qs-fnb-qty">
-                    <button class="qs-btn-qty" onclick="updateQsFnb(${f.FnBID}, -1, ${f.Stock})">-</button>
-                    <span style="width:20px;text-align:center;font-weight:600;">${qty}</span>
-                    <button class="qs-btn-qty" onclick="updateQsFnb(${f.FnBID}, 1, ${f.Stock})">+</button>
-                </div>
-            </div>
-        `;
-    });
-    listEl.innerHTML = html;
-}
-
-function updateQsFnb(fnbId, delta, stock) {
-    let curr = qsState.selectedFnb[fnbId] || 0;
-    curr += delta;
-    if (curr < 0) curr = 0;
-    if (curr > 10) curr = 10;
-    if (curr > stock) curr = stock;
-
-    if (curr === 0) delete qsState.selectedFnb[fnbId];
-    else qsState.selectedFnb[fnbId] = curr;
-
-    renderQsFnb();
-    updateQsTotals();
-}
-
-function getSelectedSeatNames() {
-    return qsState.selectedSeatIds.map(id => {
-        const s = qsState.seats.find(x => x.SeatID === id);
-        return s ? `${s.SeatRow}${s.SeatNumber}` : '';
-    }).join(', ');
-}
-
-function updateQsTotals() {
-    const seatNames = getSelectedSeatNames();
-    document.getElementById('qsSelectedSeats').textContent = seatNames || 'Chưa chọn ghế';
-
-    let ticketTotal = 0;
-    qsState.selectedSeatIds.forEach(id => {
-        const s = qsState.seats.find(x => x.SeatID === id);
-        if (!s) return;
-        let mult = s.PriceMultiplier ? parseFloat(s.PriceMultiplier) : 1;
-        if (s.SeatType && s.SeatType.toLowerCase().includes('couple')) {
-            mult = mult / 2;
-        }
-        ticketTotal += qsState.ticketPrice * mult;
-    });
-
-    let fnbTotal = 0;
-    Object.keys(qsState.selectedFnb).forEach(id => {
-        const item = qsState.fnbItems.find(x => x.FnBID == id);
-        if (item) fnbTotal += item.Price * qsState.selectedFnb[id];
-    });
-
-    let subTotal = ticketTotal + fnbTotal;
-    let discount = 0;
-
-    if (qsState.voucher) {
-        if (subTotal >= qsState.voucher.MinOrderValue) {
-            if (qsState.voucher.DiscountType === 'percent') {
-                discount = subTotal * qsState.voucher.DiscountValue / 100;
-                if (qsState.voucher.MaxDiscount) discount = Math.min(discount, qsState.voucher.MaxDiscount);
-            } else {
-                discount = Math.min(subTotal, qsState.voucher.DiscountValue);
-            }
-        }
-    }
-
-    let finalTotal = subTotal - discount;
-    if (finalTotal < 0) finalTotal = 0;
-
-    document.getElementById('qsTicketTotal').textContent = formatCurrency(ticketTotal) + ' đ';
-    document.getElementById('qsFnbTotal').textContent = formatCurrency(fnbTotal) + ' đ';
-    document.getElementById('qsDiscountTotal').textContent = '- ' + formatCurrency(discount) + ' đ';
-    document.getElementById('qsFinalTotal').textContent = formatCurrency(finalTotal) + ' đ';
-
-    document.getElementById('btnSubmitQuickSell').disabled = qsState.selectedSeatIds.length === 0;
-}
-
-async function applyQsVoucher() {
-    const code = document.getElementById('qsVoucherCode').value.trim();
-    const msgEl = document.getElementById('qsVoucherMessage');
-
-    if (!code) {
-        qsState.voucher = null;
-        msgEl.textContent = '';
-        updateQsTotals();
-        return;
-    }
-
-    msgEl.textContent = 'Đang kiểm tra...';
-    msgEl.style.color = '#6b7280';
-
-    try {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const res = await fetch('/api/bookings/validate-voucher', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ code })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-            qsState.voucher = data.data;
-            msgEl.textContent = 'Mã hợp lệ!';
-            msgEl.style.color = '#10b981';
-            updateQsTotals();
-        } else {
-            qsState.voucher = null;
-            msgEl.textContent = data.message || 'Mã không hợp lệ';
-            msgEl.style.color = '#e8192c';
-            updateQsTotals();
-        }
-    } catch (e) {
-        msgEl.textContent = 'Lỗi kết nối';
-    }
-}
-
-async function submitQuickSell() {
-    if (qsState.selectedSeatIds.length === 0) return alert('Vui lòng chọn ghế!');
-
-    const btn = document.getElementById('btnSubmitQuickSell');
-    btn.disabled = true;
-    btn.textContent = 'Đang xử lý...';
-
-    const foodItems = Object.keys(qsState.selectedFnb).map(id => ({
-        fnbId: id,
-        quantity: qsState.selectedFnb[id]
-    }));
-
-    const payload = {
-        showtimeId: qsState.selectedShowtimeId,
-        seatIds: qsState.selectedSeatIds,
-        foodItems: foodItems,
-        customerPhone: document.getElementById('qsCustomerPhone').value.trim(),
-        voucherCode: qsState.voucher ? document.getElementById('qsVoucherCode').value.trim() : null,
-        paymentMethod: 'cash'
-    };
-
-    try {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const res = await fetch('/api/staff/sell-ticket', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-
-        if (data.success) {
-            alert('Thanh toán thành công!\nMã vé: ' + data.data.ticketIds.map(t => 'TKT-' + t).join(', '));
-            closeQuickSellModal();
-            loadDashboardData(); // Cập nhật lại biểu đồ/KPIs
-        } else {
-            alert('Lỗi: ' + data.message);
-        }
-    } catch (e) {
-        alert('Lỗi kết nối');
-    }
-
-    btn.textContent = 'Thanh Toán & In Vé';
-    btn.disabled = false;
-}
 
 
 /* ════════════════════════════════════════════════

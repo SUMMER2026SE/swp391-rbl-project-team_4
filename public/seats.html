@@ -1846,7 +1846,10 @@
         async function loadSeats() {
             try {
                 const sessId = sessionStorage.getItem('bookingSessionId') || '';
-                const res = await fetch(`/api/movies/showtimes/${showtimeId}/seats?sessionId=${encodeURIComponent(sessId)}`);
+                const res = await fetch(
+                    `/api/movies/showtimes/${showtimeId}/seats?sessionId=${encodeURIComponent(sessId)}&_=${Date.now()}`,
+                    { cache: 'no-store' }
+                );
                 const json = await res.json();
                 if (json.success && json.data) {
                     seatsList = json.data;
@@ -1911,6 +1914,22 @@
         // ──────────────────────────────────────────────
         //  Render Seat Grid
         // ──────────────────────────────────────────────
+        function buildRenderableRowsMap() {
+            const rowsMap = {};
+            seatsList.forEach(seat => {
+                if (!rowsMap[seat.SeatRow]) rowsMap[seat.SeatRow] = [];
+                rowsMap[seat.SeatRow].push(seat);
+            });
+
+            Object.keys(rowsMap).forEach(row => {
+                if (!rowsMap[row].some(seat => seat.SeatType !== 'None')) {
+                    delete rowsMap[row];
+                }
+            });
+
+            return rowsMap;
+        }
+
         function renderSeatGrid() {
             const container = document.getElementById('seatMapContainer');
             container.innerHTML = '';
@@ -1929,12 +1948,7 @@
                 return;
             }
 
-            // Group by row
-            const rowsMap = {};
-            seatsList.forEach(seat => {
-                if (!rowsMap[seat.SeatRow]) rowsMap[seat.SeatRow] = [];
-                rowsMap[seat.SeatRow].push(seat);
-            });
+            const rowsMap = buildRenderableRowsMap();
 
             // Determine couple rows based on alphabetical order first
             const alphabetRows = Object.keys(rowsMap).sort();
@@ -2087,12 +2101,7 @@
         function validateSeatSelection(proposedSet) {
             if (proposedSet.size === 0) return { valid: true };
 
-            // Build row → sorted seats map
-            const rowsMap = {};
-            seatsList.forEach(s => {
-                if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = [];
-                rowsMap[s.SeatRow].push(s);
-            });
+            const rowsMap = buildRenderableRowsMap();
 
             for (const row of Object.keys(rowsMap)) {
                 const rowSeats = [...rowsMap[row]].sort((a, b) => a.SeatNumber - b.SeatNumber);
@@ -2664,11 +2673,7 @@
             // PRE-CALCULATE SEAT LAYOUT DIMENSIONS
             // (must be done BEFORE building scene so screen width matches)
             // ============================================================
-            const rowsMap = {};
-            seatsList.forEach(s => {
-                if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = [];
-                rowsMap[s.SeatRow].push(s);
-            });
+            const rowsMap = buildRenderableRowsMap();
             
             const alphabetRows = Object.keys(rowsMap).sort();
             const coupleRows = new Set();

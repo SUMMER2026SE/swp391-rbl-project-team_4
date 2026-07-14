@@ -71,10 +71,14 @@ class MovieModel {
              (SELECT STRING_AGG(CAST(mg.GenreID AS varchar(20)), ',')
               FROM Movie_Genres mg
               WHERE mg.MovieID = m.MovieID) AS GenreIDs,
-             COALESCE((SELECT STRING_AGG(Format, ', ') 
-                       FROM (SELECT DISTINCT ISNULL(r2.RoomType, 'Standard') AS Format 
-                             FROM Showtimes st2 
-                             JOIN Rooms r2 ON st2.RoomID = r2.RoomID 
+             COALESCE((SELECT STRING_AGG(Format, ', ')
+                       FROM (SELECT DISTINCT CASE
+                               WHEN r2.RoomName LIKE '%3D%' THEN '3D'
+                               WHEN r2.RoomName LIKE '%IMAX%' THEN 'IMAX'
+                               ELSE '2D Standard'
+                             END AS Format
+                             FROM Showtimes st2
+                             JOIN Rooms r2 ON st2.RoomID = r2.RoomID
                              WHERE st2.MovieID = m.MovieID AND st2.Status = 'active') AS Formats), 'Standard') AS Formats
       FROM   Movies m
     `;
@@ -111,15 +115,14 @@ class MovieModel {
              (SELECT STRING_AGG(CAST(mg.GenreID AS varchar(20)), ',')
               FROM Movie_Genres mg
               WHERE mg.MovieID = m.MovieID) AS GenreIDs,
-             COALESCE((SELECT STRING_AGG(Format, ', ') 
-                       FROM (SELECT DISTINCT ISNULL(r.RoomType, 'Standard') AS Format
-                       FROM (SELECT DISTINCT CASE 
+             COALESCE((SELECT STRING_AGG(Format, ', ')
+                       FROM (SELECT DISTINCT CASE
                                WHEN r.RoomName LIKE '%3D%' THEN '3D'
                                WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
                                ELSE '2D Standard'
                              END AS Format
-                             FROM Showtimes st 
-                             JOIN Rooms r ON st.RoomID = r.RoomID 
+                             FROM Showtimes st
+                             JOIN Rooms r ON st.RoomID = r.RoomID
                              WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), 'Standard') AS Formats
       FROM   Movies m
       WHERE  m.Status = 'Coming Soon'
@@ -157,10 +160,14 @@ class MovieModel {
              (SELECT STRING_AGG(CAST(mg.GenreID AS varchar(20)), ',')
               FROM Movie_Genres mg
               WHERE mg.MovieID = m.MovieID) AS GenreIDs,
-             COALESCE((SELECT STRING_AGG(RoomType, ', ') 
-                       FROM (SELECT DISTINCT ISNULL(r.RoomType, 'Standard') AS RoomType
-                             FROM Showtimes st 
-                             JOIN Rooms r ON st.RoomID = r.RoomID 
+             COALESCE((SELECT STRING_AGG(Format, ', ')
+                       FROM (SELECT DISTINCT CASE
+                               WHEN r.RoomName LIKE '%3D%' THEN '3D'
+                               WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
+                               ELSE '2D Standard'
+                             END AS Format
+                             FROM Showtimes st
+                             JOIN Rooms r ON st.RoomID = r.RoomID
                              WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), 'Standard') AS Formats
       FROM   Movies m
       ${whereClause}
@@ -184,10 +191,14 @@ class MovieModel {
                (SELECT STRING_AGG(CAST(mg.GenreID AS varchar(20)), ',')
                 FROM Movie_Genres mg
                 WHERE mg.MovieID = m.MovieID) AS GenreIDs,
-               COALESCE((SELECT STRING_AGG(RoomType, ', ') 
-                         FROM (SELECT DISTINCT ISNULL(r.RoomType, 'Standard') AS RoomType
-                               FROM Showtimes st 
-                               JOIN Rooms r ON st.RoomID = r.RoomID 
+               COALESCE((SELECT STRING_AGG(Format, ', ')
+                         FROM (SELECT DISTINCT CASE
+                                 WHEN r.RoomName LIKE '%3D%' THEN '3D'
+                                 WHEN r.RoomName LIKE '%IMAX%' THEN 'IMAX'
+                                 ELSE '2D Standard'
+                               END AS Format
+                               FROM Showtimes st
+                               JOIN Rooms r ON st.RoomID = r.RoomID
                                WHERE st.MovieID = m.MovieID AND st.Status = 'active') AS Formats), 'Standard') AS Formats
         FROM   Movies m
         WHERE  m.MovieID = @movieId
@@ -243,7 +254,6 @@ class MovieModel {
         LEFT   JOIN Tickets t ON t.SeatID = s.SeatID AND t.ShowtimeID = @showtimeId
                               AND t.Status IN ('confirmed', 'pending', 'refund_requested')
         WHERE  st.ShowtimeID = @showtimeId
-          AND  s.SeatType != 'None'
         ORDER BY s.SeatRow, s.SeatNumber
       `);
     return result.recordset;

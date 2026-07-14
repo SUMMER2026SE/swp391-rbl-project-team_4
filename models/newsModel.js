@@ -7,6 +7,38 @@ async function ensureNewsTable() {
 
   const pool = await getPool();
   await pool.request().query(`
+    IF OBJECT_ID('dbo.News', 'U') IS NULL
+    BEGIN
+      CREATE TABLE dbo.News (
+        NewsID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        Title NVARCHAR(255) NOT NULL,
+        Summary NVARCHAR(1000) NULL,
+        Content NVARCHAR(MAX) NULL,
+        Thumbnail NVARCHAR(500) NULL,
+        Category NVARCHAR(20) NOT NULL CONSTRAINT DF_News_Category DEFAULT 'News',
+        Status BIT NOT NULL CONSTRAINT DF_News_Status DEFAULT 1,
+        PublishedAt DATETIME NOT NULL CONSTRAINT DF_News_PublishedAt DEFAULT GETDATE(),
+        BadgeLabel NVARCHAR(80) NULL,
+        Author NVARCHAR(120) NULL,
+        IsFeatured BIT NOT NULL CONSTRAINT DF_News_IsFeatured DEFAULT 0,
+        SortOrder INT NOT NULL CONSTRAINT DF_News_SortOrder DEFAULT 0,
+        CreatedAt DATETIME NOT NULL CONSTRAINT DF_News_CreatedAt DEFAULT GETDATE(),
+        UpdatedAt DATETIME NULL,
+        CONSTRAINT CK_News_Category CHECK (Category IN ('News', 'Event'))
+      );
+    END;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM sys.indexes
+      WHERE name = 'IX_News_Public'
+        AND object_id = OBJECT_ID('dbo.News')
+    )
+    BEGIN
+      CREATE INDEX IX_News_Public
+      ON dbo.News (Status, Category, PublishedAt DESC, SortOrder)
+      INCLUDE (Title, Summary, Thumbnail, BadgeLabel, Author, IsFeatured);
+    END;
+
     IF OBJECT_ID('dbo.NewsArticles', 'U') IS NULL
     BEGIN
       CREATE TABLE dbo.NewsArticles (
@@ -229,6 +261,7 @@ class NewsModel {
 
   // --- UC06 - News and Events Management ---
   static async getNewsPublic({ search, category, page = 1, limit = 10 } = {}) {
+    await ensureNewsTable();
     const pool = await getPool();
     const request = pool.request();
     let filters = 'WHERE Status = 1';
@@ -271,6 +304,7 @@ class NewsModel {
   }
 
   static async getNewsById(id) {
+    await ensureNewsTable();
     const newsId = parseInt(id, 10);
     if (!Number.isInteger(newsId) || newsId <= 0) return null;
 

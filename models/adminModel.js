@@ -12,6 +12,15 @@ async function ensureRoomTypeSchema() {
   if (roomTypeSchemaReady) return;
   const pool = await getPool();
 
+  await pool.request().query(`
+    IF COL_LENGTH('dbo.Rooms', 'RoomType') IS NULL
+    BEGIN
+      ALTER TABLE dbo.Rooms
+      ADD RoomType NVARCHAR(50) NOT NULL
+          CONSTRAINT DF_Rooms_RoomType DEFAULT 'Standard' WITH VALUES;
+    END;
+  `);
+
   // 1. Migrate dữ liệu cũ về 4 loại chuẩn
   await pool.request().query(`
     UPDATE Rooms SET RoomType = 'Standard'
