@@ -132,6 +132,18 @@ class NewsModel {
     const pool = await getPool();
     const category = item.type === 'events' ? 'Event' : 'News';
     const status = item.isActive ? 1 : 0;
+    const typeName = item.type === 'events' ? 'Sự kiện' : 'Tin tức';
+
+    // --- Kiểm tra trùng lặp tiêu đề + loại ---
+    const dupCheck = await pool.request()
+      .input('title', sql.NVarChar, item.title)
+      .input('category', sql.NVarChar, category)
+      .query(`SELECT TOP 1 NewsID FROM dbo.News WHERE Title = @title AND Category = @category`);
+    if (dupCheck.recordset.length > 0) {
+      const err = new Error(`${typeName} với tiêu đề "${item.title}" đã tồn tại. Vui lòng dùng tiêu đề khác.`);
+      err.code = 'DUPLICATE_ARTICLE';
+      throw err;
+    }
 
     const result = await pool.request()
       .input('title', sql.NVarChar, item.title)
@@ -163,9 +175,30 @@ class NewsModel {
     if (!Number.isInteger(newsId) || newsId <= 0) throw new Error('NewsID khong hop le.');
     if (!item.title) throw new Error('Vui long nhap tieu de bai viet.');
 
+    console.log('[DEBUG NEWS] updateArticle:', {
+      newsId,
+      inputPublishedAt: data.publishedAt,
+      parsedPublishedAt: item.publishedAt,
+      typeOfParsed: typeof item.publishedAt,
+      isValidDate: item.publishedAt instanceof Date && !isNaN(item.publishedAt.getTime())
+    });
+
     const pool = await getPool();
     const category = item.type === 'events' ? 'Event' : 'News';
     const status = item.isActive ? 1 : 0;
+    const typeName = item.type === 'events' ? 'Sự kiện' : 'Tin tức';
+
+    // --- Kiểm tra trùng lặp tiêu đề + loại (bỏ qua chính bài viết đang sửa) ---
+    const dupCheck = await pool.request()
+      .input('title', sql.NVarChar, item.title)
+      .input('category', sql.NVarChar, category)
+      .input('newsId', sql.Int, newsId)
+      .query(`SELECT TOP 1 NewsID FROM dbo.News WHERE Title = @title AND Category = @category AND NewsID <> @newsId`);
+    if (dupCheck.recordset.length > 0) {
+      const err = new Error(`${typeName} với tiêu đề "${item.title}" đã tồn tại. Vui lòng dùng tiêu đề khác.`);
+      err.code = 'DUPLICATE_ARTICLE';
+      throw err;
+    }
 
     const result = await pool.request()
       .input('newsId', sql.Int, newsId)
