@@ -82,8 +82,23 @@ async function apiCall(url, method = 'GET', body = null) {
             options.body = JSON.stringify(body);
         }
 
-        const res = await fetch(url, options);
-        const data = await res.json();
+        let res = await fetch(url, options);
+        if (res.status === 404) {
+            let altUrl = null;
+            if (url.startsWith('/api/admin/vouchers')) altUrl = url.replace('/api/admin/vouchers', '/admin/vouchers');
+            else if (url.startsWith('/admin/vouchers')) altUrl = url.replace('/admin/vouchers', '/api/admin/vouchers');
+            if (altUrl) {
+                res = await fetch(altUrl, options);
+            }
+        }
+
+        let data;
+        try {
+            data = await res.json();
+        } catch (jsonErr) {
+            console.error(`[apiCall] Invalid JSON response from ${url}:`, jsonErr);
+            return { success: false, message: `Lỗi phản hồi máy chủ (HTTP ${res.status}).` };
+        }
         return data;
     } catch (err) {
         console.error(`API Call failed [${method} ${url}]:`, err);
@@ -200,9 +215,13 @@ function renderVouchersTable() {
             : `<button class="btn-icon" onclick="toggleActiveStatus(${v.VoucherID}, '${v.Status}')" title="${v.Status === 'Active' ? 'Vô hiệu hóa' : 'Kích hoạt'}">${toggleIcon}</button>`;
 
         const displayVoucherType = v.VoucherType || 'Mã Khuyến Mãi';
+        const imgThumbCell = (v.ImageUrl && v.ImageUrl.trim() !== '') 
+            ? `<img src="${v.ImageUrl}" alt="${v.VoucherCode}" style="width:44px; height:44px; object-fit:cover; border-radius:8px; border:1px solid #4b5563; display:block; margin:0 auto; cursor:pointer;" title="Bấm để xem ảnh" onclick="window.open('${v.ImageUrl}', '_blank')">` 
+            : `<span style="font-size:0.75rem; color:#9ca3af; padding:4px 8px; border:1px dashed #4b5563; border-radius:6px; white-space:nowrap; display:inline-block;">Chưa có ảnh</span>`;
 
         html += `
             <tr>
+                <td style="text-align:center; padding:8px;">${imgThumbCell}</td>
                 <td style="font-weight:700; color:var(--accent);">${v.VoucherCode}</td>
                 <td style="font-weight:600; color:#38bdf8;">${displayVoucherType}</td>
                 <td>${v.VoucherName}</td>
@@ -284,12 +303,139 @@ function handleDiscountTypeChange() {
     }
 }
 
+// Image preview helper
+function updateImagePreview() {
+    const input = document.getElementById('imageUrl');
+    const container = document.getElementById('imagePreviewContainer');
+    const img = document.getElementById('imagePreview');
+    if (!input || !container || !img) return;
+
+    const val = input.value.trim();
+    if (val) {
+        img.src = val;
+        container.style.display = 'flex';
+        img.onerror = function() {
+            container.style.display = 'none';
+        };
+    } else {
+        container.style.display = 'none';
+        img.src = '';
+    }
+}
+
+// Helper to compress image file to lightweight Base64 (~20KB) to prevent HTTP 413 Payload Too Large
+function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0.7) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const img = new Image();
+            img.onload = function () {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth || height > maxHeight) {
+                    if (width / height > maxWidth / maxHeight) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    } else {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = function() {
+                resolve(e.target.result);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// File upload helper
+async function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 1. Instant zero-latency preview
+    const objectUrl = URL.createObjectURL(file);
+    const imgEl = document.getElementById('imagePreview');
+    const container = document.getElementById('imagePreviewContainer');
+    if (imgEl && container) {
+        imgEl.src = objectUrl;
+        container.style.display = 'flex';
+    }
+
+    // 2. Upload file via FormData to server (Multer handles files directly)
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        const token = getVoucherToken();
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        let res = await fetch('/api/admin/vouchers/upload', {
+            method: 'POST',
+            headers: headers,
+            body: formData
+        });
+
+        if (res.status === 404) {
+            res = await fetch('/admin/vouchers/upload', {
+                method: 'POST',
+                headers: headers,
+                body: formData
+            });
+        }
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.imageUrl) {
+                const input = document.getElementById('imageUrl');
+                if (input) input.value = data.imageUrl;
+                updateImagePreview();
+                vShowToast('Đã tải ảnh lên thành công!', 'success');
+                return;
+            }
+        }
+    } catch (e) {
+        console.warn('[handleFileUpload] Multipart upload warning:', e);
+    }
+
+    // 3. Fallback: compress image to lightweight ~20KB Base64 so JSON payload never triggers HTTP 413
+    try {
+        const compressedBase64 = await compressImage(file, 400, 400, 0.7);
+        const input = document.getElementById('imageUrl');
+        if (input) input.value = compressedBase64;
+        updateImagePreview();
+        vShowToast('Đã chọn ảnh thành công!', 'success');
+    } catch (err) {
+        console.error('[handleFileUpload] Compression error:', err);
+        vShowToast('Không thể xử lý file ảnh.', 'error');
+    }
+}
+
 // Edit voucher loader
 async function startEdit(id) {
-    const res = await apiCall(`/api/admin/vouchers/${id}`);
-    if (res.success && res.data) {
-        const v = res.data;
-        
+    let v = vouchersData.find(item => item.VoucherID === id);
+    if (!v || v.ImageUrl === undefined) {
+        const res = await apiCall(`/api/admin/vouchers/${id}`);
+        if (res.success && res.data) {
+            v = res.data;
+        }
+    }
+
+    if (v) {
         // Double check Expired status
         if (v.Status === 'Expired' || new Date(v.EndDate) < new Date()) {
             vShowToast('Không thể chỉnh sửa voucher đã hết hạn!', 'error');
@@ -298,21 +444,25 @@ async function startEdit(id) {
 
         editingVoucherId = v.VoucherID;
         document.getElementById('voucherId').value = v.VoucherID;
-        document.getElementById('voucherCode').value = v.VoucherCode;
+        document.getElementById('voucherCode').value = v.VoucherCode || v.Code || '';
         const vTypeEl = document.getElementById('voucherType');
         if (vTypeEl) vTypeEl.value = v.VoucherType || 'Mã Khuyến Mãi';
-        document.getElementById('voucherName').value = v.VoucherName;
+        document.getElementById('voucherName').value = v.VoucherName || v.VoucherCode || v.Code || '';
         document.getElementById('discountType').value = v.DiscountType;
         document.getElementById('discountValue').value = v.DiscountValue;
-        document.getElementById('minimumOrder').value = v.MinimumOrder;
-        document.getElementById('maximumDiscount').value = v.MaximumDiscount;
+        document.getElementById('minimumOrder').value = v.MinimumOrder !== undefined ? v.MinimumOrder : (v.MinOrderValue || 0);
+        document.getElementById('maximumDiscount').value = v.MaximumDiscount !== undefined ? v.MaximumDiscount : (v.MaxDiscount || 0);
         document.getElementById('usageLimit').value = v.UsageLimit;
         
         document.getElementById('startDate').value = formatDateTimeLocal(new Date(v.StartDate));
         document.getElementById('endDate').value = formatDateTimeLocal(new Date(v.EndDate));
         
         document.getElementById('description').value = v.Description || '';
-        document.getElementById('status').value = v.Status;
+        const imgInput = document.getElementById('imageUrl');
+        if (imgInput) imgInput.value = v.ImageUrl || v.imageUrl || '';
+        updateImagePreview();
+
+        document.getElementById('status').value = v.Status || 'Active';
 
         handleDiscountTypeChange();
 
@@ -330,6 +480,10 @@ function resetForm() {
     document.getElementById('voucherId').value = '';
     const vTypeEl = document.getElementById('voucherType');
     if (vTypeEl) vTypeEl.value = 'Mã Khuyến Mãi';
+    const imgInput = document.getElementById('imageUrl');
+    if (imgInput) imgInput.value = '';
+    updateImagePreview();
+
     document.getElementById('formTitle').textContent = 'TẠO VOUCHER MỚI';
     document.getElementById('btnSubmit').textContent = 'Thêm Voucher';
     
@@ -358,6 +512,7 @@ async function handleSubmit(event) {
     const startStr = document.getElementById('startDate').value;
     const endStr = document.getElementById('endDate').value;
     const desc = document.getElementById('description').value.trim();
+    const imageUrl = document.getElementById('imageUrl') ? document.getElementById('imageUrl').value.trim() : '';
     const status = document.getElementById('status').value;
 
     // Client-side Validations
@@ -409,6 +564,7 @@ async function handleSubmit(event) {
         startDate: startStr,
         endDate: endStr,
         description: desc,
+        imageUrl: imageUrl,
         status: status
     };
 
@@ -478,6 +634,8 @@ window.handleSearch          = handleSearch;
 window.handleFilter          = handleFilter;
 window.handleSubmit          = handleSubmit;
 window.handleDiscountTypeChange = handleDiscountTypeChange;
+window.updateImagePreview    = updateImagePreview;
+window.handleFileUpload      = handleFileUpload;
 window.resetForm             = resetForm;
 window.startEdit             = startEdit;
 window.deleteVoucher         = deleteVoucher;

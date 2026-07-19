@@ -42,7 +42,8 @@ exports.createVoucher = async (req, res) => {
             startDate, 
             endDate, 
             status, 
-            description 
+            description,
+            imageUrl
         } = req.body;
 
         // Validations
@@ -113,7 +114,8 @@ exports.createVoucher = async (req, res) => {
             startDate: start,
             endDate: end,
             status: actualStatus,
-            description: description ? description.trim() : null
+            description: description ? description.trim() : null,
+            imageUrl: imageUrl ? imageUrl.trim() : null
         });
 
         res.status(201).json({ success: true, message: 'Thêm mã khuyến mãi thành công!', data: newVoucher });
@@ -152,7 +154,8 @@ exports.updateVoucher = async (req, res) => {
             startDate, 
             endDate, 
             status, 
-            description 
+            description,
+            imageUrl
         } = req.body;
 
         const updateData = {};
@@ -242,6 +245,10 @@ exports.updateVoucher = async (req, res) => {
 
         if (description !== undefined) {
             updateData.description = description ? description.trim() : null;
+        }
+
+        if (imageUrl !== undefined) {
+            updateData.imageUrl = imageUrl ? imageUrl.trim() : null;
         }
 
         if (activeEnd < new Date()) {

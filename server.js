@@ -27,8 +27,8 @@ const PORT = process.env.PORT || 9999;
 
 // ─── Middleware ───────────────────────────────────────────────
 app.use(cors());                            // Cho phép cross-origin requests
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use((req, res, next) => {
   if (req.path === '/admin.html' || req.path === '/js/admin.js') {
@@ -62,6 +62,7 @@ app.use('/api/movies', movieRoutes);    // Thông tin phim & lịch chiếu
 app.use('/api/bookings', bookingRoutes);  // Đặt vé, lịch sử, voucher
 app.use('/bookings', bookingRoutes);      // Compat: hỗ trợ frontend cũ/cache thiếu prefix /api
 app.use('/api/admin/vouchers', voucherRoutes); // Quản lý Voucher
+app.use('/admin/vouchers', voucherRoutes);     // Compat: hỗ trợ frontend thiếu prefix /api
 app.use('/api/admin', adminRoutes);    // Quản lý, thống kê (chỉ Super Admin)
 app.use('/api/staff', staffRoutes);    // Ban ve nhanh / nhan vien quay
 app.use('/api/chat', chatRoutes);      // AI Chatbot

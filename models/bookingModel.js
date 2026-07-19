@@ -37,14 +37,16 @@ class BookingModel {
   static async getActiveVouchers() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT VoucherID, Code, DiscountType, DiscountValue, MinOrderValue,
-             MaxDiscount, StartDate, EndDate
-      FROM   Vouchers
-      WHERE  IsActive = 1
-        AND  StartDate <= GETDATE()
-        AND  EndDate   >= GETDATE()
-        AND  (UsageLimit IS NULL OR UsedCount < UsageLimit)
-      ORDER BY EndDate ASC
+      SELECT v.VoucherID, v.VoucherCode AS Code, v.VoucherName, v.VoucherType,
+             v.DiscountType, v.DiscountValue, v.MinimumOrder AS MinOrderValue,
+             v.MaximumDiscount AS MaxDiscount, v.StartDate, v.EndDate,
+             v.Description, v.ImageUrl
+      FROM   Voucher v
+      WHERE  v.Status = 'Active'
+        AND  v.StartDate <= GETDATE()
+        AND  v.EndDate   >= GETDATE()
+        AND  (v.UsageLimit IS NULL OR v.UsageLimit = 0 OR v.UsedCount < v.UsageLimit)
+      ORDER BY v.EndDate ASC
     `);
     return result.recordset;
   }
