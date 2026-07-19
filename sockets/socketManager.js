@@ -1,44 +1,35 @@
-const sessionConnections = new Map(); // key: bookingSessionId, value: Set of socketId (active connections)
-const disconnectTimeouts = new Map(); // key: bookingSessionId, value: timeoutId
+const sessionConnections = new Map(); // key: bookingSessionId, value: Set<socketId>
 
-let _io = null; // Lưu io instance để controller có thể emit về client
+let _io = null;
 const BookingModel = require('../models/bookingModel');
 
-const SEAT_TIMEOUT = 5; // 5 minutes
+const SEAT_TIMEOUT = 5; // minutes
 
 module.exports = (io) => {
-    _io = io; // Lưu reference để dùng ở ngoài module
+    _io = io;
+
     io.on('connection', (socket) => {
         const bookingSessionId = socket.handshake.query.bookingSessionId || socket.id;
-        console.log(`[Socket] 🟢 Client connected: ${socket.id} | Session: ${bookingSessionId}`);
+        console.log(`[Socket] Client connected: ${socket.id} | Session: ${bookingSessionId}`);
 
-        // Đăng ký connection vào session
         if (!sessionConnections.has(bookingSessionId)) {
             sessionConnections.set(bookingSessionId, new Set());
         }
         sessionConnections.get(bookingSessionId).add(socket.id);
 
-        // Hủy dọn dẹp nếu người dùng reconnect lại trong thời gian grace period
-        if (disconnectTimeouts.has(bookingSessionId)) {
-            clearTimeout(disconnectTimeouts.get(bookingSessionId));
-            disconnectTimeouts.delete(bookingSessionId);
-            console.log(`[Socket] 🔄 Hủy dọn dẹp tự động cho session reconnected: ${bookingSessionId}`);
-        }
-
-        // 1. Join Showtime Room
         socket.on('joinShowtime', (showtimeId) => {
             const room = `room_showtime_${showtimeId}`;
             socket.join(room);
             console.log(`[Socket] Client ${socket.id} joined ${room}`);
         });
 
-        // 1b. Join Payment Room
         socket.on('joinPaymentRoom', async (ticketIds) => {
             if (!Array.isArray(ticketIds) || ticketIds.length === 0) return;
+
             const sortedIds = [...ticketIds].map(Number).sort((a, b) => a - b);
             const room = `payment_${sortedIds.join('_')}`;
             socket.join(room);
-            console.log(`[Socket] 💳 Client ${socket.id} joined payment room: ${room}`);
+            console.log(`[Socket] Client ${socket.id} joined payment room: ${room}`);
             socket.emit('paymentRoomJoined', { room, ticketIds: sortedIds });
 
             try {
@@ -55,115 +46,86 @@ module.exports = (io) => {
             }
         });
 
-        // 1c. Reclaim Seats — Client lấy lại quyền sở hữu ghế khi load lại trang seats.html
         socket.on('reclaimSeats', async ({ showtimeId, seatIds }) => {
             if (!Array.isArray(seatIds) || !bookingSessionId) return;
+
             try {
                 await BookingModel.reclaimSeatsDB(showtimeId, seatIds, bookingSessionId, socket.id);
-                console.log(`[Socket] 🔄 Đã khôi phục quyền sở hữu ghế cho socket ${socket.id} (Session: ${bookingSessionId})`);
+                console.log(`[Socket] Reclaimed seat sockets for session ${bookingSessionId}`);
             } catch (err) {
                 console.error('[Socket reclaimSeats error]', err);
             }
         });
 
-        // 2. Hold Seat
         socket.on('holdSeat', async ({ showtimeId, seatId }) => {
             const room = `room_showtime_${showtimeId}`;
+
             try {
-                const success = await BookingModel.holdSeatDB(showtimeId, seatId, bookingSessionId, socket.id, SEAT_TIMEOUT);
-                if (!success) {
-                    socket.emit('seatHoldFailed', { seatId, message: 'Ghế đã có người chọn' });
+                const hold = await BookingModel.holdSeatDB(showtimeId, seatId, bookingSessionId, socket.id, SEAT_TIMEOUT);
+                if (!hold?.ok) {
+                    socket.emit('seatHoldFailed', {
+                        seatId,
+                        message: 'Ghe da co nguoi chon',
+                        remainingSeconds: hold?.remainingSeconds || 0
+                    });
                     return;
                 }
-                
-                io.to(room).emit('seatStatusUpdated', { showtimeId, seatId, status: 'Đang chọn' });
-                console.log(`[Socket] 🔒 Khóa ghế ${seatId} | showtime ${showtimeId} bởi session ${bookingSessionId}`);
-                
-                // Đặt timeout dọn dẹp (fallback nếu user không thao tác)
+
+                socket.emit('seatHoldConfirmed', {
+                    showtimeId,
+                    seatId,
+                    expiresAt: hold.expiresAt,
+                    remainingSeconds: hold.remainingSeconds
+                });
+
+                io.to(room).emit('seatStatusUpdated', {
+                    showtimeId,
+                    seatId,
+                    status: 'Đang chọn',
+                    expiresAt: hold.expiresAt,
+                    remainingSeconds: hold.remainingSeconds
+                });
+
+                console.log(`[Socket] Locked seat ${seatId} | showtime ${showtimeId} | session ${bookingSessionId}`);
+
+                const timeoutMs = Math.max(1000, (Number(hold.remainingSeconds || 0) + 1) * 1000);
                 setTimeout(async () => {
                     try {
-                        const deleted = await BookingModel.releaseSeatDB(showtimeId, seatId, bookingSessionId);
+                        const deleted = await BookingModel.releaseExpiredSeatLock(showtimeId, seatId);
                         if (deleted) {
                             io.to(room).emit('seatStatusUpdated', { showtimeId, seatId, status: 'Trống' });
-                            console.log(`[Socket] ⏰ Hết hạn 5 phút: Tự động giải phóng ghế ${seatId} | showtime ${showtimeId}`);
+                            console.log(`[Socket] Expired seat lock ${seatId} | showtime ${showtimeId}`);
                         }
-                    } catch (e) {
-                        console.error('[Socket timeout release error]', e);
+                    } catch (err) {
+                        console.error('[Socket timeout release error]', err);
                     }
-                }, SEAT_TIMEOUT * 60 * 1000);
-
+                }, timeoutMs);
             } catch (err) {
                 console.error('[Socket holdSeat error]', err);
             }
         });
 
-        // 3. Release Seat
-        socket.on('releaseSeat', async ({ showtimeId, seatId }) => {
-            const room = `room_showtime_${showtimeId}`;
-            try {
-                const deleted = await BookingModel.releaseSeatDB(showtimeId, seatId, bookingSessionId);
-                if (deleted) {
-                    io.to(room).emit('seatStatusUpdated', { showtimeId, seatId, status: 'Trống' });
-                    console.log(`[Socket] 🔓 Hủy khóa ghế ${seatId} | showtime ${showtimeId} bởi session ${bookingSessionId}`);
-                }
-            } catch (err) {
-                console.error('[Socket releaseSeat error]', err);
-            }
+        socket.on('releaseSeat', ({ showtimeId, seatId }) => {
+            socket.emit('seatReleaseIgnored', { showtimeId, seatId, reason: 'timer_only_lock' });
+            console.log(`[Socket] Ignored releaseSeat for seat ${seatId} | showtime ${showtimeId}; lock expires by timer only.`);
         });
 
-        // 4. Disconnect (Auto-release all held seats of the user after a grace period of 8 seconds)
         socket.on('disconnect', () => {
-            console.log(`[Socket] 🔴 Client disconnected: ${socket.id} (Session: ${bookingSessionId})`);
-            
-            if (bookingSessionId) {
-                const activeConns = sessionConnections.get(bookingSessionId);
-                if (activeConns) {
-                    activeConns.delete(socket.id);
-                    if (activeConns.size === 0) {
-                        sessionConnections.delete(bookingSessionId);
-                    }
-                }
+            console.log(`[Socket] Client disconnected: ${socket.id} | Session: ${bookingSessionId}`);
 
-                const hasActive = sessionConnections.has(bookingSessionId) && sessionConnections.get(bookingSessionId).size > 0;
-                if (!hasActive) {
-                    if (disconnectTimeouts.has(bookingSessionId)) {
-                        clearTimeout(disconnectTimeouts.get(bookingSessionId));
-                    }
+            const activeConns = sessionConnections.get(bookingSessionId);
+            if (!activeConns) return;
 
-                    const timeoutId = setTimeout(async () => {
-                        const stillHasActive = sessionConnections.has(bookingSessionId) && sessionConnections.get(bookingSessionId).size > 0;
-                        if (!stillHasActive) {
-                            try {
-                                const releasedSeats = await BookingModel.releaseAllSeatsBySession(bookingSessionId);
-                                if (releasedSeats && releasedSeats.length > 0) {
-                                    releasedSeats.forEach(s => {
-                                        io.to(`room_showtime_${s.ShowtimeID}`).emit('seatStatusUpdated', {
-                                            showtimeId: s.ShowtimeID,
-                                            seatId: String(s.SeatID),
-                                            status: 'Trống'
-                                        });
-                                    });
-                                    console.log(`[Socket] 🧹 Grace period hết hạn: Giải phóng ${releasedSeats.length} ghế cho Session: ${bookingSessionId}`);
-                                }
-                            } catch (e) {
-                                console.error('[Socket disconnect grace period error]', e);
-                            }
-                            disconnectTimeouts.delete(bookingSessionId);
-                        }
-                    }, 8000); // 8 giây grace period
-
-                    disconnectTimeouts.set(bookingSessionId, timeoutId);
-                } else {
-                    console.log(`[Socket] Session ${bookingSessionId} vẫn còn kết nối hoạt động. Bỏ qua dọn dẹp.`);
-                }
+            activeConns.delete(socket.id);
+            if (activeConns.size === 0) {
+                sessionConnections.delete(bookingSessionId);
             }
         });
     });
 };
 
 module.exports.getLockedSeats = () => {
-    // Được thay thế bằng BookingModel.getLockedSeatsDB trong controller
-    return []; 
+    return [];
 };
 
 module.exports.emitPaymentConfirmed = (ticketIds, payload = {}) => {
@@ -171,6 +133,7 @@ module.exports.emitPaymentConfirmed = (ticketIds, payload = {}) => {
         console.warn('[Socket] emitPaymentConfirmed called but io is not initialized yet.');
         return;
     }
+
     const sortedIds = [...ticketIds].map(Number).sort((a, b) => a - b);
     const room = `payment_${sortedIds.join('_')}`;
     _io.to(room).emit('payment_confirmed', {
@@ -178,5 +141,5 @@ module.exports.emitPaymentConfirmed = (ticketIds, payload = {}) => {
         confirmedAt: new Date().toISOString(),
         ...payload
     });
-    console.log(`[Socket] 🎉 Emitted payment_confirmed to room: ${room}`);
+    console.log(`[Socket] Emitted payment_confirmed to room: ${room}`);
 };
