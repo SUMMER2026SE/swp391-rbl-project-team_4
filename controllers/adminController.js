@@ -3,8 +3,10 @@
 //  Dành cho: Quản lý (Role: Admin, Manager)
 // ============================================================
 const AdminModel = require('../models/adminModel');
+const MovieModel = require('../models/movieModel');
 const ComboModel = require('../models/comboModel');
 const RefundModel = require('../models/refundModel');
+const AiInsightService = require('../services/aiInsightService');
 const PDFDocument = require('pdfkit');
 
 function formatReportDate(value) {
@@ -352,6 +354,9 @@ exports.createShowtime = async (req, res) => {
     if (err.message.includes('đã có lịch')) {
       return res.status(409).json({ success: false, message: err.message });
     }
+    if (err.message.includes('Chỉ phim đang chiếu') || err.message.includes('Phim không tồn tại')) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
     res.status(500).json({ success: false, message: 'Lỗi server: ' + err.message });
   }
 };
@@ -366,6 +371,9 @@ exports.updateShowtime = async (req, res) => {
     console.error('[adminController] updateShowtime:', err.message);
     if (err.message.includes('đã có lịch')) {
       return res.status(409).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('Chỉ phim đang chiếu') || err.message.includes('Phim không tồn tại')) {
+      return res.status(400).json({ success: false, message: err.message });
     }
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }
@@ -731,6 +739,163 @@ exports.getDashboardStats = async (req, res) => {
   } catch (err) {
     console.error('[adminController] getDashboardStats:', err.message);
     res.status(500).json({ success: false, message: 'Lỗi server.' });
+  }
+};
+
+exports.getRevenueInsight = async (req, res) => {
+  try {
+    const filters = {
+      period: req.body?.period || req.query?.period || 'all',
+      cinemaId: req.body?.cinemaId || req.query?.cinemaId || null,
+      year: parseInt(req.body?.year || req.query?.year) || new Date().getFullYear()
+    };
+
+    const report = await buildReportData(filters);
+    const result = await AiInsightService.generateRevenueInsight(report);
+
+    res.json({
+      success: true,
+      data: {
+        insight: result.insight,
+        provider: result.provider,
+        warning: result.warning || null,
+        generatedAt: new Date().toISOString()
+      }
+    });
+  } catch (err) {
+    console.error('[adminController] getRevenueInsight:', err.message);
+    res.status(500).json({
+      success: false,
+      message: 'Không thể tạo phân tích doanh thu AI.'
+    });
+  }
+};
+
+exports.getScheduleSuggestion = async (req, res) => {
+  try {
+    const date = req.body?.date || req.query?.date;
+    const cinemaId = req.body?.cinemaId || req.query?.cinemaId || null;
+    const movieId = req.body?.movieId || req.query?.movieId || null;
+
+    if (!date) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng chọn ngày chiếu.'
+      });
+    }
+
+    const [movies, rooms, existingShowtimes, cinemas, topMovies] = await Promise.all([
+      MovieModel.getAllMovies({}),
+      AdminModel.getRooms(),
+      AdminModel.getAllShowtimes({ date, cinemaId }),
+      AdminModel.getCinemas(),
+      AdminModel.getTopMovies(10)
+    ]);
+
+    const targetCinemaId = cinemaId ? parseInt(cinemaId) : null;
+    const filteredRooms = targetCinemaId
+      ? rooms.filter(room => Number(room.CinemaID) === targetCinemaId)
+      : rooms;
+    const cinema = targetCinemaId
+      ? cinemas.find(item => Number(item.CinemaID) === targetCinemaId)
+      : null;
+
+    const result = await AiInsightService.generateScheduleSuggestions({
+      date,
+      cinema,
+      cinemaId: targetCinemaId,
+      movieId: movieId ? parseInt(movieId) : null,
+      movies,
+      rooms: filteredRooms,
+      existingShowtimes,
+      topMovies
+    });
+
+    res.json({
+      success: true,
+      data: {
+        suggestion: result.suggestion,
+        provider: result.provider,
+        warning: result.warning || null,
+        generatedAt: new Date().toISOString()
+      }
+    });
+  } catch (err) {
+    console.error('[adminController] getScheduleSuggestion:', err.message);
+    res.status(500).json({
+      success: false,
+      message: 'Không thể tạo gợi ý xếp lịch AI.'
+    });
+  }
+};
+
+exports.askAdminAi = async (req, res) => {
+  try {
+    const question = String(req.body?.question || req.query?.question || '').trim();
+    if (!question) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng nhập câu hỏi.'
+      });
+    }
+
+    const classification = AiInsightService.classifyAdminQuestion(question);
+    let rows = [];
+
+    switch (classification.intent) {
+      case 'top_cinema_revenue_today':
+        rows = await AdminModel.getTopCinemaRevenueToday(5);
+        break;
+      case 'least_sold_movie_this_week':
+        rows = await AdminModel.getLeastSoldMoviesThisWeek(5);
+        break;
+      case 'showtimes_most_empty_seats':
+        rows = await AdminModel.getShowtimesWithMostEmptySeats(8);
+        break;
+      case 'top_movie_today':
+        rows = await AdminModel.getTopMoviesToday(5);
+        break;
+      case 'low_occupancy_showtimes':
+        rows = await AdminModel.getLowOccupancyShowtimes(8);
+        break;
+      default:
+        return res.json({
+          success: true,
+          data: {
+            intent: 'unknown',
+            provider: 'fallback',
+            answer: 'Mình chưa có query an toàn cho câu hỏi này. Bạn có thể hỏi về: doanh thu rạp hôm nay, phim bán ít vé trong tuần, suất còn nhiều ghế trống, phim bán chạy hôm nay, hoặc suất có tỷ lệ lấp đầy thấp.',
+            rows: [],
+            confidence: classification.confidence,
+            generatedAt: new Date().toISOString()
+          }
+        });
+    }
+
+    const result = await AiInsightService.answerAdminDataQuestion({
+      question,
+      intent: classification.intent,
+      rows
+    });
+
+    res.json({
+      success: true,
+      data: {
+        intent: classification.intent,
+        confidence: classification.confidence,
+        provider: result.provider,
+        warning: result.warning || null,
+        answer: result.answer,
+        rows,
+        generatedAt: new Date().toISOString()
+      }
+    });
+  } catch (err) {
+    console.error('[adminController] askAdminAi:', err.message);
+    res.status(500).json({
+      success: false,
+      message: 'Không thể trả lời câu hỏi AI admin.'
+    });
   }
 };
 

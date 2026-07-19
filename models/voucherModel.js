@@ -57,6 +57,7 @@ class VoucherModel {
     const pool = await getPool();
     const result = await pool.request()
       .input('voucherCode', sql.VarChar, data.voucherCode)
+      .input('voucherType', sql.NVarChar, data.voucherType || 'Mã Khuyến Mãi')
       .input('voucherName', sql.NVarChar, data.voucherName)
       .input('discountType', sql.VarChar, data.discountType)
       .input('discountValue', sql.Decimal(18, 2), data.discountValue)
@@ -69,9 +70,10 @@ class VoucherModel {
       .input('status', sql.VarChar, data.status || 'Active')
       .input('description', sql.NVarChar, data.description || null)
       .query(`
-        INSERT INTO Voucher (VoucherCode, VoucherName, DiscountType, DiscountValue, MinimumOrder, MaximumDiscount, UsageLimit, UsedCount, StartDate, EndDate, Status, Description, CreatedAt)
-        OUTPUT INSERTED.*
-        VALUES (@voucherCode, @voucherName, @discountType, @discountValue, @minimumOrder, @maximumDiscount, @usageLimit, @usedCount, @startDate, @endDate, @status, @description, GETDATE())
+        INSERT INTO Voucher (VoucherCode, VoucherType, VoucherName, DiscountType, DiscountValue, MinimumOrder, MaximumDiscount, UsageLimit, UsedCount, StartDate, EndDate, Status, Description, CreatedAt)
+        VALUES (@voucherCode, @voucherType, @voucherName, @discountType, @discountValue, @minimumOrder, @maximumDiscount, @usageLimit, @usedCount, @startDate, @endDate, @status, @description, GETDATE());
+
+        SELECT * FROM Voucher WHERE VoucherID = SCOPE_IDENTITY();
       `);
     return result.recordset[0];
   }
@@ -84,6 +86,10 @@ class VoucherModel {
     if (data.voucherCode !== undefined) {
       request.input('voucherCode', sql.VarChar, data.voucherCode);
       updateFields.push("VoucherCode = @voucherCode");
+    }
+    if (data.voucherType !== undefined) {
+      request.input('voucherType', sql.NVarChar, data.voucherType);
+      updateFields.push("VoucherType = @voucherType");
     }
     if (data.voucherName !== undefined) {
       request.input('voucherName', sql.NVarChar, data.voucherName);
@@ -135,8 +141,9 @@ class VoucherModel {
     const query = `
       UPDATE Voucher 
       SET ${updateFields.join(', ')} 
-      OUTPUT INSERTED.*
-      WHERE VoucherID = @id
+      WHERE VoucherID = @id;
+
+      SELECT * FROM Voucher WHERE VoucherID = @id;
     `;
     const result = await request.query(query);
     return result.recordset[0] || null;

@@ -90,7 +90,7 @@ class MovieModel {
             SELECT 1 FROM Showtimes st
             JOIN Rooms r ON st.RoomID = r.RoomID
             JOIN Cinemas c ON r.CinemaID = c.CinemaID
-            WHERE st.MovieID = m.MovieID AND c.City = @city AND st.StartTime > GETUTCDATE() AND st.Status = 'active'
+            WHERE st.MovieID = m.MovieID AND c.City = @city AND st.EndTime > GETUTCDATE() AND st.Status = 'active'
           )
       `;
     } else {
@@ -216,13 +216,13 @@ class MovieModel {
     let dateFilter = '';
     if (date) {
       request.input('date', sql.Date, date);
-      dateFilter = 'AND CAST(st.StartTime AS DATE) = @date';
+      dateFilter = 'AND CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date';
     }
 
     const result = await request.query(`
       SELECT st.ShowtimeID,
-             CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
-             CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
+             CONVERT(varchar(19), st.StartTime, 126) + 'Z' AS StartTime,
+             CONVERT(varchar(19), st.EndTime, 126) + 'Z' AS EndTime,
              COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
              r.RoomID, r.RoomName, r.TotalSeats,
              CASE
@@ -236,6 +236,7 @@ class MovieModel {
       JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
       WHERE  st.MovieID = @movieId
         AND  st.Status  = 'active'
+        AND  st.EndTime > GETUTCDATE()
         ${dateFilter}
       ORDER BY st.StartTime ASC
     `);
@@ -276,8 +277,8 @@ class MovieModel {
       .input('showtimeId', sql.Int, parseInt(showtimeId))
       .query(`
         SELECT st.ShowtimeID,
-               CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
-               CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
+               CONVERT(varchar(19), st.StartTime, 126) + 'Z' AS StartTime,
+               CONVERT(varchar(19), st.EndTime, 126) + 'Z' AS EndTime,
                COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
                r.RoomID, r.RoomName, r.TotalSeats,
                CASE
@@ -313,8 +314,8 @@ class MovieModel {
 
     const result = await request.query(`
       SELECT st.ShowtimeID,
-             CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
-             CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
+             CONVERT(varchar(19), st.StartTime, 126) + 'Z' AS StartTime,
+             CONVERT(varchar(19), st.EndTime, 126) + 'Z' AS EndTime,
              COALESCE(st.Price, st.BasePrice, 0) AS Price, st.Status,
              r.RoomID, r.RoomName, r.TotalSeats,
              CASE
@@ -345,9 +346,9 @@ class MovieModel {
       JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
       JOIN   Movies  m ON st.MovieID  = m.MovieID
       WHERE  r.CinemaID = @cinemaId
-        AND  CAST(st.StartTime AS DATE) = @date
+        AND  CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date
         AND  st.Status  = 'active'
-        AND  st.StartTime > GETDATE()
+        AND  st.EndTime > GETUTCDATE()
         ${movieFilter}
       ORDER BY m.Title, st.StartTime ASC
     `);

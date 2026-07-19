@@ -159,6 +159,9 @@ router.delete('/rooms/:id', adminCtrl.deleteRoom);
 
 // GET    /api/admin/stats/dashboard    — Tổng quan dashboard (hỗ trợ ?cinemaId=&period=)
 router.get('/stats/dashboard', adminCtrl.getDashboardStats);
+router.post('/ai/revenue-insight', adminCtrl.getRevenueInsight);
+router.post('/ai/schedule-suggestion', adminCtrl.getScheduleSuggestion);
+router.post('/ai/query', adminCtrl.askAdminAi);
 
 // GET    /api/admin/stats/recent-transactions — Giao dịch gần đây
 router.get('/stats/recent-transactions', adminCtrl.getRecentTransactions);

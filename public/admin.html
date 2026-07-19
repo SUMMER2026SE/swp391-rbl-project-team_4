@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/admin.css?v=26">
     <link rel="stylesheet" href="css/chatbot.css">
 </head>
 
@@ -300,6 +300,14 @@
                         <p>Phân tích hoạt động và doanh thu rạp chiếu theo thời gian thực.</p>
                     </div>
                     <div class="heading-actions">
+                        <button class="btn-export btn-ai-insight btn-ai-compact" onclick="loadAiRevenueInsight()" title="AI phân tích doanh thu" aria-label="AI phân tích doanh thu">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <path d="M12 2l1.6 5.1L19 9l-5.4 1.9L12 16l-1.6-5.1L5 9l5.4-1.9L12 2z" />
+                                <path d="M19 14l.8 2.4L22 17l-2.2.6L19 20l-.8-2.4L16 17l2.2-.6L19 14z" />
+                            </svg>
+                            AI phân tích
+                        </button>
                         <button class="btn-export" onclick="exportPdf()">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.5">
@@ -310,6 +318,55 @@
                             Xuất PDF
                         </button>
                     </div>
+                </div>
+
+                <div class="ai-insight-card" id="aiRevenueInsightCard">
+                    <div class="ai-insight-head">
+                        <div>
+                            <div class="ai-insight-kicker">AI Revenue Analyst</div>
+                            <h3>Phân tích doanh thu</h3>
+                        </div>
+                        <span class="ai-insight-provider" id="aiInsightProvider">Gemini</span>
+                    </div>
+                    <div class="ai-insight-body" id="aiRevenueInsight">
+                        Bấm <b>AI phân tích</b> để nhận tóm tắt doanh thu, điểm nổi bật, vấn đề cần chú ý và đề xuất hành động.
+                    </div>
+                </div>
+
+                <div class="ai-insight-card ai-query-card is-collapsed" id="aiAdminQueryCard">
+                    <div class="ai-insight-head ai-query-head" onclick="toggleAdminAiQuery()" role="button" tabindex="0" aria-expanded="false" id="aiAdminQueryToggle">
+                        <span class="ai-query-head-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+                            </svg>
+                        </span>
+                        <div>
+                            <div class="ai-insight-kicker">AI Data Assistant</div>
+                            <h3>Trợ lý truy vấn dữ liệu</h3>
+                        </div>
+                        <span class="ai-insight-provider" id="aiAdminQueryProvider">Sẵn sàng</span>
+                    </div>
+                    <form class="ai-query-form" onsubmit="askAdminAi(event)">
+                        <input id="aiAdminQuestion" class="form-control" type="text"
+                            placeholder="Hỏi: Hôm nay rạp nào doanh thu cao nhất?">
+                        <button class="btn-export btn-ai-insight btn-ai-compact" type="submit" title="Hỏi AI" aria-label="Hỏi AI">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+                            </svg>
+                            Hỏi AI
+                        </button>
+                    </form>
+                    <div class="ai-query-examples">
+                        <button type="button" onclick="askAdminAi(null, 'Hôm nay rạp nào doanh thu cao nhất?')">Rạp doanh thu cao nhất</button>
+                        <button type="button" onclick="askAdminAi(null, 'Phim nào bán ít vé nhất tuần này?')">Phim bán ít vé</button>
+                        <button type="button" onclick="askAdminAi(null, 'Suất chiếu nào còn nhiều ghế trống?')">Suất nhiều ghế trống</button>
+                    </div>
+                    <div class="ai-insight-body" id="aiAdminQueryAnswer">
+                        Nhập câu hỏi để xem câu trả lời kèm số liệu từ database.
+                    </div>
+                    <div class="ai-query-table" id="aiAdminQueryTable"></div>
                 </div>
 
                 <!-- KPI Cards -->
@@ -922,6 +979,38 @@
                         onchange="filterScheduleCinema(this.value)">
                         <option value="">-- Rạp/Chi nhánh --</option>
                     </select>
+                </div>
+
+                <div class="ai-insight-card ai-schedule-card">
+                    <div class="ai-insight-head">
+                        <div>
+                            <div class="ai-insight-kicker">AI SCHEDULE PLANNER</div>
+                            <h3>Gợi ý xếp lịch chiếu</h3>
+                        </div>
+                        <span class="ai-insight-provider" id="aiScheduleProvider">Sẵn sàng</span>
+                    </div>
+                    <div class="ai-schedule-controls">
+                        <select id="aiScheduleMovieSelect" class="form-control">
+                            <option value="">-- Tất cả phim đang có --</option>
+                        </select>
+                        <button class="btn-export btn-ai-insight btn-ai-compact" onclick="loadAiScheduleSuggestion()" title="AI gợi ý lịch chiếu" aria-label="AI gợi ý lịch chiếu">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M12 2v4" />
+                                <path d="M12 18v4" />
+                                <path d="m4.93 4.93 2.83 2.83" />
+                                <path d="m16.24 16.24 2.83 2.83" />
+                                <path d="M2 12h4" />
+                                <path d="M18 12h4" />
+                                <path d="m4.93 19.07 2.83-2.83" />
+                                <path d="m16.24 7.76 2.83-2.83" />
+                            </svg>
+                            AI gợi ý
+                        </button>
+                    </div>
+                    <div class="ai-insight-body" id="aiScheduleSuggestion">
+                        Chọn ngày, rạp và phim nếu cần, sau đó bấm AI gợi ý để xem lịch đề xuất.
+                    </div>
                 </div>
 
                 <!-- Showtime List -->
@@ -1977,6 +2066,7 @@
                                 <thead>
                                     <tr>
                                         <th>MÃ VOUCHER</th>
+                                        <th>LOẠI VOUCHER</th>
                                         <th>TÊN CHƯƠNG TRÌNH</th>
                                         <th>GIẢM GIÁ</th>
                                         <th>ĐƠN TỐI THIỂU</th>
@@ -1988,7 +2078,7 @@
                                 </thead>
                                 <tbody id="voucherListContainer">
                                     <tr>
-                                        <td colspan="8" class="text-center">Đang tải danh sách voucher...</td>
+                                        <td colspan="9" class="text-center">Đang tải danh sách voucher...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -2014,6 +2104,18 @@
                                 <div class="vform-group">
                                     <label for="voucherCode">Mã Voucher *</label>
                                     <input type="text" id="voucherCode" required placeholder="VD: SUMMER2026">
+                                </div>
+
+                                <div class="vform-group">
+                                    <label for="voucherType">Loại Voucher *</label>
+                                    <select id="voucherType" required>
+                                        <option value="D-Cinema Voucher">D-Cinema Voucher</option>
+                                        <option value="Voucher điểm thưởng">Voucher điểm thưởng</option>
+                                        <option value="Mã giảm giá">Mã giảm giá</option>
+                                        <option value="Điểm thành viên">Điểm thành viên</option>
+                                        <option value="Đối tác">Đối tác</option>
+                                        <option value="Mã Khuyến Mãi" selected>Mã Khuyến Mãi</option>
+                                    </select>
                                 </div>
 
                                 <div class="vform-group">
@@ -2624,6 +2726,12 @@
             color: #059669;
         }
 
+        .status-badge.upcoming {
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.22);
+            color: #b45309;
+        }
+
         .status-badge.cancelled {
             background: rgba(232, 25, 44, 0.1);
             border: 1px solid rgba(232, 25, 44, 0.2);
@@ -3131,7 +3239,7 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="js/admin.js?v=19"></script>
+    <script src="js/admin.js?v=25"></script>
     <script src="js/admin-voucher.js?v=999"></script>
 
 </body>

@@ -134,16 +134,20 @@ exports.getSeatsByShowtime = async (req, res) => {
     const BookingModel = require('../models/bookingModel');
     const lockedSeatsDB = await BookingModel.getLockedSeatsDB(req.params.showtimeId);
     
-    // Only mark seats as locked if they are locked by a DIFFERENT session
-    const lockedSet = new Set();
+    const lockMap = new Map();
     lockedSeatsDB.forEach(s => {
-      if (s.SessionID !== sessionId) {
-        lockedSet.add(s.SeatID);
-      }
+      lockMap.set(Number(s.SeatID), s);
     });
     
     data.forEach(seat => {
-      if (seat.SeatStatus === 'available' && lockedSet.has(seat.SeatID)) {
+      const lock = lockMap.get(Number(seat.SeatID));
+      if (!lock) return;
+
+      seat.LockSessionID = lock.SessionID;
+      seat.LockExpiresAt = lock.ExpiresAt;
+      seat.LockRemainingSeconds = Math.max(0, Number(lock.RemainingSeconds || 0));
+
+      if (seat.SeatStatus === 'available' && lock.SessionID !== sessionId) {
         seat.SeatStatus = 'locked';
       }
     });

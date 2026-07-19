@@ -8,13 +8,20 @@ let filterCinemas = [];
 /* ══════════════════════════
    FETCH DATA FROM BACKEND
 ══════════════════════════ */
-async function apiFetch(url, options = {}) {
-    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-    const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-    };
-    const res = await fetch(url, { ...options, headers });
+const ADMIN_JS_VERSION = '25-floating-ai-query';
+if (typeof window !== 'undefined') {
+    window.ADMIN_JS_VERSION = ADMIN_JS_VERSION;
+}
+
+function getRouteRetryUrl(url, payload) {
+    const message = String(payload?.message || '');
+    if (!message.includes('không tồn tại') && !message.includes('khÃ´ng tá»“n táº¡i')) return null;
+    if (url.startsWith('/admin/')) return '/api' + url;
+    if (url.startsWith('/api/admin/')) return url.replace('/api/admin/', '/admin/');
+    return null;
+}
+
+async function parseApiResponse(url, res) {
     const text = await res.text();
     try {
         return JSON.parse(text);
@@ -22,6 +29,45 @@ async function apiFetch(url, options = {}) {
         console.error('[apiFetch] Non-JSON response for', url, ':', text.substring(0, 200));
         return { success: false, message: 'Invalid response' };
     }
+}
+
+async function apiFetch(url, options = {}) {
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+    const res = await fetch(url, { ...options, headers });
+    const payload = await parseApiResponse(url, res);
+    const retryUrl = getRouteRetryUrl(url, payload);
+    if (retryUrl && retryUrl !== url) {
+        console.warn('[apiFetch] Retrying admin route with alternate prefix:', retryUrl);
+        const retryRes = await fetch(retryUrl, { ...options, headers });
+        return parseApiResponse(retryUrl, retryRes);
+    }
+    return payload;
+}
+
+function pad2(value) {
+    return String(value).padStart(2, '0');
+}
+
+function toLocalDateInputValue(value = new Date()) {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return toLocalDateInputValue(new Date());
+    return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+function toLocalTimeInputValue(value) {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+}
+
+function dateInputToLocalDate(value) {
+    const [year, month, day] = String(value || '').split('-').map(Number);
+    if (!year || !month || !day) return new Date();
+    return new Date(year, month - 1, day);
 }
 
 let chartInstance = null;
@@ -65,6 +111,191 @@ async function loadDashboardData() {
         fetchLiveRoomsStatus();
     } catch (err) {
         console.error('Error loading dashboard data:', err);
+    }
+}
+
+async function loadAiRevenueInsight() {
+    const box = document.getElementById('aiRevenueInsight');
+    const providerEl = document.getElementById('aiInsightProvider');
+    if (!box) return;
+
+    box.classList.add('ai-insight-loading');
+    box.textContent = 'Đang phân tích dữ liệu doanh thu...';
+    if (providerEl) providerEl.textContent = 'Đang chạy';
+
+    try {
+        const res = await apiFetch('/api/admin/ai/revenue-insight', {
+            method: 'POST',
+            body: JSON.stringify({
+                cinemaId: dashCinemaId || null,
+                period: dashPeriod || 'all',
+                year: new Date().getFullYear()
+            })
+        });
+
+        box.classList.remove('ai-insight-loading');
+
+        if (res.success && res.data) {
+            if (providerEl) {
+                providerEl.textContent = res.data.provider === 'gemini' ? 'Gemini' : 'Dự phòng';
+            }
+            box.textContent = res.data.warning
+                ? `${res.data.warning}\n\n${res.data.insight || ''}`
+                : (res.data.insight || 'AI chưa trả về nội dung phân tích.');
+        } else {
+            if (providerEl) providerEl.textContent = 'Lỗi';
+            box.textContent = res.message || 'Không thể tạo phân tích doanh thu.';
+        }
+    } catch (err) {
+        box.classList.remove('ai-insight-loading');
+        if (providerEl) providerEl.textContent = 'Lỗi';
+        box.textContent = 'Không thể kết nối tới dịch vụ phân tích AI.';
+        console.error('AI revenue insight failed:', err);
+    }
+}
+
+function escapeAdminHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function formatAdminMoney(value) {
+    return Number(value || 0).toLocaleString('vi-VN') + ' đ';
+}
+
+function formatAdminDateTime(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function renderAdminQueryTable(intent, rows) {
+    const table = document.getElementById('aiAdminQueryTable');
+    if (!table) return;
+    if (!Array.isArray(rows) || rows.length === 0) {
+        table.innerHTML = '';
+        return;
+    }
+
+    const limitedRows = rows.slice(0, 6);
+    let headers = [];
+    let cells = [];
+
+    if (intent === 'top_cinema_revenue_today') {
+        headers = ['Rạp', 'Thành phố', 'Vé', 'Doanh thu'];
+        cells = limitedRows.map(row => [
+            row.CinemaName,
+            row.City,
+            row.TicketsSold || 0,
+            formatAdminMoney(row.TotalRevenue)
+        ]);
+    } else if (intent === 'least_sold_movie_this_week' || intent === 'top_movie_today') {
+        headers = ['Phim', 'Vé', 'Doanh thu', 'Trạng thái'];
+        cells = limitedRows.map(row => [
+            row.Title,
+            row.TicketsSold || 0,
+            formatAdminMoney(row.TotalRevenue),
+            row.Status || ''
+        ]);
+    } else {
+        headers = ['Phim', 'Rạp / Phòng', 'Giờ chiếu', 'Đã bán', 'Ghế trống'];
+        cells = limitedRows.map(row => [
+            row.MovieTitle,
+            `${row.CinemaName || ''} - ${row.RoomName || ''}`,
+            formatAdminDateTime(row.StartTime),
+            `${row.TicketsSold || 0}/${row.TotalSeats || 0}`,
+            row.EmptySeats || 0
+        ]);
+    }
+
+    table.innerHTML = `
+        <table>
+            <thead>
+                <tr>${headers.map(header => `<th>${escapeAdminHtml(header)}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+                ${cells.map(row => `
+                    <tr>${row.map(cell => `<td>${escapeAdminHtml(cell)}</td>`).join('')}</tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function toggleAdminAiQuery(forceOpen) {
+    const card = document.getElementById('aiAdminQueryCard');
+    const toggle = document.getElementById('aiAdminQueryToggle');
+    if (!card) return;
+
+    const shouldOpen = typeof forceOpen === 'boolean'
+        ? forceOpen
+        : card.classList.contains('is-collapsed');
+
+    card.classList.toggle('is-collapsed', !shouldOpen);
+    if (toggle) {
+        toggle.setAttribute('aria-expanded', String(shouldOpen));
+        toggle.setAttribute('title', shouldOpen ? 'Thu gọn trợ lý truy vấn dữ liệu' : 'Mở trợ lý truy vấn dữ liệu');
+    }
+
+    if (shouldOpen) {
+        setTimeout(() => document.getElementById('aiAdminQuestion')?.focus(), 0);
+    }
+}
+
+async function askAdminAi(event, presetQuestion) {
+    if (event) event.preventDefault();
+    toggleAdminAiQuery(true);
+    const input = document.getElementById('aiAdminQuestion');
+    const answerBox = document.getElementById('aiAdminQueryAnswer');
+    const providerEl = document.getElementById('aiAdminQueryProvider');
+    const table = document.getElementById('aiAdminQueryTable');
+    if (!input || !answerBox) return;
+
+    const question = String(presetQuestion || input.value || '').trim();
+    if (!question) {
+        answerBox.textContent = 'Vui lòng nhập câu hỏi.';
+        return;
+    }
+
+    input.value = question;
+    answerBox.classList.add('ai-insight-loading');
+    answerBox.textContent = 'Đang truy vấn dữ liệu admin...';
+    if (providerEl) providerEl.textContent = 'Đang chạy';
+    if (table) table.innerHTML = '';
+
+    try {
+        const res = await apiFetch('/api/admin/ai/query', {
+            method: 'POST',
+            body: JSON.stringify({ question })
+        });
+
+        answerBox.classList.remove('ai-insight-loading');
+
+        if (res.success && res.data) {
+            if (providerEl) providerEl.textContent = res.data.provider === 'gemini' ? 'Gemini' : 'Dự phòng';
+            answerBox.textContent = res.data.warning
+                ? `${res.data.warning}\n\n${res.data.answer || ''}`
+                : (res.data.answer || 'Chưa có câu trả lời.');
+            renderAdminQueryTable(res.data.intent, res.data.rows || []);
+        } else {
+            if (providerEl) providerEl.textContent = 'Lỗi';
+            answerBox.textContent = res.message || 'Không thể truy vấn dữ liệu admin.';
+        }
+    } catch (err) {
+        answerBox.classList.remove('ai-insight-loading');
+        if (providerEl) providerEl.textContent = 'Lỗi';
+        answerBox.textContent = 'Không thể kết nối tới trợ lý dữ liệu admin.';
+        console.error('Admin AI query failed:', err);
     }
 }
 
@@ -2057,7 +2288,7 @@ function animateCounter(el, target, prefix = '', suffix = '', decimals = 0, isCu
 ══════════════════════════ */
 let SHOWTIME_DATA = [];
 let ROOM_DATA = [];
-let scheduleDate = new Date().toISOString().split('T')[0];
+let scheduleDate = toLocalDateInputValue();
 let allCinemas = [];
 let selectedCity = '';
 let selectedCinemaId = null;
@@ -2226,8 +2457,8 @@ function renderShowtimeTable() {
                 ${SHOWTIME_DATA.map(st => {
         const start = new Date(st.StartTime);
         const end = new Date(st.EndTime);
-        const timeStr = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) +
-            ' - ' + end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        const timeStr = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false }) +
+            ' - ' + end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
         const soldPct = st.TotalSeats ? Math.round((st.TicketsSold / st.TotalSeats) * 100) : 0;
         return `
                     <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -2248,6 +2479,28 @@ function renderShowtimeTable() {
             </tbody>
         </table>
     `;
+
+    container.querySelectorAll('tbody tr').forEach((row, index) => {
+        const badge = row.querySelector('.status-badge');
+        if (!badge) return;
+        const displayStatus = getShowtimeDisplayStatus(SHOWTIME_DATA[index]);
+        badge.className = `status-badge ${displayStatus.className}`;
+        badge.textContent = displayStatus.label;
+    });
+}
+
+function getShowtimeDisplayStatus(showtime) {
+    const status = String(showtime?.Status || '').toLowerCase();
+    if (status === 'cancelled') return { className: 'cancelled', label: '\u0110\u00e3 h\u1ee7y' };
+    if (status === 'finished') return { className: 'finished', label: '\u0110\u00e3 k\u1ebft th\u00fac' };
+    if (status !== 'active') return { className: status || 'unknown', label: showtime?.Status || 'Kh\u00f4ng r\u00f5' };
+
+    const now = Date.now();
+    const start = new Date(showtime.StartTime).getTime();
+    const end = new Date(showtime.EndTime).getTime();
+    if (!Number.isNaN(start) && now < start) return { className: 'upcoming', label: 'S\u1eafp chi\u1ebfu' };
+    if (!Number.isNaN(end) && now > end) return { className: 'finished', label: '\u0110\u00e3 k\u1ebft th\u00fac' };
+    return { className: 'active', label: '\u0110ang chi\u1ebfu' };
 }
 
 function updateScheduleSummary() {
@@ -2262,7 +2515,7 @@ function updateScheduleSummary() {
     if (soldEl) soldEl.textContent = totalSold + ' ghế';
     const dateLabel = document.getElementById('scheduleDateLabel');
     if (dateLabel) {
-        const d = new Date(scheduleDate);
+        const d = dateInputToLocalDate(scheduleDate);
         dateLabel.textContent = d.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
     }
 }
@@ -2271,7 +2524,7 @@ function renderScheduleMovieLibrary() {
     const list = document.getElementById('scheduleMovieList');
     const badge = document.getElementById('scheduleMovieCount');
     if (!list) return;
-    const showing = MOVIE_DATA.filter(m => m.Status === 'Now Showing' || m.Status === 'Coming Soon');
+    const showing = MOVIE_DATA.filter(m => m.Status === 'Now Showing');
     if (badge) badge.textContent = showing.length + ' PHIM';
     list.innerHTML = showing.map(m => `
         <div class="lib-card" onclick="selectScheduleMovie(${m.MovieID})" style="cursor:pointer;">
@@ -2283,20 +2536,86 @@ function renderScheduleMovieLibrary() {
             </div>
         </div>
     `).join('');
+    populateAiScheduleMovieSelect();
+}
+
+function populateAiScheduleMovieSelect() {
+    const sel = document.getElementById('aiScheduleMovieSelect');
+    if (!sel) return;
+    const current = sel.value;
+    const movies = MOVIE_DATA.filter(m => m.Status === 'Now Showing');
+    sel.innerHTML = '<option value="">-- Tất cả phim đang chiếu --</option>' +
+        movies.map(m => `<option value="${m.MovieID}">${m.Title} (${m.Duration || 120} phút)</option>`).join('');
+    if (current && movies.some(m => String(m.MovieID) === String(current))) {
+        sel.value = current;
+    }
+}
+
+async function loadAiScheduleSuggestion() {
+    const box = document.getElementById('aiScheduleSuggestion');
+    const providerEl = document.getElementById('aiScheduleProvider');
+    const movieSel = document.getElementById('aiScheduleMovieSelect');
+    if (!box) return;
+
+    if (!selectedCinemaId) {
+        alert('Vui lòng chọn rạp trước khi dùng AI gợi ý xếp lịch.');
+        return;
+    }
+
+    box.classList.add('ai-insight-loading');
+    box.textContent = 'Đang phân tích phim, phòng và lịch chiếu hiện có...';
+    if (providerEl) providerEl.textContent = 'Đang chạy';
+
+    try {
+        const res = await apiFetch('/api/admin/ai/schedule-suggestion', {
+            method: 'POST',
+            body: JSON.stringify({
+                date: scheduleDate,
+                cinemaId: selectedCinemaId,
+                movieId: movieSel?.value || null
+            })
+        });
+
+        box.classList.remove('ai-insight-loading');
+
+        if (res.success && res.data) {
+            if (providerEl) {
+                providerEl.textContent = res.data.provider === 'gemini' ? 'Gemini' : 'Dự phòng';
+            }
+            box.textContent = res.data.warning
+                ? `${res.data.warning}\n\n${res.data.suggestion || ''}`
+                : (res.data.suggestion || 'AI chưa trả về gợi ý xếp lịch.');
+        } else {
+            if (providerEl) providerEl.textContent = 'Lỗi';
+            box.textContent = res.message || 'Không thể tạo gợi ý xếp lịch.';
+        }
+    } catch (err) {
+        box.classList.remove('ai-insight-loading');
+        if (providerEl) providerEl.textContent = 'Lỗi';
+        box.textContent = 'Không thể kết nối tới dịch vụ gợi ý lịch chiếu AI.';
+        console.error('AI schedule suggestion failed:', err);
+    }
 }
 
 function selectScheduleMovie(movieId) {
+    const movie = MOVIE_DATA.find(m => m.MovieID === Number(movieId));
+    if (!movie || movie.Status !== 'Now Showing') {
+        alert('Chỉ phim đang chiếu mới được thêm vào lịch chiếu.');
+        return;
+    }
+
+    openShowtimeModal();
     const sel = document.getElementById('stMovieSelect');
     if (sel) {
-        sel.value = movieId;
-        openShowtimeModal();
+        sel.value = String(movieId);
+        sel.dispatchEvent(new Event('change'));
     }
 }
 
 function changeScheduleDate(delta) {
-    const d = new Date(scheduleDate);
+    const d = dateInputToLocalDate(scheduleDate);
     d.setDate(d.getDate() + delta);
-    scheduleDate = d.toISOString().split('T')[0];
+    scheduleDate = toLocalDateInputValue(d);
     document.getElementById('scheduleDateInput').value = scheduleDate;
     loadShowtimes();
 }
@@ -2325,7 +2644,7 @@ function openShowtimeModal(showtimeId = null) {
     const movieSel = document.getElementById('stMovieSelect');
     if (movieSel && MOVIE_DATA.length > 0) {
         movieSel.innerHTML = '<option value="">-- Chọn phim --</option>' +
-            MOVIE_DATA.filter(m => m.Status !== 'deleted').map(m =>
+            MOVIE_DATA.filter(m => m.Status === 'Now Showing').map(m =>
                 `<option value="${m.MovieID}">${m.Title} (${m.Duration} phút)</option>`
             ).join('');
     }
@@ -2394,9 +2713,9 @@ function openShowtimeModal(showtimeId = null) {
         // Date and times
         const stDateObj = new Date(showtime.StartTime);
         const enDateObj = new Date(showtime.EndTime);
-        document.getElementById('stDate').value = stDateObj.toISOString().split('T')[0];
-        document.getElementById('stStartTime').value = String(stDateObj.getHours()).padStart(2, '0') + ':' + String(stDateObj.getMinutes()).padStart(2, '0');
-        document.getElementById('stEndTime').value = String(enDateObj.getHours()).padStart(2, '0') + ':' + String(enDateObj.getMinutes()).padStart(2, '0');
+        document.getElementById('stDate').value = toLocalDateInputValue(stDateObj);
+        document.getElementById('stStartTime').value = toLocalTimeInputValue(stDateObj);
+        document.getElementById('stEndTime').value = toLocalTimeInputValue(enDateObj);
         document.getElementById('stDuration').value = Math.round((enDateObj - stDateObj) / 60000);
         document.getElementById('stPrice').value = showtime.Price;
         document.getElementById('stStatus').value = showtime.Status || 'active';
@@ -2460,6 +2779,10 @@ async function saveShowtime() {
     if (!roomId || isNaN(roomId)) return alert('Vui lòng chọn phòng chiếu.');
     if (!dateStr || !startTimeStr) return alert('Vui lòng chọn ngày và giờ chiếu.');
     if (!price || isNaN(price) || price <= 0) return alert('Vui lòng nhập giá vé hợp lệ.');
+    const selectedMovie = MOVIE_DATA.find(m => m.MovieID === movieId);
+    if (!selectedMovie || selectedMovie.Status !== 'Now Showing') {
+        return alert('Chỉ phim đang chiếu mới được thêm vào lịch chiếu.');
+    }
 
     const start = new Date(`${dateStr}T${startTimeStr}`);
     const end = new Date(start.getTime() + duration * 60000);
@@ -2531,7 +2854,7 @@ function populateMovieSelect() {
     const sel = document.getElementById('stMovieSelect');
     if (!sel) return;
     sel.innerHTML = '<option value="">-- Chọn phim --</option>' +
-        MOVIE_DATA.filter(m => m.Status !== 'deleted').map(m =>
+        MOVIE_DATA.filter(m => m.Status === 'Now Showing').map(m =>
             `<option value="${m.MovieID}">${m.Title}</option>`
         ).join('');
 }
@@ -2539,7 +2862,7 @@ function populateMovieSelect() {
 function filterScheduleMovies(query) {
     const q = query.toLowerCase();
     const showing = MOVIE_DATA.filter(m =>
-        (m.Status === 'Now Showing' || m.Status === 'Coming Soon') &&
+        m.Status === 'Now Showing' &&
         (!q || m.Title.toLowerCase().includes(q))
     );
     const list = document.getElementById('scheduleMovieList');
@@ -4265,8 +4588,8 @@ function formatAdminDate(value) {
 
 function toDateInputValue(value) {
     const date = value ? new Date(value) : new Date();
-    if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 10);
-    return date.toISOString().slice(0, 10);
+    if (Number.isNaN(date.getTime())) return toLocalDateInputValue();
+    return toLocalDateInputValue(date);
 }
 
 async function loadNewsArticles() {
