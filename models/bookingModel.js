@@ -936,25 +936,72 @@ class BookingModel {
 
   static async holdSeatDB(showtimeId, seatId, sessionId, socketId, expiryMinutes = 5) {
     const pool = await getPool();
-    try {
-      const result = await pool.request()
-        .input('showtimeId', sql.Int, showtimeId)
-        .input('seatId', sql.Int, seatId)
-        .input('sessionId', sql.NVarChar, sessionId)
-        .input('socketId', sql.NVarChar, socketId)
-        .input('expiryMins', sql.Int, expiryMinutes)
-        .query(`
+    const result = await pool.request()
+      .input('showtimeId', sql.Int, showtimeId)
+      .input('seatId', sql.Int, seatId)
+      .input('sessionId', sql.NVarChar, sessionId)
+      .input('socketId', sql.NVarChar, socketId)
+      .input('expiryMins', sql.Int, expiryMinutes)
+      .query(`
+        DELETE FROM SeatLocks
+        WHERE ShowtimeID = @showtimeId
+          AND SeatID = @seatId
+          AND ExpiresAt <= GETDATE();
+
+        DECLARE @existingSession NVARCHAR(255);
+        DECLARE @existingExpires DATETIME;
+
+        SELECT
+          @existingSession = SessionID,
+          @existingExpires = ExpiresAt
+        FROM SeatLocks WITH (UPDLOCK, HOLDLOCK)
+        WHERE ShowtimeID = @showtimeId AND SeatID = @seatId;
+
+        IF @existingSession IS NOT NULL
+        BEGIN
+          IF @existingSession = @sessionId
+          BEGIN
+            UPDATE SeatLocks
+            SET SocketID = @socketId
+            WHERE ShowtimeID = @showtimeId AND SeatID = @seatId;
+
+            SELECT
+              CAST(1 AS bit) AS Ok,
+              CAST(1 AS bit) AS AlreadyOwned,
+              @existingExpires AS ExpiresAt,
+              DATEDIFF(second, GETDATE(), @existingExpires) AS RemainingSeconds;
+          END
+          ELSE
+          BEGIN
+            SELECT
+              CAST(0 AS bit) AS Ok,
+              CAST(0 AS bit) AS AlreadyOwned,
+              @existingExpires AS ExpiresAt,
+              DATEDIFF(second, GETDATE(), @existingExpires) AS RemainingSeconds;
+          END
+        END
+        ELSE
+        BEGIN
+          DECLARE @newExpires DATETIME = DATEADD(minute, @expiryMins, GETDATE());
+
           INSERT INTO SeatLocks (ShowtimeID, SeatID, SessionID, SocketID, ExpiresAt)
-          VALUES (@showtimeId, @seatId, @sessionId, @socketId, DATEADD(minute, @expiryMins, GETDATE()))
-        `);
-      return true;
-    } catch (err) {
-      // 2627 or 2601 is Violation of UNIQUE KEY constraint (already locked)
-      if (err.number === 2627 || err.number === 2601) {
-        return false; // already locked
-      }
-      throw err;
-    }
+          VALUES (@showtimeId, @seatId, @sessionId, @socketId, @newExpires);
+
+          SELECT
+            CAST(1 AS bit) AS Ok,
+            CAST(0 AS bit) AS AlreadyOwned,
+            @newExpires AS ExpiresAt,
+            DATEDIFF(second, GETDATE(), @newExpires) AS RemainingSeconds;
+        END
+      `);
+
+    const row = result.recordset?.[0] || {};
+    return {
+      ok: Boolean(row.Ok),
+      alreadyOwned: Boolean(row.AlreadyOwned),
+      expiresAt: row.ExpiresAt,
+      remainingSeconds: Math.max(0, Number(row.RemainingSeconds || 0))
+    };
   }
 
   static async releaseSeatDB(showtimeId, seatId, sessionId) {
@@ -966,6 +1013,20 @@ class BookingModel {
       .query(`
         DELETE FROM SeatLocks 
         WHERE ShowtimeID = @showtimeId AND SeatID = @seatId AND SessionID = @sessionId
+      `);
+    return result.rowsAffected[0] > 0;
+  }
+
+  static async releaseExpiredSeatLock(showtimeId, seatId) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('showtimeId', sql.Int, showtimeId)
+      .input('seatId', sql.Int, seatId)
+      .query(`
+        DELETE FROM SeatLocks
+        WHERE ShowtimeID = @showtimeId
+          AND SeatID = @seatId
+          AND ExpiresAt <= GETDATE()
       `);
     return result.rowsAffected[0] > 0;
   }
@@ -982,8 +1043,11 @@ class BookingModel {
       .input('newSocketId', sql.NVarChar, newSocketId)
       .query(`
         UPDATE SeatLocks
-        SET SocketID = @newSocketId, ExpiresAt = DATEADD(minute, 5, GETDATE())
-        WHERE ShowtimeID = @showtimeId AND SessionID = @sessionId AND SeatID IN (${seatIdList.join(',')})
+        SET SocketID = @newSocketId
+        WHERE ShowtimeID = @showtimeId
+          AND SessionID = @sessionId
+          AND ExpiresAt > GETDATE()
+          AND SeatID IN (${seatIdList.join(',')})
       `);
     return result.rowsAffected[0];
   }
@@ -1006,7 +1070,15 @@ class BookingModel {
     const result = await pool.request()
       .input('showtimeId', sql.Int, showtimeId)
       .query(`
-        SELECT SeatID, SessionID FROM SeatLocks 
+        DELETE FROM SeatLocks
+        WHERE ShowtimeID = @showtimeId AND ExpiresAt <= GETDATE();
+
+        SELECT
+          SeatID,
+          SessionID,
+          ExpiresAt,
+          DATEDIFF(second, GETDATE(), ExpiresAt) AS RemainingSeconds
+        FROM SeatLocks
         WHERE ShowtimeID = @showtimeId AND ExpiresAt > GETDATE()
       `);
     return result.recordset || [];

@@ -354,6 +354,9 @@ exports.createShowtime = async (req, res) => {
     if (err.message.includes('đã có lịch')) {
       return res.status(409).json({ success: false, message: err.message });
     }
+    if (err.message.includes('Chỉ phim đang chiếu') || err.message.includes('Phim không tồn tại')) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
     res.status(500).json({ success: false, message: 'Lỗi server: ' + err.message });
   }
 };
@@ -368,6 +371,9 @@ exports.updateShowtime = async (req, res) => {
     console.error('[adminController] updateShowtime:', err.message);
     if (err.message.includes('đã có lịch')) {
       return res.status(409).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('Chỉ phim đang chiếu') || err.message.includes('Phim không tồn tại')) {
+      return res.status(400).json({ success: false, message: err.message });
     }
     res.status(500).json({ success: false, message: 'Lỗi server.' });
   }

@@ -618,6 +618,22 @@ class AdminModel {
   static async createShowtime(data) {
     const pool = await getPool();
 
+    const movieCheck = await pool.request()
+      .input('movieId', sql.Int, data.movieId)
+      .query(`
+        SELECT MovieID, Status
+        FROM Movies
+        WHERE MovieID = @movieId AND Status != 'deleted'
+      `);
+
+    if (movieCheck.recordset.length === 0) {
+      throw new Error('Phim không tồn tại hoặc đã bị xóa.');
+    }
+
+    if (movieCheck.recordset[0].Status !== 'Now Showing') {
+      throw new Error('Chỉ phim đang chiếu mới được thêm vào lịch chiếu.');
+    }
+
     // Check conflict
     const conflictCheck = await pool.request()
       .input('roomId', sql.Int, data.roomId)
@@ -661,6 +677,22 @@ class AdminModel {
     const roomId = data.roomId != null ? parseInt(data.roomId) : current.RoomID;
     const startTime = data.startTime || current.StartTime;
     const endTime = data.endTime || current.EndTime;
+
+    const movieCheck = await pool.request()
+      .input('movieId', sql.Int, movieId)
+      .query(`
+        SELECT MovieID, Status
+        FROM Movies
+        WHERE MovieID = @movieId AND Status != 'deleted'
+      `);
+
+    if (movieCheck.recordset.length === 0) {
+      throw new Error('Phim không tồn tại hoặc đã bị xóa.');
+    }
+
+    if (movieCheck.recordset[0].Status !== 'Now Showing') {
+      throw new Error('Chỉ phim đang chiếu mới được thêm vào lịch chiếu.');
+    }
 
     const conflictCheck = await pool.request()
       .input('roomId', sql.Int, roomId)

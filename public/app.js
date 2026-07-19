@@ -1,4 +1,34 @@
-// Khởi tạo bookingSessionId độc nhất để giữ ghế qua nhiều trang
+// Khởi tạo bookingSessionId theo tài khoản để Account B không kế thừa ghế đang giữ của Account A.
+function getBookingOwnerKey() {
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
+        return String(user.UserID || user.userId || user.id || user.Email || user.email || 'guest');
+    } catch (e) {
+        return 'guest';
+    }
+}
+
+const bookingOwnerKey = getBookingOwnerKey();
+const storedBookingOwnerKey = sessionStorage.getItem('bookingSessionOwnerKey');
+const perUserSessionKey = `bookingSessionId:${bookingOwnerKey}`;
+let existingBookingSessionId = sessionStorage.getItem('bookingSessionId');
+
+if (storedBookingOwnerKey && storedBookingOwnerKey !== bookingOwnerKey) {
+    sessionStorage.removeItem('bookingSessionId');
+    sessionStorage.removeItem('booking');
+    localStorage.removeItem('booking');
+    existingBookingSessionId = null;
+}
+
+if (bookingOwnerKey !== 'guest') {
+    const savedUserSessionId = localStorage.getItem(perUserSessionKey);
+    if (savedUserSessionId) {
+        existingBookingSessionId = savedUserSessionId;
+        sessionStorage.setItem('bookingSessionId', savedUserSessionId);
+    }
+}
+sessionStorage.setItem('bookingSessionOwnerKey', bookingOwnerKey);
+
 let bookingSessionId = sessionStorage.getItem('bookingSessionId');
 if (!bookingSessionId) {
     bookingSessionId = 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
