@@ -2066,6 +2066,7 @@
                                 <thead>
                                     <tr>
                                         <th>MÃ VOUCHER</th>
+                                        <th>LOẠI VOUCHER</th>
                                         <th>TÊN CHƯƠNG TRÌNH</th>
                                         <th>GIẢM GIÁ</th>
                                         <th>ĐƠN TỐI THIỂU</th>
@@ -2077,7 +2078,7 @@
                                 </thead>
                                 <tbody id="voucherListContainer">
                                     <tr>
-                                        <td colspan="8" class="text-center">Đang tải danh sách voucher...</td>
+                                        <td colspan="9" class="text-center">Đang tải danh sách voucher...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -2103,6 +2104,18 @@
                                 <div class="vform-group">
                                     <label for="voucherCode">Mã Voucher *</label>
                                     <input type="text" id="voucherCode" required placeholder="VD: SUMMER2026">
+                                </div>
+
+                                <div class="vform-group">
+                                    <label for="voucherType">Loại Voucher *</label>
+                                    <select id="voucherType" required>
+                                        <option value="D-Cinema Voucher">D-Cinema Voucher</option>
+                                        <option value="Voucher điểm thưởng">Voucher điểm thưởng</option>
+                                        <option value="Mã giảm giá">Mã giảm giá</option>
+                                        <option value="Điểm thành viên">Điểm thành viên</option>
+                                        <option value="Đối tác">Đối tác</option>
+                                        <option value="Mã Khuyến Mãi" selected>Mã Khuyến Mãi</option>
+                                    </select>
                                 </div>
 
                                 <div class="vform-group">

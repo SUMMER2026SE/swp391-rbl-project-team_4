@@ -32,6 +32,7 @@ exports.createVoucher = async (req, res) => {
     try {
         const { 
             voucherCode, 
+            voucherType, 
             voucherName, 
             discountType, 
             discountValue, 
@@ -102,6 +103,7 @@ exports.createVoucher = async (req, res) => {
 
         const newVoucher = await VoucherModel.create({
             voucherCode: cleanCode,
+            voucherType: voucherType || 'Mã Khuyến Mãi',
             voucherName: voucherName.trim(),
             discountType,
             discountValue: valDiscount,
@@ -140,6 +142,7 @@ exports.updateVoucher = async (req, res) => {
 
         const { 
             voucherCode, 
+            voucherType, 
             voucherName, 
             discountType, 
             discountValue, 
@@ -166,6 +169,10 @@ exports.updateVoucher = async (req, res) => {
                 }
             }
             updateData.voucherCode = cleanCode;
+        }
+
+        if (voucherType !== undefined) {
+            updateData.voucherType = voucherType;
         }
 
         if (voucherName !== undefined) {

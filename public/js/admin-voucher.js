@@ -115,7 +115,7 @@ function vShowToast(message, type = 'success') {
 async function loadVouchers() {
     const tbody = document.getElementById('voucherListContainer');
     if (tbody) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="color:var(--text2);padding:24px;">Đang tải...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="color:var(--text2);padding:24px;">Đang tải...</td></tr>`;
     }
 
     let url = `/api/admin/vouchers`;
@@ -133,7 +133,7 @@ async function loadVouchers() {
     } else {
         // Hiện lỗi ngay trong bảng để dễ debug
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="color:#ef4444;padding:24px;">
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="color:#ef4444;padding:24px;">
                 ⚠️ ${res.message || 'Không thể tải danh sách voucher'}<br>
                 <small style="color:var(--text2);">Kiểm tra Console (F12) để xem chi tiết lỗi.</small>
             </td></tr>`;
@@ -155,7 +155,7 @@ function renderVouchersTable() {
     const paginatedItems = vouchersData.slice(startIndex, endIndex);
 
     if (totalItems === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center">Không tìm thấy voucher nào.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center">Không tìm thấy voucher nào.</td></tr>`;
         updatePaginationInfo(0, 0, 0);
         return;
     }
@@ -199,9 +199,12 @@ function renderVouchersTable() {
             ? ''
             : `<button class="btn-icon" onclick="toggleActiveStatus(${v.VoucherID}, '${v.Status}')" title="${v.Status === 'Active' ? 'Vô hiệu hóa' : 'Kích hoạt'}">${toggleIcon}</button>`;
 
+        const displayVoucherType = v.VoucherType || 'Mã Khuyến Mãi';
+
         html += `
             <tr>
                 <td style="font-weight:700; color:var(--accent);">${v.VoucherCode}</td>
+                <td style="font-weight:600; color:#38bdf8;">${displayVoucherType}</td>
                 <td>${v.VoucherName}</td>
                 <td style="font-weight:600;">${discountText}</td>
                 <td>${minOrder}</td>
@@ -296,6 +299,8 @@ async function startEdit(id) {
         editingVoucherId = v.VoucherID;
         document.getElementById('voucherId').value = v.VoucherID;
         document.getElementById('voucherCode').value = v.VoucherCode;
+        const vTypeEl = document.getElementById('voucherType');
+        if (vTypeEl) vTypeEl.value = v.VoucherType || 'Mã Khuyến Mãi';
         document.getElementById('voucherName').value = v.VoucherName;
         document.getElementById('discountType').value = v.DiscountType;
         document.getElementById('discountValue').value = v.DiscountValue;
@@ -323,6 +328,8 @@ function resetForm() {
     editingVoucherId = null;
     document.getElementById('voucherForm').reset();
     document.getElementById('voucherId').value = '';
+    const vTypeEl = document.getElementById('voucherType');
+    if (vTypeEl) vTypeEl.value = 'Mã Khuyến Mãi';
     document.getElementById('formTitle').textContent = 'TẠO VOUCHER MỚI';
     document.getElementById('btnSubmit').textContent = 'Thêm Voucher';
     
@@ -340,6 +347,8 @@ async function handleSubmit(event) {
     event.preventDefault();
 
     const code = document.getElementById('voucherCode').value.trim();
+    const vTypeEl = document.getElementById('voucherType');
+    const voucherType = vTypeEl ? vTypeEl.value : 'Mã Khuyến Mãi';
     const name = document.getElementById('voucherName').value.trim();
     const type = document.getElementById('discountType').value;
     const value = parseFloat(document.getElementById('discountValue').value);
@@ -390,6 +399,7 @@ async function handleSubmit(event) {
 
     const payload = {
         voucherCode: code,
+        voucherType: voucherType,
         voucherName: name,
         discountType: type,
         discountValue: value,
