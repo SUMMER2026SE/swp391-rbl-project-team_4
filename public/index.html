@@ -624,6 +624,7 @@
                 if (btnLogin) {
                     btnLogin.textContent = user.fullName || 'Tài khoản';
                     btnLogin.href = 'profile.html';
+                    btnLogin.removeAttribute('data-i18n');
                 }
             }
         });

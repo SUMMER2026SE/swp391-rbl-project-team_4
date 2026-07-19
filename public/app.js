@@ -420,13 +420,19 @@ const app = {
         const genreMap = {
             'Hành động': 'genre_action',
             'Hài hước': 'genre_comedy',
+            'Hài': 'genre_comedy',
             'Kinh dị': 'genre_horror',
+            'Tình cảm': 'genre_romance',
             'Tâm lý': 'genre_psychological',
             'Khoa học viễn tưởng': 'genre_scifi',
+            'Viễn tưởng': 'genre_scifi_short',
             'Phiêu lưu': 'genre_adventure',
             'Chính kịch': 'genre_drama',
             'Gia đình': 'genre_family',
-            'Hoạt hình': 'genre_animation'
+            'Hoạt hình': 'genre_animation',
+            'Ca Nhạc': 'genre_musical',
+            'Ly Kì': 'genre_thriller',
+            'Giật Gân': 'genre_suspense'
         };
 
         const genres = genresString.split(',').map(g => g.trim());
