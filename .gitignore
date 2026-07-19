@@ -126,3 +126,7 @@ uploads/*
 !uploads/.gitkeep
 .env
 config/db.js
+seed_showtimes.js
+force_seed.js
+smart_seed.js
+.idea

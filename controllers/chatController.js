@@ -39,7 +39,7 @@ const chatController = {
       `);
       
       const showtimesByMovie = {};
-      const timeFormatter = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', hour12: false });
+      const timeFormatter = new Intl.DateTimeFormat('vi-VN', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hour12: false });
       
       showtimesResult.recordset.forEach(st => {
         if (!showtimesByMovie[st.MovieID]) showtimesByMovie[st.MovieID] = [];

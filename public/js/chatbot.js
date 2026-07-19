@@ -146,6 +146,21 @@ function initChatbotWidget() {
     btn.addEventListener('click', () => { win.style.display = win.style.display === 'flex' ? 'none' : 'flex'; });
     close.addEventListener('click', () => { win.style.display = 'none'; });
 
+    // Intercept clicks on booking links to enforce login
+    messages.addEventListener('click', (e) => {
+        const bookBtn = e.target.closest('.bot-book-btn');
+        if (bookBtn) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                e.preventDefault();
+                const href = bookBtn.getAttribute('href');
+                const targetUrl = href.replace(/^\//, ''); // remove leading slash if any
+                sessionStorage.setItem('redirectAfterLogin', targetUrl);
+                window.location.href = `auth.html?redirect=${encodeURIComponent(targetUrl)}`;
+            }
+        }
+    });
+
     // Format AM/PM Time
     const getTimeString = () => {
         const d = new Date();
