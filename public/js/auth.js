@@ -257,6 +257,23 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
+  function normalizePhone(phone) {
+    return String(phone || '').replace(/\D/g, '');
+  }
+
+  function validateLoginIdentifier(value) {
+    const input = value.trim();
+    if (input.includes('@')) return validateEmail(input);
+    const phone = normalizePhone(input);
+    return /^0\d{9}$/.test(phone) || /^84\d{9}$/.test(phone);
+  }
+
+  function validateVietnamPhone(value) {
+    if (!value) return true;
+    const phone = normalizePhone(value);
+    return /^0\d{9}$/.test(phone) || /^84\d{9}$/.test(phone);
+  }
+
   // ═══════════════════════════════════════════════════════════
   //  BUTTON LOADING STATE
   // ═══════════════════════════════════════════════════════════
@@ -290,17 +307,17 @@
     e.preventDefault();
     clearAllErrors();
 
-    const email = dom.loginEmail.value.trim();
+    const identifier = dom.loginEmail.value.trim();
     const password = dom.loginPassword.value;
 
     // Client validation
     let hasError = false;
 
-    if (!email) {
-      setError(dom.loginEmail, 'Vui lòng nhập email.');
+    if (!identifier) {
+      setError(dom.loginEmail, 'Vui lòng nhập email hoặc số điện thoại.');
       hasError = true;
-    } else if (!validateEmail(email)) {
-      setError(dom.loginEmail, 'Email không hợp lệ.');
+    } else if (!validateLoginIdentifier(identifier)) {
+      setError(dom.loginEmail, 'Email hoặc số điện thoại không hợp lệ.');
       hasError = true;
     }
 
@@ -322,7 +339,7 @@
       const res = await fetch(`${API_BASE}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, email: identifier, password }),
       });
 
       const data = await res.json();
@@ -477,6 +494,11 @@
       hasError = true;
     } else if (!validateEmail(email)) {
       setError(dom.regEmail, 'Email không hợp lệ.');
+      hasError = true;
+    }
+
+    if (phone && !validateVietnamPhone(phone)) {
+      setError(dom.regPhone, 'Số điện thoại không hợp lệ.');
       hasError = true;
     }
 

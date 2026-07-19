@@ -69,8 +69,8 @@
         </div>
     </section>
 
-    <!-- Trending Promotions -->
-    <section class="section-trending">
+    <!-- Vouchers & Mã Khuyến Mãi Section -->
+    <section class="section-vouchers" style="padding: 20px 0 60px;">
         <div class="container">
             <div class="section-header">
                 <h2 data-i18n="promo_trending_title">Trending Promotions</h2>
@@ -287,11 +287,12 @@
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => {
                     const query = e.target.value.toLowerCase();
-                    const cards = document.querySelectorAll('[id^="promo-"]');
+                    const cards = document.querySelectorAll('[id^="promo-voucher-"]');
                     cards.forEach(card => {
                         const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
                         const desc  = card.querySelector('p')?.textContent.toLowerCase() || '';
-                        card.style.opacity = (title.includes(query) || desc.includes(query)) ? '1' : '0.3';
+                        const code  = card.querySelector('span')?.textContent.toLowerCase() || '';
+                        card.style.display = (title.includes(query) || desc.includes(query) || code.includes(query)) ? 'flex' : 'none';
                     });
                 });
             }
@@ -301,18 +302,29 @@
             try {
                 const res = await fetch('/api/bookings/vouchers');
                 const data = await res.json();
-                if (!data.success || !data.data.length) return;
+                const container = document.getElementById('vouchersListGrid');
+                if (!container) return;
 
-                const grid = document.getElementById('voucherGrid');
-                if (!grid) return;
+                if (!data.success || !data.data || !data.data.length) {
+                    container.innerHTML = `<p style="color:var(--text-muted); grid-column: 1 / -1; padding: 20px 0;">Hiện chưa có mã voucher nào đang diễn ra.</p>`;
+                    return;
+                }
 
                 data.data.forEach((v, i) => {
                     const discount = v.DiscountType === 'percent'
                         ? `<span data-i18n="discount_percent">Giảm</span> ${v.DiscountValue}%`
                         : `<span data-i18n="discount_amount">Giảm</span> ${Number(v.DiscountValue).toLocaleString('vi-VN')}đ`;
                     const endDate = new Date(v.EndDate).toLocaleDateString('vi-VN');
+                    const minOrderStr = Number(v.MinOrderValue || 0) > 0 
+                        ? ` • Đơn từ ${Number(v.MinOrderValue).toLocaleString('vi-VN')}đ` 
+                        : '';
+                    const imgUrl = v.ImageUrl || 'images/promo_voucher.png';
+                    const title = v.VoucherName || `Mã ${v.Code}`;
+                    const desc = v.Description || `Chương trình khuyến mãi giảm giá ${discount} cho khách hàng D-Cinema.`;
+                    const voucherType = v.VoucherType || 'MÃ KHUYẾN MÃI';
+
                     const card = document.createElement('div');
-                    card.className = i === 0 ? 'promo-card-featured' : 'promo-card';
+                    card.className = 'promo-card-side';
                     card.id = 'promo-voucher-' + v.VoucherID;
                     card.innerHTML = i === 0 ? `
                         <div class="card-body" style="padding:28px;">
@@ -332,7 +344,7 @@
                             <button class="card-cta" onclick="copyVoucher('${v.Code}')" data-i18n="copy_btn">Sao chép</button>
                         </div>
                     `;
-                    grid.appendChild(card);
+                    container.appendChild(card);
                 });
                 if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
             } catch (e) {

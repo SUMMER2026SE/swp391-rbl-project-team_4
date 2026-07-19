@@ -784,13 +784,22 @@ exports.getScheduleSuggestion = async (req, res) => {
       });
     }
 
-    const [movies, rooms, existingShowtimes, cinemas, topMovies] = await Promise.all([
+    const [allMovies, rooms, existingShowtimes, cinemas, topMovies] = await Promise.all([
       MovieModel.getAllMovies({}),
       AdminModel.getRooms(),
       AdminModel.getAllShowtimes({ date, cinemaId }),
       AdminModel.getCinemas(),
       AdminModel.getTopMovies(10)
     ]);
+
+    const movies = allMovies.filter(movie => movie.Status === 'Now Showing');
+    const parsedMovieId = movieId ? parseInt(movieId) : null;
+    if (parsedMovieId && !movies.some(movie => Number(movie.MovieID) === parsedMovieId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'AI chỉ gợi ý lịch cho phim đang chiếu.'
+      });
+    }
 
     const targetCinemaId = cinemaId ? parseInt(cinemaId) : null;
     const filteredRooms = targetCinemaId
@@ -804,7 +813,7 @@ exports.getScheduleSuggestion = async (req, res) => {
       date,
       cinema,
       cinemaId: targetCinemaId,
-      movieId: movieId ? parseInt(movieId) : null,
+      movieId: parsedMovieId,
       movies,
       rooms: filteredRooms,
       existingShowtimes,

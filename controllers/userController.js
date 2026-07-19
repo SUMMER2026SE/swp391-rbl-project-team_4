@@ -15,6 +15,17 @@ function validatePasswordPolicy(password) {
   return null;
 }
 
+function normalizeVietnamPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (/^84\d{9}$/.test(digits)) return `0${digits.slice(2)}`;
+  return digits;
+}
+
+function validateVietnamPhone(phone) {
+  if (!phone) return true;
+  return /^0\d{9}$/.test(normalizeVietnamPhone(phone));
+}
+
 // ─────────────────────────────────────────────────────────────
 // GET /api/users/profile
 // Get current user profile information
@@ -46,10 +57,22 @@ exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
     const { fullName, phone, dateOfBirth, address } = req.body;
+    const normalizedPhone = phone ? normalizeVietnamPhone(phone) : null;
+
+    if (!validateVietnamPhone(phone)) {
+      return res.status(400).json({ success: false, message: 'Số điện thoại không hợp lệ. Vui lòng nhập số Việt Nam gồm 10 chữ số.' });
+    }
+
+    if (normalizedPhone) {
+      const phoneCheck = await UserModel.checkPhoneExist(normalizedPhone, userId);
+      if (phoneCheck) {
+        return res.status(409).json({ success: false, message: 'Số điện thoại này đã được dùng bởi tài khoản khác.' });
+      }
+    }
 
     await UserModel.updateProfile(userId, { 
       fullName, 
-      phone, 
+      phone: normalizedPhone, 
       dob: dateOfBirth, 
       address 
     });

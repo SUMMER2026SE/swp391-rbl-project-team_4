@@ -232,10 +232,12 @@ class MovieModel {
              END AS RoomType,
              c.CinemaID, c.CinemaName, c.Address
       FROM   Showtimes st
+      JOIN   Movies  m ON st.MovieID   = m.MovieID
       JOIN   Rooms   r ON st.RoomID   = r.RoomID
       JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
       WHERE  st.MovieID = @movieId
         AND  st.Status  = 'active'
+        AND  m.Status   = 'Now Showing'
         AND  st.EndTime > GETUTCDATE()
         ${dateFilter}
       ORDER BY st.StartTime ASC
@@ -252,9 +254,13 @@ class MovieModel {
                CASE WHEN t.SeatID IS NOT NULL THEN 'booked' ELSE 'available' END AS SeatStatus
         FROM   Seats s
         JOIN   Showtimes st ON s.RoomID = st.RoomID
+        JOIN   Movies m ON st.MovieID = m.MovieID
         LEFT   JOIN Tickets t ON t.SeatID = s.SeatID AND t.ShowtimeID = @showtimeId
                               AND t.Status IN ('confirmed', 'pending', 'refund_requested')
         WHERE  st.ShowtimeID = @showtimeId
+          AND  st.Status = 'active'
+          AND  st.EndTime > GETUTCDATE()
+          AND  m.Status = 'Now Showing'
         ORDER BY s.SeatRow, s.SeatNumber
       `);
     return result.recordset;
@@ -293,6 +299,9 @@ class MovieModel {
         JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
         JOIN   Movies  m ON st.MovieID  = m.MovieID
         WHERE  st.ShowtimeID = @showtimeId
+          AND  st.Status = 'active'
+          AND  st.EndTime > GETUTCDATE()
+          AND  m.Status = 'Now Showing'
       `);
     if (result.recordset.length > 0) {
       assignDynamicPoster(result.recordset[0]);
@@ -348,6 +357,7 @@ class MovieModel {
       WHERE  r.CinemaID = @cinemaId
         AND  CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date
         AND  st.Status  = 'active'
+        AND  m.Status   = 'Now Showing'
         AND  st.EndTime > GETUTCDATE()
         ${movieFilter}
       ORDER BY m.Title, st.StartTime ASC

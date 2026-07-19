@@ -56,10 +56,10 @@ class VoucherModel {
   static async create(data) {
     const pool = await getPool();
     const result = await pool.request()
-      .input('voucherCode', sql.VarChar, data.voucherCode)
-      .input('voucherType', sql.NVarChar, data.voucherType || 'Mã Khuyến Mãi')
-      .input('voucherName', sql.NVarChar, data.voucherName)
-      .input('discountType', sql.VarChar, data.discountType)
+      .input('voucherCode', sql.NVarChar(50), data.voucherCode)
+      .input('voucherType', sql.NVarChar(255), data.voucherType || 'Mã Khuyến Mãi')
+      .input('voucherName', sql.NVarChar(255), data.voucherName)
+      .input('discountType', sql.VarChar(50), data.discountType)
       .input('discountValue', sql.Decimal(18, 2), data.discountValue)
       .input('minimumOrder', sql.Decimal(18, 2), data.minimumOrder || 0)
       .input('maximumDiscount', sql.Decimal(18, 2), data.maximumDiscount || 0)
@@ -67,11 +67,12 @@ class VoucherModel {
       .input('usedCount', sql.Int, data.usedCount || 0)
       .input('startDate', sql.DateTime, data.startDate)
       .input('endDate', sql.DateTime, data.endDate)
-      .input('status', sql.VarChar, data.status || 'Active')
-      .input('description', sql.NVarChar, data.description || null)
+      .input('status', sql.VarChar(50), data.status || 'Active')
+      .input('description', sql.NVarChar(sql.MAX), data.description || null)
+      .input('imageUrl', sql.NVarChar(sql.MAX), data.imageUrl || null)
       .query(`
-        INSERT INTO Voucher (VoucherCode, VoucherType, VoucherName, DiscountType, DiscountValue, MinimumOrder, MaximumDiscount, UsageLimit, UsedCount, StartDate, EndDate, Status, Description, CreatedAt)
-        VALUES (@voucherCode, @voucherType, @voucherName, @discountType, @discountValue, @minimumOrder, @maximumDiscount, @usageLimit, @usedCount, @startDate, @endDate, @status, @description, GETDATE());
+        INSERT INTO Voucher (VoucherCode, VoucherType, VoucherName, DiscountType, DiscountValue, MinimumOrder, MaximumDiscount, UsageLimit, UsedCount, StartDate, EndDate, Status, Description, ImageUrl, CreatedAt)
+        VALUES (@voucherCode, @voucherType, @voucherName, @discountType, @discountValue, @minimumOrder, @maximumDiscount, @usageLimit, @usedCount, @startDate, @endDate, @status, @description, @imageUrl, GETDATE());
 
         SELECT * FROM Voucher WHERE VoucherID = SCOPE_IDENTITY();
       `);
@@ -84,19 +85,19 @@ class VoucherModel {
     
     let updateFields = [];
     if (data.voucherCode !== undefined) {
-      request.input('voucherCode', sql.VarChar, data.voucherCode);
+      request.input('voucherCode', sql.NVarChar(50), data.voucherCode);
       updateFields.push("VoucherCode = @voucherCode");
     }
     if (data.voucherType !== undefined) {
-      request.input('voucherType', sql.NVarChar, data.voucherType);
+      request.input('voucherType', sql.NVarChar(255), data.voucherType);
       updateFields.push("VoucherType = @voucherType");
     }
     if (data.voucherName !== undefined) {
-      request.input('voucherName', sql.NVarChar, data.voucherName);
+      request.input('voucherName', sql.NVarChar(255), data.voucherName);
       updateFields.push("VoucherName = @voucherName");
     }
     if (data.discountType !== undefined) {
-      request.input('discountType', sql.VarChar, data.discountType);
+      request.input('discountType', sql.VarChar(50), data.discountType);
       updateFields.push("DiscountType = @discountType");
     }
     if (data.discountValue !== undefined) {
@@ -128,12 +129,16 @@ class VoucherModel {
       updateFields.push("EndDate = @endDate");
     }
     if (data.status !== undefined) {
-      request.input('status', sql.VarChar, data.status);
+      request.input('status', sql.VarChar(50), data.status);
       updateFields.push("Status = @status");
     }
     if (data.description !== undefined) {
-      request.input('description', sql.NVarChar, data.description);
+      request.input('description', sql.NVarChar(sql.MAX), data.description);
       updateFields.push("Description = @description");
+    }
+    if (data.imageUrl !== undefined) {
+      request.input('imageUrl', sql.NVarChar(sql.MAX), data.imageUrl);
+      updateFields.push("ImageUrl = @imageUrl");
     }
 
     if (updateFields.length === 0) return await this.getById(id);
