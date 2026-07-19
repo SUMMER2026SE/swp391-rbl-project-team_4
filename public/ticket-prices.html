@@ -5,11 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng Giá Vé | D-CINEMA</title>
-    <meta name="description" content="Tham khảo bảng giá vé rạp D-Cinema chi tiết cho các phòng chiếu 2D, 3D, IMAX. Công cụ tính giá vé thông minh giúp bạn ước tính chi phí dễ dàng.">
+    <meta name="description"
+        content="Tham khảo bảng giá vé rạp D-Cinema chi tiết cho các phòng chiếu 2D, 3D, IMAX. Công cụ tính giá vé thông minh giúp bạn ước tính chi phí dễ dàng.">
     <link rel="stylesheet" href="css/shared-layout.css">
     <link rel="stylesheet" href="css/ticket-prices.css">
     <link rel="stylesheet" href="css/chatbot.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
 </head>
 
 <body style="background: #101112; color: #ffffff;">
@@ -22,32 +24,40 @@
             </a>
             <nav class="nav-links">
                 <div class="dropdown">
-                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
+                    <a href="movies.html" id="nav-phim" data-i18n="nav_movies">Phim <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav_movies_now">Đang
+                            chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav_movies_coming">Sắp
+                            chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
-                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices" class="active">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" data-i18n="nav_theaters">Rạp</a>
+                <a href="promotions.html" id="nav-promo" data-i18n="nav_promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" data-i18n="nav_news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" class="active" data-i18n="nav_prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
-                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput"
+                        data-i18n="nav_search_placeholder">
                 </div>
+                <select id="langSwitcher" class="lang-switcher" style="margin-right: 15px; margin-left: 15px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); outline: none; cursor: pointer; font-weight: 500; font-size: 14px; backdrop-filter: blur(5px);">
+                    <option value="vi" style="color: black;">VI</option>
+                    <option value="en" style="color: black;">EN</option>
+                </select>
                 <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                     </svg>
                 </a>
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav_login">Đăng Nhập</a>
             </div>
         </div>
     </header>
@@ -55,8 +65,9 @@
     <!-- Prices Hero -->
     <section class="prices-hero">
         <div class="prices-hero-content">
-            <h1>Bảng Giá Vé D-Cinema</h1>
-            <p>Thông tin chi tiết giá vé xem phim, phụ thu ghế ngồi và các chương trình ưu đãi học sinh sinh viên.</p>
+            <h1 data-i18n="price_hero_title">Bảng Giá Vé D-Cinema</h1>
+            <p data-i18n="price_hero_desc">Thông tin chi tiết giá vé xem phim, phụ thu ghế ngồi và các chương trình ưu
+                đãi học sinh sinh viên.</p>
         </div>
     </section>
 
@@ -64,64 +75,67 @@
     <section class="prices-main-section">
         <div class="container">
             <div class="prices-grid">
-                
+
                 <!-- Left Column: Pricing Tables -->
                 <div class="prices-info-panel">
-                    
+
                     <!-- Table 1: Standard 2D Prices -->
                     <div class="info-card">
-                        <h2>Giá Vé Phim 2D</h2>
+                        <h2 data-i18n="price_2d_title">Giá Vé Phim 2D</h2>
                         <div class="table-responsive">
                             <table class="price-table">
                                 <thead>
                                     <tr>
-                                        <th>Đối Tượng Khách Hàng</th>
-                                        <th>Thứ 2 - Thứ 5</th>
-                                        <th>Thứ 6 - CN, Lễ</th>
+                                        <th data-i18n="price_col_customer">Đối Tượng Khách Hàng</th>
+                                        <th data-i18n="price_col_weekday">Thứ 2 - Thứ 5</th>
+                                        <th data-i18n="price_col_weekend">Thứ 6 - CN, Lễ</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td class="highlight">Người Lớn (Adult)</td>
+                                        <td class="highlight" data-i18n="price_adult">Người Lớn (Adult)</td>
                                         <td class="price-val">85.000 đ</td>
                                         <td class="price-val">110.000 đ</td>
                                     </tr>
                                     <tr>
-                                        <td class="highlight">Học Sinh / Sinh Viên / Trẻ Em</td>
+                                        <td class="highlight" data-i18n="price_student">Học Sinh / Sinh Viên / Trẻ Em
+                                        </td>
                                         <td class="price-val">70.000 đ</td>
                                         <td class="price-val">85.000 đ</td>
                                     </tr>
                                     <tr>
-                                        <td class="highlight">Thành Viên D-Cinema (U22)</td>
+                                        <td class="highlight" data-i18n="price_member">Thành Viên D-Cinema (U22)</td>
                                         <td class="price-val">45.000 đ</td>
                                         <td class="price-val">80.000 đ</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary);">* Giá trên áp dụng cho suất chiếu 2D tiêu chuẩn. Suất chiếu muộn sau 22:00 phụ thu thêm 10.000 đ/vé.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);"><span data-i18n="price_2d_note">*
+                                Giá trên áp dụng cho suất chiếu 2D tiêu chuẩn. Suất chiếu muộn sau 22:00 phụ thu thêm
+                                10.000 đ/vé.</span></p>
                     </div>
 
                     <!-- Table 2: 3D & IMAX Screenings -->
                     <div class="info-card">
-                        <h2>Giá Vé Phòng Chiếu Đặc Biệt (3D &amp; IMAX)</h2>
+                        <h2 data-i18n="price_special_title">Giá Vé Phòng Chiếu Đặc Biệt (3D &amp; IMAX)</h2>
                         <div class="table-responsive">
                             <table class="price-table">
                                 <thead>
                                     <tr>
-                                        <th>Loại Phòng Chiếu</th>
+                                        <th data-i18n="price_col_room">Loại Phòng Chiếu</th>
                                         <th>Thứ 2 - Thứ 5</th>
                                         <th>Thứ 6 - CN, Lễ</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td class="highlight">Phòng chiếu 3D Tiêu Chuẩn</td>
+                                        <td class="highlight" data-i18n="price_room_3d">Phòng chiếu 3D Tiêu Chuẩn</td>
                                         <td class="price-val">120.000 đ</td>
                                         <td class="price-val">140.000 đ</td>
                                     </tr>
                                     <tr>
-                                        <td class="highlight">IMAX Laser (Độc Quyền)</td>
+                                        <td class="highlight" data-i18n="price_room_imax">IMAX Laser (Độc Quyền)</td>
                                         <td class="price-val">150.000 đ</td>
                                         <td class="price-val">180.000 đ</td>
                                     </tr>
@@ -132,27 +146,28 @@
 
                     <!-- Surcharges for Seat types -->
                     <div class="info-card">
-                        <h2>Phụ Thu Theo Loại Ghế Ngồi</h2>
+                        <h2 data-i18n="price_surcharge_title">Phụ Thu Theo Loại Ghế Ngồi</h2>
                         <p style="color: var(--text-secondary); margin-bottom: 20px;">
-                            Bảng giá vé cơ bản áp dụng cho ghế tiêu chuẩn (Normal). Các loại ghế cao cấp hơn sẽ áp dụng phụ thu:
+                            <span data-i18n="price_surcharge_desc">Bảng giá vé cơ bản áp dụng cho ghế tiêu chuẩn
+                                (Normal). Các loại ghế cao cấp hơn sẽ áp dụng phụ thu:</span>
                         </p>
                         <div class="surcharge-grid">
                             <div class="surcharge-box">
                                 <span class="badge-seat seat-normal">Normal</span>
-                                <h4>Ghế Thường</h4>
-                                <p>Không phụ thu</p>
+                                <h4 data-i18n="price_seat_normal">Ghế Thường</h4>
+                                <p data-i18n="price_seat_normal_desc">Không phụ thu</p>
                                 <p class="highlight" style="color: #ffffff; margin-top: 8px;">+ 0 đ</p>
                             </div>
                             <div class="surcharge-box">
                                 <span class="badge-seat seat-vip">VIP</span>
-                                <h4>Ghế Hạng Sang</h4>
-                                <p>Hàng ghế đẹp trung tâm</p>
+                                <h4 data-i18n="price_seat_vip">Ghế Hạng Sang</h4>
+                                <p data-i18n="price_seat_vip_desc">Hàng ghế đẹp trung tâm</p>
                                 <p class="highlight" style="color: #d97706; margin-top: 8px;">+ 15.000 đ</p>
                             </div>
                             <div class="surcharge-box">
                                 <span class="badge-seat seat-couple">Couple</span>
-                                <h4>Ghế Đôi Sweetbox</h4>
-                                <p>Không gian riêng tư</p>
+                                <h4 data-i18n="price_seat_couple">Ghế Đôi Sweetbox</h4>
+                                <p data-i18n="price_seat_couple_desc">Không gian riêng tư</p>
                                 <p class="highlight" style="color: #db2777; margin-top: 8px;">+ 40.000 đ</p>
                             </div>
                         </div>
@@ -160,12 +175,18 @@
 
                     <!-- Booking Policies -->
                     <div class="info-card">
-                        <h2>Điều Khoản &amp; Chính Sách Giá Vé</h2>
+                        <h2 data-i18n="price_policy_title">Điều Khoản &amp; Chính Sách Giá Vé</h2>
                         <ul class="list-items">
-                            <li><strong>Chính sách Trẻ em:</strong> Trẻ em cao dưới 0.9m được miễn phí vé (ngồi cùng ghế với người lớn đi kèm). Trẻ em từ 0.9m đến 1.3m áp dụng mức giá trẻ em.</li>
-                            <li><strong>Chính sách HSSV:</strong> Áp dụng khi mua vé trực tiếp tại quầy và xuất trình thẻ học sinh, sinh viên có ảnh và còn hạn.</li>
-                            <li><strong>Thời gian áp dụng:</strong> Khung giá cuối tuần được áp dụng tính từ suất chiếu đầu tiên của ngày Thứ Sáu đến suất chiếu cuối cùng của ngày Chủ Nhật.</li>
-                            <li><strong>Vé lễ tết:</strong> Áp dụng giá vé cuối tuần đối với các ngày nghỉ lễ quốc gia theo quy định của nhà nước.</li>
+                            <li data-i18n="price_policy_child"><strong>Chính sách Trẻ em:</strong> Trẻ em cao dưới 0.9m
+                                được miễn phí vé (ngồi cùng ghế với người lớn đi kèm). Trẻ em từ 0.9m đến 1.3m áp dụng
+                                mức giá trẻ em.</li>
+                            <li data-i18n="price_policy_student"><strong>Chính sách HSSV:</strong> Áp dụng khi mua vé
+                                trực tiếp tại quầy và xuất trình thẻ học sinh, sinh viên có ảnh và còn hạn.</li>
+                            <li data-i18n="price_policy_time"><strong>Thời gian áp dụng:</strong> Khung giá cuối tuần
+                                được áp dụng tính từ suất chiếu đầu tiên của ngày Thứ Sáu đến suất chiếu cuối cùng của
+                                ngày Chủ Nhật.</li>
+                            <li data-i18n="price_policy_holiday"><strong>Vé lễ tết:</strong> Áp dụng giá vé cuối tuần
+                                đối với các ngày nghỉ lễ quốc gia theo quy định của nhà nước.</li>
                         </ul>
                     </div>
 
@@ -174,86 +195,91 @@
                 <!-- Right Column: Interactive Calculator -->
                 <div class="calculator-card">
                     <h2>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-                            <line x1="9" y1="22" x2="9" y2="16"/>
-                            <line x1="8" y1="6" x2="16" y2="6"/>
-                            <line x1="16" y1="16" x2="16" y2="22"/>
-                            <circle cx="9" cy="11" r="1"/>
-                            <circle cx="15" cy="11" r="1"/>
-                            <circle cx="9" cy="15" r="1"/>
-                            <circle cx="15" cy="15" r="1"/>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+                            <line x1="9" y1="22" x2="9" y2="16" />
+                            <line x1="8" y1="6" x2="16" y2="6" />
+                            <line x1="16" y1="16" x2="16" y2="22" />
+                            <circle cx="9" cy="11" r="1" />
+                            <circle cx="15" cy="11" r="1" />
+                            <circle cx="9" cy="15" r="1" />
+                            <circle cx="15" cy="15" r="1" />
                         </svg>
-                        Tính Giá Vé Online
+                        <span data-i18n="calc_title">Tính Giá Vé Online</span>
                     </h2>
 
                     <!-- Form Day Type -->
                     <div class="form-group">
-                        <label for="calcDayType">Thời gian xem phim</label>
+                        <label for="calcDayType" data-i18n="calc_lbl_day">Thời gian xem phim</label>
                         <select id="calcDayType">
-                            <option value="weekday">Thứ 2 - Thứ 5 (Ngày thường)</option>
-                            <option value="weekend">Thứ 6 - Chủ Nhật (Cuối tuần / Lễ)</option>
+                            <option value="weekday" data-i18n="calc_opt_day_wk">Thứ 2 - Thứ 5 (Ngày thường)</option>
+                            <option value="weekend" data-i18n="calc_opt_day_we">Thứ 6 - Chủ Nhật (Cuối tuần / Lễ)
+                            </option>
                         </select>
                     </div>
 
                     <!-- Form Class Type -->
                     <div class="form-group">
-                        <label for="calcFormat">Định dạng phòng chiếu</label>
+                        <label for="calcFormat" data-i18n="calc_lbl_format">Định dạng phòng chiếu</label>
                         <select id="calcFormat">
-                            <option value="2D">Phòng chiếu 2D Tiêu Chuẩn</option>
-                            <option value="3D">Phòng chiếu 3D Tiêu Chuẩn</option>
-                            <option value="IMAX">Phòng chiếu IMAX Laser</option>
+                            <option value="2D" data-i18n="calc_opt_fmt_2d">Phòng chiếu 2D Tiêu Chuẩn</option>
+                            <option value="3D" data-i18n="calc_opt_fmt_3d">Phòng chiếu 3D Tiêu Chuẩn</option>
+                            <option value="IMAX" data-i18n="calc_opt_fmt_imax">Phòng chiếu IMAX Laser</option>
                         </select>
                     </div>
 
                     <!-- Form Age group -->
                     <div class="form-group">
-                        <label for="calcAge">Đối tượng xem phim</label>
+                        <label for="calcAge" data-i18n="calc_lbl_age">Đối tượng xem phim</label>
                         <select id="calcAge">
-                            <option value="adult">Người lớn</option>
-                            <option value="student">Học sinh / Sinh viên / Trẻ em</option>
-                            <option value="member">Thành viên D-Cinema (U22)</option>
+                            <option value="adult" data-i18n="calc_opt_age_ad">Người lớn</option>
+                            <option value="student" data-i18n="calc_opt_age_st">Học sinh / Sinh viên / Trẻ em</option>
+                            <option value="member" data-i18n="calc_opt_age_mb">Thành viên D-Cinema (U22)</option>
                         </select>
                     </div>
 
                     <!-- Form Seat Type -->
                     <div class="form-group">
-                        <label for="calcSeat">Loại ghế ngồi</label>
+                        <label for="calcSeat" data-i18n="calc_lbl_seat">Loại ghế ngồi</label>
                         <select id="calcSeat">
-                            <option value="normal">Ghế Thường (Normal)</option>
-                            <option value="vip">Ghế VIP (+15.000 đ)</option>
-                            <option value="couple">Ghế Đôi Sweetbox (+40.000 đ)</option>
+                            <option value="normal" data-i18n="calc_opt_seat_nm">Ghế Thường (Normal)</option>
+                            <option value="vip" data-i18n="calc_opt_seat_vp">Ghế VIP (+15.000 đ)</option>
+                            <option value="couple" data-i18n="calc_opt_seat_cp">Ghế Đôi Sweetbox (+40.000 đ)</option>
                         </select>
                     </div>
 
                     <!-- Ticket Quantity -->
                     <div class="form-group">
-                        <label for="calcQty">Số lượng vé</label>
+                        <label for="calcQty" data-i18n="calc_lbl_qty">Số lượng vé</label>
                         <input type="number" id="calcQty" min="1" max="10" value="1">
                     </div>
 
                     <!-- Food & Beverages Combos -->
                     <div class="form-group">
-                        <label>Đồ ăn / Nước uống đi kèm (Không bắt buộc)</label>
+                        <label data-i18n="calc_lbl_combo">Đồ ăn / Nước uống đi kèm (Không bắt buộc)</label>
                         <div class="combo-options">
                             <label class="combo-option">
                                 <input type="checkbox" class="combo-chk" data-price="55000" id="comboSolo">
                                 <div class="combo-info">
-                                    <span class="combo-name">Combo Solo (1 Bắp + 1 Nước)</span>
+                                    <span class="combo-name" data-i18n="calc_opt_combo_solo">Combo Solo (1 Bắp + 1
+                                        Nước)</span>
                                     <span class="combo-price">+55.000 đ</span>
                                 </div>
                             </label>
                             <label class="combo-option">
                                 <input type="checkbox" class="combo-chk" data-price="95000" id="comboCouple">
                                 <div class="combo-info">
-                                    <span class="combo-name">Combo Couple (1 Bắp + 2 Nước)</span>
+                                    <span class="combo-name" data-i18n="calc_opt_combo_couple">Combo Couple (1 Bắp + 2
+                                        Nước)</span>
                                     <span class="combo-price">+95.000 đ</span>
                                 </div>
                             </label>
                             <label class="combo-option">
                                 <input type="checkbox" class="combo-chk" data-price="175000" id="comboFamily">
                                 <div class="combo-info">
-                                    <span class="combo-name">Combo Gia Đình (2 Bắp + 4 Nước)</span>
+                                    <span class="combo-name" data-i18n="calc_opt_combo_family">Combo Gia Đình (2 Bắp + 4
+                                        Nước)</span>
                                     <span class="combo-price">+175.000 đ</span>
                                 </div>
                             </label>
@@ -262,9 +288,9 @@
 
                     <!-- Live calculated results card -->
                     <div class="calc-results">
-                        <div class="results-label">Tổng chi phí ước tính</div>
+                        <div class="results-label" data-i18n="calc_res_total">Tổng chi phí ước tính</div>
                         <div class="results-price" id="totalDisplay">0 <span>đ</span></div>
-                        
+
                         <div class="results-breakdown" id="calcBreakdown">
                             <!-- Javascript updates breakdown dynamically -->
                         </div>
@@ -284,7 +310,7 @@
                     <span class="logo-d">D</span>
                     <span class="logo-text">D-CINEMA</span>
                 </a>
-                <p>Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
+                <p data-i18n="footer_desc">Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
                 <div class="footer-socials">
                     <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2">
@@ -301,22 +327,22 @@
                 </div>
             </div>
             <div class="footer-col">
-                <h4>DỊCH VỤ</h4>
-                <a href="#">Về chúng tôi</a>
-                <a href="#">Tuyển dụng</a>
-                <a href="#">Liên hệ</a>
+                <h4 data-i18n="footer_service">DỊCH VỤ</h4>
+                <a href="#" data-i18n="footer_about">Về chúng tôi</a>
+                <a href="#" data-i18n="footer_career">Tuyển dụng</a>
+                <a href="#" data-i18n="footer_contact">Liên hệ</a>
             </div>
             <div class="footer-col">
-                <h4>PHÁP LÝ</h4>
-                <a href="#">Điều khoản sử dụng</a>
-                <a href="#">Chính sách bảo mật</a>
-                <a href="#">Chính sách thanh toán</a>
+                <h4 data-i18n="footer_legal">PHÁP LÝ</h4>
+                <a href="#" data-i18n="footer_terms">Điều khoản sử dụng</a>
+                <a href="#" data-i18n="footer_privacy">Chính sách bảo mật</a>
+                <a href="#" data-i18n="footer_payment">Chính sách thanh toán</a>
             </div>
             <div class="footer-col">
-                <h4>ĐĂNG KÝ NHẬN TIN</h4>
-                <p style="margin-bottom: 5px; font-size: 0.8rem;">Nhận thông tin về phim mới và khuyến mãi.</p>
+                <h4 data-i18n="footer_newsletter">ĐĂNG KÝ NHẬN TIN</h4>
+                <p style="margin-bottom: 5px; font-size: 0.8rem;" data-i18n="footer_newsletter_desc">Nhận thông tin về phim mới và khuyến mãi.</p>
                 <form class="newsletter-form" onsubmit="event.preventDefault()">
-                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
+                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required data-i18n="footer_email_placeholder">
                     <button type="submit" class="newsletter-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -327,7 +353,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p>
+            <p data-i18n="footer_rights">© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p>
         </div>
     </footer>
 
@@ -378,10 +404,10 @@
 
             // 1. Get base ticket price
             const basePrice = priceMatrix[format][dayType][ageGroup];
-            
+
             // 2. Get seat surcharge
             const seatSurcharge = seatSurcharges[seatType];
-            
+
             // 3. Single ticket price
             const singleTicketPrice = basePrice + seatSurcharge;
             const totalTicketsPrice = singleTicketPrice * qty;
@@ -393,8 +419,10 @@
                 if (chk.checked) {
                     const price = parseInt(chk.dataset.price) || 0;
                     totalCombosPrice += price;
-                    const name = chk.closest('.combo-option').querySelector('.combo-name').textContent;
-                    combosSelected.push({ name, price });
+                    const nameEl = chk.closest('.combo-option').querySelector('.combo-name');
+                    const i18nKey = nameEl.getAttribute('data-i18n') || '';
+                    const name = nameEl.textContent;
+                    combosSelected.push({ name, price, i18nKey });
                 }
             });
 
@@ -404,26 +432,30 @@
             // 6. Update display
             totalDisplay.innerHTML = grandTotal.toLocaleString('vi-VN') + ' <span>đ</span>';
 
-            // 7. Update breakdown description
+            // 7. Update breakdown description with translation support
+            let formatI18n = format === 'IMAX' ? 'calc_opt_fmt_imax' : (format === '3D' ? 'calc_opt_fmt_3d' : 'calc_opt_fmt_2d');
+            let dayI18n = dayType === 'weekend' ? 'tp_calc_js_weekend' : 'tp_calc_js_weekday';
+            let seatI18n = seatType === 'vip' ? 'tp_calc_seat_vip' : (seatType === 'couple' ? 'tp_calc_seat_couple' : 'tp_calc_seat_normal');
+            let ageI18n = ageGroup === 'student' ? 'tp_calc_js_student' : (ageGroup === 'member' ? 'tp_calc_js_member' : 'tp_calc_js_adult');
+
             let formatName = format === 'IMAX' ? 'Phòng chiếu IMAX Laser' : (format === '3D' ? 'Phòng chiếu 3D' : 'Phòng chiếu 2D');
-            let dayName = dayType === 'weekend' ? 'Cuối tuần' : 'Ngày thường';
             let seatName = seatType === 'vip' ? 'Ghế VIP' : (seatType === 'couple' ? 'Ghế Đôi' : 'Ghế Thường');
             let ageName = ageGroup === 'student' ? 'Học sinh/Sinh viên' : (ageGroup === 'member' ? 'Thành viên U22' : 'Người lớn');
 
             let html = `
                 <div class="breakdown-row">
-                    <span>${qty} x Vé [${formatName} - ${seatName} - ${ageName}]</span>
+                    <span>${qty} x <span data-i18n="tp_calc_js_ticket">Vé</span> [<span data-i18n="${formatI18n}">${formatName}</span> - <span data-i18n="${seatI18n}">${seatName}</span> - <span data-i18n="${ageI18n}">${ageName}</span>]</span>
                     <span>${totalTicketsPrice.toLocaleString('vi-VN')} đ</span>
                 </div>
                 <div class="breakdown-row" style="font-size: 0.8rem; margin-top: -4px; color: var(--text-secondary); padding-left: 10px;">
-                    <span>Chi tiết: (${basePrice.toLocaleString('vi-VN')} đ + phụ thu ${seatSurcharge.toLocaleString('vi-VN')} đ) x ${qty}</span>
+                    <span><span data-i18n="tp_calc_js_detail">Chi tiết:</span> (${basePrice.toLocaleString('vi-VN')} đ + <span data-i18n="tp_calc_js_surcharge">phụ thu</span> ${seatSurcharge.toLocaleString('vi-VN')} đ) x ${qty}</span>
                 </div>
             `;
 
             combosSelected.forEach(combo => {
                 html += `
                     <div class="breakdown-row">
-                        <span>1 x ${combo.name}</span>
+                        <span>1 x <span data-i18n="${combo.i18nKey}">${combo.name}</span></span>
                         <span>${combo.price.toLocaleString('vi-VN')} đ</span>
                     </div>
                 `;
@@ -431,12 +463,17 @@
 
             html += `
                 <div class="breakdown-row total-row">
-                    <span>Tổng cộng</span>
+                    <span data-i18n="tp_calc_js_total">Tổng cộng</span>
                     <span>${grandTotal.toLocaleString('vi-VN')} đ</span>
                 </div>
             `;
 
             breakdownContainer.innerHTML = html;
+            
+            // Translate the newly injected content if needed
+            if (window.changeLanguage) {
+                changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
+            }
         }
 
         // Attach listeners
@@ -462,10 +499,17 @@
                     btnLogin.href = 'profile.html';
                 }
             }
+            
+            const langSwitcher = document.getElementById('langSwitcher');
+            if (langSwitcher) {
+                langSwitcher.addEventListener('change', () => {
+                    setTimeout(calculate, 50);
+                });
+            }
         });
     </script>
+    <script src="js/i18n.js"></script>
     <script src="js/chatbot.js"></script>
 </body>
 
 </html>
-
