@@ -4,7 +4,7 @@ if (!bookingSessionId) {
     bookingSessionId = 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
     sessionStorage.setItem('bookingSessionId', bookingSessionId);
 }
-const socket = typeof io !== 'undefined' ? io({ query: { bookingSessionId } }) : { on: () => {}, emit: () => {} };
+const socket = typeof io !== 'undefined' ? io({ query: { bookingSessionId } }) : { on: () => { }, emit: () => { } };
 const API_BASE = (window.location.protocol === 'file:' || window.location.hostname === '') ? 'http://localhost:9999' : '';
 
 const mockMovies = [
@@ -416,7 +416,7 @@ const app = {
 
     renderGenres(genresString) {
         if (!genresString) return '<span data-i18n="genre_drama">Chính kịch</span>';
-        
+
         const genreMap = {
             'Hành động': 'genre_action',
             'Hài hước': 'genre_comedy',
@@ -537,12 +537,12 @@ const app = {
                 if (json.success && json.data) {
                     window.allMoviesData = json.data;
                     app.allMovies = json.data;
-                    
+
                     // Parse query parameters to pre-fill filters
                     const urlParams = new URLSearchParams(window.location.search);
                     const statusParam = urlParams.get('status');
                     const searchParam = urlParams.get('search');
-                    
+
                     if (statusParam === 'showing' || statusParam === 'Now Showing') {
                         app.filterState.status = 'Now Showing';
                     } else if (statusParam === 'coming' || statusParam === 'Coming Soon') {
@@ -550,13 +550,13 @@ const app = {
                     } else {
                         app.filterState.status = 'Now Showing'; // Default view
                     }
-                    
+
                     if (searchParam) {
                         app.filterState.search = searchParam;
                         const searchInput = document.getElementById('searchInput');
                         if (searchInput) searchInput.value = searchParam;
                     }
-                    
+
                     // Render filtered movies and update tab UI
                     app.updateTabUI();
                     app.filterAndRenderMovies();
@@ -572,7 +572,7 @@ const app = {
     renderMoviesGrid(movies) {
         const allMoviesGrid = document.querySelector('.movies-grid');
         if (!allMoviesGrid) return;
-        
+
         if (!movies || movies.length === 0) {
             allMoviesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">Không tìm thấy phim phù hợp.</div>';
             return;
@@ -705,7 +705,7 @@ const app = {
 
         const applyFilters = () => {
             if (!window.allMoviesData) return;
-            
+
             let filtered = [...window.allMoviesData];
 
             // 1. Filter by Search
@@ -720,9 +720,9 @@ const app = {
                 filtered = filtered.filter(m => {
                     const genreStr = m.Genres || m.MainCast || "";
                     if (!genreStr) return false;
-                    
+
                     const mGenres = genreStr.split(',').map(g => g.trim().toLowerCase());
-                    
+
                     return selectedGenres.some(selected => {
                         const s = selected.toLowerCase();
                         // Either exact match in array, or substring match in the full string
@@ -836,7 +836,7 @@ const app = {
             });
 
             const featured = combined.find(p => p.isFeatured) || combined[0];
-            const normals  = combined.filter(p => p !== featured).slice(0, 4); // Hiển thị thêm 4 thẻ phụ
+            const normals = combined.filter(p => p !== featured).slice(0, 4); // Hiển thị thêm 4 thẻ phụ
 
             let html = '';
 
