@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,23 @@
     <meta name="description" content="Trang xác thực vé điện tử D-CINEMA. Quét mã QR để kiểm tra thông tin vé của bạn.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/ticket-premium.css">
     <style>
         /* ── Page-specific layout ── */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { font-size: 16px; scroll-behavior: smooth; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
 
         body {
             font-family: var(--tp-font);
@@ -34,20 +46,22 @@
             z-index: 0;
             pointer-events: none;
         }
+
         .cinema-bg-gradient {
             position: absolute;
             inset: 0;
             background:
-                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,192,64,0.08) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(140,70,200,0.05) 0%, transparent 60%),
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240, 192, 64, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(140, 70, 200, 0.05) 0%, transparent 60%),
                 linear-gradient(180deg, #080810 0%, #0a0b15 100%);
         }
+
         .cinema-bg-stars {
             position: absolute;
             inset: 0;
             background-image:
-                radial-gradient(circle, rgba(255,255,255,0.6) 1px, transparent 1px),
-                radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px);
+                radial-gradient(circle, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+                radial-gradient(circle, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
             background-size: 120px 120px, 80px 80px;
             background-position: 0 0, 40px 40px;
             opacity: 0.25;
@@ -70,27 +84,70 @@
         .vt-header {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             gap: 8px;
-            margin-bottom: 28px;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto 16px;
             animation: tp-fade-up 0.5s ease both;
         }
+
+        .vt-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 30px;
+            color: #fff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
+        }
+
+        .vt-back-link:hover {
+            background: rgba(240, 192, 64, 0.2);
+            border-color: #ffd770;
+            color: #ffd770;
+        }
+
+        .vt-brand-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .vt-logo-emblem {
-            width: 40px; height: 40px;
+            width: 40px;
+            height: 40px;
             background: linear-gradient(135deg, #f0c040, #c89a20);
             border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.2rem;
-            box-shadow: 0 4px 16px rgba(240,192,64,0.4);
+            box-shadow: 0 4px 16px rgba(240, 192, 64, 0.4);
         }
+
         .vt-logo-text {
             font-size: 1.5rem;
             font-weight: 900;
             letter-spacing: 1px;
             text-transform: uppercase;
         }
-        .vt-logo-d { color: #e50914; }
-        .vt-logo-rest { color: var(--tp-text); }
+
+        .vt-logo-d {
+            color: #e50914;
+        }
+
+        .vt-logo-rest {
+            color: var(--tp-text);
+        }
+
         .vt-logo-tag {
             font-size: 0.6rem;
             font-weight: 700;
@@ -112,6 +169,7 @@
             padding: 80px 20px;
             width: 100%;
         }
+
         .vt-loading-text {
             font-size: 0.9rem;
             color: var(--tp-text3);
@@ -122,17 +180,21 @@
         /* ── Main ticket card ── */
         .vt-ticket-card {
             width: 100%;
-            background: linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-            backdrop-filter: blur(30px);
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
             -webkit-backdrop-filter: blur(30px);
+            backdrop-filter: blur(30px);
             border: 1px solid var(--tp-border2);
             border-radius: 24px;
             overflow: hidden;
             box-shadow:
-                0 0 0 1px rgba(240,192,64,0.08),
-                0 20px 80px rgba(0,0,0,0.7),
-                0 4px 20px rgba(0,0,0,0.3);
+                0 0 0 1px rgba(240, 192, 64, 0.08),
+                0 20px 80px rgba(0, 0, 0, 0.7),
+                0 4px 20px rgba(0, 0, 0, 0.3);
             animation: tp-scale-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .vt-ticket-card[hidden] {
+            display: none;
         }
 
         /* Gold stripe at very top */
@@ -148,24 +210,26 @@
             height: 200px;
             overflow: hidden;
         }
+
         .vt-poster-bg {
             position: absolute;
             inset: 0;
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
             filter: blur(3px) brightness(0.4) saturate(1.2);
             transform: scale(1.05);
         }
+
         .vt-poster-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(
-                to bottom,
-                rgba(8,8,16,0.2) 0%,
-                rgba(8,8,16,0.6) 60%,
-                rgba(8,8,16,0.95) 100%
-            );
+            background: linear-gradient(to bottom,
+                    rgba(8, 8, 16, 0.2) 0%,
+                    rgba(8, 8, 16, 0.6) 60%,
+                    rgba(8, 8, 16, 0.95) 100%);
         }
+
         .vt-poster-content {
             position: relative;
             z-index: 2;
@@ -175,19 +239,22 @@
             gap: 16px;
             padding: 16px 20px;
         }
+
         .vt-poster-thumb {
             width: 80px;
             height: 116px;
             border-radius: 10px;
             object-fit: cover;
             object-position: top;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.8), 0 0 0 2px rgba(240,192,64,0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(240, 192, 64, 0.3);
             flex-shrink: 0;
         }
+
         .vt-poster-meta {
             flex: 1;
             padding-bottom: 4px;
         }
+
         .vt-cinema-label {
             font-size: 0.62rem;
             font-weight: 800;
@@ -196,6 +263,7 @@
             text-transform: uppercase;
             margin-bottom: 6px;
         }
+
         .vt-movie-title {
             font-size: 1.25rem;
             font-weight: 900;
@@ -203,6 +271,7 @@
             color: var(--tp-text);
             margin-bottom: 6px;
         }
+
         .vt-movie-meta {
             font-size: 0.72rem;
             color: var(--tp-text2);
@@ -211,8 +280,9 @@
             gap: 8px;
             flex-wrap: wrap;
         }
+
         .vt-meta-chip {
-            background: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.08);
             border: 1px solid var(--tp-border);
             border-radius: 4px;
             padding: 2px 7px;
@@ -230,37 +300,51 @@
         }
 
         .vt-status-icon {
-            width: 72px; height: 72px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 2rem;
             position: relative;
         }
+
         .vt-status-icon.valid {
-            background: radial-gradient(circle, rgba(34,197,94,0.15), transparent 70%);
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.15), transparent 70%);
             border: 2.5px solid var(--tp-green);
             color: var(--tp-green);
             animation: tp-pulse-valid 2.5s ease-in-out infinite;
         }
+
         .vt-status-icon.used {
-            background: rgba(150,150,170,0.08);
+            background: rgba(150, 150, 170, 0.08);
             border: 2.5px solid #6070a0;
             color: #9090b0;
         }
+
         .vt-status-icon.expired {
-            background: radial-gradient(circle, rgba(249,115,22,0.12), transparent 70%);
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.12), transparent 70%);
             border: 2.5px solid var(--tp-orange);
             color: var(--tp-orange);
         }
+
         .vt-status-icon.cancelled {
-            background: radial-gradient(circle, rgba(239,68,68,0.12), transparent 70%);
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.12), transparent 70%);
             border: 2.5px solid var(--tp-red);
             color: var(--tp-red);
         }
 
         @keyframes tp-pulse-valid {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
-            50%       { box-shadow: 0 0 0 18px rgba(34,197,94,0); }
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 18px rgba(34, 197, 94, 0);
+            }
         }
 
         .vt-status-title {
@@ -268,10 +352,22 @@
             font-weight: 900;
             letter-spacing: 0.5px;
         }
-        .vt-status-title.valid    { color: var(--tp-green); }
-        .vt-status-title.used     { color: #9090b0; }
-        .vt-status-title.expired  { color: var(--tp-orange); }
-        .vt-status-title.cancelled { color: var(--tp-red); }
+
+        .vt-status-title.valid {
+            color: var(--tp-green);
+        }
+
+        .vt-status-title.used {
+            color: #9090b0;
+        }
+
+        .vt-status-title.expired {
+            color: var(--tp-orange);
+        }
+
+        .vt-status-title.cancelled {
+            color: var(--tp-red);
+        }
 
         .vt-status-sub {
             font-size: 0.82rem;
@@ -286,12 +382,16 @@
             align-items: center;
             gap: 10px;
             padding: 10px 22px;
-            background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.06));
-            border: 1.5px solid rgba(34,197,94,0.35);
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.06));
+            border: 1.5px solid rgba(34, 197, 94, 0.35);
             border-radius: 50px;
             margin-top: 4px;
         }
-        .vt-seat-emoji { font-size: 1.4rem; }
+
+        .vt-seat-emoji {
+            font-size: 1.4rem;
+        }
+
         .vt-seat-number {
             font-size: 1.5rem;
             font-weight: 900;
@@ -308,15 +408,16 @@
         }
 
         .vt-panel {
-            background: rgba(255,255,255,0.025);
+            background: rgba(255, 255, 255, 0.025);
             border: 1px solid var(--tp-border);
             border-radius: var(--tp-r-md);
             padding: 16px;
             position: relative;
         }
+
         .vt-panel-gold {
-            border-color: rgba(240,192,64,0.25);
-            background: linear-gradient(135deg, rgba(240,192,64,0.05), rgba(240,192,64,0.02));
+            border-color: rgba(240, 192, 64, 0.25);
+            background: linear-gradient(135deg, rgba(240, 192, 64, 0.05), rgba(240, 192, 64, 0.02));
         }
 
         /* ── Info grid ── */
@@ -347,6 +448,19 @@
             margin-top: 4px;
         }
 
+        .vt-stack-gap-sm {
+            margin-top: 8px;
+        }
+
+        .vt-action-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .vt-action-fill {
+            flex: 1;
+        }
+
         /* ── Action button ── */
         .vt-btn {
             width: 100%;
@@ -365,19 +479,28 @@
             gap: 8px;
             text-decoration: none;
         }
+
         .vt-btn-primary {
             background: linear-gradient(135deg, #e50914, #c00812);
             color: #fff;
-            box-shadow: 0 4px 20px rgba(229,9,20,0.3);
+            box-shadow: 0 4px 20px rgba(229, 9, 20, 0.3);
         }
-        .vt-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(229,9,20,0.45); }
+
+        .vt-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(229, 9, 20, 0.45);
+        }
 
         .vt-btn-ghost {
             background: transparent;
             color: var(--tp-text2);
             border: 1px solid var(--tp-border2);
         }
-        .vt-btn-ghost:hover { background: var(--tp-border); color: var(--tp-text); }
+
+        .vt-btn-ghost:hover {
+            background: var(--tp-border);
+            color: var(--tp-text);
+        }
 
         /* ── Security footer ── */
         .vt-security-footer {
@@ -393,7 +516,11 @@
             gap: 4px;
             animation: tp-fade-up 0.6s ease 0.5s both;
         }
-        .vt-security-icon { font-size: 0.9rem; color: var(--tp-gold); }
+
+        .vt-security-icon {
+            font-size: 0.9rem;
+            color: var(--tp-gold);
+        }
 
         /* ── D-CINEMA watermark ── */
         .vt-watermark {
@@ -404,10 +531,11 @@
             font-size: 4rem;
             font-weight: 900;
             letter-spacing: 6px;
-            color: rgba(240,192,64,0.03);
+            color: rgba(240, 192, 64, 0.03);
             text-transform: uppercase;
             pointer-events: none;
             white-space: nowrap;
+            -webkit-user-select: none;
             user-select: none;
         }
 
@@ -418,10 +546,11 @@
             justify-content: space-between;
             gap: 10px;
             padding: 12px 16px;
-            background: rgba(240,192,64,0.06);
-            border: 1px dashed rgba(240,192,64,0.25);
+            background: rgba(240, 192, 64, 0.06);
+            border: 1px dashed rgba(240, 192, 64, 0.25);
             border-radius: 10px;
         }
+
         .vt-booking-id-label {
             font-size: 0.65rem;
             font-weight: 700;
@@ -429,6 +558,7 @@
             text-transform: uppercase;
             color: var(--tp-text3);
         }
+
         .vt-booking-id-value {
             font-family: var(--tp-font-mono);
             font-size: 0.95rem;
@@ -448,15 +578,17 @@
             font-weight: 700;
             letter-spacing: 0.5px;
         }
+
         .vt-pay-pill.paid {
-            background: rgba(34,197,94,0.12);
+            background: rgba(34, 197, 94, 0.12);
             color: var(--tp-green);
-            border: 1px solid rgba(34,197,94,0.3);
+            border: 1px solid rgba(34, 197, 94, 0.3);
         }
+
         .vt-pay-pill.pending {
-            background: rgba(240,192,64,0.10);
+            background: rgba(240, 192, 64, 0.10);
             color: var(--tp-gold);
-            border: 1px solid rgba(240,192,64,0.3);
+            border: 1px solid rgba(240, 192, 64, 0.3);
         }
 
         /* Error state */
@@ -468,20 +600,26 @@
             gap: 16px;
             text-align: center;
         }
+
         .vt-error-icon {
-            width: 80px; height: 80px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(239,68,68,0.12), transparent 70%);
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.12), transparent 70%);
             border: 2.5px solid var(--tp-red);
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 2.2rem;
             color: var(--tp-red);
         }
+
         .vt-error-title {
             font-size: 1.3rem;
             font-weight: 900;
             color: var(--tp-red);
         }
+
         .vt-error-msg {
             font-size: 0.85rem;
             color: var(--tp-text2);
@@ -491,13 +629,26 @@
 
         /* Mobile safe area */
         @media (max-width: 480px) {
-            .vt-wrap { padding: 16px 12px 48px; }
-            .vt-poster-hero { height: 180px; }
-            .vt-movie-title { font-size: 1.1rem; }
-            .vt-poster-thumb { width: 68px; height: 98px; }
+            .vt-wrap {
+                padding: 16px 12px 48px;
+            }
+
+            .vt-poster-hero {
+                height: 180px;
+            }
+
+            .vt-movie-title {
+                font-size: 1.1rem;
+            }
+
+            .vt-poster-thumb {
+                width: 68px;
+                height: 98px;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- ── Cinematic background ── -->
@@ -509,11 +660,12 @@
     <main class="vt-wrap">
 
         <!-- Top Header with Back Button -->
-        <header class="vt-header no-print" style="display:flex; justify-content:space-between; align-items:center; width:100%; max-width:480px; margin:0 auto 16px;">
-            <button onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.replace('payment-success.html' + (id ? '?id=' + id : ''));" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:30px; color:#fff; font-size:0.82rem; font-weight:700; cursor:pointer; backdrop-filter:blur(8px); transition:all 0.2s;" onmouseover="this.style.background='rgba(240,192,64,0.2)';this.style.borderColor='#ffd770';this.style.color='#ffd770';" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#fff';">
+        <header class="vt-header no-print">
+            <button class="vt-back-link"
+                onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.replace('payment-success.html' + (id ? '?id=' + id : ''));">
                 ← Quay lại trang vé
             </button>
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div class="vt-brand-inline">
                 <div class="vt-logo-emblem">🎬</div>
                 <div class="vt-logo-text">
                     <span class="vt-logo-d">D</span><span class="vt-logo-rest">-CINEMA</span>
@@ -523,7 +675,7 @@
         </header>
 
         <!-- Main card (populated by JS) -->
-        <div id="vt-card" class="vt-ticket-card" style="display:none;"></div>
+        <div id="vt-card" class="vt-ticket-card" hidden></div>
 
         <!-- Loading state -->
         <div class="vt-loading" id="vt-loading">
@@ -541,100 +693,100 @@
     </main>
 
     <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        const params    = new URLSearchParams(window.location.search);
-        const ticketIds = params.get('id');
-        const card      = document.getElementById('vt-card');
-        const loading   = document.getElementById('vt-loading');
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const ticketIds = params.get('id');
+            const card = document.getElementById('vt-card');
+            const loading = document.getElementById('vt-loading');
 
-        if (!ticketIds) {
-            loading.style.display = 'none';
-            showError('Thiếu thông tin vé', 'Mã QR không hợp lệ hoặc đã hết hạn. Vui lòng quét lại hoặc liên hệ quầy vé.');
-            return;
-        }
-
-        try {
-            const res  = await fetch(`/api/bookings/public/${ticketIds}`);
-            const json = await res.json();
-
-            loading.style.display = 'none';
-
-            if (!res.ok || !json.success) {
-                showError('Không tìm thấy vé', json.message || 'Mã vé này không tồn tại hoặc đã bị huỷ trên hệ thống D-CINEMA.');
+            if (!ticketIds) {
+                loading.style.display = 'none';
+                showError('Thiếu thông tin vé', 'Mã QR không hợp lệ hoặc đã hết hạn. Vui lòng quét lại hoặc liên hệ quầy vé.');
                 return;
             }
 
-            renderTicket(json.data);
+            try {
+                const res = await fetch(`/api/bookings/public/${ticketIds}`);
+                const json = await res.json();
 
-        } catch (err) {
-            console.error('[VerifyTicket] Error:', err);
-            loading.style.display = 'none';
-            showError('Lỗi kết nối', 'Không thể kết nối với máy chủ D-CINEMA. Vui lòng kiểm tra mạng và thử lại.');
+                loading.style.display = 'none';
+
+                if (!res.ok || !json.success) {
+                    showError('Không tìm thấy vé', json.message || 'Mã vé này không tồn tại hoặc đã bị huỷ trên hệ thống D-CINEMA.');
+                    return;
+                }
+
+                renderTicket(json.data);
+
+            } catch (err) {
+                console.error('[VerifyTicket] Error:', err);
+                loading.style.display = 'none';
+                showError('Lỗi kết nối', 'Không thể kết nối với máy chủ D-CINEMA. Vui lòng kiểm tra mạng và thử lại.');
+            }
+        });
+
+        /* ────────────────────────────────────────── */
+        function getStatusConfig(rawStatus) {
+            const s = (rawStatus || 'pending').toLowerCase();
+            if (s === 'confirmed') return { cls: 'valid', icon: '✓', title: 'VÉ HỢP LỆ', sub: 'Vui lòng vào rạp, chúc bạn xem phim vui vẻ! 🎬', badgeCls: 'tp-status-valid', badgeText: '● VÉ HỢP LỆ' };
+            if (s === 'used') return { cls: 'used', icon: '✓', title: 'ĐÃ SỬ DỤNG', sub: 'Vé này đã được quét vào rạp.', badgeCls: 'tp-status-used', badgeText: '● ĐÃ SỬ DỤNG' };
+            if (s === 'expired') return { cls: 'expired', icon: '⏰', title: 'ĐÃ HẾT HẠN', sub: 'Suất chiếu đã kết thúc. Vé không còn hiệu lực.', badgeCls: 'tp-status-expired', badgeText: '● HẾT HẠN' };
+            if (s === 'cancelled') return { cls: 'cancelled', icon: '✗', title: 'ĐÃ HUỶ', sub: 'Vé đã bị huỷ. Vui lòng liên hệ quầy vé để được hỗ trợ.', badgeCls: 'tp-status-cancelled', badgeText: '● ĐÃ HUỶ' };
+        /* pending */           return { cls: 'expired', icon: '⏳', title: 'CHỜ THANH TOÁN', sub: 'Giao dịch chưa được xác nhận. Vui lòng hoàn tất thanh toán.', badgeCls: 'tp-status-expired', badgeText: '● CHỜ THANH TOÁN' };
         }
-    });
 
-    /* ────────────────────────────────────────── */
-    function getStatusConfig(rawStatus) {
-        const s = (rawStatus || 'pending').toLowerCase();
-        if (s === 'confirmed')  return { cls: 'valid',     icon: '✓',  title: 'VÉ HỢP LỆ',        sub: 'Vui lòng vào rạp, chúc bạn xem phim vui vẻ! 🎬', badgeCls: 'tp-status-valid',     badgeText: '● VÉ HỢP LỆ' };
-        if (s === 'used')       return { cls: 'used',      icon: '✓',  title: 'ĐÃ SỬ DỤNG',       sub: 'Vé này đã được quét vào rạp.', badgeCls: 'tp-status-used',      badgeText: '● ĐÃ SỬ DỤNG' };
-        if (s === 'expired')    return { cls: 'expired',   icon: '⏰', title: 'ĐÃ HẾT HẠN',       sub: 'Suất chiếu đã kết thúc. Vé không còn hiệu lực.', badgeCls: 'tp-status-expired',   badgeText: '● HẾT HẠN' };
-        if (s === 'cancelled')  return { cls: 'cancelled', icon: '✗',  title: 'ĐÃ HUỶ',           sub: 'Vé đã bị huỷ. Vui lòng liên hệ quầy vé để được hỗ trợ.', badgeCls: 'tp-status-cancelled', badgeText: '● ĐÃ HUỶ' };
-        /* pending */           return { cls: 'expired',   icon: '⏳', title: 'CHỜ THANH TOÁN',   sub: 'Giao dịch chưa được xác nhận. Vui lòng hoàn tất thanh toán.', badgeCls: 'tp-status-expired', badgeText: '● CHỜ THANH TOÁN' };
-    }
+        function getPaymentMethodLabel(m) {
+            const map = {
+                qrpay: 'QR Pay (VietQR / MB Bank)',
+                momo: 'Ví MoMo',
+                zalopay: 'ZaloPay',
+                vnpay: 'VNPAY-QR',
+                shopeepay: 'ShopeePay',
+                atm: 'Thẻ ATM nội địa',
+                intl: 'Thẻ quốc tế',
+            };
+            return map[(m || '').toLowerCase()] || (m || '—');
+        }
 
-    function getPaymentMethodLabel(m) {
-        const map = {
-            qrpay: 'QR Pay (VietQR / MB Bank)',
-            momo: 'Ví MoMo',
-            zalopay: 'ZaloPay',
-            vnpay: 'VNPAY-QR',
-            shopeepay: 'ShopeePay',
-            atm: 'Thẻ ATM nội địa',
-            intl: 'Thẻ quốc tế',
-        };
-        return map[(m || '').toLowerCase()] || (m || '—');
-    }
+        function formatDate(isoStr) {
+            if (!isoStr) return '—';
+            const d = new Date(isoStr);
+            const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+            const day = days[d.getDay()];
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            return `${day}, ${dd}/${mm}/${yyyy}`;
+        }
+        function formatTime(isoStr) {
+            if (!isoStr) return '—';
+            const d = new Date(isoStr);
+            return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        }
 
-    function formatDate(isoStr) {
-        if (!isoStr) return '—';
-        const d = new Date(isoStr);
-        const days = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
-        const day  = days[d.getDay()];
-        const dd   = String(d.getDate()).padStart(2,'0');
-        const mm   = String(d.getMonth()+1).padStart(2,'0');
-        const yyyy = d.getFullYear();
-        return `${day}, ${dd}/${mm}/${yyyy}`;
-    }
-    function formatTime(isoStr) {
-        if (!isoStr) return '—';
-        const d = new Date(isoStr);
-        return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    }
+        /* ────────────────────────────────────────── */
+        function renderTicket(data) {
+            const card = document.getElementById('vt-card');
+            const status = getStatusConfig(data.status);
+            const isValid = data.status === 'confirmed';
+            const isPaid = data.status === 'confirmed' || data.status === 'used';
 
-    /* ────────────────────────────────────────── */
-    function renderTicket(data) {
-        const card   = document.getElementById('vt-card');
-        const status = getStatusConfig(data.status);
-        const isValid = data.status === 'confirmed';
-        const isPaid  = data.status === 'confirmed' || data.status === 'used';
+            const posterSrc = data.poster || 'images/default_poster.svg';
+            const seatLabel = data.seats || '—';
+            const dateStr = formatDate(data.startTime);
+            const startStr = formatTime(data.startTime);
+            const endStr = formatTime(data.endTime);
+            const timeRange = (data.startTime && data.endTime) ? `${startStr} → ${endStr}` : startStr;
+            const totalFmt = data.totalAmount ? parseFloat(data.totalAmount).toLocaleString('vi-VN') + ' ₫' : '—';
+            const ticketType = data.ticketType || data.seatType || 'Standard';
+            const branch = data.cinemaAddress || data.cinemaName || '—';
+            const scanNow = new Date().toLocaleString('vi-VN');
+            const payLabel = getPaymentMethodLabel(data.paymentMethod);
+            const roomDisplay = data.roomType && data.roomType !== 'Standard'
+                ? `[${data.roomType}] ${data.roomName || '—'}`
+                : (data.roomName || '—');
 
-        const posterSrc  = data.poster || 'images/default_poster.svg';
-        const seatLabel  = data.seats  || '—';
-        const dateStr    = formatDate(data.startTime);
-        const startStr   = formatTime(data.startTime);
-        const endStr     = formatTime(data.endTime);
-        const timeRange  = (data.startTime && data.endTime) ? `${startStr} → ${endStr}` : startStr;
-        const totalFmt   = data.totalAmount ? parseFloat(data.totalAmount).toLocaleString('vi-VN') + ' ₫' : '—';
-        const ticketType = data.ticketType || data.seatType || 'Standard';
-        const branch     = data.cinemaAddress || data.cinemaName || '—';
-        const scanNow    = new Date().toLocaleString('vi-VN');
-        const payLabel   = getPaymentMethodLabel(data.paymentMethod);
-        const roomDisplay = data.roomType && data.roomType !== 'Standard'
-            ? `[${data.roomType}] ${data.roomName || '—'}`
-            : (data.roomName || '—');
-
-        card.innerHTML = `
+            card.innerHTML = `
             <!-- Gold top stripe -->
             <div class="vt-gold-stripe"></div>
 
@@ -779,11 +931,11 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="tp-anim-fade-up tp-delay-5" style="display:flex; gap:10px;">
-                    <button class="vt-btn vt-btn-ghost" onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.replace('payment-success.html' + (id ? '?id=' + id : ''));" style="flex:1;">
+                <div class="vt-action-row tp-anim-fade-up tp-delay-5">
+                    <button class="vt-btn vt-btn-ghost vt-action-fill" onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.replace('payment-success.html' + (id ? '?id=' + id : ''));">
                         ← Quay lại trang vé
                     </button>
-                    <button class="vt-btn vt-btn-ghost" onclick="window.location.replace('index.html')" style="flex:1;">
+                    <button class="vt-btn vt-btn-ghost vt-action-fill" onclick="window.location.replace('index.html')">
                         🏠 Trang chủ
                     </button>
                 </div>
@@ -791,32 +943,32 @@
             </div>
         `;
 
-        card.style.display = 'block';
-    }
+            card.hidden = false;
+        }
 
-    /* ────────────────────────────────────────── */
-    function showError(title, message) {
-        const card = document.getElementById('vt-card');
-        card.innerHTML = `
+        /* ────────────────────────────────────────── */
+        function showError(title, message) {
+            const card = document.getElementById('vt-card');
+            card.innerHTML = `
             <div class="vt-gold-stripe"></div>
             <div class="vt-error-section tp-anim-scale-in">
                 <div class="vt-error-icon">✗</div>
                 <div class="vt-error-title">${title}</div>
                 <div class="vt-error-msg">${message}</div>
-                <div class="vt-scan-time" style="margin-top:8px;">
+                <div class="vt-scan-time vt-stack-gap-sm">
                     🕐 ${new Date().toLocaleString('vi-VN')}
                 </div>
             </div>
             <div class="vt-details-wrap">
                 <button class="vt-btn vt-btn-ghost" onclick="window.close()">Đóng cửa sổ</button>
-                <button class="vt-btn vt-btn-ghost" style="margin-top:8px;" onclick="window.location.replace('index.html')">
+                <button class="vt-btn vt-btn-ghost vt-stack-gap-sm" onclick="window.location.replace('index.html')">
                     🏠 Về trang chủ
                 </button>
             </div>
         `;
-        card.style.display = 'block';
-    }
+            card.hidden = false;
+        }
     </script>
 </body>
-</html>
 
+</html>
