@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi tiết khuyến mãi | D-CINEMA</title>
+    <title data-i18n="pd_title_tag">Chi tiết khuyến mãi | D-CINEMA</title>
     <meta name="description" content="Chi tiết chương trình khuyến mãi và ưu đãi từ D-CINEMA.">
     <link rel="stylesheet" href="css/shared-layout.css">
     <style>
@@ -166,14 +166,14 @@
                 <div class="dropdown">
                     <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav_now_showing">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav_coming_soon">Sắp chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap">Rạp</a>
-                <a href="promotions.html" id="nav-promo" class="active">Promotions</a>
-                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" data-i18n="nav_cinemas">Rạp</a>
+                <a href="promotions.html" id="nav-promo" class="active" data-i18n="nav_promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" data-i18n="nav_news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" data-i18n="nav_prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -181,15 +181,19 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput" data-i18n="search_placeholder">
                 </div>
+                <select id="langSwitcher" class="lang-switcher" style="margin-right: 15px; margin-left: 15px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); outline: none; cursor: pointer; font-weight: 500; font-size: 14px; backdrop-filter: blur(5px);">
+                    <option value="vi" style="color: black;">VI</option>
+                    <option value="en" style="color: black;">EN</option>
+                </select>
                 <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                     </svg>
                 </a>
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav_login">Đăng Nhập</a>
             </div>
         </div>
     </header>
@@ -199,8 +203,8 @@
         <img src="images/promo_voucher.png" alt="Promo Background" onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'">
         <div class="hero-overlay"></div>
         <div class="promo-detail-container">
-            <span class="pd-badge">HOT DEAL</span>
-            <h1 class="pd-title">Tặng ngay Voucher 50K khi mua Combo Bắp Nước</h1>
+            <span class="pd-badge" data-i18n="promo_badge_hot">HOT DEAL</span>
+            <h1 class="pd-title" data-i18n="pd_hero_title">Tặng ngay Voucher 50K khi mua Combo Bắp Nước</h1>
             <div class="pd-meta">
                 <div class="pd-meta-item">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -209,14 +213,14 @@
                         <line x1="8" y1="2" x2="8" y2="6"/>
                         <line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
-                    Hạn sử dụng: 31/12/2024
+                    <span data-i18n="pd_valid_until">Hạn sử dụng: 31/12/2024</span>
                 </div>
                 <div class="pd-meta-item">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
                         <path d="M12 9v6"/>
                     </svg>
-                    Áp dụng: Mua vé Online
+                    <span data-i18n="pd_apply">Áp dụng: Mua vé Online</span>
                 </div>
             </div>
         </div>
@@ -224,25 +228,25 @@
 
     <!-- Content -->
     <div class="pd-content-section">
-        <p>Tháng này, D-CINEMA mang đến chương trình ưu đãi cực kỳ hấp dẫn dành riêng cho các tín đồ điện ảnh. Khi bạn đặt vé online và mua kèm bất kỳ Combo Bắp Nước nào (Combo 1, Combo 2, Mega Combo), bạn sẽ được giảm ngay 50.000 VNĐ vào tổng hóa đơn thanh toán.</p>
+        <p data-i18n="pd_desc_1">Tháng này, D-CINEMA mang đến chương trình ưu đãi cực kỳ hấp dẫn dành riêng cho các tín đồ điện ảnh. Khi bạn đặt vé online và mua kèm bất kỳ Combo Bắp Nước nào (Combo 1, Combo 2, Mega Combo), bạn sẽ được giảm ngay 50.000 VNĐ vào tổng hóa đơn thanh toán.</p>
         
-        <h2>Điều kiện áp dụng:</h2>
+        <h2 data-i18n="pd_cond_title">Điều kiện áp dụng:</h2>
         <ul>
-            <li>Khách hàng phải có tài khoản thành viên tại hệ thống D-CINEMA.</li>
-            <li>Giao dịch phải bao gồm ít nhất 01 vé xem phim và 01 Combo F&B.</li>
-            <li>Mã giảm giá chỉ áp dụng cho hình thức đặt vé và thanh toán Online.</li>
-            <li>Mỗi tài khoản được sử dụng mã tối đa 01 lần trong suốt thời gian diễn ra chương trình.</li>
-            <li>Không áp dụng đồng thời với các chương trình khuyến mãi khác.</li>
+            <li data-i18n="pd_cond_1">Khách hàng phải có tài khoản thành viên tại hệ thống D-CINEMA.</li>
+            <li data-i18n="pd_cond_2">Giao dịch phải bao gồm ít nhất 01 vé xem phim và 01 Combo F&B.</li>
+            <li data-i18n="pd_cond_3">Mã giảm giá chỉ áp dụng cho hình thức đặt vé và thanh toán Online.</li>
+            <li data-i18n="pd_cond_4">Mỗi tài khoản được sử dụng mã tối đa 01 lần trong suốt thời gian diễn ra chương trình.</li>
+            <li data-i18n="pd_cond_5">Không áp dụng đồng thời với các chương trình khuyến mãi khác.</li>
         </ul>
 
-        <h2>Hướng dẫn sử dụng:</h2>
-        <p>Sau khi chọn xong suất chiếu, ghế ngồi và bắp nước, tại màn hình Thanh toán (Checkout), bạn chỉ cần nhập mã Voucher dưới đây vào ô "Mã giảm giá" và nhấn Áp dụng. Tổng tiền sẽ tự động được trừ 50K nếu thỏa mãn đủ điều kiện.</p>
+        <h2 data-i18n="pd_guide_title">Hướng dẫn sử dụng:</h2>
+        <p data-i18n="pd_guide_desc">Sau khi chọn xong suất chiếu, ghế ngồi và bắp nước, tại màn hình Thanh toán (Checkout), bạn chỉ cần nhập mã Voucher dưới đây vào ô "Mã giảm giá" và nhấn Áp dụng. Tổng tiền sẽ tự động được trừ 50K nếu thỏa mãn đủ điều kiện.</p>
 
         <div class="voucher-box">
-            <p style="margin:0; color: var(--text2); font-weight: 500;">Sử dụng mã này khi thanh toán:</p>
+            <p style="margin:0; color: var(--text2); font-weight: 500;" data-i18n="pd_use_code">Sử dụng mã này khi thanh toán:</p>
             <div class="voucher-code" id="vcode">DCINEMA50K</div>
             <br>
-            <button class="btn-copy" onclick="copyVoucher()">Sao chép mã</button>
+            <button class="btn-copy" onclick="copyVoucher()" data-i18n="copy_code">Sao chép mã</button>
         </div>
     </div>
 
@@ -257,13 +261,14 @@
                 <p style="color: var(--text2); font-size: 0.9rem;">&copy; 2024 D-CINEMA. All rights reserved.</p>
             </div>
             <div style="display: flex; gap: 20px;">
-                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Về chúng tôi</a>
-                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Điều khoản</a>
-                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Bảo mật</a>
+                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;" data-i18n="footer_about">Về chúng tôi</a>
+                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;" data-i18n="footer_terms">Điều khoản</a>
+                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;" data-i18n="footer_privacy">Bảo mật</a>
             </div>
         </div>
     </footer>
 
+    <script src="js/i18n.js"></script>
     <script src="app.js?v=7"></script>
     <script>
         function copyVoucher() {
@@ -271,7 +276,8 @@
             navigator.clipboard.writeText(code).then(() => {
                 const btn = document.querySelector('.btn-copy');
                 const origText = btn.innerText;
-                btn.innerText = "Đã chép!";
+                const lang = localStorage.getItem('dcinema_lang') || 'vi';
+                btn.innerText = (lang === 'en') ? "Copied!" : "Đã chép!";
                 btn.style.backgroundColor = "var(--accent)";
                 btn.style.color = "#fff";
                 setTimeout(() => {

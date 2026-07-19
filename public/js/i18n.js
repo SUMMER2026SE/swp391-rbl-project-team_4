@@ -205,7 +205,58 @@ const translations = {
         "footer_refund": "Chính sách hoàn tiền",
         "footer_newsletter": "Đăng ký nhận tin",
         "footer_newsletter_desc": "Nhận thông tin phim mới và ưu đãi hot nhất.",
-        "footer_email_ph": "Email của bạn"
+        "footer_email_ph": "Email của bạn",
+        "title_promotions": "Promotions | D-CINEMA+ – Ưu Đãi & Khuyến Mãi Điện Ảnh",
+        "promo_hero_title": "Tin Tức & Ưu Đãi",
+        "promo_hero_desc": "Những ưu đãi độc quyền, suất chiếu đặc biệt và phần thưởng chỉ dành cho thành viên. Cập nhật những sự kiện mới nhất tại CINEMA+ Premium Entertainment.",
+        "promo_trending_title": "Khuyến Mãi Thịnh Hành",
+        "promo_badge_featured": "NỔI BẬT",
+        "promo_imax_title": "Cuối Tuần Bùng Nổ Cùng IMAX",
+        "promo_imax_desc": "Nâng cấp trải nghiệm miễn phí vào cuối tuần này. Mua vé thường và nhận ngay nâng cấp tự động lên IMAX cho tất cả các phim bom tấn.",
+        "promo_validity_oct24": "Áp dụng đến 24 Tháng 10",
+        "promo_btn_detail": "Xem Chi Tiết",
+        "promo_badge_hot": "ƯU ĐÃI HOT",
+        "promo_voucher_title": "Voucher 50k",
+        "promo_voucher_desc": "Giảm 50.000 VNĐ cho đồ ăn và thức uống khi đặt từ 2 vé trực tuyến.",
+        "promo_student_title": "Thứ 2 Sinh Viên",
+        "promo_student_desc": "Xuất trình thẻ học sinh/sinh viên để được giảm giá 30% vé vào mỗi Thứ Hai cho các suất chiếu trước 5h chiều.",
+        "promo_combo_title": "Combo Ngọt & Mặn",
+        "promo_combo_desc": "Hương vị bắp rang mới theo mùa đã ra mắt. Thử nghiệm Vị Muối Truffle hoặc Caramel Bliss cùng combo giới hạn.",
+        "promo_points_title": "Tuần Lễ Nhân Đôi Điểm",
+        "promo_points_desc": "Nhân đôi điểm thưởng cho tất cả các giao dịch trong tuần. Đổi điểm lấy vé, đồ ăn vặt và hơn thế nữa.",
+        "promo_group_title": "Giảm Giá Đặt Vé Nhóm",
+        "promo_group_desc": "Đặt từ 10 vé trở lên trong một lần giao dịch để nhận chiết khấu 20% cho toàn bộ hóa đơn.",
+        "promo_btn_load_more": "Tải Thêm Khuyến Mãi",
+        "promo_newsletter_title": "Đừng Bỏ Lỡ",
+        "promo_newsletter_desc": "Đăng ký nhận bản tin của chúng tôi để nhận các ưu đãi cá nhân hóa và trở thành người đầu tiên biết về các sự kiện điện ảnh sắp tới.",
+        "promo_email_placeholder": "Nhập email của bạn",
+        "promo_btn_subscribe": "Đăng Ký Ngay",
+        "voucher_code": "Mã:",
+        "min_order": "Đơn tối thiểu",
+        "valid_until": "HSD:",
+        "copy_code": "Sao chép mã",
+        "copy_btn": "Sao chép",
+        "discount_percent": "Giảm",
+        "discount_percent": "Giảm",
+        "discount_amount": "Giảm",
+        "promo_badge_voucher": "VOUCHER",
+        "pd_title_tag": "Chi tiết khuyến mãi | D-CINEMA",
+        "pd_hero_title": "Tặng ngay Voucher 50K khi mua Combo Bắp Nước",
+        "pd_valid_until": "Hạn sử dụng: 31/12/2024",
+        "pd_apply": "Áp dụng: Mua vé Online",
+        "pd_desc_1": "Tháng này, D-CINEMA mang đến chương trình ưu đãi cực kỳ hấp dẫn dành riêng cho các tín đồ điện ảnh. Khi bạn đặt vé online và mua kèm bất kỳ Combo Bắp Nước nào (Combo 1, Combo 2, Mega Combo), bạn sẽ được giảm ngay 50.000 VNĐ vào tổng hóa đơn thanh toán.",
+        "pd_cond_title": "Điều kiện áp dụng:",
+        "pd_cond_1": "Khách hàng phải có tài khoản thành viên tại hệ thống D-CINEMA.",
+        "pd_cond_2": "Giao dịch phải bao gồm ít nhất 01 vé xem phim và 01 Combo F&B.",
+        "pd_cond_3": "Mã giảm giá chỉ áp dụng cho hình thức đặt vé và thanh toán Online.",
+        "pd_cond_4": "Mỗi tài khoản được sử dụng mã tối đa 01 lần trong suốt thời gian diễn ra chương trình.",
+        "pd_cond_5": "Không áp dụng đồng thời với các chương trình khuyến mãi khác.",
+        "pd_guide_title": "Hướng dẫn sử dụng:",
+        "pd_guide_desc": "Sau khi chọn xong suất chiếu, ghế ngồi và bắp nước, tại màn hình Thanh toán (Checkout), bạn chỉ cần nhập mã Voucher dưới đây vào ô \"Mã giảm giá\" và nhấn Áp dụng. Tổng tiền sẽ tự động được trừ 50K nếu thỏa mãn đủ điều kiện.",
+        "pd_use_code": "Sử dụng mã này khi thanh toán:",
+        "footer_about": "Về chúng tôi",
+        "footer_terms": "Điều khoản",
+        "footer_privacy": "Bảo mật"
     },
     en: {
         "nav_movies": "Movies",
@@ -413,7 +464,57 @@ const translations = {
         "footer_refund": "Refund Policy",
         "footer_newsletter": "Newsletter",
         "footer_newsletter_desc": "Get the latest movies and hottest offers.",
-        "footer_email_ph": "Your email"
+        "footer_email_ph": "Your email",
+        "title_promotions": "Promotions | D-CINEMA+ – Cinematic Offers & Deals",
+        "promo_hero_title": "News & Offers",
+        "promo_hero_desc": "Exclusive deals, special screenings, and member-only rewards. Stay updated with the latest happenings at CINEMA+ Premium Entertainment.",
+        "promo_trending_title": "Trending Promotions",
+        "promo_badge_featured": "FEATURED",
+        "promo_imax_title": "IMAX Weekend Extravaganza",
+        "promo_imax_desc": "Upgrade your experience for free this weekend. Purchase a standard ticket and get an automatic upgrade to IMAX for all blockbuster releases.",
+        "promo_validity_oct24": "Valid until Oct 24",
+        "promo_btn_detail": "See Detail",
+        "promo_badge_hot": "HOT DEAL",
+        "promo_voucher_title": "Voucher 50k",
+        "promo_voucher_desc": "Get a 50,000 IDR discount on your food and beverage purchase with every two tickets booked online.",
+        "promo_student_title": "Student Monday",
+        "promo_student_desc": "Flash your student ID and get 30% off tickets every Monday for screenings before 5PM.",
+        "promo_combo_title": "Sweet & Salty Combo",
+        "promo_combo_desc": "New seasonal popcorn flavors are here. Try the Truffle Salt or Caramel Bliss with our limited edition combos.",
+        "promo_points_title": "Double Points Week",
+        "promo_points_desc": "Earn double rewards points for all transactions throughout the week. Redeem for tickets, snacks, and more.",
+        "promo_group_title": "Group Booking Discount",
+        "promo_group_desc": "Book 10 or more tickets in a single transaction and receive a 20% discount across the entire order.",
+        "promo_btn_load_more": "Load More Promotions",
+        "promo_newsletter_title": "Don't Miss Out",
+        "promo_newsletter_desc": "Subscribe to our newsletter to receive personalized offers and be the first to know about upcoming cinematic events.",
+        "promo_email_placeholder": "Enter your email",
+        "promo_btn_subscribe": "Subscribe Now",
+        "voucher_code": "Code:",
+        "min_order": "Min order",
+        "valid_until": "Valid until:",
+        "copy_code": "Copy code",
+        "copy_btn": "Copy",
+        "discount_percent": "Discount",
+        "discount_amount": "Discount",
+        "promo_badge_voucher": "VOUCHER",
+        "pd_title_tag": "Promotion Details | D-CINEMA",
+        "pd_hero_title": "Get a 50K Voucher when buying F&B Combo",
+        "pd_valid_until": "Valid until: 31/12/2024",
+        "pd_apply": "Apply: Online Ticket Booking",
+        "pd_desc_1": "This month, D-CINEMA brings an extremely attractive promotion program exclusively for movie enthusiasts. When you book tickets online and purchase any F&B Combo (Combo 1, Combo 2, Mega Combo), you will instantly get a 50,000 VND discount on your total bill.",
+        "pd_cond_title": "Terms and Conditions:",
+        "pd_cond_1": "Customers must have a member account in the D-CINEMA system.",
+        "pd_cond_2": "The transaction must include at least 01 movie ticket and 01 F&B Combo.",
+        "pd_cond_3": "The discount code only applies to online ticket booking and payment.",
+        "pd_cond_4": "Each account can use the code a maximum of 01 time during the promotion period.",
+        "pd_cond_5": "Cannot be used in conjunction with other promotional programs.",
+        "pd_guide_title": "How to use:",
+        "pd_guide_desc": "After selecting your showtime, seats, and F&B, at the Checkout screen, simply enter the Voucher code below into the \"Discount code\" box and click Apply. The total amount will be automatically deducted by 50K if eligible.",
+        "pd_use_code": "Use this code at checkout:",
+        "footer_about": "About Us",
+        "footer_terms": "Terms",
+        "footer_privacy": "Privacy"
     }
 };
 
@@ -431,6 +532,20 @@ function changeLanguage(lang) {
             }
         }
     });
+
+    // Cập nhật lại Auth UI nếu đã đăng nhập (ghi đè i18n)
+    const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (userStr) {
+        try {
+            const user = JSON.parse(userStr);
+            const btnLogin = document.getElementById('btnLogin');
+            if (btnLogin) {
+                btnLogin.textContent = user.fullName || 'Tài khoản';
+                btnLogin.href = 'profile.html';
+                btnLogin.removeAttribute('data-i18n');
+            }
+        } catch(e) {}
+    }
 
     // Cập nhật lại Text cho node text mà có icon kế bên nếu có
     // Dành cho nút có icon con bên trong (như nút 'Phim' có mũi tên)
@@ -461,4 +576,11 @@ function changeLanguage(lang) {
 document.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem('dcinema_lang') || 'vi';
     changeLanguage(savedLang);
+
+    const langSwitcher = document.getElementById('langSwitcher');
+    if (langSwitcher) {
+        langSwitcher.addEventListener('change', (e) => {
+            changeLanguage(e.target.value);
+        });
+    }
 });

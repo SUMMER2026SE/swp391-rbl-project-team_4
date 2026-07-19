@@ -140,6 +140,7 @@ a {
 }
 
 .btn-login {
+    white-space: nowrap;
     background: var(--primary);
     color: var(--text-light);
     padding: 8px 20px;
