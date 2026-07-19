@@ -195,7 +195,7 @@ class BookingModel {
         }
         const fnbReq = transaction.request();
         fnbReq.input('fnbId', sql.Int, item.fnbId);
-        const fnbResult = await fnbReq.query('SELECT Name, Price, Stock FROM FoodBeverages WITH (UPDLOCK) WHERE FnBID = @fnbId AND IsActive = 1');
+        const fnbResult = await fnbReq.query('SELECT Name, Price, Stock FROM FoodBeverages WITH (UPDLOCK) WHERE FnBID = @fnbId AND IsAvailable = 1');
         if (fnbResult.recordset.length === 0) {
           throw new Error(`Sản phẩm đồ ăn ID ${item.fnbId} không tồn tại hoặc đã ngừng bán.`);
         }
@@ -854,7 +854,7 @@ class BookingModel {
       }
       const fnbResult = await pool.request()
         .input('fnbId', sql.Int, item.fnbId)
-        .query('SELECT Name, Price, Stock FROM FoodBeverages WHERE FnBID = @fnbId AND IsActive = 1');
+        .query('SELECT Name, Price, Stock FROM FoodBeverages WHERE FnBID = @fnbId AND IsAvailable = 1');
       if (fnbResult.recordset.length === 0) {
         throw new Error(`Sản phẩm đồ ăn ID ${item.fnbId} không tồn tại hoặc đã ngừng bán.`);
       }

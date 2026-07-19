@@ -47,6 +47,9 @@ exports.createArticle = async (req, res) => {
     res.status(201).json({ success: true, message: 'Đã tạo bài viết.', data });
   } catch (err) {
     console.error('[newsController] createArticle:', err.message);
+    if (err.code === 'DUPLICATE_ARTICLE') {
+      return res.status(409).json({ success: false, message: err.message });
+    }
     res.status(400).json({ success: false, message: 'Lỗi tạo bài: ' + err.message });
   }
 };
@@ -58,6 +61,9 @@ exports.updateArticle = async (req, res) => {
     res.json({ success: true, message: 'Đã cập nhật bài viết.', data });
   } catch (err) {
     console.error('[newsController] updateArticle:', err.message);
+    if (err.code === 'DUPLICATE_ARTICLE') {
+      return res.status(409).json({ success: false, message: err.message });
+    }
     res.status(400).json({ success: false, message: 'Lỗi cập nhật: ' + err.message });
   }
 };

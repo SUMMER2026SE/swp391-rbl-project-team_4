@@ -242,7 +242,8 @@ class AdminModel {
       .input('posterURL', sql.VarChar, data.posterURL || null)
       .input('status', sql.VarChar, data.status || null)
       .input('mainCast', sql.NVarChar, data.mainCast || null)
-      .input('trailerURL', sql.NVarChar, data.trailerURL !== undefined ? data.trailerURL : null)
+      .input('trailerURL', sql.NVarChar, data.trailerURL !== undefined ? data.trailerURL || null : null)
+      .input('keepTrailerURL', sql.Bit, data.trailerURL === undefined ? 1 : 0)
       .query(`
         UPDATE Movies
         SET Title       = COALESCE(@title, Title),
@@ -253,7 +254,7 @@ class AdminModel {
             PosterURL   = COALESCE(@posterURL, PosterURL),
             Status      = COALESCE(@status, Status),
             MainCast    = COALESCE(@mainCast, MainCast),
-            TrailerURL  = @trailerURL
+            TrailerURL  = CASE WHEN @trailerURL IS NULL AND @keepTrailerURL = 1 THEN TrailerURL ELSE @trailerURL END
         OUTPUT INSERTED.*
         WHERE MovieID = @movieId
       `);
@@ -1204,6 +1205,141 @@ class AdminModel {
     `;
     const result = await request.query(query);
     return result.recordset[0];
+  }
+
+  static async getTopCinemaRevenueToday(limit = 5) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('limit', sql.Int, limit)
+      .query(`
+        SELECT TOP (@limit)
+          c.CinemaID,
+          c.CinemaName,
+          c.City,
+          COUNT(t.TicketID) AS TicketsSold,
+          ISNULL(SUM(t.TotalAmount), 0) AS TotalRevenue
+        FROM Tickets t
+        JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+        JOIN Rooms r ON st.RoomID = r.RoomID
+        JOIN Cinemas c ON r.CinemaID = c.CinemaID
+        WHERE t.Status IN ('confirmed', 'used')
+          AND CAST(t.BookedAt AS DATE) = CAST(GETDATE() AS DATE)
+        GROUP BY c.CinemaID, c.CinemaName, c.City
+        ORDER BY TotalRevenue DESC, TicketsSold DESC
+      `);
+    return result.recordset;
+  }
+
+  static async getLeastSoldMoviesThisWeek(limit = 5) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('limit', sql.Int, limit)
+      .query(`
+        SELECT TOP (@limit)
+          m.MovieID,
+          m.Title,
+          m.Status,
+          COUNT(t.TicketID) AS TicketsSold,
+          ISNULL(SUM(t.TotalAmount), 0) AS TotalRevenue
+        FROM Movies m
+        LEFT JOIN Showtimes st ON st.MovieID = m.MovieID
+        LEFT JOIN Tickets t ON t.ShowtimeID = st.ShowtimeID
+          AND t.Status IN ('confirmed', 'used', 'pending')
+          AND CAST(t.BookedAt AS DATE) >= CAST(DATEADD(day, -6, GETDATE()) AS DATE)
+        WHERE m.Status != 'deleted'
+        GROUP BY m.MovieID, m.Title, m.Status
+        ORDER BY TicketsSold ASC, TotalRevenue ASC, m.Title ASC
+      `);
+    return result.recordset;
+  }
+
+  static async getShowtimesWithMostEmptySeats(limit = 8) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('limit', sql.Int, limit)
+      .query(`
+        SELECT TOP (@limit)
+          st.ShowtimeID,
+          m.Title AS MovieTitle,
+          c.CinemaName,
+          c.City,
+          r.RoomName,
+          r.TotalSeats,
+          COUNT(t.TicketID) AS TicketsSold,
+          r.TotalSeats - COUNT(t.TicketID) AS EmptySeats,
+          CAST(COUNT(t.TicketID) * 100.0 / NULLIF(r.TotalSeats, 0) AS DECIMAL(5,1)) AS OccupancyRate,
+          st.StartTime,
+          st.EndTime,
+          COALESCE(st.Price, st.BasePrice, 0) AS Price,
+          st.Status
+        FROM Showtimes st
+        JOIN Movies m ON st.MovieID = m.MovieID
+        JOIN Rooms r ON st.RoomID = r.RoomID
+        JOIN Cinemas c ON r.CinemaID = c.CinemaID
+        LEFT JOIN Tickets t ON t.ShowtimeID = st.ShowtimeID
+          AND t.Status IN ('confirmed', 'used', 'pending')
+        WHERE st.Status = 'active'
+          AND st.StartTime >= DATEADD(hour, -2, GETDATE())
+          AND st.StartTime < DATEADD(day, 7, GETDATE())
+        GROUP BY st.ShowtimeID, m.Title, c.CinemaName, c.City, r.RoomName, r.TotalSeats,
+                 st.StartTime, st.EndTime, COALESCE(st.Price, st.BasePrice, 0), st.Status
+        ORDER BY EmptySeats DESC, st.StartTime ASC
+      `);
+    return result.recordset;
+  }
+
+  static async getTopMoviesToday(limit = 5) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('limit', sql.Int, limit)
+      .query(`
+        SELECT TOP (@limit)
+          m.MovieID,
+          m.Title,
+          COUNT(t.TicketID) AS TicketsSold,
+          ISNULL(SUM(t.TotalAmount), 0) AS TotalRevenue
+        FROM Tickets t
+        JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+        JOIN Movies m ON st.MovieID = m.MovieID
+        WHERE t.Status IN ('confirmed', 'used', 'pending')
+          AND CAST(t.BookedAt AS DATE) = CAST(GETDATE() AS DATE)
+        GROUP BY m.MovieID, m.Title
+        ORDER BY TicketsSold DESC, TotalRevenue DESC
+      `);
+    return result.recordset;
+  }
+
+  static async getLowOccupancyShowtimes(limit = 8) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('limit', sql.Int, limit)
+      .query(`
+        SELECT TOP (@limit)
+          st.ShowtimeID,
+          m.Title AS MovieTitle,
+          c.CinemaName,
+          c.City,
+          r.RoomName,
+          r.TotalSeats,
+          COUNT(t.TicketID) AS TicketsSold,
+          r.TotalSeats - COUNT(t.TicketID) AS EmptySeats,
+          CAST(COUNT(t.TicketID) * 100.0 / NULLIF(r.TotalSeats, 0) AS DECIMAL(5,1)) AS OccupancyRate,
+          st.StartTime,
+          st.EndTime
+        FROM Showtimes st
+        JOIN Movies m ON st.MovieID = m.MovieID
+        JOIN Rooms r ON st.RoomID = r.RoomID
+        JOIN Cinemas c ON r.CinemaID = c.CinemaID
+        LEFT JOIN Tickets t ON t.ShowtimeID = st.ShowtimeID
+          AND t.Status IN ('confirmed', 'used', 'pending')
+        WHERE st.Status = 'active'
+          AND st.StartTime >= DATEADD(hour, -2, GETDATE())
+          AND st.StartTime < DATEADD(day, 7, GETDATE())
+        GROUP BY st.ShowtimeID, m.Title, c.CinemaName, c.City, r.RoomName, r.TotalSeats,
+                 st.StartTime, st.EndTime
+        ORDER BY OccupancyRate ASC, EmptySeats DESC, st.StartTime ASC
+      `);
+    return result.recordset;
   }
 
   static async getRecentTransactions(limit = 10) {

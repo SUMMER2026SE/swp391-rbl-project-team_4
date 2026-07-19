@@ -30,6 +30,15 @@ app.use(cors());                            // Cho phép cross-origin requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use((req, res, next) => {
+  if (req.path === '/admin.html' || req.path === '/js/admin.js') {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 // Serve static files từ thư mục public/
 app.use(express.static(path.join(__dirname, 'public')));
 // Serve thư mục uploads để lấy avatar
@@ -57,6 +66,7 @@ app.use('/api/admin', adminRoutes);    // Quản lý, thống kê (chỉ Super A
 app.use('/api/staff', staffRoutes);    // Ban ve nhanh / nhan vien quay
 app.use('/api/chat', chatRoutes);      // AI Chatbot
 app.use('/api/news', newsRoutes);
+app.use('/admin', adminRoutes);        // Compat: frontend cũ/cache thiếu prefix /api/admin
 app.use('/admin', adminNewsCompatRoutes);
 
 // ─── Health-check ────────────────────────────────────────────
