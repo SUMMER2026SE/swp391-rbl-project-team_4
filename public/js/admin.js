@@ -2524,7 +2524,7 @@ function renderScheduleMovieLibrary() {
     const list = document.getElementById('scheduleMovieList');
     const badge = document.getElementById('scheduleMovieCount');
     if (!list) return;
-    const showing = MOVIE_DATA.filter(m => m.Status === 'Now Showing' || m.Status === 'Coming Soon');
+    const showing = MOVIE_DATA.filter(m => m.Status === 'Now Showing');
     if (badge) badge.textContent = showing.length + ' PHIM';
     list.innerHTML = showing.map(m => `
         <div class="lib-card" onclick="selectScheduleMovie(${m.MovieID})" style="cursor:pointer;">
@@ -2543,8 +2543,8 @@ function populateAiScheduleMovieSelect() {
     const sel = document.getElementById('aiScheduleMovieSelect');
     if (!sel) return;
     const current = sel.value;
-    const movies = MOVIE_DATA.filter(m => m.Status !== 'deleted');
-    sel.innerHTML = '<option value="">-- Tất cả phim đang có --</option>' +
+    const movies = MOVIE_DATA.filter(m => m.Status === 'Now Showing');
+    sel.innerHTML = '<option value="">-- Tất cả phim đang chiếu --</option>' +
         movies.map(m => `<option value="${m.MovieID}">${m.Title} (${m.Duration || 120} phút)</option>`).join('');
     if (current && movies.some(m => String(m.MovieID) === String(current))) {
         sel.value = current;
@@ -2598,10 +2598,17 @@ async function loadAiScheduleSuggestion() {
 }
 
 function selectScheduleMovie(movieId) {
+    const movie = MOVIE_DATA.find(m => m.MovieID === Number(movieId));
+    if (!movie || movie.Status !== 'Now Showing') {
+        alert('Chỉ phim đang chiếu mới được thêm vào lịch chiếu.');
+        return;
+    }
+
+    openShowtimeModal();
     const sel = document.getElementById('stMovieSelect');
     if (sel) {
-        sel.value = movieId;
-        openShowtimeModal();
+        sel.value = String(movieId);
+        sel.dispatchEvent(new Event('change'));
     }
 }
 
@@ -2637,7 +2644,7 @@ function openShowtimeModal(showtimeId = null) {
     const movieSel = document.getElementById('stMovieSelect');
     if (movieSel && MOVIE_DATA.length > 0) {
         movieSel.innerHTML = '<option value="">-- Chọn phim --</option>' +
-            MOVIE_DATA.filter(m => m.Status !== 'deleted').map(m =>
+            MOVIE_DATA.filter(m => m.Status === 'Now Showing').map(m =>
                 `<option value="${m.MovieID}">${m.Title} (${m.Duration} phút)</option>`
             ).join('');
     }
@@ -2772,6 +2779,10 @@ async function saveShowtime() {
     if (!roomId || isNaN(roomId)) return alert('Vui lòng chọn phòng chiếu.');
     if (!dateStr || !startTimeStr) return alert('Vui lòng chọn ngày và giờ chiếu.');
     if (!price || isNaN(price) || price <= 0) return alert('Vui lòng nhập giá vé hợp lệ.');
+    const selectedMovie = MOVIE_DATA.find(m => m.MovieID === movieId);
+    if (!selectedMovie || selectedMovie.Status !== 'Now Showing') {
+        return alert('Chỉ phim đang chiếu mới được thêm vào lịch chiếu.');
+    }
 
     const start = new Date(`${dateStr}T${startTimeStr}`);
     const end = new Date(start.getTime() + duration * 60000);
@@ -2843,7 +2854,7 @@ function populateMovieSelect() {
     const sel = document.getElementById('stMovieSelect');
     if (!sel) return;
     sel.innerHTML = '<option value="">-- Chọn phim --</option>' +
-        MOVIE_DATA.filter(m => m.Status !== 'deleted').map(m =>
+        MOVIE_DATA.filter(m => m.Status === 'Now Showing').map(m =>
             `<option value="${m.MovieID}">${m.Title}</option>`
         ).join('');
 }
@@ -2851,7 +2862,7 @@ function populateMovieSelect() {
 function filterScheduleMovies(query) {
     const q = query.toLowerCase();
     const showing = MOVIE_DATA.filter(m =>
-        (m.Status === 'Now Showing' || m.Status === 'Coming Soon') &&
+        m.Status === 'Now Showing' &&
         (!q || m.Title.toLowerCase().includes(q))
     );
     const list = document.getElementById('scheduleMovieList');
