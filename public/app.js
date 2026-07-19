@@ -34,10 +34,7 @@ if (!bookingSessionId) {
     bookingSessionId = 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
     sessionStorage.setItem('bookingSessionId', bookingSessionId);
 }
-if (bookingOwnerKey !== 'guest') {
-    localStorage.setItem(perUserSessionKey, bookingSessionId);
-}
-const socket = typeof io !== 'undefined' ? io({ query: { bookingSessionId } }) : { on: () => {}, emit: () => {} };
+const socket = typeof io !== 'undefined' ? io({ query: { bookingSessionId } }) : { on: () => { }, emit: () => { } };
 const API_BASE = (window.location.protocol === 'file:' || window.location.hostname === '') ? 'http://localhost:9999' : '';
 
 const mockMovies = [
@@ -447,6 +444,34 @@ const app = {
         formats: []
     },
 
+    renderGenres(genresString) {
+        if (!genresString) return '<span data-i18n="genre_drama">Chính kịch</span>';
+
+        const genreMap = {
+            'Hành động': 'genre_action',
+            'Hài hước': 'genre_comedy',
+            'Hài': 'genre_comedy',
+            'Kinh dị': 'genre_horror',
+            'Tình cảm': 'genre_romance',
+            'Tâm lý': 'genre_psychological',
+            'Khoa học viễn tưởng': 'genre_scifi',
+            'Viễn tưởng': 'genre_scifi_short',
+            'Phiêu lưu': 'genre_adventure',
+            'Chính kịch': 'genre_drama',
+            'Gia đình': 'genre_family',
+            'Hoạt hình': 'genre_animation',
+            'Ca Nhạc': 'genre_musical',
+            'Ly Kì': 'genre_thriller',
+            'Giật Gân': 'genre_suspense'
+        };
+
+        const genres = genresString.split(',').map(g => g.trim());
+        return genres.map(g => {
+            const key = genreMap[g];
+            return key ? `<span data-i18n="${key}">${g}</span>` : g;
+        }).join(', ');
+    },
+
     async loadDynamicMovies() {
         // 1. For index.html (Now Showing) -> #now-showing .movie-grid
         const nowShowingGrid = document.querySelector('#now-showing .movie-grid');
@@ -462,18 +487,19 @@ const app = {
                                 <span class="age-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                                 <div class="poster-overlay">
-                                    <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
-                                    <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
-                                    <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">ĐẶT VÉ</button>
+                                    <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'" data-i18n="btn_detail_short">Chi Tiết</button>
+                                    <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')" data-i18n="btn_trailer">▶ Trailer</button>
+                                    <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})" data-i18n="btn_book">ĐẶT VÉ</button>
                                 </div>
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                <div class="movie-genre">${app.renderGenres(movie.Genres)} | ${movie.Duration} <span data-i18n="movie_minutes">phút</span></div>
                                 <div class="movie-rating">★ 8.5</div>
                             </div>
                         </div>
                     `).join('');
+                    if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
 
                     if (imaxGrid) {
                         const imaxMovies = json.data.filter(movie => movie.Formats && movie.Formats.includes('IMAX'));
@@ -484,18 +510,19 @@ const app = {
                                         <span class="age-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
                                         <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                                         <div class="poster-overlay">
-                                            <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
-                                            <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
-                                            <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})">ĐẶT VÉ</button>
+                                            <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'" data-i18n="btn_detail_short">Chi Tiết</button>
+                                            <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')" data-i18n="btn_trailer">▶ Trailer</button>
+                                            <button class="btn-primary" onclick="app.handleBookingClick(${movie.MovieID})" data-i18n="btn_book">ĐẶT VÉ</button>
                                         </div>
                                     </div>
                                     <div class="movie-info">
                                         <h3 class="movie-title">${movie.Title}</h3>
-                                        <div class="movie-genre">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</div>
+                                        <div class="movie-genre">${app.renderGenres(movie.Genres)} | ${movie.Duration} <span data-i18n="movie_minutes">phút</span></div>
                                         <div class="movie-rating">★ 8.5</div>
                                     </div>
                                 </div>
                             `).join('');
+                            if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
                         } else {
                             imaxGrid.innerHTML = '<p style="color:#9ca3af;padding:20px;grid-column: 1/-1;text-align:center;">Hiện tại không có phim chiếu định dạng IMAX.</p>';
                         }
@@ -516,20 +543,21 @@ const app = {
                     comingSoonGrid.innerHTML = json.data.map(movie => `
                         <div class="movie-card">
                             <div class="movie-poster">
-                                <span class="coming-badge">SẮP CHIẾU</span>
+                                <span class="coming-badge" data-i18n="movie_coming_soon">SẮP CHIẾU</span>
                                 <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                                 <div class="poster-overlay">
-                                    <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
-                                    <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
+                                    <button class="btn-secondary" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'" data-i18n="btn_detail_short">Chi Tiết</button>
+                                    <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')" data-i18n="btn_trailer">▶ Trailer</button>
                                 </div>
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.Genres ? movie.Genres : 'Khoa học viễn tưởng'} | ${movie.Duration} phút</div>
-                                <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;">Sắp chiếu</div>
+                                <div class="movie-genre">${movie.Genres ? app.renderGenres(movie.Genres) : '<span data-i18n="genre_scifi">Khoa học viễn tưởng</span>'} | ${movie.Duration} <span data-i18n="movie_minutes">phút</span></div>
+                                <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;" data-i18n="movie_coming_soon">Sắp chiếu</div>
                             </div>
                         </div>
                     `).join('');
+                    if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
                 }
             } catch (err) {
                 console.error('Failed to load coming soon movies:', err);
@@ -545,12 +573,12 @@ const app = {
                 if (json.success && json.data) {
                     window.allMoviesData = json.data;
                     app.allMovies = json.data;
-                    
+
                     // Parse query parameters to pre-fill filters
                     const urlParams = new URLSearchParams(window.location.search);
                     const statusParam = urlParams.get('status');
                     const searchParam = urlParams.get('search');
-                    
+
                     if (statusParam === 'showing' || statusParam === 'Now Showing') {
                         app.filterState.status = 'Now Showing';
                     } else if (statusParam === 'coming' || statusParam === 'Coming Soon') {
@@ -558,13 +586,13 @@ const app = {
                     } else {
                         app.filterState.status = 'Now Showing'; // Default view
                     }
-                    
+
                     if (searchParam) {
                         app.filterState.search = searchParam;
                         const searchInput = document.getElementById('searchInput');
                         if (searchInput) searchInput.value = searchParam;
                     }
-                    
+
                     // Render filtered movies and update tab UI
                     app.updateTabUI();
                     app.filterAndRenderMovies();
@@ -580,7 +608,7 @@ const app = {
     renderMoviesGrid(movies) {
         const allMoviesGrid = document.querySelector('.movies-grid');
         if (!allMoviesGrid) return;
-        
+
         if (!movies || movies.length === 0) {
             allMoviesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">Không tìm thấy phim phù hợp.</div>';
             return;
@@ -592,19 +620,20 @@ const app = {
                     <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
                     <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                     <div class="movie-overlay">
-                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
-                        <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
+                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'" data-i18n="btn_detail_short">Chi Tiết</button>
+                        <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')" data-i18n="btn_trailer">▶ Trailer</button>
                     </div>
                 </div>
                 <div class="movie-info">
                     <h3 class="movie-title" title="${movie.Title}">${movie.Title}</h3>
                     <div class="movie-rating">
                         <span class="stars">★ 8.5</span>
-                        <span class="genres">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</span>
+                        <span class="genres">${app.renderGenres(movie.Genres)} | ${movie.Duration} <span data-i18n="movie_minutes">phút</span></span>
                     </div>
                 </div>
             </div>
         `).join('');
+        if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
     },
 
     switchMovieStatusTab(status) {
@@ -689,19 +718,20 @@ const app = {
                     <span class="rating-badge age-${movie.AgeRating || 'ALL'}">${movie.AgeRating || 'ALL'}</span>
                     <img src="${movie.PosterURL || 'images/default_poster.svg'}" alt="${movie.Title}" onerror="this.onerror=null; this.src='images/default_poster.svg'">
                     <div class="movie-overlay">
-                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'">Chi Tiết</button>
-                        <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')">▶ Trailer</button>
+                        <button class="btn-tickets" onclick="window.location.href='movie-detail.html?id=${movie.MovieID}'" data-i18n="btn_detail_short">Chi Tiết</button>
+                        <button class="btn-trailer" onclick="event.stopPropagation(); app.openTrailer('${movie.TrailerURL}')" data-i18n="btn_trailer">▶ Trailer</button>
                     </div>
                 </div>
                 <div class="movie-info">
                     <h3 class="movie-title" title="${movie.Title}">${movie.Title}</h3>
                     <div class="movie-rating">
                         <span class="stars">★ 8.5</span>
-                        <span class="genres">${movie.Genres ? movie.Genres : 'Chính kịch'} | ${movie.Duration} phút</span>
+                        <span class="genres">${app.renderGenres(movie.Genres)} | ${movie.Duration} <span data-i18n="movie_minutes">phút</span></span>
                     </div>
                 </div>
             </div>
         `).join('');
+        if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
     },
 
     initMovieFilters() {
@@ -711,7 +741,7 @@ const app = {
 
         const applyFilters = () => {
             if (!window.allMoviesData) return;
-            
+
             let filtered = [...window.allMoviesData];
 
             // 1. Filter by Search
@@ -726,9 +756,9 @@ const app = {
                 filtered = filtered.filter(m => {
                     const genreStr = m.Genres || m.MainCast || "";
                     if (!genreStr) return false;
-                    
+
                     const mGenres = genreStr.split(',').map(g => g.trim().toLowerCase());
-                    
+
                     return selectedGenres.some(selected => {
                         const s = selected.toLowerCase();
                         // Either exact match in array, or substring match in the full string
@@ -819,7 +849,7 @@ const app = {
                     type: 'news',
                     title: n.Title,
                     description: n.Summary,
-                    badge: n.BadgeLabel || (n.Type === 'events' ? 'Sự kiện' : 'Tin tức'),
+                    badge: n.BadgeLabel || (n.Type === 'events' ? '<span data-i18n="badge_event">Sự kiện</span>' : '<span data-i18n="badge_news">Tin tức</span>'),
                     img: n.ImageURL,
                     link: 'news-events.html',
                     isFeatured: n.IsFeatured,
@@ -829,7 +859,7 @@ const app = {
             }
 
             if (combined.length === 0) {
-                grid.innerHTML = '<p style="color:#999;padding:20px;text-align:center;">Chưa có tin tức & khuyến mãi nào.</p>';
+                grid.innerHTML = '<p style="color:#999;padding:20px;text-align:center;" data-i18n="empty_news_promo">Chưa có tin tức & khuyến mãi nào.</p>';
                 return;
             }
 
@@ -842,7 +872,7 @@ const app = {
             });
 
             const featured = combined.find(p => p.isFeatured) || combined[0];
-            const normals  = combined.filter(p => p !== featured).slice(0, 4); // Hiển thị thêm 4 thẻ phụ
+            const normals = combined.filter(p => p !== featured).slice(0, 4); // Hiển thị thêm 4 thẻ phụ
 
             let html = '';
 
@@ -858,7 +888,7 @@ const app = {
                     <div class="promo-content">
                         <h3>${featured.title}</h3>
                         <p>${featured.description || ''}</p>
-                        <a href="${featured.link}" class="btn-promo">Tìm Hiểu Thêm</a>
+                        <a href="${featured.link}" class="btn-promo" data-i18n="btn_learn_more">Tìm Hiểu Thêm</a>
                     </div>
                 </div>`;
 
@@ -878,6 +908,7 @@ const app = {
             });
 
             grid.innerHTML = html;
+            if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
         } catch (err) {
             console.warn('[app] loadPromotions failed, showing fallback:', err.message);
             // Fallback to static cards if API not available
@@ -890,7 +921,7 @@ const app = {
                     <div class="promo-content">
                         <h3>Unlimited Popcorn Thursdays</h3>
                         <p>Tham gia chương trình Star Rewards ngay hôm nay và nhận bỏng ngô không giới hạn mỗi thứ năm với mọi lần mua vé.</p>
-                        <a href="#" class="btn-promo">Tìm Hiểu Thêm</a>
+                        <a href="#" class="btn-promo" data-i18n="btn_learn_more">Tìm Hiểu Thêm</a>
                     </div>
                 </div>
                 <div class="promo-card promo-normal">
@@ -909,6 +940,7 @@ const app = {
                         <p>Trải nghiệm phim ở định dạng lớn nhất có thể</p>
                     </div>
                 </div>`;
+            if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
         }
     }
 };

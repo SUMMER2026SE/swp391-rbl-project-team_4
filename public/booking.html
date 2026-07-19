@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chọn Rạp & Suất Chiếu | D-CINEMA</title>
-    <meta name="description"
-        content="Chọn chi nhánh rạp và suất chiếu phù hợp. D-Cinema – hệ thống rạp chiếu phim hiện đại tại Việt Nam.">
+    <title data-i18n="title_booking">Chọn Rạp & Suất Chiếu | D-CINEMA</title>
+    <meta name="description" content="Chọn chi nhánh rạp và suất chiếu phù hợp. D-Cinema – hệ thống rạp chiếu phim hiện đại tại Việt Nam.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
@@ -1952,14 +1951,14 @@
                 <div class="dropdown">
                     <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav_now_showing">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav_coming_soon">Sắp chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap" class="active">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
-                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" class="active" data-i18n="nav_cinemas">Rạp</a>
+                <a href="promotions.html" id="nav-promo" data-i18n="nav_promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" data-i18n="nav_news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" data-i18n="nav_prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -1968,7 +1967,7 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput" data-i18n="search_placeholder">
                 </div>
                 <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1976,7 +1975,11 @@
                         <circle cx="12" cy="7" r="4" />
                     </svg>
                 </a>
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <select id="langSwitcher" class="lang-switcher" onchange="changeLanguage(this.value)" style="margin-right: 15px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); outline: none; cursor: pointer; font-weight: 500; font-size: 14px; backdrop-filter: blur(5px);">
+                    <option value="vi" style="color: black;">VI</option>
+                    <option value="en" style="color: black;">EN</option>
+                </select>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav_login">Đăng Nhập</a>
             </div>
         </div>
     </header>
@@ -1984,30 +1987,19 @@
     <!-- HERO -->
     <div class="booking-hero">
         <div class="hero-tag">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-            </svg>
-            Hệ thống D-Cinema toàn quốc
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span data-i18n="hero_tag">Hệ thống D-Cinema toàn quốc</span>
         </div>
-        <h1>Chọn Rạp & Suất Chiếu</h1>
-        <p>Tìm rạp gần bạn nhất và đặt vé cho suất chiếu yêu thích</p>
+        <h1 data-i18n="hero_booking">Chọn Rạp & Suất Chiếu</h1>
+        <p data-i18n="hero_booking_desc">Tìm rạp gần bạn nhất và đặt vé cho suất chiếu yêu thích</p>
         <div class="steps-bar">
-            <div class="step-item active">
-                <div class="step-circle">1</div> Chọn Rạp
-            </div>
+            <div class="step-item active"><div class="step-circle">1</div> <span data-i18n="step_1">Chọn Rạp</span></div>
             <div class="step-line"></div>
-            <div class="step-item">
-                <div class="step-circle">2</div> Suất Chiếu
-            </div>
+            <div class="step-item"><div class="step-circle">2</div> <span data-i18n="step_2">Suất Chiếu</span></div>
             <div class="step-line"></div>
-            <div class="step-item">
-                <div class="step-circle">3</div> Chọn Ghế
-            </div>
+            <div class="step-item"><div class="step-circle">3</div> <span data-i18n="step_3">Chọn Ghế</span></div>
             <div class="step-line"></div>
-            <div class="step-item">
-                <div class="step-circle">4</div> Thanh Toán
-            </div>
+            <div class="step-item"><div class="step-circle">4</div> <span data-i18n="step_4">Thanh Toán</span></div>
         </div>
     </div>
 
@@ -2021,14 +2013,10 @@
             </div>
             <div class="ctb-info">
                 <div class="ctb-info-inner">
-                    <h2 id="ctbName">Chọn một rạp để xem lịch chiếu</h2>
+                    <h2 id="ctbName" data-i18n="ctb_name">Chọn một rạp để xem lịch chiếu</h2>
                     <p id="ctbAddress">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" />
-                            <circle cx="12" cy="10" r="3" />
-                        </svg>
-                        <span id="ctbAddressText">Địa chỉ rạp sẽ hiển thị ở đây</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <span id="ctbAddressText" data-i18n="ctb_address">Địa chỉ rạp sẽ hiển thị ở đây</span>
                     </p>
                 </div>
             </div>
@@ -2041,19 +2029,15 @@
         <!-- LEFT: FILTER PANEL -->
         <aside class="filter-panel">
             <div class="panel-top">
-                <h2>🎬 Bộ lọc rạp chiếu</h2>
-                <p>Chọn thành phố, chi nhánh và ngày xem</p>
+                <h2>🎬 <span data-i18n="filter_cinemas">Bộ lọc rạp chiếu</span></h2>
+                <p data-i18n="filter_cinemas_desc">Chọn thành phố, chi nhánh và ngày xem</p>
             </div>
 
             <!-- City -->
             <div class="panel-section">
                 <div class="sec-label">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                        <circle cx="12" cy="10" r="3" />
-                    </svg>
-                    Thành phố
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span data-i18n="filter_city">Thành phố</span>
                 </div>
                 <div class="city-tabs" id="cityTabsContainer"></div>
             </div>
@@ -2061,27 +2045,23 @@
             <!-- Branch -->
             <div class="panel-section">
                 <div class="sec-label">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
-                        <rect x="2" y="3" width="20" height="14" rx="2" />
-                        <path d="M8 21h8M12 17v4" />
-                    </svg>
-                    Chi nhánh
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                    <span data-i18n="filter_branch">Chi nhánh</span>
                 </div>
                 <div class="select-wrap">
                     <select class="cinema-sel" id="cinemaSelect">
-                        <option>Đang tải danh sách rạp...</option>
+                        <option data-i18n="loading_cinemas">Đang tải danh sách rạp...</option>
                     </select>
                 </div>
                 <div class="cinema-card" id="cinemaCard">
                     <div class="cc-name" id="ccName">—</div>
                     <div class="cc-addr" id="ccAddr">—</div>
                     <div class="cc-amenities">
-                        <span class="amenity">🅿️ Bãi đỗ xe</span>
-                        <span class="amenity">🍿 Đồ ăn</span>
-                        <span class="amenity">♿ Tiện ích</span>
-                        <span class="amenity">📶 WiFi</span>
-                        <span class="amenity">🎦 Dolby</span>
+                        <span class="amenity" data-i18n="amenity_parking">🅿️ Bãi đỗ xe</span>
+                        <span class="amenity" data-i18n="amenity_food">🍿 Đồ ăn</span>
+                        <span class="amenity" data-i18n="amenity_accessibility">♿ Tiện ích</span>
+                        <span class="amenity" data-i18n="amenity_wifi">📶 WiFi</span>
+                        <span class="amenity" data-i18n="amenity_dolby">🎦 Dolby</span>
                     </div>
                 </div>
             </div>
@@ -2089,14 +2069,8 @@
             <!-- Date -->
             <div class="panel-section">
                 <div class="sec-label">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
-                        <rect x="3" y="4" width="18" height="18" rx="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
-                    Ngày xem
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span data-i18n="filter_date">Ngày xem</span>
                 </div>
                 <div class="date-grid" id="datePillsContainer"></div>
             </div>
@@ -2104,25 +2078,22 @@
             <!-- Genre filter -->
             <div class="panel-section">
                 <div class="sec-label">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
-                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                    </svg>
-                    Thể loại
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    <span data-i18n="filter_genre">Thể loại</span>
                 </div>
                 <div class="genre-chips" id="genreChips">
-                    <div class="genre-chip active" data-genre="all">Tất cả</div>
-                    <div class="genre-chip" data-genre="Hành động">Hành động</div>
-                    <div class="genre-chip" data-genre="Tình cảm">Tình cảm</div>
-                    <div class="genre-chip" data-genre="Kinh dị">Kinh dị</div>
-                    <div class="genre-chip" data-genre="Hài">Hài</div>
-                    <div class="genre-chip" data-genre="Viễn tưởng">Viễn tưởng</div>
-                    <div class="genre-chip" data-genre="Hoạt hình">Hoạt hình</div>
-                    <div class="genre-chip" data-genre="Tâm lý">Tâm lý</div>
-                    <div class="genre-chip" data-genre="Phiêu lưu">Phiêu lưu</div>
-                    <div class="genre-chip" data-genre="Ca Nhạc">Ca Nhạc</div>
-                    <div class="genre-chip" data-genre="Ly Kì">Ly Kì</div>
-                    <div class="genre-chip" data-genre="Gia đình">Gia đình</div>
+                    <div class="genre-chip active" data-genre="all" data-i18n="genre_all">Tất cả</div>
+                    <div class="genre-chip" data-genre="Hành động" data-i18n="genre_action">Hành động</div>
+                    <div class="genre-chip" data-genre="Tình cảm" data-i18n="genre_romance">Tình cảm</div>
+                    <div class="genre-chip" data-genre="Kinh dị" data-i18n="genre_horror">Kinh dị</div>
+                    <div class="genre-chip" data-genre="Hài" data-i18n="genre_comedy">Hài</div>
+                    <div class="genre-chip" data-genre="Viễn tưởng" data-i18n="genre_scifi">Viễn tưởng</div>
+                    <div class="genre-chip" data-genre="Hoạt hình" data-i18n="genre_animation">Hoạt hình</div>
+                    <div class="genre-chip" data-genre="Tâm lý" data-i18n="genre_psychological">Tâm lý</div>
+                    <div class="genre-chip" data-genre="Phiêu lưu" data-i18n="genre_adventure">Phiêu lưu</div>
+                    <div class="genre-chip" data-genre="Ca Nhạc" data-i18n="genre_musical">Ca Nhạc</div>
+                    <div class="genre-chip" data-genre="Ly Kì" data-i18n="genre_thriller">Ly Kì</div>
+                    <div class="genre-chip" data-genre="Gia đình" data-i18n="genre_family">Gia đình</div>
                 </div>
             </div>
 
@@ -2131,17 +2102,17 @@
                 <div class="stats-row">
                     <div>
                         <div class="stat-num" id="statsMovies" style="color:var(--primary)">—</div>
-                        <div class="stat-lbl">Phim chiếu</div>
+                        <div class="stat-lbl" data-i18n="stats_movies">Phim chiếu</div>
                     </div>
                     <div class="stats-divider"></div>
                     <div>
                         <div class="stat-num" id="statsShowtimes" style="color:var(--green)">—</div>
-                        <div class="stat-lbl">Suất chiếu</div>
+                        <div class="stat-lbl" data-i18n="stats_showtimes">Suất chiếu</div>
                     </div>
                     <div class="stats-divider"></div>
                     <div>
                         <div class="stat-num" id="statsMin" style="color:var(--gold)">—k</div>
-                        <div class="stat-lbl">Giá từ</div>
+                        <div class="stat-lbl" data-i18n="stats_price_from">Giá từ</div>
                     </div>
                 </div>
             </div>
@@ -2150,13 +2121,13 @@
         <!-- RIGHT: SHOWTIMES -->
         <section class="showtimes-col">
             <div class="shows-header">
-                <h2 class="shows-title" id="showtimesTitle">Lịch chiếu hôm nay</h2>
+                <h2 class="shows-title" id="showtimesTitle" data-i18n="shows_today">Lịch chiếu hôm nay</h2>
                 <div style="display:flex;align-items:center;gap:10px;">
                     <select class="sort-select" id="sortSelect" onchange="applySort()">
-                        <option value="time">Sắp xếp: Sớm nhất</option>
-                        <option value="price-asc">Giá: Thấp → Cao</option>
-                        <option value="price-desc">Giá: Cao → Thấp</option>
-                        <option value="name">Tên phim A→Z</option>
+                        <option value="time" data-i18n="sort_earliest">Sắp xếp: Sớm nhất</option>
+                        <option value="price-asc" data-i18n="sort_price_asc">Giá: Thấp → Cao</option>
+                        <option value="price-desc" data-i18n="sort_price_desc">Giá: Cao → Thấp</option>
+                        <option value="name" data-i18n="sort_name">Tên phim A→Z</option>
                     </select>
                     <div class="shows-badge" id="showtimesCount">— suất</div>
                 </div>
@@ -2190,27 +2161,29 @@
     <section class="branch-section">
         <div class="branch-inner">
             <div class="bc" id="branchCard">
-                <div class="bc-label">Chi nhánh đang chọn</div>
+                <div class="bc-label" data-i18n="branch_selected">Chi nhánh đang chọn</div>
                 <div class="bc-name" id="branchName">D-CINEMA</div>
                 <div class="bc-addr" id="branchAddr">Đang tải thông tin...</div>
                 <div class="bc-perks">
-                    <span>🅿️ Bãi đỗ xe</span><span>🍿 Đồ ăn</span>
-                    <span>♿ Tiện ích</span><span>📶 WiFi miễn phí</span><span>🎦 Dolby Atmos</span>
+                    <span data-i18n="amenity_parking">🅿️ Bãi đỗ xe</span><span data-i18n="amenity_food">🍿 Đồ ăn</span>
+                    <span data-i18n="amenity_accessibility">♿ Tiện ích</span><span data-i18n="amenity_wifi">📶 WiFi miễn phí</span><span data-i18n="amenity_dolby">🎦 Dolby Atmos</span>
                 </div>
             </div>
             <div class="bc">
-                <div class="bc-label">Hệ thống D-Cinema</div>
-                <div class="bc-name">12 chi nhánh toàn quốc</div>
-                <div class="bc-addr">Có mặt tại Hồ Chí Minh, Hà Nội, Đà Nẵng, Cần Thơ, Vũng Tàu – mang đến trải nghiệm
-                    điện ảnh đỉnh cao với công nghệ Dolby Atmos và IMAX.</div>
+                <div class="bc-label" data-i18n="branch_system">Hệ thống D-Cinema</div>
+                <div class="bc-name" data-i18n="branch_system_desc">12 chi nhánh toàn quốc</div>
+                <div class="bc-addr" data-i18n="branch_system_detail">Có mặt tại Hồ Chí Minh, Hà Nội, Đà Nẵng, Cần Thơ, Vũng Tàu – mang đến trải nghiệm điện ảnh đỉnh cao với công nghệ Dolby Atmos và IMAX.</div>
                 <div class="bc-perks">
-                    <span>📍 Hồ Chí Minh</span><span>📍 Hà Nội</span><span>📍 Đà Nẵng</span><span>📍 Cần Thơ</span>
+                    <span>📍 <span data-i18n="city_hcm">Hồ Chí Minh</span></span>
+                    <span>📍 <span data-i18n="city_hn">Hà Nội</span></span>
+                    <span>📍 <span data-i18n="city_dn">Đà Nẵng</span></span>
+                    <span>📍 <span data-i18n="city_ct">Cần Thơ</span></span>
                 </div>
             </div>
             <div class="perks-card">
                 <div class="perk-icon">👑</div>
-                <h3>Ưu đãi thành viên</h3>
-                <p>Tích điểm gấp đôi mỗi giao dịch đặt vé tại bất kỳ chi nhánh D-Cinema. Đổi điểm lấy vé miễn phí!</p>
+                <h3 data-i18n="member_perks">Ưu đãi thành viên</h3>
+                <p data-i18n="member_perks_desc">Tích điểm gấp đôi mỗi giao dịch đặt vé tại bất kỳ chi nhánh D-Cinema. Đổi điểm lấy vé miễn phí!</p>
             </div>
         </div>
     </section>
@@ -2241,29 +2214,24 @@
                 </div>
             </div>
             <div class="footer-col">
-                <h4>Dịch vụ</h4>
-                <a href="#">Về chúng tôi</a>
-                <a href="#">Tuyển dụng</a>
-                <a href="#">Liên hệ</a>
-                <a href="#">Blog</a>
+                <h4 data-i18n="footer_services">Dịch vụ</h4>
+                <a href="#" data-i18n="footer_about">Về chúng tôi</a>
+                <a href="#" data-i18n="footer_careers">Tuyển dụng</a>
+                <a href="#" data-i18n="footer_contact">Liên hệ</a>
+                <a href="#" data-i18n="footer_blog">Blog</a>
             </div>
             <div class="footer-col">
-                <h4>Pháp lý</h4>
-                <a href="#">Điều khoản sử dụng</a>
-                <a href="#">Chính sách bảo mật</a>
-                <a href="#">Chính sách hoàn tiền</a>
+                <h4 data-i18n="footer_legal">Pháp lý</h4>
+                <a href="#" data-i18n="footer_terms">Điều khoản sử dụng</a>
+                <a href="#" data-i18n="footer_privacy">Chính sách bảo mật</a>
+                <a href="#" data-i18n="footer_refund">Chính sách hoàn tiền</a>
             </div>
             <div class="footer-col">
-                <h4>Đăng ký nhận tin</h4>
-                <p style="font-size:0.8rem;color:var(--muted);margin-bottom:10px;">Nhận thông tin phim mới và ưu đãi hot
-                    nhất.</p>
-                <form class="newsletter-form"
-                    onsubmit="event.preventDefault(); showToast('Đăng ký thành công! 🎉','green')">
-                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
-                    <button type="submit" class="newsletter-btn"><svg width="16" height="16" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2.5">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg></button>
+                <h4 data-i18n="footer_newsletter">Đăng ký nhận tin</h4>
+                <p style="font-size:0.8rem;color:var(--muted);margin-bottom:10px;" data-i18n="footer_newsletter_desc">Nhận thông tin phim mới và ưu đãi hot nhất.</p>
+                <form class="newsletter-form" onsubmit="event.preventDefault(); showToast('Đăng ký thành công! 🎉','green')">
+                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required data-i18n="footer_email_ph">
+                    <button type="submit" class="newsletter-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
                 </form>
             </div>
         </div>
@@ -2283,8 +2251,8 @@
             <div class="modal-body">
                 <div class="modal-meta" id="modalMeta"></div>
                 <div class="modal-title" id="modalTitle">—</div>
-                <div class="modal-desc" id="modalDesc">Đang tải thông tin phim...</div>
-                <div class="modal-showtimes-title">Các suất chiếu</div>
+                <div class="modal-desc" id="modalDesc" data-i18n="loading_movie">Đang tải thông tin phim...</div>
+                <div class="modal-showtimes-title" data-i18n="movie_showtimes_label">Các suất chiếu</div>
                 <div class="modal-slots" id="modalSlots"></div>
             </div>
         </div>
@@ -2294,6 +2262,7 @@
     <div class="toast" id="toastEl"></div>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="app.js?v=7"></script>
     <script>
         (function () {
@@ -2380,41 +2349,55 @@
                 }, 10000); // 10 seconds
             }
 
-            /* ── AUTH ── */
-            function initAuth() {
-                try {
-                    const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
-                    const btn = document.getElementById('btnLogin');
-                    if (u.fullName) {
-                        if (btn) { btn.textContent = u.fullName; btn.href = 'profile.html'; }
-                    }
-                } catch (e) { }
-            }
+            // Init Top Banner Carousel
+            initBannerCarousel();
+        });
 
-            /* ── DATE PILLS ── */
-            function buildDatePills() {
-                const container = document.getElementById('datePillsContainer');
-                const DAYS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-                const MONTHS = ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'];
-                const today = new Date();
-                container.innerHTML = '';
+        /* ── BANNER CAROUSEL ── */
+        function initBannerCarousel() {
+            const slides = document.querySelectorAll('.ctb-slide');
+            if (!slides.length) return;
+            let currentIndex = 0;
+            setInterval(() => {
+                slides[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % slides.length;
+                slides[currentIndex].classList.add('active');
+            }, 10000); // 10 seconds
+        }
 
-                for (let i = 0; i < 7; i++) {
-                    const d = new Date(today);
-                    d.setDate(today.getDate() + i);
-                    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-                    const pill = document.createElement('div');
-                    pill.className = 'date-pill' + (i === 0 ? ' active' : '');
-                    pill.dataset.date = dateStr;
-                    pill.innerHTML = `
-                    <div class="pill-dow">${i === 0 ? 'HN' : DAYS[d.getDay()]}</div>
-                    <div class="pill-d">${d.getDate()}</div>
-                    <div class="pill-m">${MONTHS[d.getMonth()]}</div>`;
-                    pill.addEventListener('click', () => selectDate(pill, dateStr));
-                    container.appendChild(pill);
+        /* ── AUTH ── */
+        function initAuth() {
+            try {
+                const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
+                const btn = document.getElementById('btnLogin');
+                if (u.fullName) {
+                    if (btn) { btn.textContent = u.fullName; btn.href = 'profile.html'; }
                 }
-                selectedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            } catch(e) {}
+        }
+
+        /* ── DATE PILLS ── */
+        function buildDatePills() {
+            const container = document.getElementById('datePillsContainer');
+            const DAYS = ['CN','T2','T3','T4','T5','T6','T7'];
+            const MONTHS = ['Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10','Th11','Th12'];
+            const today = new Date();
+            container.innerHTML = '';
+
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+                const pill = document.createElement('div');
+                pill.className = 'date-pill' + (i === 0 ? ' active' : '');
+                pill.dataset.date = dateStr;
+                pill.innerHTML = `
+                    <div class="pill-dow" data-i18n="${i === 0 ? 'day_today' : 'day_' + d.getDay()}">${i === 0 ? 'HN' : DAYS[d.getDay()]}</div>
+                    <div class="pill-d">${d.getDate()}</div>
+                    <div class="pill-m" data-i18n="month_${d.getMonth()}">${MONTHS[d.getMonth()]}</div>`;
+                pill.addEventListener('click', () => selectDate(pill, dateStr));
+                container.appendChild(pill);
             }
 
             function selectDate(pill, dateStr) {
@@ -2446,22 +2429,32 @@
                 }
             }
 
-            function buildCityTabs(cinemas) {
-                const container = document.getElementById('cityTabsContainer');
-                const cities = [...new Set(cinemas.map(c => c.City))].sort();
-                container.innerHTML = '';
+            if (!cities.length) {
+                showEmpty('<span data-i18n="no_cinemas">Không có rạp nào trong hệ thống.</span>');
+                return;
+            }
 
-                if (!cities.length) {
-                    showEmpty('Không có rạp nào trong hệ thống.');
-                    return;
-                }
+            const cityMap = {
+                'Hồ Chí Minh': 'city_hcm',
+                'Hà Nội': 'city_hn',
+                'Đà Nẵng': 'city_dn',
+                'Cần Thơ': 'city_ct',
+                'Vũng Tàu': 'city_vt'
+            };
 
-                cities.forEach((city, i) => {
-                    const btn = document.createElement('button');
-                    btn.className = 'city-btn' + (i === 0 ? ' active' : '');
-                    btn.textContent = city;
-                    btn.onclick = () => selectCity(btn, city);
-                    container.appendChild(btn);
+            cities.forEach((city, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'city-btn' + (i === 0 ? ' active' : '');
+                btn.dataset.city = city;
+                btn.innerHTML = cityMap[city] ? `<span data-i18n="${cityMap[city]}">${city}</span>` : city;
+                btn.onclick = () => selectCity(btn, city);
+                container.appendChild(btn);
+            });
+
+            if (selectedCity && cities.includes(selectedCity)) {
+                // activate the right button
+                container.querySelectorAll('.city-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.city === selectedCity);
                 });
 
                 if (selectedCity && cities.includes(selectedCity)) {
@@ -2481,8 +2474,15 @@
                         b.classList.toggle('active', b.textContent === selectedCity);
                     });
                 }
-                populateBranches(selectedCity);
+                
+                // activate the right button for default city
+                container.querySelectorAll('.city-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.city === selectedCity);
+                });
             }
+            populateBranches(selectedCity);
+            if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
+        }
 
             function selectCity(btn, city) {
                 document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
@@ -2515,11 +2515,27 @@
                     loadShowtimes();
                 }
 
-                sel.onchange = (e) => {
-                    selectedCinemaId = parseInt(e.target.value);
-                    updateCinemaCard(selectedCinemaId);
-                    loadShowtimes();
-                };
+        function updateCinemaCard(id) {
+            const c = allCinemas.find(x => x.CinemaID === id);
+            if (!c) return;
+            document.getElementById('ccName').textContent = c.CinemaName;
+            document.getElementById('ccAddr').textContent = c.Address || 'Địa chỉ đang cập nhật...';
+            document.getElementById('cinemaCard').classList.add('show');
+
+            // update branch strip
+            document.getElementById('branchName').textContent = c.CinemaName;
+            document.getElementById('branchAddr').textContent = (c.Address || '') + (c.City ? ', ' + c.City : '');
+
+            // update top banner
+            const bannerWrapper = document.getElementById('cinemaTopBannerWrapper');
+            if (bannerWrapper) {
+                bannerWrapper.classList.add('show');
+                const hero = document.querySelector('.booking-hero');
+                if (hero) hero.style.display = 'none';
+                const ctbN = document.getElementById('ctbName');
+                if (ctbN) { ctbN.textContent = c.CinemaName; ctbN.removeAttribute('data-i18n'); }
+                const ctbA = document.getElementById('ctbAddressText');
+                if (ctbA) { ctbA.textContent = (c.Address || '') + (c.City ? ', ' + c.City : ''); ctbA.removeAttribute('data-i18n'); }
             }
 
             function updateCinemaCard(id) {
@@ -2542,7 +2558,24 @@
                     document.getElementById('ctbName').textContent = c.CinemaName;
                     document.getElementById('ctbAddressText').textContent = (c.Address || '') + (c.City ? ', ' + c.City : '');
                 }
+            } catch(e) {}
+        }
+
+        function updateTitle() {
+            const el = document.getElementById('showtimesTitle');
+            if (selectedMovie && movieIdFilter) {
+                el.innerHTML = `<span data-i18n="shows_movie">Lịch chiếu:</span> ${selectedMovie.Title}`;
+            } else {
+                el.innerHTML = `<span data-i18n="shows_date">Lịch chiếu ngày</span> ${fmtDate(selectedDate)}`;
             }
+            if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
+        }
+
+        /* ── LOAD SHOWTIMES ── */
+        async function loadShowtimes() {
+            if (!selectedCinemaId || !selectedDate) return;
+            showSkeleton();
+            updateTitle();
 
             /* ── LOAD MOVIE INFO ── */
             async function loadMovieInfo(movieId) {
@@ -2556,12 +2589,11 @@
                 } catch (e) { }
             }
 
-            function updateTitle() {
-                const el = document.getElementById('showtimesTitle');
-                if (selectedMovie && movieIdFilter) {
-                    el.textContent = `Lịch chiếu: ${selectedMovie.Title}`;
-                } else {
-                    el.textContent = `Lịch chiếu ngày ${fmtDate(selectedDate)}`;
+                if (!json.success || !json.data || !json.data.length) {
+                    rawData = [];
+                    updateStats(0, 0, 0);
+                    showEmpty(`<span data-i18n="empty_shows">Không có suất chiếu nào vào ngày</span> ${fmtDate(selectedDate)} <span data-i18n="empty_shows_at">tại rạp đã chọn.</span>`);
+                    return;
                 }
             }
 
@@ -2585,8 +2617,13 @@
                         return;
                     }
 
-                    rawData = json.data;
-                    renderFiltered();
+            if (!data.length) {
+                updateStats(0, 0, 0);
+                showEmpty(searchQuery
+                    ? `<span data-i18n="empty_search">Không tìm thấy phim</span> "${searchQuery}" <span data-i18n="empty_search_in">trong lịch chiếu.</span>`
+                    : '<span data-i18n="empty_filter">Không có phim nào phù hợp với bộ lọc.</span>');
+                return;
+            }
 
                 } catch (e) {
                     console.error('[Booking] loadShowtimes:', e);
@@ -2598,10 +2635,17 @@
             function renderFiltered() {
                 let data = [...rawData];
 
-                // Search filter
-                if (searchQuery) {
-                    data = data.filter(row => row.Title && row.Title.toLowerCase().includes(searchQuery));
-                }
+            // Update count badge
+            document.getElementById('showtimesCount').innerHTML = `${data.length} <span data-i18n="movie_shows">suất</span>`;
+            document.getElementById('showtimesTitle').innerHTML = searchQuery
+                ? `Kết quả cho "${searchQuery}"`
+                : selectedMovie && movieIdFilter
+                    ? `<span data-i18n="shows_movie">Lịch chiếu:</span> ${selectedMovie.Title}`
+                    : `<span data-i18n="shows_date">Lịch chiếu ngày</span> ${fmtDate(selectedDate)}`;
+
+            // Render
+            const container = document.getElementById('showtimesContainer');
+            container.innerHTML = '';
 
                 // Genre filter
                 if (selectedGenre !== 'all') {
@@ -2734,10 +2778,10 @@
                     </button>`;
                     }).join('');
 
-                    const validSlots = slotsHTML.trim();
-                    const noSlotMsg = !validSlots
-                        ? `<div style="font-size:0.8rem;color:var(--muted);padding:10px 0;">Hết suất chiếu trong ngày</div>`
-                        : validSlots;
+                const validSlots = slotsHTML.trim();
+                const noSlotMsg = !validSlots
+                    ? `<div style="font-size:0.8rem;color:var(--muted);padding:10px 0;" data-i18n="no_shows_today">Hết suất chiếu trong ngày</div>`
+                    : validSlots;
 
                     card.innerHTML = `
                 <div class="card-body">
@@ -2752,14 +2796,14 @@
                     <div class="card-content">
                         <div class="movie-tags">
                             <span class="tag tag-pg">${movie.AgeRating || 'ALL'}</span>
-                            <span class="tag tag-now">Đang chiếu</span>
-                            ${movie.Duration ? `<span class="tag tag-dur">⏱ ${movie.Duration} phút</span>` : ''}
-                            ${movie.Genre ? `<span class="tag tag-genre">${movie.Genre.split(',')[0].trim()}</span>` : ''}
+                            <span class="tag tag-now" data-i18n="status_showing">Đang chiếu</span>
+                            ${movie.Duration ? `<span class="tag tag-dur">⏱ ${movie.Duration} <span data-i18n="movie_minutes">phút</span></span>` : ''}
+                            ${movie.Genre ? app.renderGenres(movie.Genre.split(',')[0].trim()).replace('<span', '<span class="tag tag-genre"') : ''}
                         </div>
                         <div class="movie-title" onclick="openMovieModal(${movie.MovieID})">${movie.Title}</div>
-                        ${movie.MainCast ? `<div class="movie-cast">Diễn viên: ${movie.MainCast}</div>` : ''}
+                        ${movie.MainCast ? `<div class="movie-cast"><span data-i18n="movie_actor">Diễn viên:</span> ${movie.MainCast}</div>` : ''}
                         <div class="shows-section-label">
-                            🕐 Các suất chiếu <span>${sortedShowtimes.length} suất</span>
+                            🕐 <span data-i18n="movie_showtimes_label">Các suất chiếu</span> <span>${sortedShowtimes.length} <span data-i18n="movie_shows">suất</span></span>
                         </div>
                         <div class="time-slots">${noSlotMsg}</div>
                     </div>

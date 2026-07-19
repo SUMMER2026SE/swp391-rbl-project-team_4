@@ -20,16 +20,16 @@
             </a>
             <nav class="nav-links">
                 <div class="dropdown">
-                    <a href="movies.html" id="nav-phim" class="active">Phim <span class="nav-arrow">▾</span></a>
+                    <a href="movies.html" id="nav-phim" class="active" data-i18n="nav_movies">Phim <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav_now_showing">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav_coming_soon">Sắp chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
-                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" data-i18n="nav_cinemas">Rạp</a>
+                <a href="promotions.html" id="nav-promo" data-i18n="nav_promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" data-i18n="nav_news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" data-i18n="nav_prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -37,15 +37,19 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput" data-i18n="search_placeholder">
                 </div>
+                <select id="langSwitcher" class="lang-switcher" onchange="changeLanguage(this.value)" style="margin-right: 15px; margin-left: 15px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); outline: none; cursor: pointer; font-weight: 500; font-size: 14px; backdrop-filter: blur(5px);">
+                    <option value="vi" style="color: black;">VI</option>
+                    <option value="en" style="color: black;">EN</option>
+                </select>
                 <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                     </svg>
                 </a>
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav_login">Đăng Nhập</a>
             </div>
         </div>
     </header>
@@ -55,78 +59,78 @@
         <!-- Sidebar: Filters -->
         <aside class="filters-sidebar">
             <div class="filters-section">
-                <h3 class="filters-title">Filters</h3>
+                <h3 class="filters-title" data-i18n="filter_title">Filters</h3>
 
                 <!-- Genres Filter -->
                 <div class="filter-group">
-                    <h4 class="filter-header">GENRES</h4>
+                    <h4 class="filter-header" data-i18n="filter_genres">GENRES</h4>
                     <div class="filter-list">
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Hành động">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Hành động</span>
+                            <span class="filter-label" data-i18n="genre_action">Hành động</span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Hài">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Hài</span>
+                            <span class="filter-label" data-i18n="genre_comedy">Hài</span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Kinh dị">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Kinh dị</span>
+                            <span class="filter-label" data-i18n="genre_horror">Kinh dị</span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Tình cảm">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Tình cảm</span>
+                            <span class="filter-label" data-i18n="genre_romance">Tình cảm</span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Viễn tưởng">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Viễn tưởng</span>
+                            <span class="filter-label" data-i18n="genre_scifi_short">Viễn tưởng</span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Tâm lý">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Tâm lý</span>
+                            <span class="filter-label" data-i18n="genre_psychological">Tâm lý</span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Hoạt hình">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Hoạt hình</span>
+                            <span class="filter-label" data-i18n="genre_animation">Hoạt hình</span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Phiêu lưu">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Phiêu lưu</span>
+                            <span class="filter-label" data-i18n="genre_adventure">Phiêu lưu</span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Ca Nhạc">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Ca Nhạc</span>
+                            <span class="filter-label" data-i18n="genre_musical">Ca Nhạc</span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Ly Kì">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Ly Kì</span>
+                            <span class="filter-label" data-i18n="genre_thriller">Ly Kì</span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Gia đình">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Gia đình</span>
+                            <span class="filter-label" data-i18n="genre_family">Gia đình</span>
                         </label>
                         <label class="filter-item">
                             <input type="checkbox" name="genre" value="Giật Gân">
                             <span class="filter-checkbox"></span>
-                            <span class="filter-label">Giật Gân</span>
+                            <span class="filter-label" data-i18n="genre_suspense">Giật Gân</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Formats Filter -->
                 <div class="filter-group">
-                    <h4 class="filter-header">FORMATS</h4>
+                    <h4 class="filter-header" data-i18n="filter_formats">FORMATS</h4>
                     <div class="filter-list">
                         <label class="filter-item">
                             <input type="checkbox" name="format" value="Standard">
@@ -158,16 +162,16 @@
             <!-- Header: Title & Sort -->
             <div class="movies-header" style="flex-direction: column; align-items: flex-start; gap: 15px;">
                 <div class="movies-title-tabs">
-                    <span class="tab-title active" id="tab-now-showing" onclick="app.switchMovieStatusTab('Now Showing')">Phim Đang Chiếu</span>
-                    <span class="tab-title" id="tab-coming-soon" onclick="app.switchMovieStatusTab('Coming Soon')">Phim Sắp Chiếu</span>
+                    <span class="tab-title active" id="tab-now-showing" onclick="app.switchMovieStatusTab('Now Showing')" data-i18n="nav_now_showing">Phim Đang Chiếu</span>
+                    <span class="tab-title" id="tab-coming-soon" onclick="app.switchMovieStatusTab('Coming Soon')" data-i18n="nav_coming_soon">Phim Sắp Chiếu</span>
                 </div>
                 <div class="sort-container" style="align-self: flex-end; margin-top: -50px; z-index: 10;">
-                    <label for="sortSelect">Sort by:</label>
+                    <label for="sortSelect" data-i18n="sort_by">Sort by:</label>
                     <select id="sortSelect" class="sort-select">
-                        <option value="popular" selected>Most Popular</option>
-                        <option value="rating">Highest Rated</option>
-                        <option value="newest">Newest</option>
-                        <option value="title">Title (A-Z)</option>
+                        <option value="popular" selected data-i18n="sort_popular">Most Popular</option>
+                        <option value="rating" data-i18n="sort_rating">Highest Rated</option>
+                        <option value="newest" data-i18n="sort_newest">Newest</option>
+                        <option value="title" data-i18n="sort_title">Title (A-Z)</option>
                     </select>
                 </div>
             </div>
@@ -206,7 +210,7 @@
                     <span class="logo-d">D</span>
                     <span class="logo-text">D-CINEMA</span>
                 </a>
-                <p>Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
+                <p data-i18n="footer_desc">Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
                 <div class="footer-socials">
                     <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2">
@@ -223,22 +227,22 @@
                 </div>
             </div>
             <div class="footer-col">
-                <h4>DỊCH VỤ</h4>
-                <a href="#">Về chúng tôi</a>
-                <a href="#">Tuyển dụng</a>
-                <a href="#">Liên hệ</a>
+                <h4 data-i18n="footer_service">DỊCH VỤ</h4>
+                <a href="#" data-i18n="footer_about">Về chúng tôi</a>
+                <a href="#" data-i18n="footer_career">Tuyển dụng</a>
+                <a href="#" data-i18n="footer_contact">Liên hệ</a>
             </div>
             <div class="footer-col">
-                <h4>PHÁP LÝ</h4>
-                <a href="#">Điều khoản sử dụng</a>
-                <a href="#">Chính sách bảo mật</a>
-                <a href="#">Chính sách thanh toán</a>
+                <h4 data-i18n="footer_legal">PHÁP LÝ</h4>
+                <a href="#" data-i18n="footer_terms">Điều khoản sử dụng</a>
+                <a href="#" data-i18n="footer_privacy">Chính sách bảo mật</a>
+                <a href="#" data-i18n="footer_payment">Chính sách thanh toán</a>
             </div>
             <div class="footer-col">
-                <h4>ĐĂNG KÝ NHẬN TIN</h4>
-                <p style="margin-bottom: 5px; font-size: 0.8rem;">Nhận thông tin về phim mới và khuyến mãi.</p>
+                <h4 data-i18n="footer_newsletter">ĐĂNG KÝ NHẬN TIN</h4>
+                <p style="margin-bottom: 5px; font-size: 0.8rem;" data-i18n="footer_newsletter_desc">Nhận thông tin về phim mới và khuyến mãi.</p>
                 <form class="newsletter-form" onsubmit="event.preventDefault()">
-                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
+                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required data-i18n="footer_email_placeholder">
                     <button type="submit" class="newsletter-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -249,12 +253,13 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p>
+            <p data-i18n="footer_rights">© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p>
         </div>
     </footer>
 
     <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="app.js?v=7"></script>
     <script>
         // Pagination
@@ -275,7 +280,14 @@
                 if (btnLogin) {
                     btnLogin.textContent = user.fullName || 'Tài khoản';
                     btnLogin.href = 'profile.html';
+                    btnLogin.removeAttribute('data-i18n');
                 }
+            }
+            
+            // Kích hoạt dịch ngay khi tải trang
+            const currentLang = localStorage.getItem('dcinema_lang') || 'vi';
+            if (typeof changeLanguage === 'function') {
+                changeLanguage(currentLang);
             }
         });
     </script>
