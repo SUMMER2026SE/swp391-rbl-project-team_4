@@ -9,6 +9,7 @@ const path = require('path');
 const adminCtrl = require('../controllers/adminController');
 const comboCtrl = require('../controllers/comboController');
 const newsCtrl = require('../controllers/newsController');
+const voucherCtrl = require('../controllers/voucherController');
 const { verifyToken, isSuperAdmin } = require('../middleware/authMiddleware');
 
 const storage = multer.diskStorage({
@@ -83,16 +84,34 @@ router.patch('/users/:id/toggle-status', adminCtrl.toggleUserStatus);
 
 // ─── Voucher Management ──────────────────────────────────────
 // GET    /api/admin/vouchers           — Danh sách voucher
-router.get('/vouchers', adminCtrl.getAllVouchers);
+router.get('/vouchers', voucherCtrl.getAllVouchers);
+
+// POST   /api/admin/vouchers/upload    — Tải ảnh voucher
+router.post('/vouchers/upload', (req, res) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            console.error('[adminRoutes] Upload error:', err);
+            return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi lưu file ảnh: ' + err.message });
+        }
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Vui lòng chọn một file ảnh.' });
+        }
+        const imageUrl = 'images/' + req.file.filename;
+        res.json({ success: true, imageUrl: imageUrl });
+    });
+});
 
 // POST   /api/admin/vouchers           — Tạo voucher
-router.post('/vouchers', adminCtrl.createVoucher);
+router.post('/vouchers', voucherCtrl.createVoucher);
+
+// GET    /api/admin/vouchers/:id       — Chi tiết voucher
+router.get('/vouchers/:id', voucherCtrl.getVoucherById);
 
 // PUT    /api/admin/vouchers/:id       — Sửa voucher
-router.put('/vouchers/:id', adminCtrl.updateVoucher);
+router.put('/vouchers/:id', voucherCtrl.updateVoucher);
 
 // DELETE /api/admin/vouchers/:id       — Xóa voucher
-router.delete('/vouchers/:id', adminCtrl.deleteVoucher);
+router.delete('/vouchers/:id', voucherCtrl.deleteVoucher);
 
 // PATCH  /api/admin/vouchers/:id/toggle — Bật/tắt trạng thái hoạt động của voucher
 router.patch('/vouchers/:id/toggle', adminCtrl.toggleVoucherActive);

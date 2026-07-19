@@ -762,9 +762,11 @@ class AdminModel {
   static async getAllVouchers() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT VoucherID, Code, DiscountType, DiscountValue, MinOrderValue,
-             MaxDiscount, UsageLimit, UsedCount, StartDate, EndDate, IsActive
-      FROM   Vouchers
+      SELECT VoucherID, VoucherCode, VoucherCode AS Code, VoucherType, VoucherName,
+             DiscountType, DiscountValue, MinimumOrder, MinimumOrder AS MinOrderValue,
+             MaximumDiscount, MaximumDiscount AS MaxDiscount, UsageLimit, UsedCount,
+             StartDate, EndDate, Status, Description, ImageUrl
+      FROM dbo.Voucher
       ORDER BY EndDate DESC
     `);
     return result.recordset;
@@ -793,29 +795,55 @@ class AdminModel {
 
   static async updateVoucher(id, data) {
     const pool = await getPool();
-    const result = await pool.request()
+    const imageUrl = data.imageUrl !== undefined ? data.imageUrl : (data.ImageUrl !== undefined ? data.ImageUrl : null);
+    const desc = data.description !== undefined ? data.description : (data.Description !== undefined ? data.Description : null);
+    const vName = data.voucherName || data.VoucherName || data.name || null;
+    const vType = data.voucherType || data.VoucherType || null;
+    const code = (data.voucherCode || data.code || '').toUpperCase();
+
+    const request = pool.request()
       .input('id', sql.Int, id)
-      .input('code', sql.NVarChar, data.code.toUpperCase())
-      .input('discountType', sql.NVarChar, data.discountType)
-      .input('discountValue', sql.Decimal, data.discountValue)
-      .input('minOrderValue', sql.Decimal, data.minOrderValue || 0)
-      .input('maxDiscount', sql.Decimal, data.maxDiscount || null)
+      .input('code', sql.NVarChar(50), code)
+      .input('discountType', sql.NVarChar(50), data.discountType)
+      .input('discountValue', sql.Decimal(18, 2), data.discountValue)
+      .input('minOrderValue', sql.Decimal(18, 2), data.minimumOrder || data.minOrderValue || 0)
+      .input('maxDiscount', sql.Decimal(18, 2), data.maximumDiscount || data.maxDiscount || null)
       .input('usageLimit', sql.Int, data.usageLimit || null)
-      .input('startDate', sql.Date, data.startDate)
-      .input('endDate', sql.Date, data.endDate)
-      .query(`
-        UPDATE Vouchers
-        SET Code = @code,
-            DiscountType = @discountType,
-            DiscountValue = @discountValue,
-            MinOrderValue = @minOrderValue,
-            MaxDiscount = @maxDiscount,
-            UsageLimit = @usageLimit,
-            StartDate = @startDate,
-            EndDate = @endDate
-        OUTPUT INSERTED.*
-        WHERE VoucherID = @id
-      `);
+      .input('startDate', sql.DateTime, data.startDate)
+      .input('endDate', sql.DateTime, data.endDate)
+      .input('description', sql.NVarChar(sql.MAX), desc)
+      .input('imageUrl', sql.NVarChar(sql.MAX), imageUrl)
+      .input('voucherName', sql.NVarChar(255), vName)
+      .input('voucherType', sql.NVarChar(255), vType);
+
+    const result = await request.query(`
+      UPDATE dbo.Voucher
+      SET VoucherCode = ISNULL(NULLIF(@code, ''), VoucherCode),
+          VoucherType = ISNULL(@voucherType, VoucherType),
+          VoucherName = ISNULL(@voucherName, VoucherName),
+          DiscountType = ISNULL(@discountType, DiscountType),
+          DiscountValue = ISNULL(@discountValue, DiscountValue),
+          MinimumOrder = ISNULL(@minOrderValue, MinimumOrder),
+          MaximumDiscount = ISNULL(@maxDiscount, MaximumDiscount),
+          UsageLimit = ISNULL(@usageLimit, UsageLimit),
+          StartDate = ISNULL(@startDate, StartDate),
+          EndDate = ISNULL(@endDate, EndDate),
+          Description = ISNULL(@description, Description),
+          ImageUrl = ISNULL(@imageUrl, ImageUrl)
+      OUTPUT INSERTED.*
+      WHERE VoucherID = @id;
+
+      UPDATE dbo.Vouchers
+      SET Code = ISNULL(NULLIF(@code, ''), Code),
+          DiscountType = ISNULL(@discountType, DiscountType),
+          DiscountValue = ISNULL(@discountValue, DiscountValue),
+          MinOrderValue = ISNULL(@minOrderValue, MinOrderValue),
+          MaxDiscount = ISNULL(@maxDiscount, MaxDiscount),
+          UsageLimit = ISNULL(@usageLimit, UsageLimit),
+          StartDate = ISNULL(@startDate, StartDate),
+          EndDate = ISNULL(@endDate, EndDate)
+      WHERE VoucherID = @id;
+    `);
     return result.recordset.length > 0 ? result.recordset[0] : null;
   }
 
