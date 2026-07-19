@@ -9,10 +9,30 @@
         content="Đăng nhập hoặc đăng ký tài khoản D-Cinema để đặt vé, tích điểm và trải nghiệm điện ảnh đỉnh cao.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/auth.css?v=2">
 </head>
 
 <body>
+
+    <header class="auth-header">
+        <div class="auth-header-inner">
+            <a href="index.html" class="auth-logo" aria-label="Về trang chủ D-CINEMA">
+                <span class="auth-logo-mark">D</span>
+                <span class="auth-logo-text">D-CINEMA</span>
+            </a>
+            <nav class="auth-nav" aria-label="Điều hướng chính">
+                <a href="movies.html?status=showing">Phim</a>
+                <a href="booking.html">Rạp</a>
+                <a href="promotions.html">Promotions</a>
+                <a href="news-events.html">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html">Giá Vé</a>
+            </nav>
+            <div class="auth-header-actions">
+                <a href="index.html" class="auth-header-link">Trang chủ</a>
+                <a href="booking.html" class="auth-header-cta">Đặt vé</a>
+            </div>
+        </div>
+    </header>
 
     <!-- ═══════════════ TOAST NOTIFICATION ═══════════════ -->
     <div id="toast" class="toast"></div>
