@@ -542,9 +542,10 @@
             return;
         }
 
-        const phoneRegex = /^[0-9]{10,11}$/;
-        if (phone && !phoneRegex.test(phone)) {
-            alert('Số điện thoại không hợp lệ! Vui lòng nhập từ 10 đến 11 chữ số.');
+        const phoneDigits = phone.replace(/\D/g, '');
+        const normalizedPhone = /^84\d{9}$/.test(phoneDigits) ? `0${phoneDigits.slice(2)}` : phoneDigits;
+        if (phone && !/^0\d{9}$/.test(normalizedPhone)) {
+            alert('Số điện thoại không hợp lệ! Vui lòng nhập số Việt Nam gồm 10 chữ số.');
             btn.disabled = false;
             btn.innerHTML = `Save Changes`;
             return;
@@ -569,7 +570,7 @@
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + token
                 },
-                body: JSON.stringify({ fullName, phone, dateOfBirth, address })
+                body: JSON.stringify({ fullName, phone: normalizedPhone || null, dateOfBirth, address })
             });
             const data = await res.json();
             
@@ -587,6 +588,8 @@
                 if (userStr) {
                     const u = JSON.parse(userStr);
                     u.fullName = fullName;
+                    u.phone = normalizedPhone || '';
+                    u.Phone = normalizedPhone || '';
                     if (localStorage.getItem('user')) {
                         localStorage.setItem('user', JSON.stringify(u));
                     } else {

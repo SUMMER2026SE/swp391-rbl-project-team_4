@@ -23,22 +23,44 @@ function validatePasswordPolicy(password) {
   return null;
 }
 
+function normalizeVietnamPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (/^84\d{9}$/.test(digits)) return `0${digits.slice(2)}`;
+  return digits;
+}
+
+function validateVietnamPhone(phone) {
+  if (!phone) return true;
+  return /^0\d{9}$/.test(normalizeVietnamPhone(phone));
+}
+
 // ─────────────────────────────────────────────────────────────
 //  POST /api/auth/register
 // ─────────────────────────────────────────────────────────────
 exports.register = async (req, res) => {
   try {
     const { fullName, email, password, phone } = req.body;
+    const normalizedEmail = String(email || '').trim();
+    const normalizedPhone = phone ? normalizeVietnamPhone(phone) : null;
 
-    if (!fullName || !email || !password) {
+    if (!fullName || !normalizedEmail || !password) {
       return res.status(400).json({ success: false, message: 'Vui lòng cung cấp đầy đủ: fullName, email, password.' });
     }
     const passwordError = validatePasswordPolicy(password);
     if (passwordError) return res.status(400).json({ success: false, message: passwordError });
+    if (!validateVietnamPhone(phone)) {
+      return res.status(400).json({ success: false, message: 'Số điện thoại không hợp lệ. Vui lòng nhập số Việt Nam gồm 10 chữ số.' });
+    }
 
-    const existCheck = await AuthModel.checkEmailExist(email);
+    const existCheck = await AuthModel.checkEmailExist(normalizedEmail);
     if (existCheck) {
       return res.status(409).json({ success: false, message: 'Email này đã được đăng ký.' });
+    }
+    if (normalizedPhone) {
+      const phoneCheck = await AuthModel.checkPhoneExist(normalizedPhone);
+      if (phoneCheck) {
+        return res.status(409).json({ success: false, message: 'Số điện thoại này đã được đăng ký.' });
+      }
     }
 
     const roleId = await AuthModel.getRoleIdByName('Customer');
@@ -47,7 +69,7 @@ exports.register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    const newUser = await AuthModel.createUser({ fullName, email, hashedPassword, phone, roleId });
+    const newUser = await AuthModel.createUser({ fullName, email: normalizedEmail, hashedPassword, phone: normalizedPhone, roleId });
 
     const token = jwt.sign(
       { userId: newUser.UserID, email: newUser.Email, roleId: roleId, roleName: 'Customer' },
@@ -78,23 +100,32 @@ exports.register = async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, identifier, password } = req.body;
+    const loginIdentifier = String(identifier || email || '').trim();
 
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp email và password.' });
+    if (!loginIdentifier || !password) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp email/số điện thoại và mật khẩu.' });
     }
 
-    const user = await AuthModel.findUserByEmailWithRole(email);
+    const users = await AuthModel.findUsersByEmailOrPhoneWithRole(loginIdentifier);
+    if (!users.length) {
+      return res.status(401).json({ success: false, message: 'Email/số điện thoại hoặc mật khẩu không đúng.' });
+    }
+
+    let user = null;
+    for (const candidate of users) {
+      const isMatch = await bcrypt.compare(password, candidate.PasswordHash);
+      if (isMatch) {
+        user = candidate;
+        break;
+      }
+    }
+
     if (!user) {
-      return res.status(401).json({ success: false, message: 'Email hoặc mật khẩu không đúng.' });
+      return res.status(401).json({ success: false, message: 'Email/số điện thoại hoặc mật khẩu không đúng.' });
     }
     if (user.IsActive === false || user.IsActive === 0) {
       return res.status(403).json({ success: false, message: 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.PasswordHash);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Email hoặc mật khẩu không đúng.' });
     }
 
     const token = jwt.sign(

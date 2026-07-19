@@ -15,7 +15,7 @@ if (typeof window !== 'undefined') {
 
 function getRouteRetryUrl(url, payload) {
     const message = String(payload?.message || '');
-    if (!message.includes('không tồn tại') && !message.includes('khÃ´ng tá»“n táº¡i')) return null;
+    if (!message.includes('không tồn tại')) return null;
     if (url.startsWith('/admin/')) return '/api' + url;
     if (url.startsWith('/api/admin/')) return url.replace('/api/admin/', '/admin/');
     return null;
@@ -37,13 +37,31 @@ async function apiFetch(url, options = {}) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
     };
-    const res = await fetch(url, { ...options, headers });
+    let res;
+    try {
+        res = await fetch(url, { ...options, headers });
+    } catch (err) {
+        console.error('[apiFetch] Network error for', url, err);
+        return { success: false, message: `Không thể gọi API ${url}: ${err.message || 'lỗi kết nối'}` };
+    }
     const payload = await parseApiResponse(url, res);
+    if (!payload.success && res.status) {
+        payload.status = res.status;
+    }
     const retryUrl = getRouteRetryUrl(url, payload);
     if (retryUrl && retryUrl !== url) {
         console.warn('[apiFetch] Retrying admin route with alternate prefix:', retryUrl);
-        const retryRes = await fetch(retryUrl, { ...options, headers });
-        return parseApiResponse(retryUrl, retryRes);
+        try {
+            const retryRes = await fetch(retryUrl, { ...options, headers });
+            const retryPayload = await parseApiResponse(retryUrl, retryRes);
+            if (!retryPayload.success && retryRes.status) {
+                retryPayload.status = retryRes.status;
+            }
+            return retryPayload;
+        } catch (err) {
+            console.error('[apiFetch] Network error for retry', retryUrl, err);
+            return { success: false, message: `Không thể gọi API ${retryUrl}: ${err.message || 'lỗi kết nối'}` };
+        }
     }
     return payload;
 }
@@ -337,7 +355,7 @@ async function exportPdf() {
 
 async function exportCsv() {
     const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-    if (!token) return alert('Vui lÃ²ng Ä‘Äƒng nháº­p!');
+    if (!token) return alert('Vui lòng đăng nhập!');
 
     const params = new URLSearchParams();
     if (dashCinemaId) params.set('cinemaId', dashCinemaId);
@@ -351,7 +369,7 @@ async function exportCsv() {
 
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
-            return alert(errData.message || 'KhÃ´ng thá»ƒ xuáº¥t file CSV.');
+            return alert(errData.message || 'Không thể xuất file CSV.');
         }
 
         const blob = await res.blob();
@@ -365,13 +383,13 @@ async function exportCsv() {
         window.URL.revokeObjectURL(url);
     } catch (err) {
         console.error('Error downloading CSV:', err);
-        alert('Lá»—i káº¿t ná»‘i khi xuáº¥t CSV!');
+        alert('Lỗi kết nối khi xuất CSV!');
     }
 }
 
 async function exportExcel() {
     const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-    if (!token) return alert('Vui lÃ²ng Ä‘Äƒng nháº­p!');
+    if (!token) return alert('Vui lòng đăng nhập!');
 
     const params = new URLSearchParams();
     if (dashCinemaId) params.set('cinemaId', dashCinemaId);
@@ -385,7 +403,7 @@ async function exportExcel() {
 
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
-            return alert(errData.message || 'KhÃ´ng thá»ƒ xuáº¥t file Excel.');
+            return alert(errData.message || 'Không thể xuất file Excel.');
         }
 
         const blob = await res.blob();
@@ -399,7 +417,7 @@ async function exportExcel() {
         window.URL.revokeObjectURL(url);
     } catch (err) {
         console.error('Error downloading Excel:', err);
-        alert('Lá»—i káº¿t ná»‘i khi xuáº¥t Excel!');
+        alert('Lỗi kết nối khi xuất Excel!');
     }
 }
 
@@ -2587,12 +2605,14 @@ async function loadAiScheduleSuggestion() {
                 : (res.data.suggestion || 'AI chưa trả về gợi ý xếp lịch.');
         } else {
             if (providerEl) providerEl.textContent = 'Lỗi';
-            box.textContent = res.message || 'Không thể tạo gợi ý xếp lịch.';
+            box.textContent = res.status
+                ? `${res.message || 'Không thể tạo gợi ý xếp lịch.'} (HTTP ${res.status})`
+                : (res.message || 'Không thể tạo gợi ý xếp lịch.');
         }
     } catch (err) {
         box.classList.remove('ai-insight-loading');
         if (providerEl) providerEl.textContent = 'Lỗi';
-        box.textContent = 'Không thể kết nối tới dịch vụ gợi ý lịch chiếu AI.';
+        box.textContent = `Không thể kết nối tới dịch vụ gợi ý lịch chiếu AI: ${err.message || 'lỗi không xác định'}`;
         console.error('AI schedule suggestion failed:', err);
     }
 }
