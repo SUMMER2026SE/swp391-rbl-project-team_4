@@ -9,6 +9,28 @@ const { sendBookingEmail } = require('../services/emailService');
 const { emitPaymentConfirmed } = require('../sockets/socketManager');
 const os = require('os');
 
+function toUtcDate(value) {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  const text = String(value);
+  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(text);
+  return new Date(hasTimezone ? text : `${text}Z`);
+}
+
+function formatVietnamDateTime(value) {
+  const date = toUtcDate(value);
+  if (!date || Number.isNaN(date.getTime())) return String(value || '');
+  return date.toLocaleString('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
 function getVerificationUrl(req, ticketId) {
   let host = req ? req.get('host') : 'localhost:9999';
   const protocol = req && req.protocol ? req.protocol : 'http';
@@ -53,8 +75,8 @@ async function sendGroupedBookingEmail(ticketIds, req) {
     const result = await pool.request().query(`
       SELECT t.TicketID, t.Status, t.TicketPrice, t.TotalAmount, t.PaymentMethod,
              m.Title AS MovieTitle, m.PosterURL, m.Duration,
-             CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
-             CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
+             CONVERT(varchar(19), st.StartTime, 126) + 'Z' AS StartTime,
+             CONVERT(varchar(19), st.EndTime, 126) + 'Z' AS EndTime,
              r.RoomName,
              c.CinemaName, c.Address,
              s.SeatRow, s.SeatNumber, s.SeatType,
@@ -107,7 +129,7 @@ async function sendGroupedBookingEmail(ticketIds, req) {
       movieTitle: first.MovieTitle,
       cinemaName: first.CinemaName,
       roomName: first.RoomName,
-      showtime: new Date(first.StartTime).toLocaleString('vi-VN'),
+      showtime: formatVietnamDateTime(first.StartTime),
       seats: uniqueSeats.join(', '),
       food: foodDisplayItems.join(', ') || '',
       totalAmount: grandTotal.toLocaleString('vi-VN') + 'đ',
@@ -828,8 +850,8 @@ exports.getPublicBookingDetails = async (req, res) => {
     const result = await pool.request().query(`
       SELECT t.TicketID, t.Status, t.TicketPrice, t.TotalAmount, t.PaymentMethod,
              m.Title AS MovieTitle, m.PosterURL, m.Duration,
-             CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
-             CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
+             CONVERT(varchar(19), st.StartTime, 126) + 'Z' AS StartTime,
+             CONVERT(varchar(19), st.EndTime, 126) + 'Z' AS EndTime,
              r.RoomName,
              c.CinemaName, c.Address,
              s.SeatRow, s.SeatNumber, s.SeatType,
