@@ -2218,8 +2218,8 @@ function renderStaffTable() {
             </td>
             <td><span class="st-date">${new Date(user.CreatedAt).toLocaleDateString('vi-VN')}</span></td>
             <td>
-                <div class="table-actions">
-                    <button class="tb-icon-sm" title="Xem chi tiết" onclick='openCustomerDetail(${JSON.stringify(user)})'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <div class="table-actions" style="opacity:0.6">
+                    <button class="tb-icon-sm" title="Action"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                 </div>
             </td>
         </tr>
@@ -2241,7 +2241,6 @@ function openCustomerDetail(user) {
     const initial = (user.FullName || 'K').charAt(0).toUpperCase();
     document.getElementById('cdAvatar').textContent = initial;
     document.getElementById('cdName').textContent = user.FullName || '—';
-    if (document.getElementById('cdUid')) document.getElementById('cdUid').textContent = 'ID: ' + (user.UserID || '—');
 
     // Role badge
     const roleColors = { Admin: '#e8192c', Manager: '#f59e0b', Customer: '#10b981' };
@@ -2254,28 +2253,25 @@ function openCustomerDetail(user) {
     document.getElementById('cdEmail').textContent = user.Email || '—';
     document.getElementById('cdPhone').textContent = user.Phone || 'Chưa cập nhật';
     document.getElementById('cdJoined').textContent = user.CreatedAt
-        ? new Date(user.CreatedAt).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' })
+        ? new Date(user.CreatedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
         : '—';
 
     const statusEl = document.getElementById('cdStatus');
     const toggleBtn = document.getElementById('cdToggleStatusBtn');
-    const statusDot = document.getElementById('cdStatusDot');
     if (user.IsActive) {
-        statusEl.textContent = 'Hoạt động';
+        statusEl.textContent = '✅ Hoạt động';
         statusEl.style.color = '#10b981';
-        if (statusDot) { statusDot.style.background = 'rgba(16,185,129,0.12)'; statusDot.querySelector('svg').setAttribute('stroke','#10b981'); }
-        toggleBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Khóa tài khoản';
-        toggleBtn.style.borderColor = 'rgba(239,68,68,0.25)';
-        toggleBtn.style.color = '#f87171';
-        toggleBtn.style.background = 'rgba(239,68,68,0.08)';
+        toggleBtn.textContent = '🔒 Khóa tài khoản';
+        toggleBtn.style.borderColor = 'rgba(239,68,68,0.3)';
+        toggleBtn.style.color = '#ef4444';
+        toggleBtn.style.background = 'rgba(239,68,68,0.07)';
     } else {
-        statusEl.textContent = 'Đang bị khóa';
+        statusEl.textContent = '🚫 Đang bị khóa';
         statusEl.style.color = '#ef4444';
-        if (statusDot) { statusDot.style.background = 'rgba(239,68,68,0.12)'; statusDot.querySelector('svg').setAttribute('stroke','#ef4444'); }
-        toggleBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3.27 3.27a4 4 0 0 0-.27 1.73v4a5 5 0 0 0 10 0V7a4 4 0 0 0-.27-1.73M7 11V7"/><rect x="3" y="11" width="18" height="11" rx="2"/></svg> Mở khóa tài khoản';
-        toggleBtn.style.borderColor = 'rgba(16,185,129,0.25)';
+        toggleBtn.textContent = '🔓 Mở khóa tài khoản';
+        toggleBtn.style.borderColor = 'rgba(16,185,129,0.3)';
         toggleBtn.style.color = '#10b981';
-        toggleBtn.style.background = 'rgba(16,185,129,0.08)';
+        toggleBtn.style.background = 'rgba(16,185,129,0.07)';
     }
 
     // Booking history from already-loaded data
@@ -2299,7 +2295,7 @@ async function cdToggleStatus() {
 async function cdChangeRole() {
     if (!_cdUser) return;
     const newRole = prompt(`Nhập vai trò mới cho ${_cdUser.FullName}\n(Admin / Manager / Customer):`, _cdUser.RoleName);
-    if (!newRole || !['Admin','Manager','Customer'].includes(newRole)) {
+    if (!newRole || !['Admin', 'Manager', 'Customer'].includes(newRole)) {
         if (newRole !== null) alert('Vai trò không hợp lệ. Chỉ chấp nhận: Admin, Manager, Customer');
         return;
     }
@@ -3169,13 +3165,13 @@ window.selectRoomForBuilder = async function (roomId, el) {
                 maxRow = 10;
                 maxCol = 12;
             }
-            
+
             // Update size inputs
             const rowsInput = document.getElementById('gridRowsInput');
             const colsInput = document.getElementById('gridColsInput');
             if (rowsInput) rowsInput.value = maxRow;
             if (colsInput) colsInput.value = maxCol;
-            
+
             const presetSelect = document.getElementById('presetTemplateSelect');
             if (presetSelect) presetSelect.value = '';
 
@@ -3418,7 +3414,7 @@ function getSeatTypeClass(type) {
 }
 
 /* ─── Update room type inline from stats bar ─── */
-window.updateBuilderRoomType = async function(newType) {
+window.updateBuilderRoomType = async function (newType) {
     if (!currentBuilderRoomId || !newType) return;
     const room = ROOM_DATA && ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId);
     if (!room) return;
@@ -3434,7 +3430,7 @@ window.updateBuilderRoomType = async function(newType) {
         } else {
             showToast('Không thể đổi loại phòng: ' + (res.message || ''), 'error');
         }
-    } catch(e) {
+    } catch (e) {
         console.error(e);
         showToast('Lỗi kết nối.', 'error');
     }
@@ -3459,9 +3455,9 @@ function updateBuilderStats() {
         const room = (typeof ROOM_DATA !== 'undefined') ? ROOM_DATA.find(r => r.RoomID === currentBuilderRoomId) : null;
         const typeColors = {
             'IMAX Laser': { bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.4)', color: '#60a5fa' },
-            '3D':          { bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.4)', color: '#c084fc' },
-            '2D':          { bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.3)',  color: '#4ade80' },
-            'Standard':    { bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.3)', color: '#94a3b8' }
+            '3D': { bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.4)', color: '#c084fc' },
+            '2D': { bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.3)', color: '#4ade80' },
+            'Standard': { bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.3)', color: '#94a3b8' }
         };
         let typeSelectHtml = '';
         if (room) {
@@ -3491,7 +3487,7 @@ function updateBuilderStats() {
             ${sep}
             <span style="display:flex;align-items:center;gap:6px;">
                 <span style="width:28px;height:12px;border-radius:2px;background:linear-gradient(180deg,#db2777,#7d0e3d);flex-shrink:0;border:1px solid rgba(251,207,232,0.3);"></span>
-                <span style="color:#94a3b8;font-size:0.82rem;">Cặp đôi: <strong style="color:#f472b6;">&#9829; ${Math.floor(couple/2)} cặp</strong></span>
+                <span style="color:#94a3b8;font-size:0.82rem;">Cặp đôi: <strong style="color:#f472b6;">&#9829; ${Math.floor(couple / 2)} cặp</strong></span>
             </span>
             ${sep}
             <span style="color:#4ade80;font-weight:800;font-size:0.88rem;margin-left:2px;">Tổng: ${total} ghế</span>`;
@@ -3546,7 +3542,7 @@ window.renderSeatMatrix = function () {
                 let lockClass = 'locked-seat';
                 if (seat.SeatType === 'Couple') {
                     lockClass += ' couple';
-                    const lbl = `${rowChar}${c}-${c+1}`;
+                    const lbl = `${rowChar}${c}-${c + 1}`;
                     html += `<button class="seat-btn ${lockClass}" disabled title="Ghế đôi ${lbl} đã bán vé (Khóa)">
                         <span style="position:relative;z-index:5;font-size:0.6rem;font-weight:800;">🔒 ${lbl}</span>
                     </button>`;
@@ -3684,23 +3680,23 @@ window.toggleCoupleSeat = function (rowChar, col1, btn) {
 
 /* Zoom */
 let adminBuilderZoom = 1.0;
-window.adminZoomIn  = function() { adminBuilderZoom = Math.min(2.0, adminBuilderZoom + 0.12); const c = document.querySelector('.cw-canvas'); if(c) c.style.transform = `scale(${adminBuilderZoom})`; };
-window.adminZoomOut = function() { adminBuilderZoom = Math.max(0.45, adminBuilderZoom - 0.12); const c = document.querySelector('.cw-canvas'); if(c) c.style.transform = `scale(${adminBuilderZoom})`; };
+window.adminZoomIn = function () { adminBuilderZoom = Math.min(2.0, adminBuilderZoom + 0.12); const c = document.querySelector('.cw-canvas'); if (c) c.style.transform = `scale(${adminBuilderZoom})`; };
+window.adminZoomOut = function () { adminBuilderZoom = Math.max(0.45, adminBuilderZoom - 0.12); const c = document.querySelector('.cw-canvas'); if (c) c.style.transform = `scale(${adminBuilderZoom})`; };
 
-window.addSeatRow = function() {
+window.addSeatRow = function () {
     maxRow++;
     const rowsInput = document.getElementById('gridRowsInput');
     if (rowsInput) rowsInput.value = maxRow;
     renderSeatMatrix();
 };
-window.addSeatCol = function() {
+window.addSeatCol = function () {
     maxCol++;
     const colsInput = document.getElementById('gridColsInput');
     if (colsInput) colsInput.value = maxCol;
     renderSeatMatrix();
 };
 
-window.removeSeatRow = function() {
+window.removeSeatRow = function () {
     if (maxRow > 1) {
         maxRow--;
         const rowsInput = document.getElementById('gridRowsInput');
@@ -3710,7 +3706,7 @@ window.removeSeatRow = function() {
     }
 };
 
-window.removeSeatCol = function() {
+window.removeSeatCol = function () {
     if (maxCol > 1) {
         maxCol--;
         const colsInput = document.getElementById('gridColsInput');
@@ -3720,13 +3716,13 @@ window.removeSeatCol = function() {
     }
 };
 
-window.resizeGrid = function() {
+window.resizeGrid = function () {
     const rowsVal = parseInt(document.getElementById('gridRowsInput').value) || 10;
     const colsVal = parseInt(document.getElementById('gridColsInput').value) || 12;
-    
+
     const targetRow = Math.max(1, Math.min(26, rowsVal));
     const targetCol = Math.max(1, Math.min(24, colsVal));
-    
+
     // Check if we are shrinking and cutting off booked seats
     const cutBooked = builderSeats.filter(s => s.IsBooked && ((s.SeatRow.charCodeAt(0) - 64) > targetRow || s.SeatNumber > targetCol));
     if (cutBooked.length > 0) {
@@ -3735,20 +3731,20 @@ window.resizeGrid = function() {
         document.getElementById('gridColsInput').value = maxCol;
         return;
     }
-    
+
     maxRow = targetRow;
     maxCol = targetCol;
-    
+
     // Filter out seats that are out of bounds
     builderSeats = builderSeats.filter(s => {
         const rowIdx = s.SeatRow.charCodeAt(0) - 64;
         return rowIdx <= maxRow && s.SeatNumber <= maxCol;
     });
-    
+
     renderSeatMatrix();
 };
 
-window.applyPresetTemplate = function(type) {
+window.applyPresetTemplate = function (type) {
     if (!currentBuilderRoomId) { alert('Vui lòng chọn phòng trước!'); return; }
     if (!type) return;
 
@@ -3764,7 +3760,7 @@ window.applyPresetTemplate = function(type) {
     else if (type === 'blank') { newRows = maxRow; newCols = maxCol; }
 
     const preservedSeats = builderSeats.filter(s => s.IsBooked);
-    
+
     // Check if new dimensions cut off booked seats
     const cutBooked = preservedSeats.filter(s => (s.SeatRow.charCodeAt(0) - 64) > newRows || s.SeatNumber > newCols);
     if (cutBooked.length > 0) {
@@ -3813,7 +3809,7 @@ window.applyPresetTemplate = function(type) {
     document.getElementById('presetTemplateSelect').value = '';
 };
 
-window.toggleRowBulk = function(rowChar) {
+window.toggleRowBulk = function (rowChar) {
     if (!currentBuilderRoomId) { alert('Vui lòng chọn phòng trước!'); return; }
     const tool = document.querySelector('input[name="seat_tool"]:checked').value;
 
@@ -3845,7 +3841,7 @@ window.toggleRowBulk = function(rowChar) {
     if (changedCount > 0) renderSeatMatrix();
 };
 
-window.toggleColBulk = function(colNum) {
+window.toggleColBulk = function (colNum) {
     if (!currentBuilderRoomId) { alert('Vui lòng chọn phòng trước!'); return; }
     const tool = document.querySelector('input[name="seat_tool"]:checked').value;
 
@@ -3890,7 +3886,7 @@ window.toggleColBulk = function(colNum) {
     if (changedCount > 0) renderSeatMatrix();
 };
 
-window.validateCoupleSeats = function() {
+window.validateCoupleSeats = function () {
     const couples = builderSeats.filter(s => s.SeatType === 'Couple');
     const invalidPairs = [];
     couples.forEach(s => {
@@ -3974,7 +3970,7 @@ window.previewCustomerView = function () {
                     seatsHtml += `<div style="${S.base}${S.couple}${S.locked}" title="Cặp đôi ${lbl} (Đã đặt)"><span style="position:relative;z-index:5;margin-bottom:2px;font-size:0.6rem;">🔒 ${lbl}</span></div>`;
                     if (s2 && s2.SeatType === 'Couple') i++;
                 } else {
-                    seatsHtml += `<div style="${S.base}${s.SeatType==='VIP'?S.vip:S.normal}${S.locked}" title="${row}${s.SeatNumber} (Đã đặt)"><span style="position:relative;z-index:2;">🔒 ${s.SeatNumber}</span></div>`;
+                    seatsHtml += `<div style="${S.base}${s.SeatType === 'VIP' ? S.vip : S.normal}${S.locked}" title="${row}${s.SeatNumber} (Đã đặt)"><span style="position:relative;z-index:2;">🔒 ${s.SeatNumber}</span></div>`;
                 }
             } else if (s.SeatType === 'Couple') {
                 const s2 = rowSeats[i + 1];
@@ -4741,37 +4737,28 @@ function renderNewsAdminTable() {
 }
 
 function openNewsModal(id) {
-    // Reset editor
-    const editor = document.getElementById('newsContentEditor');
-    if (editor) editor.innerHTML = '';
+    document.getElementById('newsForm').reset();
+    document.getElementById('newsCurrentImg').innerHTML = '';
     document.getElementById('newsPublishedAt').value = toDateInputValue();
     document.getElementById('newsActive').checked = true;
     document.getElementById('newsFeatured').checked = false;
     document.getElementById('newsId').value = '';
-    document.getElementById('newsTitle').value = '';
-    document.getElementById('newsSummary').value = '';
-    document.getElementById('newsAuthor').value = '';
-    document.getElementById('newsBadge').value = '';
-    document.getElementById('newsSort').value = 0;
-    document.getElementById('newsType').value = 'news';
-    document.getElementById('newsCurrentImg').innerHTML = '';
-    document.getElementById('newsContent').value = '';
+    document.getElementById('newsModalTitle').textContent = 'THÊM TIN TỨC';
+    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
     const preview = document.getElementById('newsPreviewImg');
-    if (preview) { preview.src = ''; preview.style.display = 'none'; }
-    const dropText = document.getElementById('newsDropText');
-    if (dropText) dropText.style.display = 'block';
-    document.getElementById('newsModalTitle').textContent = 'THÊM BÀI VIẾT';
-    switchEditorTab('write');
-
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
     if (id) {
         const item = NEWS_DATA.find(x => x.ArticleID === id);
         if (!item) return;
-        document.getElementById('newsModalTitle').textContent = 'S\u1eec A B\u00c0I VI\u1ebeT';
+        document.getElementById('newsModalTitle').textContent = 'SỬA TIN TỨC';
         document.getElementById('newsId').value = item.ArticleID;
         document.getElementById('newsTitle').value = item.Title || '';
         document.getElementById('newsType').value = item.Type || 'news';
         document.getElementById('newsSummary').value = item.Summary || '';
-        if (editor) editor.innerHTML = item.Content || '';
+        document.getElementById('newsContent').value = item.Content || '';
         document.getElementById('newsAuthor').value = item.Author || '';
         document.getElementById('newsPublishedAt').value = toDateInputValue(item.PublishedAt);
         document.getElementById('newsBadge').value = item.BadgeLabel || '';
@@ -4779,93 +4766,28 @@ function openNewsModal(id) {
         document.getElementById('newsFeatured').checked = !!item.IsFeatured;
         document.getElementById('newsActive').checked = !!item.IsActive;
         if (item.ImageURL) {
-            document.getElementById('newsCurrentImg').textContent = item.ImageURL;
-            if (preview) { preview.src = item.ImageURL; preview.style.display = 'block'; }
-            if (dropText) dropText.style.display = 'none';
+            document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
+            if (preview) {
+                preview.src = item.ImageURL;
+                preview.style.display = 'block';
+            }
         }
     }
-    // Show as flex
     document.getElementById('newsModalOverlay').style.display = 'block';
-    const modal = document.getElementById('newsAdminModal');
-    modal.style.display = 'flex';
-    modal.style.flexDirection = 'column';
+    document.getElementById('newsAdminModal').style.display = 'block';
 }
 
 function closeNewsModal() {
     document.getElementById('newsModalOverlay').style.display = 'none';
     document.getElementById('newsAdminModal').style.display = 'none';
+
     document.getElementById('newsImage').value = '';
+    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
     const preview = document.getElementById('newsPreviewImg');
-    if (preview) { preview.src = ''; preview.style.display = 'none'; }
-    const dropText = document.getElementById('newsDropText');
-    if (dropText) dropText.style.display = 'block';
-}
-
-/* ── Editor helpers ── */
-function switchEditorTab(tab) {
-    const writeBtn = document.getElementById('tabWrite');
-    const previewBtn = document.getElementById('tabPreview');
-    const writePanel = document.getElementById('editorWritePanel');
-    const previewPanel = document.getElementById('editorPreviewPanel');
-    if (tab === 'write') {
-        writeBtn.style.background = '#e8192c'; writeBtn.style.color = '#fff';
-        previewBtn.style.background = 'transparent'; previewBtn.style.color = 'rgba(255,255,255,0.5)';
-        writePanel.style.display = 'flex'; previewPanel.style.display = 'none';
-    } else {
-        previewBtn.style.background = '#e8192c'; previewBtn.style.color = '#fff';
-        writeBtn.style.background = 'transparent'; writeBtn.style.color = 'rgba(255,255,255,0.5)';
-        writePanel.style.display = 'none'; previewPanel.style.display = 'flex';
-        const editor = document.getElementById('newsContentEditor');
-        const title = document.getElementById('newsTitle').value;
-        const summary = document.getElementById('newsSummary').value;
-        document.getElementById('newsPreviewContent').innerHTML =
-            `<h1 style="font-size:1.5rem;font-weight:900;color:#fff;margin:0 0 10px;">${adminEscape(title)}</h1>` +
-            (summary ? `<p style="color:rgba(255,255,255,0.45);font-size:0.9rem;margin-bottom:20px;border-left:3px solid #e8192c;padding-left:12px;">${adminEscape(summary)}</p>` : '') +
-            (editor ? editor.innerHTML : '');
+    if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
     }
-}
-
-function editorExec(cmd) {
-    document.getElementById('newsContentEditor').focus();
-    document.execCommand(cmd, false, null);
-}
-
-function editorFormat(tag) {
-    document.getElementById('newsContentEditor').focus();
-    document.execCommand('formatBlock', false, tag);
-}
-
-function editorInsertLink() {
-    const url = prompt('Nhập URL liên kết:');
-    if (url) { document.getElementById('newsContentEditor').focus(); document.execCommand('createLink', false, url); }
-}
-
-function editorInsertQuote() {
-    document.getElementById('newsContentEditor').focus();
-    document.execCommand('formatBlock', false, 'blockquote');
-}
-
-function handleNewsFileDrop(e) {
-    e.preventDefault();
-    document.getElementById('newsDropZone').style.borderColor = 'rgba(255,255,255,0.12)';
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-        const dt = new DataTransfer(); dt.items.add(file);
-        const input = document.getElementById('newsImage');
-        input.files = dt.files;
-        handleNewsFileSelect(input);
-    }
-}
-
-async function submitNewsForm() {
-    const title = document.getElementById('newsTitle').value.trim();
-    if (!title) { showAdminToast('Vui lòng nhập tiêu đề bài viết.', 'error'); return; }
-    // Sync content from editor to hidden textarea
-    const editor = document.getElementById('newsContentEditor');
-    document.getElementById('newsContent').value = editor ? editor.innerHTML : '';
-    // Build fake event and call existing saveNewsArticle
-    const fakeEvent = { preventDefault: () => {} };
-    await saveNewsArticle(fakeEvent);
 }
 
 async function saveNewsArticle(event) {

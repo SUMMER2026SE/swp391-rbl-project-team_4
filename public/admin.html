@@ -178,8 +178,10 @@
                     style="font-weight:900; color:var(--accent); text-transform:uppercase; font-size:1.15rem; margin-right:30px; letter-spacing:0.02em; display:none;">
                     SƠ ĐỒ GHẾ NGỒI</div>
                 <nav class="topbar-tabs">
-                    <button class="ttab active" onclick="switchTab('analytics',this)" data-i18n="admin_tab_analytics">Phân tích</button>
-                    <button class="ttab" onclick="switchTab('health',this)" data-i18n="admin_tab_system">Tình trạng hệ thống</button>
+                    <button class="ttab active" onclick="switchTab('analytics',this)"
+                        data-i18n="admin_tab_analytics">Phân tích</button>
+                    <button class="ttab" onclick="switchTab('health',this)" data-i18n="admin_tab_system">Tình trạng hệ
+                        thống</button>
                 </nav>
             </div>
 
@@ -244,7 +246,8 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm phim, diễn viên, đạo diễn..." id="adminSearch" data-i18n="admin_search_ph">
+                    <input type="text" placeholder="Tìm kiếm phim, diễn viên, đạo diễn..." id="adminSearch"
+                        data-i18n="admin_search_ph">
                 </div>
                 <div id="liveClock"
                     style="font-family: 'Courier New', monospace; font-size: 1rem; color: #6b7280; font-weight: 600; margin: 0 15px;">
@@ -300,10 +303,12 @@
                 <div class="dash-heading">
                     <div>
                         <h1 data-i18n="admin_dash_title">TỔNG QUAN HIỆU SUẤT</h1>
-                        <p data-i18n="admin_dash_desc">Phân tích hoạt động và doanh thu rạp chiếu theo thời gian thực.</p>
+                        <p data-i18n="admin_dash_desc">Phân tích hoạt động và doanh thu rạp chiếu theo thời gian thực.
+                        </p>
                     </div>
                     <div class="heading-actions">
-                        <button class="btn-export btn-ai-insight btn-ai-compact" onclick="loadAiRevenueInsight()" title="AI phân tích doanh thu" aria-label="AI phân tích doanh thu">
+                        <button class="btn-export btn-ai-insight btn-ai-compact" onclick="loadAiRevenueInsight()"
+                            title="AI phân tích doanh thu" aria-label="AI phân tích doanh thu">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.5">
                                 <path d="M12 2l1.6 5.1L19 9l-5.4 1.9L12 16l-1.6-5.1L5 9l5.4-1.9L12 2z" />
@@ -332,12 +337,14 @@
                         <span class="ai-insight-provider" id="aiInsightProvider">Gemini</span>
                     </div>
                     <div class="ai-insight-body" id="aiRevenueInsight" data-i18n="admin_ai_rev_desc">
-                        Bấm <b>AI phân tích</b> để nhận tóm tắt doanh thu, điểm nổi bật, vấn đề cần chú ý và đề xuất hành động.
+                        Bấm <b>AI phân tích</b> để nhận tóm tắt doanh thu, điểm nổi bật, vấn đề cần chú ý và đề xuất
+                        hành động.
                     </div>
                 </div>
 
                 <div class="ai-insight-card ai-query-card is-collapsed" id="aiAdminQueryCard">
-                    <div class="ai-insight-head ai-query-head" onclick="toggleAdminAiQuery()" role="button" tabindex="0" aria-expanded="false" id="aiAdminQueryToggle">
+                    <div class="ai-insight-head ai-query-head" onclick="toggleAdminAiQuery()" role="button" tabindex="0"
+                        aria-expanded="false" id="aiAdminQueryToggle">
                         <span class="ai-query-head-icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
@@ -353,7 +360,8 @@
                     <form class="ai-query-form" onsubmit="askAdminAi(event)">
                         <input id="aiAdminQuestion" class="form-control" type="text"
                             placeholder="Hỏi: Hôm nay rạp nào doanh thu cao nhất?" data-i18n="admin_ai_query_ph">
-                        <button class="btn-export btn-ai-insight btn-ai-compact" type="submit" title="Hỏi AI" aria-label="Hỏi AI">
+                        <button class="btn-export btn-ai-insight btn-ai-compact" type="submit" title="Hỏi AI"
+                            aria-label="Hỏi AI">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
@@ -362,9 +370,12 @@
                         </button>
                     </form>
                     <div class="ai-query-examples">
-                        <button type="button" onclick="askAdminAi(null, 'Hôm nay rạp nào doanh thu cao nhất?')">Rạp doanh thu cao nhất</button>
-                        <button type="button" onclick="askAdminAi(null, 'Phim nào bán ít vé nhất tuần này?')">Phim bán ít vé</button>
-                        <button type="button" onclick="askAdminAi(null, 'Suất chiếu nào còn nhiều ghế trống?')">Suất nhiều ghế trống</button>
+                        <button type="button" onclick="askAdminAi(null, 'Hôm nay rạp nào doanh thu cao nhất?')">Rạp
+                            doanh thu cao nhất</button>
+                        <button type="button" onclick="askAdminAi(null, 'Phim nào bán ít vé nhất tuần này?')">Phim bán
+                            ít vé</button>
+                        <button type="button" onclick="askAdminAi(null, 'Suất chiếu nào còn nhiều ghế trống?')">Suất
+                            nhiều ghế trống</button>
                     </div>
                     <div class="ai-insight-body" id="aiAdminQueryAnswer" data-i18n="admin_ai_query_desc">
                         Nhập câu hỏi để xem câu trả lời kèm số liệu từ database.
@@ -457,11 +468,14 @@
                         <div class="chart-card-header">
                             <div>
                                 <div class="chart-title" data-i18n="admin_chart_rev_title">So sánh Doanh thu</div>
-                                <div class="chart-subtitle" data-i18n="admin_chart_rev_desc">Thu nhập hàng tháng theo các chi nhánh chính</div>
+                                <div class="chart-subtitle" data-i18n="admin_chart_rev_desc">Thu nhập hàng tháng theo
+                                    các chi nhánh chính</div>
                             </div>
                             <div class="chart-legend">
-                                <span class="legend-dot" style="background:#e8192c"></span> <span data-i18n="admin_legend_ticket">Vé</span>
-                                <span class="legend-dot" style="background:#f59e0b;margin-left:12px"></span> <span data-i18n="admin_legend_fnb">Đồ ăn</span>
+                                <span class="legend-dot" style="background:#e8192c"></span> <span
+                                    data-i18n="admin_legend_ticket">Vé</span>
+                                <span class="legend-dot" style="background:#f59e0b;margin-left:12px"></span> <span
+                                    data-i18n="admin_legend_fnb">Đồ ăn</span>
                             </div>
                         </div>
                         <div class="chart-wrap">
@@ -494,13 +508,16 @@
                         <div class="chart-card small" style="flex: 1;">
                             <div class="chart-card-header" style="padding-bottom: 10px;">
                                 <div class="chart-title" style="display: flex; align-items: center; gap: 6px;">
-                                    <span class="live-indicator"></span> <span data-i18n="admin_live_status">Live Status</span>
+                                    <span class="live-indicator"></span> <span data-i18n="admin_live_status">Live
+                                        Status</span>
                                 </div>
                             </div>
                             <div class="live-legend">
                                 <span class="l-badge empty">🟢 <span data-i18n="admin_live_empty">Trống</span></span>
-                                <span class="l-badge playing">🔴 <span data-i18n="admin_live_playing">Đang chiếu</span></span>
-                                <span class="l-badge cleaning">🟡 <span data-i18n="admin_live_cleaning">Sắp hết/Dọn dẹp</span></span>
+                                <span class="l-badge playing">🔴 <span data-i18n="admin_live_playing">Đang
+                                        chiếu</span></span>
+                                <span class="l-badge cleaning">🟡 <span data-i18n="admin_live_cleaning">Sắp hết/Dọn
+                                        dẹp</span></span>
                             </div>
                             <div class="live-rooms-grid" id="liveRoomsGrid">
                                 <!-- Populated by JS -->
@@ -631,34 +648,51 @@
                     </div>
                 </div>
 
-            <!-- Main Workspace -->
+                <!-- Main Workspace -->
                 <!-- Main Workspace -->
                 <div class="cin-workspace" id="cinemaWorkspace" style="display: none;">
                     <div class="cw-toolbar">
                         <!-- Row 1: Size configuration, Presets, Actions -->
-                        <div class="cw-toolbar-row" style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px; gap:16px;">
+                        <div class="cw-toolbar-row"
+                            style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px; gap:16px;">
                             <div class="cw-tools-left" style="display:flex; align-items:center; gap:16px;">
                                 <!-- Grid size inputs -->
                                 <div style="display:flex; align-items:center; gap:8px;">
                                     <div style="display:flex; flex-direction:column; gap:2px;">
-                                        <span style="font-size:0.65rem; color:#8a9099; font-weight:700; text-transform:uppercase; letter-spacing: 0.05em;">Số hàng</span>
-                                        <input type="number" id="gridRowsInput" min="1" max="26" value="10" onchange="resizeGrid()" style="width:65px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:6px; padding:6px 8px; font-weight:700; outline:none; text-align:center; transition: all 0.2s;">
+                                        <span
+                                            style="font-size:0.65rem; color:#8a9099; font-weight:700; text-transform:uppercase; letter-spacing: 0.05em;">Số
+                                            hàng</span>
+                                        <input type="number" id="gridRowsInput" min="1" max="26" value="10"
+                                            onchange="resizeGrid()"
+                                            style="width:65px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:6px; padding:6px 8px; font-weight:700; outline:none; text-align:center; transition: all 0.2s;">
                                     </div>
                                     <div style="display:flex; flex-direction:column; gap:2px;">
-                                        <span style="font-size:0.65rem; color:#8a9099; font-weight:700; text-transform:uppercase; letter-spacing: 0.05em;">Số cột</span>
-                                        <input type="number" id="gridColsInput" min="1" max="24" value="12" onchange="resizeGrid()" style="width:65px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:6px; padding:6px 8px; font-weight:700; outline:none; text-align:center; transition: all 0.2s;">
+                                        <span
+                                            style="font-size:0.65rem; color:#8a9099; font-weight:700; text-transform:uppercase; letter-spacing: 0.05em;">Số
+                                            cột</span>
+                                        <input type="number" id="gridColsInput" min="1" max="24" value="12"
+                                            onchange="resizeGrid()"
+                                            style="width:65px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:6px; padding:6px 8px; font-weight:700; outline:none; text-align:center; transition: all 0.2s;">
                                     </div>
                                 </div>
                                 <div style="height:28px; width:1px; background:rgba(255,255,255,0.08);"></div>
                                 <!-- Preset template select -->
                                 <div style="display:flex; flex-direction:column; gap:2px;">
-                                    <span style="font-size:0.65rem; color:#8a9099; font-weight:700; text-transform:uppercase; letter-spacing: 0.05em;">Bố cục mẫu</span>
-                                    <select id="presetTemplateSelect" onchange="applyPresetTemplate(this.value)" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:6px; padding:6px 12px; font-weight:600; font-size:0.8rem; cursor:pointer; outline:none; min-width:190px; transition: all 0.2s;">
-                                        <option value="" style="background:#12161a; color:#fff;">-- Chọn bố cục mẫu --</option>
-                                        <option value="standard" style="background:#12161a; color:#fff;">Standard (10x12 - Phổ thông)</option>
-                                        <option value="imax" style="background:#12161a; color:#fff;">IMAX (12x14 - Premium)</option>
-                                        <option value="gold" style="background:#12161a; color:#fff;">Gold Class (6x8 - Sang trọng)</option>
-                                        <option value="blank" style="background:#12161a; color:#fff;">Trống hoàn toàn</option>
+                                    <span
+                                        style="font-size:0.65rem; color:#8a9099; font-weight:700; text-transform:uppercase; letter-spacing: 0.05em;">Bố
+                                        cục mẫu</span>
+                                    <select id="presetTemplateSelect" onchange="applyPresetTemplate(this.value)"
+                                        style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:6px; padding:6px 12px; font-weight:600; font-size:0.8rem; cursor:pointer; outline:none; min-width:190px; transition: all 0.2s;">
+                                        <option value="" style="background:#12161a; color:#fff;">-- Chọn bố cục mẫu --
+                                        </option>
+                                        <option value="standard" style="background:#12161a; color:#fff;">Standard (10x12
+                                            - Phổ thông)</option>
+                                        <option value="imax" style="background:#12161a; color:#fff;">IMAX (12x14 -
+                                            Premium)</option>
+                                        <option value="gold" style="background:#12161a; color:#fff;">Gold Class (6x8 -
+                                            Sang trọng)</option>
+                                        <option value="blank" style="background:#12161a; color:#fff;">Trống hoàn toàn
+                                        </option>
                                     </select>
                                 </div>
                             </div>
@@ -666,13 +700,18 @@
                                 <button class="btn-outline-red" onclick="clearSeatMap()"
                                     title="Xóa toàn bộ và bắt đầu lại">🔄 Làm mới</button>
                                 <button class="btn-outline-red" onclick="previewCustomerView()"
-                                    title="Xem trước như khách hàng" style="border-color:#3b82f6;color:#3b82f6;">👁 Xem trước</button>
-                                <button class="btn-solid-red" onclick="saveSeatLayout()" id="btnSaveSeatLayout">💾 Lưu bố cục</button>
+                                    title="Xem trước như khách hàng" style="border-color:#3b82f6;color:#3b82f6;">👁 Xem
+                                    trước</button>
+                                <button class="btn-solid-red" onclick="saveSeatLayout()" id="btnSaveSeatLayout">💾 Lưu
+                                    bố cục</button>
                             </div>
                         </div>
                         <!-- Row 2: Legend toggles (Drawing tools) -->
-                        <div class="cw-toolbar-row cw-toolbar-row--legend" style="display:flex; align-items:center; gap:16px; padding:10px 20px; border-top:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.18);">
-                            <span style="font-size:0.7rem; color:#8a9099; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; margin-right:8px;">Cọ vẽ loại ghế:</span>
+                        <div class="cw-toolbar-row cw-toolbar-row--legend"
+                            style="display:flex; align-items:center; gap:16px; padding:10px 20px; border-top:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.18);">
+                            <span
+                                style="font-size:0.7rem; color:#8a9099; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; margin-right:8px;">Cọ
+                                vẽ loại ghế:</span>
                             <div class="cw-legend-toggles" style="margin-left:0;">
                                 <label class="cl-toggle" title="Ghế thường - giá cơ bản">
                                     <input type="radio" name="seat_tool" value="Normal" checked>
@@ -696,10 +735,11 @@
                         </div>
                     </div>
 
-                <!-- Seat count stats bar -->
-                <div id="seatStatsBar" style="display:flex; gap:20px; padding:10px 24px; background:rgba(0,0,0,0.3); border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.8rem; font-weight:600; align-items:center; flex-wrap:wrap;">
-                    <span style="color:#6b7280;">Chưa chọn phòng để thiết kế sơ đồ ghế</span>
-                </div>
+                    <!-- Seat count stats bar -->
+                    <div id="seatStatsBar"
+                        style="display:flex; gap:20px; padding:10px 24px; background:rgba(0,0,0,0.3); border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.8rem; font-weight:600; align-items:center; flex-wrap:wrap;">
+                        <span style="color:#6b7280;">Chưa chọn phòng để thiết kế sơ đồ ghế</span>
+                    </div>
 
 
                     <div class="cw-canvas-area">
@@ -996,7 +1036,8 @@
                         <select id="aiScheduleMovieSelect" class="form-control">
                             <option value="">-- Tất cả phim đang có --</option>
                         </select>
-                        <button class="btn-export btn-ai-insight btn-ai-compact" onclick="loadAiScheduleSuggestion()" title="AI gợi ý lịch chiếu" aria-label="AI gợi ý lịch chiếu">
+                        <button class="btn-export btn-ai-insight btn-ai-compact" onclick="loadAiScheduleSuggestion()"
+                            title="AI gợi ý lịch chiếu" aria-label="AI gợi ý lịch chiếu">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path d="M12 2v4" />
@@ -1235,7 +1276,8 @@
                                     <div id="fnbDropZone"
                                         style="border: 2px dashed var(--border); border-radius: var(--radius); padding: 24px; text-align: center; cursor: pointer; background: var(--bg-white); transition: border-color 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px;"
                                         onclick="document.getElementById('fnbImage').click()">
-                                        <img id="fnbPreviewImg" style="display: none; max-width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: var(--shadow-xs);" />
+                                        <img id="fnbPreviewImg"
+                                            style="display: none; max-width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: var(--shadow-xs);" />
                                         <svg id="fnbUploadIcon" width="24" height="24" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-width="2"
                                             style="margin: 0 auto 8px; color: var(--text2);">
@@ -1443,7 +1485,8 @@
                                     <div id="comboDropZone"
                                         style="border: 2px dashed var(--border); border-radius: var(--radius); padding: 24px; text-align: center; cursor: pointer; background: var(--bg-white); transition: border-color 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px;"
                                         onclick="document.getElementById('comboImage').click()">
-                                        <img id="comboPreviewImg" style="display: none; max-width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: var(--shadow-xs);" />
+                                        <img id="comboPreviewImg"
+                                            style="display: none; max-width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: var(--shadow-xs);" />
                                         <svg id="comboUploadIcon" width="24" height="24" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-width="2"
                                             style="margin: 0 auto 8px; color: var(--text2);">
@@ -1603,103 +1646,6 @@
 
             </div>
         </div>
-        <!-- ══ CUSTOMER DETAIL MODAL ══ -->
-        <div id="customerDetailOverlay" style="display:none;position:fixed;inset:0;background:rgba(5,8,15,0.75);z-index:520;backdrop-filter:blur(6px);" onclick="closeCustomerDetail()"></div>
-        <div id="customerDetailModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:521;background:#0f1419;border:1px solid rgba(255,255,255,0.08);border-radius:20px;width:520px;max-width:94vw;max-height:88vh;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,0.7),0 0 0 1px rgba(232,25,44,0.1);">
-
-            <!-- Hero Header -->
-            <div style="background:linear-gradient(135deg,#1a0a0b 0%,#12161e 60%,#0d1520 100%);padding:28px 28px 24px;position:relative;overflow:hidden;">
-                <!-- decorative ring -->
-                <div style="position:absolute;right:-30px;top:-30px;width:150px;height:150px;border-radius:50%;border:1px solid rgba(232,25,44,0.12);pointer-events:none;"></div>
-                <div style="position:absolute;right:-10px;top:-10px;width:100px;height:100px;border-radius:50%;border:1px solid rgba(232,25,44,0.08);pointer-events:none;"></div>
-
-                <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
-                    <div style="display:flex;align-items:center;gap:16px;">
-                        <!-- Avatar -->
-                        <div id="cdAvatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#e8192c,#b30d1f);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.4rem;color:#fff;flex-shrink:0;box-shadow:0 8px 24px rgba(232,25,44,0.35),0 0 0 3px rgba(232,25,44,0.15);">K</div>
-                        <div>
-                            <h2 id="cdName" style="margin:0 0 5px;font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:-0.01em;">Khách hàng</h2>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <span id="cdRoleBadge" style="font-size:0.68rem;font-weight:800;padding:3px 9px;border-radius:20px;background:rgba(16,185,129,0.15);color:#10b981;letter-spacing:0.06em;border:1px solid rgba(16,185,129,0.2);">CUSTOMER</span>
-                                <span id="cdUid" style="font-size:0.68rem;color:rgba(255,255,255,0.25);font-weight:600;">ID: —</span>
-                            </div>
-                        </div>
-                    </div>
-                    <button onclick="closeCustomerDetail()" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.1);border-radius:50%;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.background='rgba(232,25,44,0.15)';this.style.color='#e8192c';this.style.borderColor='rgba(232,25,44,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.5)';this.style.borderColor='rgba(255,255,255,0.1)'">×</button>
-                </div>
-            </div>
-
-            <!-- Body -->
-            <div style="padding:24px 28px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;max-height:calc(88vh - 120px);">
-
-                <!-- Info rows -->
-                <div style="display:flex;flex-direction:column;gap:10px;">
-                    <div style="display:flex;align-items:center;gap:14px;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;">
-                        <div style="width:34px;height:34px;border-radius:8px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                        </div>
-                        <div style="flex:1;min-width:0;">
-                            <div style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Email</div>
-                            <div id="cdEmail" style="font-size:0.9rem;color:#e2e8f0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
-                        </div>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:14px;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;">
-                        <div style="width:34px;height:34px;border-radius:8px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                        </div>
-                        <div style="flex:1;">
-                            <div style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Số điện thoại</div>
-                            <div id="cdPhone" style="font-size:0.9rem;color:#e2e8f0;font-weight:600;">—</div>
-                        </div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                        <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;">
-                            <div style="width:34px;height:34px;border-radius:8px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            </div>
-                            <div>
-                                <div style="font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Tham gia</div>
-                                <div id="cdJoined" style="font-size:0.85rem;color:#e2e8f0;font-weight:600;">—</div>
-                            </div>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;">
-                            <div id="cdStatusDot" style="width:34px;height:34px;border-radius:8px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            </div>
-                            <div>
-                                <div style="font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Trạng thái</div>
-                                <div id="cdStatus" style="font-size:0.85rem;font-weight:700;color:#10b981;">—</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Divider -->
-                <div style="height:1px;background:rgba(255,255,255,0.06);"></div>
-
-                <!-- Actions -->
-                <div style="display:flex;gap:10px;">
-                    <button id="cdToggleStatusBtn" onclick="cdToggleStatus()" style="flex:1;padding:12px 16px;border:1px solid rgba(239,68,68,0.25);border-radius:10px;background:rgba(239,68,68,0.08);color:#f87171;font-weight:700;cursor:pointer;font-size:0.85rem;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;" onmouseover="this.style.background='rgba(239,68,68,0.18)';this.style.borderColor='rgba(239,68,68,0.4)'" onmouseout="this.style.background='rgba(239,68,68,0.08)';this.style.borderColor='rgba(239,68,68,0.25)'">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        Khóa tài khoản
-                    </button>
-                    <button id="cdChangeRoleBtn" onclick="cdChangeRole()" style="flex:1;padding:12px 16px;border:1px solid rgba(99,102,241,0.25);border-radius:10px;background:rgba(99,102,241,0.08);color:#818cf8;font-weight:700;cursor:pointer;font-size:0.85rem;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;" onmouseover="this.style.background='rgba(99,102,241,0.18)';this.style.borderColor='rgba(99,102,241,0.4)'" onmouseout="this.style.background='rgba(99,102,241,0.08)';this.style.borderColor='rgba(99,102,241,0.25)'">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        Đổi vai trò
-                    </button>
-                </div>
-
-                <!-- Booking history section -->
-                <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;">
-                    <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
-                        <span style="font-size:0.7rem;font-weight:800;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.08em;">Lịch sử đặt vé</span>
-                    </div>
-                    <div id="cdBookingHistory" style="padding:18px 16px;font-size:0.83rem;color:rgba(255,255,255,0.3);text-align:center;line-height:1.6;">Đang tải...</div>
-                </div>
-            </div>
-        </div>
-
         <div class="page" id="page-refunds">
             <div class="content-scroll" style="padding: 30px 40px; display: flex; flex-direction: column; gap: 24px;">
                 <div class="dash-heading">
@@ -1749,10 +1695,12 @@
                 </div>
 
                 <div class="table-card">
-                    <div class="table-header" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+                    <div class="table-header"
+                        style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
                         <div>
                             <div class="table-title">Danh sách yêu cầu hoàn tiền</div>
-                            <div style="color:var(--text2);font-size:0.85rem;margin-top:4px;">Kiểm tra thông tin khách hàng trước khi chuyển khoản.</div>
+                            <div style="color:var(--text2);font-size:0.85rem;margin-top:4px;">Kiểm tra thông tin khách
+                                hàng trước khi chuyển khoản.</div>
                         </div>
                         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
                             <select id="refundStatusFilter" class="form-control" onchange="loadAdminRefunds()"
@@ -1783,7 +1731,8 @@
                             </thead>
                             <tbody id="refundAdminBody">
                                 <tr>
-                                    <td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải yêu cầu hoàn tiền...</td>
+                                    <td colspan="7" style="text-align:center;color:#9ca3af;padding:30px;">Đang tải yêu
+                                        cầu hoàn tiền...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -2188,17 +2137,30 @@
 
                                 <div class="vform-group">
                                     <label for="imageUrl">Hình ảnh Voucher (URL hoặc Tải ảnh)</label>
-                                    <div class="upload-input-group" style="display: flex; gap: 8px; align-items: center;">
-                                        <input type="text" id="imageUrl" placeholder="VD: images/promo_voucher.png hoặc URL ảnh" oninput="updateImagePreview()" style="flex: 1;">
-                                        <label for="imageFileInput" class="btn-upload" style="background: #374151; color: #fff; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;">
-                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    <div class="upload-input-group"
+                                        style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="text" id="imageUrl"
+                                            placeholder="VD: images/promo_voucher.png hoặc URL ảnh"
+                                            oninput="updateImagePreview()" style="flex: 1;">
+                                        <label for="imageFileInput" class="btn-upload"
+                                            style="background: #374151; color: #fff; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                                <polyline points="17 8 12 3 7 8" />
+                                                <line x1="12" y1="3" x2="12" y2="15" />
+                                            </svg>
                                             Tải ảnh
                                         </label>
-                                        <input type="file" id="imageFileInput" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
+                                        <input type="file" id="imageFileInput" accept="image/*" style="display: none;"
+                                            onchange="handleFileUpload(event)">
                                     </div>
-                                    <div id="imagePreviewContainer" style="margin-top: 10px; display: none; align-items: center; gap: 12px; background: #111827; padding: 8px 12px; border-radius: 8px; border: 1px solid #374151;">
-                                        <img id="imagePreview" src="" alt="Voucher Preview" style="height: 60px; max-width: 120px; object-fit: cover; border-radius: 6px; border: 1px solid #4b5563;">
-                                        <span style="font-size: 0.8rem; color: #9ca3af;" id="imagePreviewText">Xem trước ảnh voucher</span>
+                                    <div id="imagePreviewContainer"
+                                        style="margin-top: 10px; display: none; align-items: center; gap: 12px; background: #111827; padding: 8px 12px; border-radius: 8px; border: 1px solid #374151;">
+                                        <img id="imagePreview" src="" alt="Voucher Preview"
+                                            style="height: 60px; max-width: 120px; object-fit: cover; border-radius: 6px; border: 1px solid #4b5563;">
+                                        <span style="font-size: 0.8rem; color: #9ca3af;" id="imagePreviewText">Xem trước
+                                            ảnh voucher</span>
                                     </div>
                                 </div>
 
@@ -2395,36 +2357,46 @@
             <button class="btn-panel-save" id="btnSaveShowtime" onclick="saveShowtime()">Lưu Suất Chiếu</button>
         </div>
     </div>
-</div>
+    </div>
 
     <!-- Room Modal Overlay & Modal -->
-    <div id="roomModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:400;backdrop-filter:blur(6px);"
+    <div id="roomModalOverlay"
+        style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:400;backdrop-filter:blur(6px);"
         onclick="closeRoomModal()"></div>
     <div id="roomModal"
         style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:401;background:linear-gradient(145deg,#0d1117,#161b24);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;width:440px;max-width:95vw;box-shadow:0 32px 80px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.06);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;">
             <div>
                 <h2 id="roomModalTitle"
-                    style="font-size:1.1rem;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:0.04em;">THÊM PHÒNG CHIẾU</h2>
+                    style="font-size:1.1rem;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:0.04em;">
+                    THÊM PHÒNG CHIẾU</h2>
                 <p style="font-size:0.78rem;color:#6b7280;margin-top:4px;">Điền thông tin phòng chiếu mới</p>
             </div>
             <button onclick="closeRoomModal()"
-                style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;cursor:pointer;font-size:1.1rem;line-height:1;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#9ca3af'">×</button>
+                style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;cursor:pointer;font-size:1.1rem;line-height:1;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+                onmouseover="this.style.background='rgba(255,255,255,0.12)';this.style.color='#fff'"
+                onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#9ca3af'">×</button>
         </div>
         <form id="roomForm" onsubmit="saveRoom(event)" style="display:flex;flex-direction:column;gap:20px;">
             <input type="hidden" id="roomId">
             <input type="hidden" id="roomCinemaId">
             <div>
-                <label style="font-size:0.7rem;font-weight:700;color:#8a9099;text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:8px;">TÊN PHÒNG CHIẾU <span style="color:#e8192c;">*</span></label>
+                <label
+                    style="font-size:0.7rem;font-weight:700;color:#8a9099;text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:8px;">TÊN
+                    PHÒNG CHIẾU <span style="color:#e8192c;">*</span></label>
                 <input type="text" id="roomNameInput" placeholder="VD: Phòng chiếu 1" required
                     style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;transition:border-color 0.2s;"
-                    onfocus="this.style.borderColor='rgba(232,25,44,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+                    onfocus="this.style.borderColor='rgba(232,25,44,0.6)'"
+                    onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
             </div>
             <div>
-                <label style="font-size:0.7rem;font-weight:700;color:#8a9099;text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:8px;">LOẠI PHÒNG CHIẾU <span style="color:#e8192c;">*</span></label>
+                <label
+                    style="font-size:0.7rem;font-weight:700;color:#8a9099;text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:8px;">LOẠI
+                    PHÒNG CHIẾU <span style="color:#e8192c;">*</span></label>
                 <select id="roomTypeInput" required
                     style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;cursor:pointer;transition:border-color 0.2s;appearance:auto;"
-                    onfocus="this.style.borderColor='rgba(232,25,44,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+                    onfocus="this.style.borderColor='rgba(232,25,44,0.6)'"
+                    onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
                     <option value="Standard" style="background:#1a2030;color:#fff;">Standard</option>
                     <option value="2D" style="background:#1a2030;color:#fff;">2D</option>
                     <option value="3D" style="background:#1a2030;color:#fff;">3D</option>
@@ -2433,9 +2405,13 @@
             </div>
             <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
                 <button type="button" onclick="closeRoomModal()"
-                    style="padding:10px 22px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#9ca3af;cursor:pointer;font-weight:600;font-size:0.88rem;font-family:inherit;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#9ca3af'">Hủy</button>
+                    style="padding:10px 22px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#9ca3af;cursor:pointer;font-weight:600;font-size:0.88rem;font-family:inherit;transition:all 0.2s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#9ca3af'">Hủy</button>
                 <button type="submit"
-                    style="padding:10px 28px;background:linear-gradient(135deg,#e8192c,#c4111f);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:700;font-size:0.88rem;font-family:inherit;transition:all 0.2s;box-shadow:0 4px 16px rgba(232,25,44,0.35);" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(232,25,44,0.5)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(232,25,44,0.35)'">Lưu</button>
+                    style="padding:10px 28px;background:linear-gradient(135deg,#e8192c,#c4111f);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:700;font-size:0.88rem;font-family:inherit;transition:all 0.2s;box-shadow:0 4px 16px rgba(232,25,44,0.35);"
+                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(232,25,44,0.5)'"
+                    onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(232,25,44,0.35)'">Lưu</button>
             </div>
         </form>
     </div>
@@ -2521,7 +2497,8 @@
                         <span id="promoFileName" style="font-size:0.85rem;color:var(--text3);">Chưa chọn file</span>
                     </div>
                     <div style="margin-top: 4px;">
-                        <img id="promoPreviewImg" style="display: none; max-height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-xs);" />
+                        <img id="promoPreviewImg"
+                            style="display: none; max-height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-xs);" />
                     </div>
                     <div id="promoCurrentImg"
                         style="margin-top:4px;font-size:0.8rem;color:var(--text2);font-style:italic;"></div>
@@ -2572,170 +2549,165 @@
         </form>
     </div>
 
-    <!-- ══ NEWS ARTICLE EDITOR MODAL ══ -->
+    <!-- News Modal -->
     <div id="newsModalOverlay"
-        style="display:none;position:fixed;inset:0;background:rgba(5,8,15,0.8);backdrop-filter:blur(6px);z-index:410;"
+        style="display:none;position:fixed;inset:0;background:rgba(15,18,24,0.7);backdrop-filter:blur(4px);z-index:410;"
         onclick="closeNewsModal()"></div>
     <div id="newsAdminModal"
-        style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:411;background:#0f1419;border:1px solid rgba(255,255,255,0.08);border-radius:20px;width:900px;max-width:96vw;max-height:93vh;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,0.7),0 0 0 1px rgba(232,25,44,0.1);display:none;flex-direction:column;">
-
-        <!-- Header -->
-        <div style="padding:20px 28px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#1a0a0b,#12161e);flex-shrink:0;">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:8px;height:8px;border-radius:50%;background:#e8192c;box-shadow:0 0 8px rgba(232,25,44,0.6);"></div>
-                <h2 id="newsModalTitle" style="margin:0;font-size:1.05rem;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:0.04em;">THÊM BÀI VIẾT</h2>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;">
-                <!-- Tab: Viết / Xem trước -->
-                <div style="display:flex;background:rgba(255,255,255,0.06);border-radius:8px;padding:3px;gap:2px;">
-                    <button id="tabWrite" onclick="switchEditorTab('write')" style="padding:6px 16px;border:none;border-radius:6px;background:#e8192c;color:#fff;font-weight:700;font-size:0.78rem;cursor:pointer;">✏️ Viết</button>
-                    <button id="tabPreview" onclick="switchEditorTab('preview')" style="padding:6px 16px;border:none;border-radius:6px;background:transparent;color:rgba(255,255,255,0.5);font-weight:700;font-size:0.78rem;cursor:pointer;">👁 Xem trước</button>
-                </div>
-                <button onclick="closeNewsModal()" style="width:34px;height:34px;border:1px solid rgba(255,255,255,0.1);border-radius:50%;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='rgba(232,25,44,0.2)';this.style.color='#e8192c'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.5)'">×</button>
-            </div>
+        style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:411;background:var(--bg-white);border-radius:16px;padding:32px;width:720px;max-width:95vw;max-height:92vh;overflow-y:auto;box-shadow:0 20px 50px rgba(15,18,24,0.15);border:1px solid var(--border);font-family:'Inter', sans-serif;">
+        <div
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:16px;">
+            <h2 id="newsModalTitle"
+                style="font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;">
+                <span
+                    style="display:inline-block;width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
+                THÊM TIN TỨC
+            </h2>
+            <button onclick="closeNewsModal()"
+                style="background:rgba(15,18,24,0.05);border:none;color:var(--text2);cursor:pointer;font-size:1.2rem;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all var(--tr);line-height:1;"
+                onmouseover="this.style.background='var(--accent-bg)';this.style.color='var(--accent)'"
+                onmouseout="this.style.background='rgba(15,18,24,0.05)';this.style.color='var(--text2)'">×</button>
         </div>
+        <form id="newsForm" action="/api/admin/news" method="post" enctype="multipart/form-data"
+            onsubmit="saveNewsArticle(event); return false;" style="display:flex;flex-direction:column;gap:20px;">
+            <input type="hidden" id="newsId">
 
-        <!-- Body -->
-        <div style="display:flex;flex:1;overflow:hidden;min-height:0;">
-
-            <!-- LEFT: Meta sidebar -->
-            <div style="width:240px;flex-shrink:0;border-right:1px solid rgba(255,255,255,0.06);padding:20px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;background:rgba(255,255,255,0.01);">
-                <input type="hidden" id="newsId">
-
-                <!-- Loại -->
-                <div>
-                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Loại bài viết</label>
-                    <select id="newsType" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.88rem;outline:none;cursor:pointer;">
-                        <option value="news">📰 Tin tức</option>
-                        <option value="events">🎉 Sự kiện</option>
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
+                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
+                    <label
+                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">TIÊU
+                        ĐỀ *</label>
+                    <input type="text" id="newsTitle" required placeholder="Nhập tiêu đề bài viết"
+                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;"
+                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
+                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
+                </div>
+                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
+                    <label
+                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">LOẠI
+                        *</label>
+                    <select id="newsType"
+                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;cursor:pointer;"
+                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
+                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
+                        <option value="news">Tin tức</option>
+                        <option value="events">Sự kiện</option>
                     </select>
                 </div>
+            </div>
 
-                <!-- Tác giả -->
-                <div>
-                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Tác giả</label>
-                    <input type="text" id="newsAuthor" placeholder="D-Cinema" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.88rem;outline:none;box-sizing:border-box;">
+            <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
+                <label
+                    style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">TÓM
+                    TẮT</label>
+                <textarea id="newsSummary" rows="3" placeholder="Mô tả ngắn hiển thị trên thẻ tin tức"
+                    style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;resize:vertical;"
+                    onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
+                    onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'"></textarea>
+            </div>
+
+            <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
+                <label
+                    style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">NỘI
+                    DUNG</label>
+                <textarea id="newsContent" rows="8" placeholder="Có thể nhập HTML cơ bản như <p>, <h3>, <ul>, <li>"
+                    style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;resize:vertical;"
+                    onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
+                    onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'"></textarea>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
+                    <label
+                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">TÁC
+                        GIẢ</label>
+                    <input type="text" id="newsAuthor" placeholder="D-Cinema"
+                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;"
+                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
+                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
                 </div>
-
-                <!-- Ngày đăng -->
-                <div>
-                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Ngày đăng</label>
-                    <input type="date" id="newsPublishedAt" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.88rem;outline:none;box-sizing:border-box;">
-                </div>
-
-                <!-- Badge -->
-                <div>
-                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Badge nhãn</label>
-                    <input type="text" id="newsBadge" placeholder="VD: Tin mới, Hot" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.88rem;outline:none;box-sizing:border-box;">
-                </div>
-
-                <!-- Thứ tự -->
-                <div>
-                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Thứ tự hiển thị</label>
-                    <input type="number" id="newsSort" value="0" min="0" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.88rem;outline:none;box-sizing:border-box;">
-                </div>
-
-                <!-- Ảnh thumbnail -->
-                <div>
-                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Ảnh bìa</label>
-                    <div id="newsDropZone" onclick="document.getElementById('newsImage').click()" ondragover="event.preventDefault();this.style.borderColor='#e8192c'" ondragleave="this.style.borderColor='rgba(255,255,255,0.12)'" ondrop="handleNewsFileDrop(event)"
-                        style="border:2px dashed rgba(255,255,255,0.12);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative;overflow:hidden;">
-                        <img id="newsPreviewImg" style="display:none;width:100%;height:100px;object-fit:cover;border-radius:6px;margin-bottom:8px;">
-                        <div id="newsDropText" style="color:rgba(255,255,255,0.3);font-size:0.78rem;line-height:1.5;">
-                            <div style="font-size:1.4rem;margin-bottom:4px;">🖼</div>
-                            Kéo thả hoặc click<br>để chọn ảnh
-                        </div>
-                        <input type="file" id="newsImage" accept="image/*" style="display:none;" onchange="handleNewsFileSelect(this)">
-                    </div>
-                    <div id="newsCurrentImg" style="font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:6px;"></div>
-                    <span id="newsFileName" style="display:none"></span>
-                </div>
-
-                <!-- Toggles -->
-                <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;display:flex;flex-direction:column;gap:10px;">
-                    <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
-                        <span style="font-size:0.82rem;color:rgba(255,255,255,0.6);font-weight:600;">⭐ Nổi bật</span>
-                        <input type="checkbox" id="newsFeatured" style="width:16px;height:16px;accent-color:#e8192c;cursor:pointer;">
-                    </label>
-                    <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
-                        <span style="font-size:0.82rem;color:rgba(255,255,255,0.6);font-weight:600;">✅ Hiển thị</span>
-                        <input type="checkbox" id="newsActive" checked style="width:16px;height:16px;accent-color:#10b981;cursor:pointer;">
-                    </label>
+                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
+                    <label
+                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">NGÀY
+                        ĐĂNG</label>
+                    <input type="date" id="newsPublishedAt"
+                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;"
+                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
+                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
                 </div>
             </div>
 
-            <!-- RIGHT: Editor -->
-            <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
-
-                <!-- Title input -->
-                <div style="padding:16px 20px 0;flex-shrink:0;">
-                    <input type="text" id="newsTitle" required placeholder="Tiêu đề bài viết..."
-                        style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.08);color:#fff;font-size:1.25rem;font-weight:700;padding:8px 0;outline:none;margin-bottom:12px;box-sizing:border-box;"
-                        onfocus="this.style.borderBottomColor='#e8192c'" onblur="this.style.borderBottomColor='rgba(255,255,255,0.08)'">
-                    <textarea id="newsSummary" placeholder="Tóm tắt ngắn (hiển thị trên thẻ bài viết)..."
-                        style="width:100%;background:transparent;border:none;color:rgba(255,255,255,0.5);font-size:0.88rem;outline:none;resize:none;height:40px;padding:0;line-height:1.5;box-sizing:border-box;" rows="2"></textarea>
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
+                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
+                    <label
+                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">BADGE</label>
+                    <input type="text" id="newsBadge" placeholder="VD: Tin mới, Hot Event"
+                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;"
+                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
+                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
                 </div>
-
-                <!-- Toolbar -->
-                <div id="editorWritePanel" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;">
-                    <div style="padding:8px 20px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0;background:rgba(255,255,255,0.02);">
-                        <button type="button" onclick="editorExec('bold')" title="Đậm" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-weight:900;font-size:0.85rem;">B</button>
-                        <button type="button" onclick="editorExec('italic')" title="Nghiêng" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-style:italic;font-size:0.85rem;">I</button>
-                        <button type="button" onclick="editorExec('underline')" title="Gạch chân" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;text-decoration:underline;font-size:0.85rem;">U</button>
-                        <div style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
-                        <button type="button" onclick="editorFormat('h2')" title="Tiêu đề lớn" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-size:0.78rem;font-weight:700;">H2</button>
-                        <button type="button" onclick="editorFormat('h3')" title="Tiêu đề nhỏ" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-size:0.78rem;font-weight:700;">H3</button>
-                        <button type="button" onclick="editorExec('insertUnorderedList')" title="Danh sách" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-size:0.85rem;">≡</button>
-                        <button type="button" onclick="editorExec('insertOrderedList')" title="Danh sách số" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-size:0.85rem;">1.</button>
-                        <div style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
-                        <button type="button" onclick="editorInsertLink()" title="Chèn link" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#3b82f6;cursor:pointer;font-size:0.85rem;">🔗</button>
-                        <button type="button" onclick="editorInsertQuote()" title="Trích dẫn" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#f59e0b;cursor:pointer;font-size:0.85rem;">"</button>
-                        <button type="button" onclick="editorExec('removeFormat')" title="Xóa định dạng" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(255,255,255,0.4);cursor:pointer;font-size:0.85rem;">✕</button>
-                    </div>
-
-                    <!-- ContentEditable editor -->
-                    <div id="newsContentEditor"
-                        contenteditable="true"
-                        data-placeholder="Bắt đầu viết nội dung bài viết tại đây..."
-                        style="flex:1;padding:20px;overflow-y:auto;outline:none;color:#d1d5db;font-size:0.93rem;line-height:1.8;min-height:0;"></div>
+                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
+                    <label
+                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">THỨ
+                        TỰ</label>
+                    <input type="number" id="newsSort" value="0" min="0"
+                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;"
+                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
+                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
                 </div>
-
-                <!-- Preview panel -->
-                <div id="editorPreviewPanel" style="display:none;flex:1;overflow-y:auto;padding:24px 28px;min-height:0;">
-                    <div id="newsPreviewContent" style="max-width:640px;margin:0 auto;color:#d1d5db;font-size:0.95rem;line-height:1.8;"></div>
-                </div>
-
-                <!-- Hidden textarea to sync content for form submit -->
-                <textarea id="newsContent" style="display:none;"></textarea>
             </div>
-        </div>
 
-        <!-- Footer -->
-        <div style="padding:14px 24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;background:rgba(255,255,255,0.01);">
-            <button type="button" onclick="closeNewsModal()" style="padding:10px 22px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-weight:700;font-size:0.88rem;cursor:pointer;">Hủy</button>
-            <button type="button" onclick="submitNewsForm()" style="padding:10px 28px;background:#e8192c;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(232,25,44,0.3);" onmouseover="this.style.background='#c8111f'" onmouseout="this.style.background='#e8192c'">📤 Đăng bài viết</button>
-        </div>
+            <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
+                <label
+                    style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">UPLOAD
+                    ẢNH</label>
+                <div style="display:flex;align-items:center;gap:12px;width:100%;">
+                    <input type="file" id="newsImage" accept="image/*" style="display:none;"
+                        onchange="handleNewsFileSelect(this)">
+                    <label for="newsImage"
+                        style="padding:11px 18px;background:#fff;border:1px dashed var(--border);border-radius:8px;color:var(--text2);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all var(--tr);display:inline-block;"
+                        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+                        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
+                        Chọn tập tin ảnh
+                    </label>
+                    <span id="newsFileName" style="font-size:0.85rem;color:var(--text3);">Chưa chọn file</span>
+                </div>
+                <div style="margin-top: 4px;">
+                    <img id="newsPreviewImg"
+                        style="display: none; max-height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-xs);" />
+                </div>
+                <div id="newsCurrentImg" style="margin-top:4px;font-size:0.8rem;color:var(--text2);font-style:italic;">
+                </div>
+            </div>
+
+            <div style="display:flex;gap:24px;border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
+                <label
+                    style="display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:0.9rem;font-weight:600;">
+                    <input type="checkbox" id="newsFeatured"
+                        style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;">
+                    Nổi bật (Featured)
+                </label>
+                <label
+                    style="display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:0.9rem;font-weight:600;">
+                    <input type="checkbox" id="newsActive" checked
+                        style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;">
+                    Đang hiển thị (Active)
+                </label>
+            </div>
+
+            <div
+                style="display:flex;gap:12px;justify-content:flex-end;margin-top:12px;border-top:1px solid var(--border);padding-top:16px;">
+                <button type="button" onclick="closeNewsModal()"
+                    style="padding:11px 24px;background:#fff;border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-weight:700;font-size:0.9rem;transition:all var(--tr);"
+                    onmouseover="this.style.background='#f9fafb';this.style.borderColor='var(--text3)'"
+                    onmouseout="this.style.background='#fff';this.style.borderColor='var(--border)'">Hủy</button>
+                <button type="submit"
+                    style="padding:11px 28px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.9rem;transition:all var(--tr);box-shadow:0 4px 12px rgba(232,25,44,0.15);"
+                    onmouseover="this.style.background='var(--accent2)';this.style.transform='translateY(-1px)';"
+                    onmouseout="this.style.background='var(--accent)';this.style.transform='translateY(0)';">Lưu</button>
+            </div>
+        </form>
     </div>
-
-    <!-- inline styles for editor -->
-    <style>
-        #newsContentEditor:empty:before { content: attr(data-placeholder); color: rgba(255,255,255,0.2); pointer-events:none; }
-        #newsContentEditor h2 { font-size:1.3rem;font-weight:800;color:#fff;margin:18px 0 8px; }
-        #newsContentEditor h3 { font-size:1.05rem;font-weight:700;color:#f1f5f9;margin:14px 0 6px; }
-        #newsContentEditor p  { margin:0 0 12px; }
-        #newsContentEditor ul, #newsContentEditor ol { padding-left:20px;margin:8px 0 14px; }
-        #newsContentEditor li { margin-bottom:4px; }
-        #newsContentEditor a  { color:#60a5fa;text-decoration:underline; }
-        #newsContentEditor blockquote { border-left:3px solid #e8192c;padding:8px 16px;margin:12px 0;color:rgba(255,255,255,0.55);font-style:italic;background:rgba(232,25,44,0.05);border-radius:0 6px 6px 0; }
-        #newsPreviewContent h2 { font-size:1.3rem;font-weight:800;color:#fff;margin:18px 0 8px; }
-        #newsPreviewContent h3 { font-size:1.05rem;font-weight:700;color:#f1f5f9;margin:14px 0 6px; }
-        #newsPreviewContent p  { margin:0 0 12px; }
-        #newsPreviewContent ul, #newsPreviewContent ol { padding-left:20px;margin:8px 0 14px; }
-        #newsPreviewContent a  { color:#60a5fa; }
-        #newsPreviewContent blockquote { border-left:3px solid #e8192c;padding:8px 16px;margin:12px 0;color:rgba(255,255,255,0.55);font-style:italic;background:rgba(232,25,44,0.05);border-radius:0 6px 6px 0; }
-    </style>
-
-
 
 
     <style>
@@ -3244,33 +3216,41 @@
         onclick="closeRefundActionModal(false)"></div>
     <div id="refundActionModal"
         style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:521;background:#fff;border-radius:14px;width:520px;max-width:94vw;box-shadow:0 24px 70px rgba(15,23,42,0.35);overflow:hidden;">
-        <div style="padding:22px 26px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div
+            style="padding:22px 26px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:16px;">
             <div>
-                <h2 id="refundActionTitle" style="margin:0;color:#111827;font-size:1.2rem;font-weight:900;text-transform:uppercase;">Xử lý hoàn tiền</h2>
-                <p id="refundActionDesc" style="margin:6px 0 0;color:#6b7280;font-size:0.9rem;line-height:1.45;">Nhập thông tin xử lý yêu cầu hoàn tiền.</p>
+                <h2 id="refundActionTitle"
+                    style="margin:0;color:#111827;font-size:1.2rem;font-weight:900;text-transform:uppercase;">Xử lý hoàn
+                    tiền</h2>
+                <p id="refundActionDesc" style="margin:6px 0 0;color:#6b7280;font-size:0.9rem;line-height:1.45;">Nhập
+                    thông tin xử lý yêu cầu hoàn tiền.</p>
             </div>
             <button type="button" onclick="closeRefundActionModal(false)"
                 style="width:36px;height:36px;border:none;border-radius:50%;background:#f3f4f6;color:#475569;font-size:1.4rem;line-height:1;cursor:pointer;">&times;</button>
         </div>
         <form id="refundActionForm" style="padding:24px 26px;display:flex;flex-direction:column;gap:16px;">
             <div id="refundTxCodeGroup" style="display:none;">
-                <label for="refundTxCodeInput" style="display:block;margin-bottom:8px;color:#374151;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">Mã giao dịch chuyển khoản *</label>
-                <input id="refundTxCodeInput" type="text" autocomplete="off"
-                    placeholder="VD: MBVCB240709001"
+                <label for="refundTxCodeInput"
+                    style="display:block;margin-bottom:8px;color:#374151;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">Mã
+                    giao dịch chuyển khoản *</label>
+                <input id="refundTxCodeInput" type="text" autocomplete="off" placeholder="VD: MBVCB240709001"
                     style="width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;color:#111827;font-size:0.95rem;">
             </div>
             <div>
-                <label id="refundNoteLabel" for="refundNoteInput" style="display:block;margin-bottom:8px;color:#374151;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">Ghi chú</label>
-                <textarea id="refundNoteInput" rows="4"
-                    placeholder="Nhập ghi chú cho yêu cầu này..."
+                <label id="refundNoteLabel" for="refundNoteInput"
+                    style="display:block;margin-bottom:8px;color:#374151;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">Ghi
+                    chú</label>
+                <textarea id="refundNoteInput" rows="4" placeholder="Nhập ghi chú cho yêu cầu này..."
                     style="width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;color:#111827;font-size:0.95rem;font-family:inherit;resize:vertical;"></textarea>
-                <div id="refundActionError" style="display:none;margin-top:8px;color:#dc2626;font-size:0.84rem;font-weight:600;"></div>
+                <div id="refundActionError"
+                    style="display:none;margin-top:8px;color:#dc2626;font-size:0.84rem;font-weight:600;"></div>
             </div>
             <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:4px;">
                 <button type="button" onclick="closeRefundActionModal(false)"
                     style="padding:11px 22px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#475569;font-weight:800;cursor:pointer;">Hủy</button>
                 <button id="refundActionSubmitBtn" type="submit"
-                    style="padding:11px 24px;border:none;border-radius:8px;background:#ef1b2d;color:#fff;font-weight:900;cursor:pointer;">Xác nhận</button>
+                    style="padding:11px 24px;border:none;border-radius:8px;background:#ef1b2d;color:#fff;font-weight:900;cursor:pointer;">Xác
+                    nhận</button>
             </div>
         </form>
     </div>
