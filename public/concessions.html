@@ -277,16 +277,16 @@
             </a>
             <nav class="nav-links">
                 <div class="dropdown">
-                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
+                    <a href="movies.html" id="nav-phim" data-i18n="nav_movies">Phim <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav_now_showing">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav_coming_soon">Sắp chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
-                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" data-i18n="nav_cinemas">Rạp</a>
+                <a href="promotions.html" id="nav-promo" data-i18n="nav_promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" data-i18n="nav_news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" data-i18n="nav_prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -294,15 +294,19 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput" data-i18n="search_placeholder">
                 </div>
+                <select id="langSwitcher" class="lang-switcher" style="margin-right: 15px; margin-left: 15px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); outline: none; cursor: pointer; font-weight: 500; font-size: 14px; backdrop-filter: blur(5px);">
+                    <option value="vi" style="color: black;">VI</option>
+                    <option value="en" style="color: black;">EN</option>
+                </select>
                 <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                     </svg>
                 </a>
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav_login">Đăng Nhập</a>
             </div>
         </div>
     </header>
@@ -316,13 +320,13 @@
             <!-- Top-Left Back Button -->
             <button class="nav-back-btn" onclick="backToSeats()" style="margin-bottom: 16px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                Quay lại
+                <span data-i18n="btn_back">Quay lại</span>
             </button>
 
             <!-- Page Heading -->
             <div class="page-heading">
-                <h1>ĐỒ ĂN & THỨC UỐNG</h1>
-                <p>Hoàn thiện trải nghiệm điện ảnh với các combo tươi ngon hấp dẫn.</p>
+                <h1 data-i18n="fnb_title">ĐỒ ĂN & THỨC UỐNG</h1>
+                <p data-i18n="fnb_subtitle">Hoàn thiện trải nghiệm điện ảnh với các combo tươi ngon hấp dẫn.</p>
             </div>
 
             <!-- No Booking Warning -->
@@ -336,19 +340,19 @@
                 <svg class="search-bar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                 </svg>
-                <input type="text" class="search-bar" id="fnbSearchInput" placeholder="Tìm món ăn, thức uống...">
+                <input type="text" class="search-bar" id="fnbSearchInput" placeholder="Tìm món ăn, thức uống..." data-i18n="fnb_search_placeholder">
             </div>
 
             <!-- Category Tabs -->
             <div class="tabs-row">
                 <button class="tab-btn active" data-tab="combos" id="tabBtn-combos" onclick="switchTab('combos', this)">
-                    Combos <span class="cart-count-badge" id="badge-combos"></span>
+                    <span data-i18n="fnb_tab_combos">Combos</span> <span class="cart-count-badge" id="badge-combos"></span>
                 </button>
                 <button class="tab-btn" data-tab="snacks" id="tabBtn-snacks" onclick="switchTab('snacks', this)">
-                    Snacks <span class="cart-count-badge" id="badge-snacks"></span>
+                    <span data-i18n="fnb_tab_snacks">Snacks</span> <span class="cart-count-badge" id="badge-snacks"></span>
                 </button>
                 <button class="tab-btn" data-tab="drinks" id="tabBtn-drinks" onclick="switchTab('drinks', this)">
-                    Drinks <span class="cart-count-badge" id="badge-drinks"></span>
+                    <span data-i18n="fnb_tab_drinks">Drinks</span> <span class="cart-count-badge" id="badge-drinks"></span>
                 </button>
             </div>
 
@@ -356,10 +360,10 @@
             <div class="filter-sort-row">
                 <span class="results-count" id="resultsCount"></span>
                 <select class="sort-select" id="sortSelect" onchange="applySortFilter()">
-                    <option value="default">Mặc định</option>
-                    <option value="price-asc">Giá: Thấp → Cao</option>
-                    <option value="price-desc">Giá: Cao → Thấp</option>
-                    <option value="name-asc">Tên A → Z</option>
+                    <option value="default" data-i18n="fnb_sort_default">Mặc định</option>
+                    <option value="price-asc" data-i18n="fnb_sort_price_asc">Giá: Thấp → Cao</option>
+                    <option value="price-desc" data-i18n="fnb_sort_price_desc">Giá: Cao → Thấp</option>
+                    <option value="name-asc" data-i18n="fnb_sort_name_asc">Tên A → Z</option>
                 </select>
             </div>
 
@@ -384,7 +388,7 @@
                         <circle cx="5.5" cy="18.5" r="2.5"/>
                         <circle cx="18.5" cy="18.5" r="2.5"/>
                     </svg>
-                    <h2>Tóm tắt đơn hàng</h2>
+                    <h2 data-i18n="fnb_order_summary">Tóm tắt đơn hàng</h2>
                 </div>
 
                 <!-- Movie Info -->
@@ -412,17 +416,17 @@
                 <!-- Ticket Lines -->
                 <div class="order-lines" id="ticketLines">
                     <div class="order-line">
-                        <span class="line-label">Vé xem phim</span>
+                        <span class="line-label" data-i18n="fnb_movie_tickets">Vé xem phim</span>
                         <span class="line-val">—</span>
                     </div>
                 </div>
 
                 <!-- Food & Beverage Lines -->
                 <div class="fb-section" id="fbSection" style="display:none;">
-                    <div class="fb-label">ĐỒ ĂN & THỨC UỐNG</div>
+                    <div class="fb-label" data-i18n="fnb_title">ĐỒ ĂN & THỨC UỐNG</div>
                     <div id="fbLines"></div>
                     <div class="fb-subtotal-row">
-                        <span class="fb-subtotal-lbl">Tạm tính F&B</span>
+                        <span class="fb-subtotal-lbl" data-i18n="fnb_subtotal">Tạm tính F&B</span>
                         <span class="fb-subtotal-val" id="fbSubtotal">0 VND</span>
                     </div>
                 </div>
@@ -431,45 +435,45 @@
 
                 <!-- Total -->
                 <div class="total-row">
-                    <span class="total-lbl">Tổng cộng</span>
+                    <span class="total-lbl" data-i18n="fnb_total">Tổng cộng</span>
                     <span class="total-val" id="totalAmount">0 VND</span>
                 </div>
 
                 <!-- CTA Button -->
                 <button class="btn-continue" id="btnContinue" onclick="goToPayment()">
-                    Tiếp tục thanh toán
+                    <span data-i18n="fnb_btn_continue">Tiếp tục thanh toán</span>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </button>
 
                 <!-- Skip F&B -->
                 <button class="btn-skip" id="btnSkip" onclick="skipFnB()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                    Bỏ qua, tiếp tục thanh toán
+                    <span data-i18n="fnb_btn_skip">Bỏ qua, tiếp tục thanh toán</span>
                 </button>
 
                 <!-- Back to Seats -->
                 <button class="btn-skip" id="btnBackToSeats" onclick="backToSeats()" style="margin-top: 10px; border-color: rgba(255, 255, 255, 0.08); background: rgba(255,255,255,0.02);">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transform: rotate(180deg);"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                    Quay lại chọn ghế
+                    <span data-i18n="fnb_btn_back_seats">Quay lại chọn ghế</span>
                 </button>
 
-                <p class="terms-note">Khi bấm tiếp tục, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a>.</p>
+                <p class="terms-note" data-i18n="fnb_terms_note">Khi bấm tiếp tục, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a>.</p>
 
                 <!-- Progress Steps -->
                 <div class="steps-row">
                     <div class="step done">
                         <div class="step-circle">1</div>
-                        <div class="step-label">GHẾ</div>
+                        <div class="step-label" data-i18n="seat_step_1">GHẾ</div>
                     </div>
                     <div class="step-line done-line"></div>
                     <div class="step active">
                         <div class="step-circle">2</div>
-                        <div class="step-label">F&B</div>
+                        <div class="step-label" data-i18n="seat_step_2">F&B</div>
                     </div>
                     <div class="step-line"></div>
                     <div class="step">
                         <div class="step-circle">3</div>
-                        <div class="step-label">THANH TOÁN</div>
+                        <div class="step-label" data-i18n="seat_step_3">THANH TOÁN</div>
                     </div>
                 </div>
 
@@ -486,29 +490,29 @@
                     <span class="logo-d">D</span>
                     <span class="logo-text">D-CINEMA</span>
                 </a>
-                <p>Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
+                <p data-i18n="footer_desc">Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
                 <div class="footer-socials">
                     <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg></a>
                     <a href="#" aria-label="Email"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></a>
                 </div>
             </div>
             <div class="footer-col">
-                <h4>DỊCH VỤ</h4>
-                <a href="#">Về chúng tôi</a>
-                <a href="#">Tuyển dụng</a>
-                <a href="#">Liên hệ</a>
+                <h4 data-i18n="footer_service">DỊCH VỤ</h4>
+                <a href="#" data-i18n="footer_about">Về chúng tôi</a>
+                <a href="#" data-i18n="footer_career">Tuyển dụng</a>
+                <a href="#" data-i18n="footer_contact">Liên hệ</a>
             </div>
             <div class="footer-col">
-                <h4>PHÁP LÝ</h4>
-                <a href="#">Điều khoản sử dụng</a>
-                <a href="#">Chính sách bảo mật</a>
-                <a href="#">Chính sách thanh toán</a>
+                <h4 data-i18n="footer_legal">PHÁP LÝ</h4>
+                <a href="#" data-i18n="footer_terms">Điều khoản sử dụng</a>
+                <a href="#" data-i18n="footer_privacy">Chính sách bảo mật</a>
+                <a href="#" data-i18n="footer_payment">Chính sách thanh toán</a>
             </div>
             <div class="footer-col">
-                <h4>ĐĂNG KÝ NHẬN TIN</h4>
-                <p style="margin-bottom: 5px; font-size: 0.8rem;">Nhận thông tin về phim mới và khuyến mãi.</p>
+                <h4 data-i18n="footer_newsletter">ĐĂNG KÝ NHẬN TIN</h4>
+                <p style="margin-bottom: 5px; font-size: 0.8rem;" data-i18n="footer_newsletter_desc">Nhận thông tin về phim mới và khuyến mãi.</p>
                 <form class="newsletter-form" onsubmit="event.preventDefault()">
-                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
+                    <input type="email" placeholder="Email của bạn" data-i18n="footer_email_placeholder" class="newsletter-input" required>
                     <button type="submit" class="newsletter-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </button>
@@ -516,11 +520,12 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p>
+            <p data-i18n="footer_rights">© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p>
         </div>
     </footer>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="app.js?v=7"></script>
     <script>
     /* ═══════════════════════════════════════════════════════════
@@ -621,9 +626,13 @@
 
         // Results count
         const total = allCards.length;
+        const lang = localStorage.getItem('dcinema_lang') || 'vi';
+        const trans = window.translations ? window.translations[lang] : null;
+        const tResults = trans ? trans.fnb_results : 'kết quả';
+        const tProducts = trans ? trans.fnb_products : 'sản phẩm';
         document.getElementById('resultsCount').textContent = searchQuery
-            ? `${visible} / ${total} kết quả`
-            : `${total} sản phẩm`;
+            ? `${visible} / ${total} ${tResults}`
+            : `${total} ${tProducts}`;
 
         // Apply sort to visible cards
         const sortVal = document.getElementById('sortSelect').value;
@@ -754,17 +763,21 @@
             }
         }
 
+        const lang = localStorage.getItem('dcinema_lang') || 'vi';
+        const trans = window.translations ? window.translations[lang] : null;
+
         if (qty > 0) {
             if (card) card.classList.add('selected');
             if (btn) {
                 btn.classList.add('btn-update');
-                btn.innerHTML = `Cập nhật <span class="cart-badge">${qty}</span>`;
+                btn.innerHTML = `${trans ? trans.fnb_update : 'Cập nhật'} <span class="cart-badge">${qty}</span>`;
             }
         } else {
             if (card) card.classList.remove('selected');
             if (btn) {
+                const isOutOfStock = card && card.classList.contains('out-of-stock');
                 btn.classList.remove('btn-update');
-                btn.textContent = 'Thêm';
+                btn.textContent = isOutOfStock ? (trans ? trans.fnb_out_of_stock : 'Hết hàng') : (trans ? trans.fnb_add : 'Thêm');
             }
         }
 
@@ -802,15 +815,18 @@
         let fbTotal = 0;
         let fbHtml = '';
 
+        const lang = localStorage.getItem('dcinema_lang') || 'vi';
         dbProducts.forEach(p => {
             const qty = quantities[p.FnBID] || 0;
             if (qty > 0) {
                 const subtotal = qty * p.Price;
                 fbTotal += subtotal;
+                
+                let displayName = p.Name;
                 fbHtml += `
                     <div class="fb-item-row">
                         <div class="fb-item-left">
-                            <span class="fb-item-name">${qty}x ${p.Name}</span>
+                            <span class="fb-item-name">${qty}x ${displayName}</span>
                         </div>
                         <span class="fb-item-price">${subtotal.toLocaleString('vi-VN')} VND</span>
                         <button class="btn-remove-item" onclick="removeItem(${p.FnBID})" title="Xóa khỏi giỏ">
@@ -931,8 +947,12 @@
         tabSnacks.innerHTML = '';
         tabDrinks.innerHTML = '';
 
+        const lang = localStorage.getItem('dcinema_lang') || 'vi';
+        const trans = window.translations ? window.translations[lang] : null;
+
         if (!dbProducts.length) {
-            tabCombos.innerHTML = `<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h18l-2 14H5L3 2Z"/><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/></svg><p>Chưa có sản phẩm nào.</p></div>`;
+            const tEmpty = trans ? trans.fnb_empty : 'Chưa có sản phẩm nào.';
+            tabCombos.innerHTML = `<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h18l-2 14H5L3 2Z"/><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/></svg><p>${tEmpty}</p></div>`;
             return;
         }
 
@@ -952,22 +972,38 @@
             const isLowStock = p.Stock > 0 && p.Stock <= 10;
             const maxAllowed = Math.min(p.Stock, MAX_PER_ITEM);
 
+            let displayName = p.Name;
+            let displayDesc = p.Description || '';
+            
+            if (lang === 'en') {
+                const descMap = {
+                    '1 Bắp ngọt nhỏ + 1 Nước ngọt lớn': '1 Small Sweet Popcorn + 1 Large Soft Drink',
+                    '1 Bắp ngọt lớn + 2 Nước ngọt lớn': '1 Large Sweet Popcorn + 2 Large Soft Drinks',
+                    '2 Bắp ngọt lớn + 4 Nước ngọt lớn': '2 Large Sweet Popcorn + 4 Large Soft Drinks'
+                };
+                if (descMap[displayDesc.trim()]) displayDesc = descMap[displayDesc.trim()];
+            }
+
             const card = document.createElement('div');
             card.className = 'item-card' + (isOutOfStock ? ' out-of-stock' : '');
             card.id = `card-${p.FnBID}`;
             card.dataset.fnbid = p.FnBID;
-            card.dataset.name = p.Name;
-            card.dataset.desc = p.Description || '';
+            card.dataset.name = displayName;
+            card.dataset.desc = displayDesc;
             card.dataset.price = p.Price;
 
             const displayImage = p.ImageURL || 'images/combo_mega.png';
 
+            const tOut = trans ? trans.fnb_out_of_stock : 'Hết hàng';
+            const tLeft = trans ? trans.fnb_left : 'Còn';
+            const tPortion = trans ? trans.fnb_portion : 'phần';
+
             // Badge HTML
             let badgeHtml = '';
             if (isOutOfStock) {
-                badgeHtml = `<span class="badge-stock badge-out">Hết hàng</span>`;
+                badgeHtml = `<span class="badge-stock badge-out">${tOut}</span>`;
             } else if (isLowStock) {
-                badgeHtml = `<span class="badge-stock badge-low">Còn ${p.Stock} phần</span>`;
+                badgeHtml = `<span class="badge-stock badge-low">${tLeft} ${p.Stock} ${tPortion}</span>`;
             }
 
             // Controls disabled if out of stock
@@ -981,10 +1017,10 @@
                 </div>
                 <div class="card-body">
                     <div class="card-top-row">
-                        <span class="item-name">${p.Name}</span>
+                        <span class="item-name">${displayName}</span>
                         <span class="item-price">${p.Price.toLocaleString('vi-VN')} VND</span>
                     </div>
-                    <p class="item-desc" title="${p.Description || ''}">${p.Description || 'Đồ ăn bắp nước chuẩn rạp chiếu phim.'}</p>
+                    <p class="item-desc" title="${displayDesc}">${displayDesc || 'Đồ ăn bắp nước chuẩn rạp chiếu phim.'}</p>
                     <div class="card-actions">
                         <div class="qty-control"${disabledCls}>
                             <button class="qty-btn minus" onclick="changeQty(${p.FnBID}, -1)" aria-label="Giảm" ${disabled}>
@@ -999,7 +1035,7 @@
                             </button>
                         </div>
                         <button class="btn-add" id="btn-${p.FnBID}" onclick="addToCart(${p.FnBID})" ${disabled}>
-                            ${isOutOfStock ? 'Hết hàng' : 'Thêm'}
+                            ${isOutOfStock ? (trans ? trans.fnb_out_of_stock : 'Hết hàng') : (trans ? trans.fnb_add : 'Thêm')}
                         </button>
                     </div>
                 </div>
@@ -1075,16 +1111,24 @@
         }
 
         BASE_TICKET = booking.ticketTotal || 0;
-        document.getElementById('ticketLines').innerHTML = `
-            <div class="order-line">
-                <span class="line-label">Vé xem phim (${booking.seatCount || 0}x)</span>
-                <span class="line-val">${BASE_TICKET.toLocaleString('vi-VN')} VND</span>
-            </div>
-            <div class="order-line">
-                <span class="line-label">Phí dịch vụ</span>
-                <span class="line-val">0 VND</span>
-            </div>
-        `;
+        function updateTicketLines() {
+            const lang = localStorage.getItem('dcinema_lang') || 'vi';
+            const trans = window.translations ? window.translations[lang] : null;
+            const tTickets = trans ? trans.fnb_movie_tickets : 'Vé xem phim';
+            const tFee = trans ? trans.fnb_service_fee : 'Phí dịch vụ';
+
+            document.getElementById('ticketLines').innerHTML = `
+                <div class="order-line">
+                    <span class="line-label">${tTickets} (${booking.seatCount || 0}x)</span>
+                    <span class="line-val">${BASE_TICKET.toLocaleString('vi-VN')} VND</span>
+                </div>
+                <div class="order-line">
+                    <span class="line-label">${tFee}</span>
+                    <span class="line-val">0 VND</span>
+                </div>
+            `;
+        }
+        updateTicketLines();
 
         // Show loading skeleton while fetching
         showSkeleton('tab-combos', 6);
@@ -1107,6 +1151,17 @@
         }
 
         updateOrderSummary();
+
+        const ls = document.getElementById('langSwitcher');
+        if (ls) {
+            ls.addEventListener('change', () => {
+                setTimeout(() => {
+                    renderProducts();
+                    updateOrderSummary();
+                    updateTicketLines();
+                }, 50);
+            });
+        }
     });
 
     // Bắt sự kiện Pageshow để tự động reload lại trang nếu load từ bộ nhớ đệm (Browser Back button)
