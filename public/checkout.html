@@ -1357,7 +1357,8 @@
         }
 
         wrap.innerHTML = myRewardVouchers.map(v => {
-            const discount = v.DiscountType === 'percent'
+            const isPercent = (v.DiscountType || '').toLowerCase() === 'percent' || (v.DiscountType || '').toLowerCase() === 'percentage';
+            const discount = isPercent
                 ? `${Number(v.DiscountValue || 0)}%`
                 : formatVoucherMoney(v.DiscountValue);
             const minOrder = Number(v.MinOrderValue || 0);

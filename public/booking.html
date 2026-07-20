@@ -2349,11 +2349,7 @@ let rawData = [];
             /* ── AUTH ── */
             function initAuth() {
                 try {
-<<<<<<< Updated upstream
                     const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
-=======
-const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
->>>>>>> Stashed changes
                     const btn = document.getElementById('btnLogin');
                     if (u.fullName) {
                         if (btn) { btn.textContent = u.fullName; btn.href = 'profile.html'; }
@@ -2764,12 +2760,7 @@ movies.forEach((movie, idx) => {
                 const modal = document.getElementById('movieModal');
                 modal.classList.add('open');
                 document.body.style.overflow = 'hidden';
-<<<<<<< Updated upstream
-
                 const movie = rawData.find(r => r.MovieID === movieId) || {};
-=======
-const movie = rawData.find(r => r.MovieID === movieId) || {};
->>>>>>> Stashed changes
                 document.getElementById('modalTitle').textContent = movie.Title || '—';
                 document.getElementById('modalDesc').textContent = movie.Description || 'Chưa có mô tả cho phim này.';
                 document.getElementById('modalPoster').src = movie.PosterURL || 'images/default_poster.svg';
@@ -2872,11 +2863,7 @@ const token = localStorage.getItem('token') || sessionStorage.getItem('token');
                 <div class="empty-title">Không có suất chiếu</div>
                 <div class="empty-desc">${msg}</div>
                 <button class="empty-btn" onclick="location.reload()">
-<<<<<<< Updated upstream
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
-=======
-<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
->>>>>>> Stashed changes
                     Thử lại
                 </button>
             </div>`;
