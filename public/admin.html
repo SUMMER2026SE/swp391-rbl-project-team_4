@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="css/admin.css?v=26">
+    <link rel="stylesheet" href="css/admin.css?v=27">
     <link rel="stylesheet" href="css/chatbot.css">
 </head>
 
@@ -612,7 +612,7 @@
                 <div class="cin-sidebar">
                     <div class="cs-header">
                         <h2>Cụm rạp</h2>
-                        <button class="btn-icon-sm" title="Add Cluster" onclick="openAddCinemaModal()"><svg width="14"
+                        <button type="button" class="btn-icon-sm" id="btnAddCinema" data-cinema-action="add" title="Add Cluster" onclick="openAddCinemaModal()"><svg width="14"
                                 height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <line x1="12" y1="5" x2="12" y2="19" />
                                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -2387,10 +2387,10 @@
 </div>
 
     <!-- Room Modal Overlay & Modal -->
-    <div id="roomModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:400;backdrop-filter:blur(6px);"
+    <div id="roomModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9000;backdrop-filter:blur(6px);"
         onclick="closeRoomModal()"></div>
     <div id="roomModal"
-        style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:401;background:linear-gradient(145deg,#0d1117,#161b24);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;width:440px;max-width:95vw;box-shadow:0 32px 80px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.06);">
+        style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9001;background:linear-gradient(145deg,#0d1117,#161b24);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;width:440px;max-width:95vw;box-shadow:0 32px 80px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.06);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;">
             <div>
                 <h2 id="roomModalTitle"
@@ -3140,10 +3140,10 @@
     </style>
 
     <!-- Cinema Modal Overlay & Modal -->
-    <div id="cinemaModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;"
+    <div id="cinemaModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9000;backdrop-filter:blur(4px);"
         onclick="closeCinemaModal()"></div>
     <div id="cinemaModal"
-        style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:401;background:var(--surface);border-radius:12px;padding:32px;width:480px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
+        style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9001;background:var(--bg-white);border-radius:12px;padding:32px;width:480px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
             <h2 id="cinemaModalTitle"
                 style="font-size:1.2rem;font-weight:800;color:var(--text);text-transform:uppercase;">THÊM CỤM RẠP</h2>
@@ -3191,25 +3191,25 @@
     </div>
 
     <!-- Room Modal Overlay & Modal -->
-    <div id="roomModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;"
+    <div id="legacyRoomModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;"
         onclick="closeRoomModal()"></div>
-    <div id="roomModal"
+    <div id="legacyRoomModal"
         style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:401;background:var(--surface);border-radius:12px;padding:32px;width:400px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-            <h2 id="roomModalTitle"
+            <h2 id="legacyRoomModalTitle"
                 style="font-size:1.2rem;font-weight:800;color:var(--text);text-transform:uppercase;">THÊM PHÒNG CHIẾU
             </h2>
             <button onclick="closeRoomModal()"
                 style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.4rem;line-height:1;">×</button>
         </div>
-        <form id="roomForm" onsubmit="saveRoom(event)" style="display:flex;flex-direction:column;gap:16px;">
-            <input type="hidden" id="roomId">
-            <input type="hidden" id="roomCinemaId">
+        <form id="legacyRoomForm" onsubmit="saveRoom(event)" style="display:flex;flex-direction:column;gap:16px;">
+            <input type="hidden" id="legacyRoomId">
+            <input type="hidden" id="legacyRoomCinemaId">
             <div class="ff-group">
                 <label
                     style="font-size:0.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;">TÊN
                     PHÒNG CHIẾU *</label>
-                <input type="text" id="roomNameInput" placeholder="VD: Phòng chiếu 1" required
+                <input type="text" id="legacyRoomNameInput" placeholder="VD: Phòng chiếu 1" required
                     style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;">
             </div>
             <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
@@ -3260,7 +3260,7 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/i18n.js"></script>
-    <script src="js/admin.js?v=25"></script>
+    <script src="js/admin.js?v=27"></script>
     <script src="js/admin-voucher.js?v=1010"></script>
 
 </body>

@@ -2261,7 +2261,7 @@ transition: background-color var(--tr);
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/i18n.js"></script>
     <script src="app.js?v=7"></script>
-    <script>
+    <script type="text/plain" id="legacyBookingScript">
         (function () {
             'use strict';
 
@@ -2883,6 +2883,7 @@ const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         })();
     </script>
 
+    <script src="js/booking-page.js?v=1"></script>
     <script src="js/chatbot.js"></script>
 </body>
 

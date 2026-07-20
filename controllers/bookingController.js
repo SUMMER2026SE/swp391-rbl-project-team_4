@@ -349,13 +349,18 @@ exports.createBooking = async (req, res) => {
       err.message.includes('chưa được thiết lập giá') ||
       err.message.includes('không hợp lệ') ||
       err.message.includes('đã ngừng bán') ||
-      err.message.includes('không được hỗ trợ')
+      err.message.includes('không được hỗ trợ') ||
+      err.message.includes('đồ ăn') ||
+      err.message.includes('số lượng') ||
+      err.message.includes('tối đa 10')
     ) {
       return res.status(400).json({ success: false, message: err.message });
     }
     if (
       err.message.includes('đã được đặt') ||
+      err.message.includes('đã bị người khác chọn') ||
       err.message.includes('không đủ số lượng') ||
+      err.message.includes('chỉ còn lại') ||
       err.message.includes('Voucher')
     ) {
       return res.status(409).json({ success: false, message: err.message });

@@ -22,6 +22,33 @@ function couplePairKey(seat) {
   return `${seat.SeatRow}_${Math.min(seat.SeatNumber, pairNum)}`;
 }
 
+function parseFoodId(value) {
+  const raw = String(value ?? '').trim();
+  const legacyMatch = raw.match(/^fb(\d+)$/i);
+  return parseInt(legacyMatch ? legacyMatch[1] : raw, 10);
+}
+
+function normalizeFoodItems(foodItems = []) {
+  if (!Array.isArray(foodItems)) return [];
+
+  const merged = new Map();
+  for (const item of foodItems) {
+    const rawId = item?.fnbId ?? item?.FnBID ?? item?.fnbID ?? item?.id;
+    const fnbId = parseFoodId(rawId);
+    const quantity = parseInt(item?.quantity ?? item?.Quantity ?? item?.qty, 10);
+
+    if (!Number.isFinite(fnbId) || fnbId <= 0) {
+      if (quantity > 0) throw new Error('Thông tin đồ ăn không hợp lệ.');
+      continue;
+    }
+    if (!Number.isFinite(quantity) || quantity <= 0) continue;
+
+    merged.set(fnbId, (merged.get(fnbId) || 0) + quantity);
+  }
+
+  return Array.from(merged, ([fnbId, quantity]) => ({ fnbId, quantity }));
+}
+
 class BookingModel {
   static async getFoodBeverages() {
     const pool = await getPool();
@@ -100,6 +127,8 @@ class BookingModel {
   }
 
   static async createBooking(userId, { showtimeId, seatIds, foodItems, voucherCode, paymentMethod, sessionId }) {
+    foodItems = normalizeFoodItems(foodItems);
+
     // Tự động dọn dẹp các vé pending hết hạn trước khi đặt ghế mới
     await BookingModel.cleanupExpiredPendingBookings();
 
@@ -291,8 +320,8 @@ class BookingModel {
         tReq.input('showtimeId', sql.Int, showtimeId);
         tReq.input('seatId', sql.Int, seatId);
         tReq.input('voucherId', sql.Int, voucherId);
-        tReq.input('ticketPrice', sql.Decimal, currentSeatPrice);
-        tReq.input('totalAmount', sql.Decimal, currentSeatTotalAmount);
+        tReq.input('ticketPrice', sql.Decimal(18, 2), currentSeatPrice);
+        tReq.input('totalAmount', sql.Decimal(18, 2), currentSeatTotalAmount);
         tReq.input('paymentMethod', sql.NVarChar, paymentMethod);
         tReq.input('qrCode', sql.NVarChar, qrCode);
 
@@ -796,6 +825,8 @@ class BookingModel {
   }
 
   static async calculateBookingPrice(userId, { showtimeId, seatIds, foodItems = [], voucherCode = null }) {
+    foodItems = normalizeFoodItems(foodItems);
+
     const pool = await getPool();
     
     // 1. Lấy giá vé từ showtime

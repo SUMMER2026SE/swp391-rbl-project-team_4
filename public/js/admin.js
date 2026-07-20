@@ -8,7 +8,7 @@ let filterCinemas = [];
 /* ══════════════════════════
    FETCH DATA FROM BACKEND
 ══════════════════════════ */
-const ADMIN_JS_VERSION = '25-floating-ai-query';
+const ADMIN_JS_VERSION = '27-cinema-click-fix';
 if (typeof window !== 'undefined') {
     window.ADMIN_JS_VERSION = ADMIN_JS_VERSION;
 }
@@ -2931,10 +2931,10 @@ function renderCinemaSidebar() {
                 <div class="cs-item-top">
                     <span class="cs-district">${c.City}</span>
                     <div style="display: flex; gap: 4px;">
-                        <button class="btn-icon-xs" title="Sửa rạp" onclick="event.stopPropagation(); openEditCinemaModal(${c.CinemaID})">
+                        <button type="button" class="btn-icon-xs" title="Sửa rạp" data-cinema-action="edit" data-cinema-id="${c.CinemaID}" onclick="openEditCinemaModal(${c.CinemaID}); return false;">
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                         </button>
-                        <button class="btn-icon-xs" title="Xóa rạp" onclick="event.stopPropagation(); deleteCinema(${c.CinemaID})">
+                        <button type="button" class="btn-icon-xs" title="Xóa rạp" onclick="deleteCinema(${c.CinemaID}); return false;">
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                         </button>
                     </div>
@@ -2995,7 +2995,7 @@ window.selectCinemaForBuilder = function (cinemaId, el) {
                         </p>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button class="btn-outline-red" style="padding: 10px 20px; font-size: 0.85rem;" onclick="openEditCinemaModal(${c.CinemaID})">
+                        <button type="button" class="btn-outline-red" data-cinema-action="edit" data-cinema-id="${c.CinemaID}" style="padding: 10px 20px; font-size: 0.85rem; color: var(--accent); background: rgba(232,25,44,0.04);" onclick="openEditCinemaModal(${c.CinemaID}); return false;">
                             Sửa cụm rạp
                         </button>
                         <button class="btn-solid-red" style="padding: 10px 20px; font-size: 0.85rem;" onclick="deleteCinema(${c.CinemaID})">
@@ -3109,29 +3109,101 @@ window.selectRoomForBuilder = async function (roomId, el) {
 };
 
 // --- Cinema CRUD ---
+function openAdminInlineModal(overlayId, modalId) {
+    const overlay = document.getElementById(overlayId);
+    const modal = document.getElementById(modalId);
+    if (!overlay || !modal) {
+        console.error('Missing admin modal elements:', { overlayId, modalId, overlay, modal });
+        showToast('Không thể mở hộp thoại. Hãy tải lại trang admin.', 'error');
+        return false;
+    }
+
+    overlay.style.display = 'block';
+    modal.style.display = 'block';
+    return true;
+}
+
+function closeAdminInlineModal(overlayId, modalId) {
+    const overlay = document.getElementById(overlayId);
+    const modal = document.getElementById(modalId);
+    if (overlay) overlay.style.display = 'none';
+    if (modal) modal.style.display = 'none';
+}
+
+function attachCinemaCrudClickHandlers() {
+    if (window.__cinemaCrudClickHandlersAttached) return;
+    window.__cinemaCrudClickHandlersAttached = true;
+
+    document.addEventListener('click', (e) => {
+        const actionButton = e.target.closest('[data-cinema-action]');
+        if (!actionButton) return;
+
+        const action = actionButton.dataset.cinemaAction;
+        if (action !== 'add' && action !== 'edit') return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        if (action === 'add') {
+            window.openAddCinemaModal();
+            return;
+        }
+
+        const cinemaId = Number(actionButton.dataset.cinemaId);
+        if (cinemaId) {
+            window.openEditCinemaModal(cinemaId);
+        }
+    }, true);
+}
+
+attachCinemaCrudClickHandlers();
+
 window.openAddCinemaModal = function () {
-    document.getElementById('cinemaModalTitle').innerText = 'Thêm cụm rạp mới';
-    document.getElementById('cinemaId').value = '';
-    document.getElementById('cinemaForm').reset();
-    document.getElementById('cinemaModalOverlay').style.display = 'block';
-    document.getElementById('cinemaModal').style.display = 'block';
+    const form = document.getElementById('cinemaForm');
+    const title = document.getElementById('cinemaModalTitle');
+    const idInput = document.getElementById('cinemaId');
+    if (!form || !title || !idInput) {
+        console.error('Missing cinema modal form elements');
+        showToast('Không thể mở form thêm cụm rạp. Hãy tải lại trang admin.', 'error');
+        return;
+    }
+
+    title.innerText = 'Thêm cụm rạp mới';
+    form.reset();
+    idInput.value = '';
+    openAdminInlineModal('cinemaModalOverlay', 'cinemaModal');
 };
 
 window.openEditCinemaModal = function (id) {
-    const c = allCinemas.find(x => x.CinemaID === id);
-    if (!c) return;
-    document.getElementById('cinemaModalTitle').innerText = 'Sửa thông tin cụm rạp';
-    document.getElementById('cinemaId').value = c.CinemaID;
-    document.getElementById('cinemaNameInput').value = c.CinemaName;
-    document.getElementById('cinemaAddressInput').value = c.Address;
-    document.getElementById('cinemaCityInput').value = c.City;
-    document.getElementById('cinemaModalOverlay').style.display = 'block';
-    document.getElementById('cinemaModal').style.display = 'block';
+    const cinemaId = Number(id);
+    const c = allCinemas.find(x => Number(x.CinemaID) === cinemaId);
+    if (!c) {
+        showToast('Không tìm thấy cụm rạp để sửa', 'error');
+        return;
+    }
+
+    const title = document.getElementById('cinemaModalTitle');
+    const idInput = document.getElementById('cinemaId');
+    const nameInput = document.getElementById('cinemaNameInput');
+    const addressInput = document.getElementById('cinemaAddressInput');
+    const cityInput = document.getElementById('cinemaCityInput');
+    if (!title || !idInput || !nameInput || !addressInput || !cityInput) {
+        console.error('Missing cinema modal edit elements');
+        showToast('Không thể mở form sửa cụm rạp. Hãy tải lại trang admin.', 'error');
+        return;
+    }
+
+    title.innerText = 'Sửa thông tin cụm rạp';
+    idInput.value = c.CinemaID;
+    nameInput.value = c.CinemaName || '';
+    addressInput.value = c.Address || '';
+    cityInput.value = c.City || '';
+    openAdminInlineModal('cinemaModalOverlay', 'cinemaModal');
 };
 
 window.closeCinemaModal = function () {
-    document.getElementById('cinemaModalOverlay').style.display = 'none';
-    document.getElementById('cinemaModal').style.display = 'none';
+    closeAdminInlineModal('cinemaModalOverlay', 'cinemaModal');
 };
 
 window.saveCinema = async function (e) {
@@ -3229,13 +3301,13 @@ window.deleteCinema = async function (id) {
 
 // --- Room CRUD ---
 window.openAddRoomModal = function (cinemaId) {
+    const form = document.getElementById('roomForm');
     document.getElementById('roomModalTitle').innerText = 'Thêm phòng chiếu mới';
+    if (form) form.reset();
     document.getElementById('roomId').value = '';
     document.getElementById('roomCinemaId').value = cinemaId;
-    document.getElementById('roomForm').reset();
     document.getElementById('roomTypeInput').value = 'Standard';
-    document.getElementById('roomModalOverlay').style.display = 'block';
-    document.getElementById('roomModal').style.display = 'block';
+    openAdminInlineModal('roomModalOverlay', 'roomModal');
 };
 
 window.openEditRoomModal = function (id, currentName) {
@@ -3245,13 +3317,11 @@ window.openEditRoomModal = function (id, currentName) {
     document.getElementById('roomCinemaId').value = r ? r.CinemaID : '';
     document.getElementById('roomNameInput').value = currentName;
     document.getElementById('roomTypeInput').value = r ? (r.RoomType || 'Standard') : 'Standard';
-    document.getElementById('roomModalOverlay').style.display = 'block';
-    document.getElementById('roomModal').style.display = 'block';
+    openAdminInlineModal('roomModalOverlay', 'roomModal');
 };
 
 window.closeRoomModal = function () {
-    document.getElementById('roomModalOverlay').style.display = 'none';
-    document.getElementById('roomModal').style.display = 'none';
+    closeAdminInlineModal('roomModalOverlay', 'roomModal');
 };
 
 window.saveRoom = async function (e) {
