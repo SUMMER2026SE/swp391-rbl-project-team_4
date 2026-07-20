@@ -1602,9 +1602,11 @@
         let seatsList = [];
         let selectedSeats = new Set();   // Set<SeatID>
         let lockedByOthers = new Set();  // Set<SeatID>
+        let holdExpiryBySeat = new Map(); // SeatID -> deadline timestamp (ms)
         let currentZoom = 1.0;
         let countdownInterval = null;
         let secondsLeft = 300; // 5 minutes (300 seconds)
+        let countdownDeadline = null;
 
         // ──────────────────────────────────────────────
         //  Zoom & Timer & Tooltip Helpers
@@ -1626,15 +1628,42 @@
             }
         }
 
+        function setSeatHoldExpiry(seatId, remainingSeconds) {
+            const seconds = Number(remainingSeconds);
+            if (!Number.isFinite(seconds) || seconds <= 0) return;
+            holdExpiryBySeat.set(Number(seatId), Date.now() + seconds * 1000);
+            refreshTimerFromSeatLocks();
+        }
+
+        function refreshTimerFromSeatLocks(fallbackSeconds = 300) {
+            if (selectedSeats.size === 0) {
+                stopTimer();
+                return;
+            }
+
+            const deadlines = Array.from(selectedSeats)
+                .map(seatId => holdExpiryBySeat.get(Number(seatId)))
+                .filter(deadline => Number.isFinite(deadline) && deadline > Date.now());
+
+            countdownDeadline = deadlines.length
+                ? Math.min(...deadlines)
+                : Date.now() + fallbackSeconds * 1000;
+
+            startTimer();
+        }
+
         function startTimer() {
-            if (countdownInterval) return; // Already running
-            secondsLeft = 300;
             const card = document.getElementById('countdownCard');
             if (card) card.style.display = 'flex';
             updateTimerDisplay();
+            if (countdownInterval) return; // Already running
 
             countdownInterval = setInterval(() => {
-                secondsLeft--;
+                if (countdownDeadline) {
+                    secondsLeft = Math.max(0, Math.ceil((countdownDeadline - Date.now()) / 1000));
+                } else {
+                    secondsLeft--;
+                }
                 updateTimerDisplay();
 
                 if (secondsLeft <= 0) {
@@ -1652,11 +1681,15 @@
                 clearInterval(countdownInterval);
                 countdownInterval = null;
             }
+            countdownDeadline = null;
             const card = document.getElementById('countdownCard');
             if (card) card.style.display = 'none';
         }
 
         function updateTimerDisplay() {
+            if (countdownDeadline) {
+                secondsLeft = Math.max(0, Math.ceil((countdownDeadline - Date.now()) / 1000));
+            }
             const min = Math.floor(secondsLeft / 60);
             const sec = secondsLeft % 60;
             const timerEl = document.getElementById('countdownTimer');
@@ -1716,16 +1749,16 @@
             }
             initSocket();
             await loadSeats();
-            window.addEventListener('beforeunload', releaseAllHeldSeats);
         });
 
         function releaseAllHeldSeats() {
-            if (!socket || selectedSeats.size === 0) return;
-            selectedSeats.forEach(seatId => {
-                socket.emit('releaseSeat', { showtimeId, seatId });
-            });
             selectedSeats.clear();
+            holdExpiryBySeat.clear();
+            sessionStorage.removeItem('booking');
+            localStorage.removeItem('booking');
             stopTimer();
+            renderSeatGrid();
+            updateSummary();
         }
 
         function updateNavbar() {
@@ -1808,17 +1841,29 @@
             socket.on('seatStatusUpdated', (data) => {
                 if (parseInt(data.showtimeId) !== showtimeId) return;
                 const seatId = parseInt(data.seatId);
-                if (data.status === 'Đang chọn') {
+                if (data.status === 'Đang chọn' || data.status === 'Dang chon') {
                     if (!selectedSeats.has(seatId)) {
                         lockedByOthers.add(seatId);
+                        const seatData = seatsList.find(s => s.SeatID === seatId);
+                        if (seatData && seatData.SeatStatus === 'available') seatData.SeatStatus = 'locked';
                         markSeatEl(seatId, 'locked');
                     }
-                } else if (data.status === 'Trống') {
+                } else if (data.status === 'Trống' || data.status === 'Trong') {
                     lockedByOthers.delete(seatId);
+                    const seatData = seatsList.find(s => s.SeatID === seatId);
+                    if (seatData && seatData.SeatStatus === 'locked') seatData.SeatStatus = 'available';
                     unmarkSeatEl(seatId);
                 }
                 if (typeof update3DSeatColors === 'function') {
                     update3DSeatColors();
+                }
+            });
+
+            socket.on('seatHoldConfirmed', (data) => {
+                if (parseInt(data.showtimeId) !== showtimeId) return;
+                const seatId = parseInt(data.seatId);
+                if (selectedSeats.has(seatId)) {
+                    setSeatHoldExpiry(seatId, data.remainingSeconds);
                 }
             });
 
@@ -1853,6 +1898,19 @@
                 const json = await res.json();
                 if (json.success && json.data) {
                     seatsList = json.data;
+
+                    // Khôi phục mọi ghế DB báo còn đang được giữ bởi đúng phiên hiện tại.
+                    seatsList.forEach(seatData => {
+                        const remaining = Number(seatData.LockRemainingSeconds || 0);
+                        if (
+                            seatData.SeatStatus === 'available'
+                            && seatData.LockSessionID === sessId
+                            && remaining > 0
+                        ) {
+                            selectedSeats.add(Number(seatData.SeatID));
+                            setSeatHoldExpiry(seatData.SeatID, remaining);
+                        }
+                    });
                     
                     // Khôi phục danh sách ghế đã chọn từ session
                     try {
@@ -1861,9 +1919,13 @@
                             savedBooking.seatIds.forEach(id => {
                                 const parsedId = parseInt(id, 10);
                                 const seatData = seatsList.find(s => s.SeatID === parsedId);
-                                // Chỉ khôi phục nếu ghế thực sự còn trống (hoặc thuộc quyền khóa của mình)
-                                if (seatData && seatData.SeatStatus === 'available') {
+                                const isOwnedLock = seatData
+                                    && seatData.LockSessionID === sessId
+                                    && Number(seatData.LockRemainingSeconds || 0) > 0;
+                                // Chỉ khôi phục nếu lock DB còn thuộc đúng phiên hiện tại.
+                                if (seatData && seatData.SeatStatus === 'available' && isOwnedLock) {
                                     selectedSeats.add(parsedId);
+                                    setSeatHoldExpiry(parsedId, seatData.LockRemainingSeconds);
                                 }
                             });
                             console.log('[Seats] Đã khôi phục các ghế đã chọn từ trước:', Array.from(selectedSeats));
@@ -1881,7 +1943,7 @@
                         if (socket.connected) {
                             socket.emit('reclaimSeats', { showtimeId, seatIds: Array.from(selectedSeats) });
                         }
-                        startTimer(); // Khôi phục bộ đếm ngược hiển thị ở client
+                        refreshTimerFromSeatLocks(); // Khôi phục đúng thời gian còn lại từ DB
                     }
                 } else {
                     document.getElementById('seatMapContainer').innerHTML = `
@@ -1950,34 +2012,8 @@
 
             const rowsMap = buildRenderableRowsMap();
 
-            // Determine couple rows based on alphabetical order first
             const alphabetRows = Object.keys(rowsMap).sort();
-            const coupleRows = new Set();
-            alphabetRows.forEach(row => {
-                const seats = rowsMap[row];
-                if (seats.some(s => s.SeatType && s.SeatType.toLowerCase().includes('couple'))) {
-                    coupleRows.add(row);
-                }
-            });
-            if (coupleRows.size === 0 && alphabetRows.length > 0) {
-                coupleRows.add(alphabetRows[alphabetRows.length - 1]);
-            }
-
-            // Priority-based sort: Standard (3) > VIP (2) > Couple (1)
-            const getRowPriority = (row) => {
-                if (coupleRows.has(row)) return 1;
-                const seats = rowsMap[row] || [];
-                const hasVip = seats.some(s => s.SeatType === 'VIP');
-                if (hasVip) return 2;
-                return 3;
-            };
-
-            const sortedRows = [...alphabetRows].sort((a, b) => {
-                const prioA = getRowPriority(a);
-                const prioB = getRowPriority(b);
-                if (prioA !== prioB) return prioB - prioA;
-                return a.localeCompare(b);
-            });
+            const sortedRows = alphabetRows;
 
             sortedRows.forEach(row => {
                 const rowDiv = document.createElement('div');
@@ -2149,14 +2185,14 @@
                         const s = segment[i];
                         
                         // We only care if the seat is EMPTY (not selected, booked, or locked)
-                        if (proposedSet.has(s.SeatID) || s.SeatStatus === 'booked' || lockedByOthers.has(s.SeatID)) continue;
+                        if (proposedSet.has(s.SeatID) || s.SeatStatus === 'booked' || s.SeatStatus === 'locked' || lockedByOthers.has(s.SeatID)) continue;
                         if (s.SeatType && s.SeatType.toLowerCase().includes('couple')) continue;
 
                         const leftSeat = i > 0 ? segment[i-1] : null;
                         const rightSeat = i < segLen - 1 ? segment[i+1] : null;
 
-                        const isLeftBlocked = leftSeat && (proposedSet.has(leftSeat.SeatID) || leftSeat.SeatStatus === 'booked' || lockedByOthers.has(leftSeat.SeatID));
-                        const isRightBlocked = rightSeat && (proposedSet.has(rightSeat.SeatID) || rightSeat.SeatStatus === 'booked' || lockedByOthers.has(rightSeat.SeatID));
+                        const isLeftBlocked = leftSeat && (proposedSet.has(leftSeat.SeatID) || leftSeat.SeatStatus === 'booked' || leftSeat.SeatStatus === 'locked' || lockedByOthers.has(leftSeat.SeatID));
+                        const isRightBlocked = rightSeat && (proposedSet.has(rightSeat.SeatID) || rightSeat.SeatStatus === 'booked' || rightSeat.SeatStatus === 'locked' || lockedByOthers.has(rightSeat.SeatID));
 
                         if (isLeftBlocked && isRightBlocked) {
                             return { valid: false, message: "GalaxyAlert", isGalaxyAlert: true };
@@ -2195,8 +2231,8 @@
                 }
 
                 selectedSeats.delete(seatId);
+                holdExpiryBySeat.delete(Number(seatId));
                 el.classList.remove('selected');
-                if (socket) socket.emit('releaseSeat', { showtimeId, seatId });
             } else {
                 const proposedSet = new Set(selectedSeats);
                 proposedSet.add(seatId);
@@ -2214,9 +2250,10 @@
                 selectedSeats.add(seatId);
                 el.classList.add('selected');
                 if (socket) socket.emit('holdSeat', { showtimeId, seatId });
-                startTimer();
+                refreshTimerFromSeatLocks();
             }
             if (selectedSeats.size === 0) stopTimer();
+            else refreshTimerFromSeatLocks();
             updateSummary();
         }
 
@@ -2239,11 +2276,9 @@
 
                 selectedSeats.delete(seatId1);
                 selectedSeats.delete(seatId2);
+                holdExpiryBySeat.delete(Number(seatId1));
+                holdExpiryBySeat.delete(Number(seatId2));
                 el.classList.remove('selected');
-                if (socket) {
-                    socket.emit('releaseSeat', { showtimeId, seatId: seatId1 });
-                    socket.emit('releaseSeat', { showtimeId, seatId: seatId2 });
-                }
             } else {
                 const proposedSet = new Set(selectedSeats);
                 proposedSet.add(seatId1);
@@ -2266,14 +2301,16 @@
                     socket.emit('holdSeat', { showtimeId, seatId: seatId1 });
                     socket.emit('holdSeat', { showtimeId, seatId: seatId2 });
                 }
-                startTimer();
+                refreshTimerFromSeatLocks();
             }
             if (selectedSeats.size === 0) stopTimer();
+            else refreshTimerFromSeatLocks();
             updateSummary();
         }
 
         function deselectSeatLocally(seatId) {
             selectedSeats.delete(seatId);
+            holdExpiryBySeat.delete(Number(seatId));
             const el = document.querySelector(`.seat[data-id="${seatId}"]`);
             if (el) el.classList.remove('selected');
             const coupleEl = document.querySelector(`.seat.couple[data-id-1="${seatId}"], .seat.couple[data-id-2="${seatId}"]`);
@@ -2283,8 +2320,11 @@
                 const id2 = parseInt(coupleEl.getAttribute('data-id-2'));
                 selectedSeats.delete(id1);
                 selectedSeats.delete(id2);
+                holdExpiryBySeat.delete(Number(id1));
+                holdExpiryBySeat.delete(Number(id2));
             }
             if (selectedSeats.size === 0) stopTimer();
+            else refreshTimerFromSeatLocks();
             updateSummary();
         }
 
@@ -2420,7 +2460,9 @@
             if (!el || !seatsList.length) return;
             const physicalSeats = seatsList.filter(s => s.SeatType !== 'None');
             const booked = physicalSeats.filter(s => s.SeatStatus === 'booked').length;
-            const locked = physicalSeats.filter(s => s.SeatStatus === 'locked').length + lockedByOthers.size;
+            const lockedSeatIds = new Set(physicalSeats.filter(s => s.SeatStatus === 'locked').map(s => s.SeatID));
+            lockedByOthers.forEach(id => lockedSeatIds.add(id));
+            const locked = lockedSeatIds.size;
             const available = physicalSeats.length - booked - locked;
             el.innerHTML = `
                 <span style="color:#4ade80;font-weight:700;">${Math.max(0, available)} ghế trống</span>
@@ -2676,31 +2718,7 @@
             const rowsMap = buildRenderableRowsMap();
             
             const alphabetRows = Object.keys(rowsMap).sort();
-            const coupleRows = new Set();
-            alphabetRows.forEach(row => {
-                const seats = rowsMap[row];
-                if (seats.some(s => s.SeatType && s.SeatType.toLowerCase().includes('couple'))) {
-                    coupleRows.add(row);
-                }
-            });
-            if (coupleRows.size === 0 && alphabetRows.length > 0) {
-                coupleRows.add(alphabetRows[alphabetRows.length - 1]);
-            }
-
-            const getRowPriority = (row) => {
-                if (coupleRows.has(row)) return 1;
-                const seats = rowsMap[row] || [];
-                const hasVip = seats.some(s => s.SeatType === 'VIP');
-                if (hasVip) return 2;
-                return 3;
-            };
-
-            const sortedRows = [...alphabetRows].sort((a, b) => {
-                const prioA = getRowPriority(a);
-                const prioB = getRowPriority(b);
-                if (prioA !== prioB) return prioB - prioA;
-                return a.localeCompare(b);
-            });
+            const sortedRows = alphabetRows;
             const totalRows  = sortedRows.length;
 
             const SEAT_STEP = 1.08;
@@ -2994,6 +3012,7 @@
             function getSeatCK(seat) {
                 if (selectedSeats.has(seat.SeatID)) return 'selected';
                 if (seat.SeatStatus === 'booked') return 'booked';
+                if (seat.SeatStatus === 'locked') return 'locked';
                 if (lockedByOthers.has(seat.SeatID)) return 'locked';
                 if (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) return 'couple';
                 if (seat.SeatType === 'VIP') return 'vip';
@@ -3072,7 +3091,8 @@
                         const px  = startX + i*SEAT_STEP + SEAT_STEP*0.5 + gap;
                         const sel = selectedSeats.has(s1.SeatID)||(s2&&selectedSeats.has(s2.SeatID));
                         const bkd = s1.SeatStatus==='booked'||(s2&&s2.SeatStatus==='booked');
-                        const ck  = sel ? 'selected' : bkd ? 'booked' : 'couple';
+                        const lck = s1.SeatStatus === 'locked' || (s2 && s2.SeatStatus === 'locked') || lockedByOthers.has(s1.SeatID) || (s2 && lockedByOthers.has(s2.SeatID));
+                        const ck  = sel ? 'selected' : bkd ? 'booked' : lck ? 'locked' : 'couple';
                         const mat = makeSeatMat(ck);
                         const body = new THREE.Mesh(gCBody, mat.clone());
                         body.position.set(px, y+0.18, z); scene.add(body);

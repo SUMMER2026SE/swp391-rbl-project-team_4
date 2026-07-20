@@ -94,8 +94,8 @@ async function getUpcomingReminderGroups() {
         AND u.Email IS NOT NULL
         AND LTRIM(RTRIM(u.Email)) <> ''
         AND st.Status = 'active'
-        AND st.StartTime <= DATEADD(minute, @minBefore, GETDATE())
-        AND st.StartTime > GETDATE()
+        AND st.StartTime <= DATEADD(minute, @minBefore, GETUTCDATE())
+        AND st.StartTime > GETUTCDATE()
       GROUP BY
         u.UserID, u.Email, u.FullName,
         st.ShowtimeID, st.StartTime, st.EndTime,
@@ -113,7 +113,7 @@ async function markReminderSent(ticketIds) {
   const pool = await getPool();
   await pool.request().query(`
     UPDATE Tickets
-    SET ReminderSentAt = GETDATE()
+    SET ReminderSentAt = GETUTCDATE()
     WHERE TicketID IN (${ids.join(',')})
       AND ReminderSentAt IS NULL;
   `);
