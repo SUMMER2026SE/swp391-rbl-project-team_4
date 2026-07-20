@@ -177,24 +177,7 @@
                 <!-- Data will be loaded dynamically by app.js -->
             </div>
 
-            <!-- Pagination -->
-            <div class="pagination">
-                <button class="pagination-btn prev" onclick="previousPage()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m15 18-6-6 6-6" />
-                    </svg>
-                </button>
-                <button class="pagination-btn active">1</button>
-                <button class="pagination-btn">2</button>
-                <button class="pagination-btn">3</button>
-                <span class="pagination-dots">...</span>
-                <button class="pagination-btn">12</button>
-                <button class="pagination-btn next" onclick="nextPage()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m9 18 6-6-6-6" />
-                    </svg>
-                </button>
-            </div>
+
         </main>
     </div>
 
@@ -257,14 +240,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js?v=7"></script>
     <script>
-        // Pagination
-        function previousPage() {
-            console.log('Previous page');
-        }
 
-        function nextPage() {
-            console.log('Next page');
-        }
 
         // Check login state for navbar
         document.addEventListener('DOMContentLoaded', () => {

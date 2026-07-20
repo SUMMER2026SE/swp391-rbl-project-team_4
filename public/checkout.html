@@ -1645,6 +1645,9 @@
                 booking.discountAmount = data.discountAmount;
                 booking.finalAmount = data.finalAmount;
 
+                // Reset all previous badges so only 1 active discount is displayed
+                document.querySelectorAll('.discount-badge').forEach(b => b.style.display = 'none');
+
                 // Badge
                 const badge = document.getElementById('badge-' + key);
                 if (badge) badge.style.display = 'inline-block';
