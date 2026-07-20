@@ -110,17 +110,21 @@
     activeForm.offsetHeight; // force reflow
     activeForm.style.animation = '';
 
-    // Update header text
+    // Update header text dynamically using data-i18n
     if (tab === 'login') {
-      dom.welcomeTitle.textContent = 'Chào mừng trở lại';
-      dom.welcomeSub.textContent = 'Đăng nhập để tiếp tục hành trình điện ảnh của bạn.';
-      dom.promptText.textContent = 'Chưa có tài khoản?';
-      dom.promptLink.textContent = 'Đăng ký ngay';
+      dom.welcomeTitle.setAttribute('data-i18n', 'auth_welcome_login');
+      dom.welcomeSub.setAttribute('data-i18n', 'auth_sub_login');
+      dom.promptText.setAttribute('data-i18n', 'auth_prompt_login');
+      dom.promptLink.setAttribute('data-i18n', 'auth_link_login');
     } else {
-      dom.welcomeTitle.textContent = 'Tạo tài khoản mới';
-      dom.welcomeSub.textContent = 'Đăng ký để đặt vé, tích điểm và nhận ưu đãi hấp dẫn.';
-      dom.promptText.textContent = 'Đã có tài khoản?';
-      dom.promptLink.textContent = 'Đăng nhập';
+      dom.welcomeTitle.setAttribute('data-i18n', 'auth_welcome_reg');
+      dom.welcomeSub.setAttribute('data-i18n', 'auth_sub_reg');
+      dom.promptText.setAttribute('data-i18n', 'auth_prompt_reg');
+      dom.promptLink.setAttribute('data-i18n', 'auth_link_reg');
+    }
+
+    if (window.changeLanguage) {
+      changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
     }
 
     // Clear errors

@@ -8,6 +8,7 @@
     <meta name="description" content="Cập nhật những tin tức điện ảnh mới nhất, các sự kiện nóng hổi và chương trình offline thú vị tại hệ thống rạp D-Cinema.">
     <link rel="stylesheet" href="css/shared-layout.css">
     <link rel="stylesheet" href="css/news-events.css">
+    <link rel="stylesheet" href="css/chatbot.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 
@@ -23,14 +24,14 @@
                 <div class="dropdown">
                     <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav_now_showing">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav_coming_soon">Sắp chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
-                <a href="news-events.html" id="nav-news" class="active">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" data-i18n="nav_cinemas">Rạp</a>
+                <a href="promotions.html" id="nav-promo" data-i18n="nav_promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" class="active" data-i18n="nav_news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" data-i18n="nav_prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -38,15 +39,19 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput" data-i18n="search_placeholder">
                 </div>
+                <select id="langSwitcher" class="lang-switcher" style="margin-right: 15px; margin-left: 15px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); outline: none; cursor: pointer; font-weight: 500; font-size: 14px; backdrop-filter: blur(5px);">
+                    <option value="vi" style="color: black;">VI</option>
+                    <option value="en" style="color: black;">EN</option>
+                </select>
                 <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                     </svg>
                 </a>
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="btn_login">Đăng Nhập</a>
             </div>
         </div>
     </header>
@@ -54,8 +59,8 @@
     <!-- News Hero -->
     <section class="news-hero">
         <div class="news-hero-content">
-            <h1>Tin Tức &amp; Sự Kiện</h1>
-            <p>Khám phá các sự kiện đặc biệt, tin tức điện ảnh nóng hổi và trải nghiệm điện ảnh độc quyền cùng D-Cinema.</p>
+            <h1 data-i18n="ne_hero_title">Tin Tức &amp; Sự Kiện</h1>
+            <p data-i18n="ne_hero_desc">Khám phá các sự kiện đặc biệt, tin tức điện ảnh nóng hổi và trải nghiệm điện ảnh độc quyền cùng D-Cinema.</p>
         </div>
     </section>
 
@@ -65,9 +70,9 @@
             <div class="controls-container">
                 <!-- Filter Tabs -->
                 <div class="filter-tabs">
-                    <button class="tab-btn active" data-filter="all">Tất cả</button>
-                    <button class="tab-btn" data-filter="news">Tin tức</button>
-                    <button class="tab-btn" data-filter="events">Sự kiện</button>
+                    <button class="tab-btn active" data-filter="all" data-i18n="ne_filter_all">Tất cả</button>
+                    <button class="tab-btn" data-filter="news" data-i18n="ne_filter_news">Tin tức</button>
+                    <button class="tab-btn" data-filter="events" data-i18n="ne_filter_events">Sự kiện</button>
                 </div>
 
                 <!-- Search Input -->
@@ -76,7 +81,7 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" id="newsSearchInput" placeholder="Tìm tin tức, sự kiện...">
+                    <input type="text" id="newsSearchInput" placeholder="Tìm tin tức, sự kiện..." data-i18n="ne_search_placeholder">
                 </div>
             </div>
         </div>
@@ -119,7 +124,7 @@
                     <span class="logo-d">D</span>
                     <span class="logo-text">D-CINEMA</span>
                 </a>
-                <p>Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
+                <p data-i18n="footer_desc">Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
                 <div class="footer-socials">
                     <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2">
@@ -136,22 +141,22 @@
                 </div>
             </div>
             <div class="footer-col">
-                <h4>DỊCH VỤ</h4>
-                <a href="#">Về chúng tôi</a>
-                <a href="#">Tuyển dụng</a>
-                <a href="#">Liên hệ</a>
+                <h4 data-i18n="footer_service">DỊCH VỤ</h4>
+                <a href="#" data-i18n="footer_about">Về chúng tôi</a>
+                <a href="#" data-i18n="footer_career">Tuyển dụng</a>
+                <a href="#" data-i18n="footer_contact">Liên hệ</a>
             </div>
             <div class="footer-col">
-                <h4>PHÁP LÝ</h4>
-                <a href="#">Điều khoản sử dụng</a>
-                <a href="#">Chính sách bảo mật</a>
-                <a href="#">Chính sách thanh toán</a>
+                <h4 data-i18n="footer_legal">PHÁP LÝ</h4>
+                <a href="#" data-i18n="footer_terms">Điều khoản sử dụng</a>
+                <a href="#" data-i18n="footer_privacy">Chính sách bảo mật</a>
+                <a href="#" data-i18n="footer_payment">Chính sách thanh toán</a>
             </div>
             <div class="footer-col">
-                <h4>ĐĂNG KÝ NHẬN TIN</h4>
-                <p style="margin-bottom: 5px; font-size: 0.8rem;">Nhận thông tin về phim mới và khuyến mãi.</p>
+                <h4 data-i18n="footer_newsletter">ĐĂNG KÝ NHẬN TIN</h4>
+                <p style="margin-bottom: 5px; font-size: 0.8rem;" data-i18n="footer_newsletter_desc">Nhận thông tin về phim mới và khuyến mãi.</p>
                 <form class="newsletter-form" onsubmit="event.preventDefault()">
-                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
+                    <input type="email" placeholder="Email của bạn" data-i18n="footer_email_placeholder" class="newsletter-input" required>
                     <button type="submit" class="newsletter-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -162,12 +167,13 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p>
+            <p data-i18n="footer_rights">© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p>
         </div>
     </footer>
 
     <!-- Socket.io & App JS -->
     <script src="/socket.io/socket.io.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="app.js?v=7"></script>
 
     <!-- Page Logic -->
@@ -389,18 +395,29 @@
                             <circle cx="11" cy="11" r="8"/>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                         </svg>
-                        <p>Không tìm thấy tin tức hoặc sự kiện nào phù hợp.</p>
+                        <p data-i18n="ne_not_found">Không tìm thấy tin tức hoặc sự kiện nào phù hợp.</p>
                     </div>
                 `;
+                if (window.changeLanguage) changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
                 return;
             }
 
             filteredData.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'news-card';
+                
+                let badgeI18n = '';
+                const badgeLower = String(item.badge || '').trim().toLowerCase();
+                
+                if (badgeLower === 'tin tức' || badgeLower === 'news') badgeI18n = 'data-i18n="badge_news"';
+                else if (badgeLower === 'sự kiện' || badgeLower === 'event' || badgeLower === 'events') badgeI18n = 'data-i18n="badge_event"';
+                else if (badgeLower === 'tin mới' || badgeLower === 'new') badgeI18n = 'data-i18n="ne_badge_new"';
+                else if (badgeLower === 'đánh giá' || badgeLower === 'review') badgeI18n = 'data-i18n="ne_badge_review"';
+                else if (badgeLower === 'hot event') badgeI18n = 'data-i18n="ne_badge_hot_event"';
+
                 card.innerHTML = `
                     <div class="card-img-wrapper">
-                        <span class="card-badge ${item.badgeClass}">${escapeHtml(item.badge)}</span>
+                        <span class="card-badge ${item.badgeClass}" ${badgeI18n}>${escapeHtml(item.badge)}</span>
                         <img src="${item.img}" alt="${escapeHtml(item.title)}">
                     </div>
                     <div class="card-content">
@@ -408,11 +425,11 @@
                             <span>🕒 ${item.date}</span>
                             <span>✍ ${item.author}</span>
                         </div>
-                        <h3 class="card-title">${escapeHtml(item.title)}</h3>
-                        <p class="card-desc">${escapeHtml(item.desc)}</p>
+                        <h3 class="card-title" data-i18n="news_title_${item.id}">${escapeHtml(item.title)}</h3>
+                        <p class="card-desc" data-i18n="news_desc_${item.id}">${escapeHtml(item.desc)}</p>
                         <div class="card-btn-more" onclick="openDetail(${item.id})">
-                            Xem chi tiết
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <span data-i18n="ne_btn_detail">Xem chi tiết</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-left: 4px;">
                                 <path d="M5 12h14M12 5l7 7-7 7"/>
                             </svg>
                         </div>
@@ -420,9 +437,10 @@
                 `;
                 newsGrid.appendChild(card);
             });
+            
+            if (window.changeLanguage) changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
         }
 
-        // Open modal detail
         window.openDetail = function(id) {
             const item = newsData.find(x => x.id === id);
             if (!item) return;
@@ -431,12 +449,32 @@
             document.getElementById('modalBanner').querySelector('img').alt = item.title;
             document.getElementById('modalCategory').textContent = item.badge.toUpperCase();
             document.getElementById('modalCategory').className = `card-badge ${item.badgeClass}`;
-            document.getElementById('modalDate').textContent = `Ngày đăng: ${item.date} | Người viết: ${item.author}`;
+            document.getElementById('modalDate').innerHTML = `<span data-i18n="ne_post_date">Ngày đăng:</span> ${item.date} | <span data-i18n="ne_post_author">Người viết:</span> ${item.author}`;
+            document.getElementById('modalTitle').setAttribute('data-i18n', 'news_title_' + item.id);
             document.getElementById('modalTitle').textContent = item.title;
+            
+            document.getElementById('modalText').setAttribute('data-i18n', 'news_content_' + item.id);
             document.getElementById('modalText').innerHTML = item.content;
+            
+            let badgeI18n = '';
+            const badgeLower = String(item.badge || '').trim().toLowerCase();
+
+            if (badgeLower === 'tin tức' || badgeLower === 'news') badgeI18n = 'badge_news';
+            else if (badgeLower === 'sự kiện' || badgeLower === 'event' || badgeLower === 'events') badgeI18n = 'badge_event';
+            else if (badgeLower === 'tin mới' || badgeLower === 'new') badgeI18n = 'ne_badge_new';
+            else if (badgeLower === 'đánh giá' || badgeLower === 'review') badgeI18n = 'ne_badge_review';
+            else if (badgeLower === 'hot event') badgeI18n = 'ne_badge_hot_event';
+
+            if (badgeI18n) {
+                document.getElementById('modalCategory').setAttribute('data-i18n', badgeI18n);
+            } else {
+                document.getElementById('modalCategory').removeAttribute('data-i18n');
+            }
 
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            if (window.changeLanguage) changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
         }
 
         // Close modal
@@ -481,6 +519,7 @@
             }
         });
     </script>
+    <script src="js/chatbot.js"></script>
 </body>
 
 </html>

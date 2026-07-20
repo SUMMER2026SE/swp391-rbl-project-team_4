@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Promotions | D-CINEMA+ – Ưu Đãi & Khuyến Mãi Điện Ảnh</title>
+    <title data-i18n="title_promotions">Promotions | D-CINEMA+ – Ưu Đãi & Khuyến Mãi Điện Ảnh</title>
     <meta name="description"
         content="Khám phá các ưu đãi, khuyến mãi và tin tức mới nhất từ D-CINEMA+. Voucher giảm giá, combo tiết kiệm và ưu đãi thành viên độc quyền.">
     <link rel="stylesheet" href="css/promotions.css">
@@ -24,14 +24,16 @@
                 <div class="dropdown">
                     <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav_now_showing">Đang
+                            chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav_coming_soon">Sắp
+                            chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap">Rạp</a>
-                <a href="promotions.html" id="nav-promo" class="active">Promotions</a>
-                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" data-i18n="nav_cinemas">Rạp</a>
+                <a href="promotions.html" id="nav-promo" class="active" data-i18n="nav_promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" data-i18n="nav_news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" data-i18n="nav_prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
@@ -40,15 +42,21 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput">
+                    <input type="text" placeholder="Tìm kiếm phim..." class="search-input" id="searchInput"
+                        data-i18n="search_placeholder">
                 </div>
+                <select id="langSwitcher" class="lang-switcher"
+                    style="margin-right: 15px; margin-left: 15px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); outline: none; cursor: pointer; font-weight: 500; font-size: 14px; backdrop-filter: blur(5px);">
+                    <option value="vi" style="color: black;">VI</option>
+                    <option value="en" style="color: black;">EN</option>
+                </select>
                 <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                     </svg>
                 </a>
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav_login">Đăng Nhập</a>
             </div>
         </div>
     </header>
@@ -59,8 +67,9 @@
         <div class="container">
             <div class="promo-hero-content">
                 <div class="promo-hero-tag"></div>
-                <h1>News &amp; Offers</h1>
-                <p>Exclusive deals, special screenings, and member-only rewards. Stay updated
+                <h1 data-i18n="promo_hero_title">News &amp; Offers</h1>
+                <p data-i18n="promo_hero_desc">Exclusive deals, special screenings, and member-only rewards. Stay
+                    updated
                     with the latest happenings at CINEMA+ Premium Entertainment.</p>
             </div>
         </div>
@@ -70,7 +79,66 @@
     <section class="section-vouchers" style="padding: 20px 0 60px;">
         <div class="container">
             <div class="section-header">
-                <h2>Vouchers & Mã Khuyến Mãi</h2>
+                <h2 data-i18n="promo_trending_title">Trending Promotions</h2>
+            </div>
+
+            <div class="trending-grid" id="voucherGrid">
+                <!-- Featured Card (left, spans 2 rows) -->
+                <div class="promo-card-featured" id="promo-imax">
+                    <div class="card-img">
+                        <span class="card-badge badge-featured" data-i18n="promo_badge_featured">FEATURED</span>
+                        <img src="images/promo_imax_weekend.png" alt="IMAX Weekend Extravaganza">
+                    </div>
+                    <div class="card-body">
+                        <h3 data-i18n="promo_imax_title">IMAX Weekend Extravaganza</h3>
+                        <p data-i18n="promo_imax_desc">Upgrade your experience for free this weekend. Purchase a
+                            standard ticket and get an
+                            automatic upgrade to IMAX for all blockbuster releases.</p>
+                        <div class="card-footer-row">
+                            <div class="card-validity">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="16" y1="2" x2="16" y2="6" />
+                                    <line x1="8" y1="2" x2="8" y2="6" />
+                                    <line x1="3" y1="10" x2="21" y2="10" />
+                                </svg>
+                                <span data-i18n="promo_validity_oct24">Valid until Oct 24</span>
+                            </div>
+                            <a href="promotion-detail.html" class="btn-detail" data-i18n="promo_btn_detail">See
+                                Detail</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Side Card 1: Voucher 50k -->
+                <div class="promo-card-side" id="promo-voucher">
+                    <div class="card-img">
+                        <span class="card-badge badge-hot" data-i18n="promo_badge_hot">HOT DEAL</span>
+                        <img src="images/promo_voucher.png" alt="Voucher 50k">
+                    </div>
+                    <div class="card-body">
+                        <h3 data-i18n="promo_voucher_title">Voucher 50k</h3>
+                        <p data-i18n="promo_voucher_desc">Get a 50,000 IDR discount on your food and beverage purchase
+                            with every two tickets booked online.</p>
+                        <a href="promotion-detail.html" class="btn-detail"
+                            style="align-self: stretch; text-align: center;" data-i18n="promo_btn_detail">See Detail</a>
+                    </div>
+                </div>
+
+                <!-- Side Card 2: Student Monday -->
+                <div class="promo-card-side" id="promo-student">
+                    <div class="card-img">
+                        <img src="images/promo_student.png" alt="Student Monday">
+                    </div>
+                    <div class="card-body">
+                        <h3 data-i18n="promo_student_title">Student Monday</h3>
+                        <p data-i18n="promo_student_desc">Flash your student ID and get 30% off tickets every Monday for
+                            screenings before 5PM.</p>
+                        <a href="promotion-detail.html" class="btn-detail-outline" data-i18n="promo_btn_detail">See
+                            Detail</a>
+                    </div>
+                </div>
             </div>
             <div id="vouchersListGrid"
                 style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px;">
@@ -79,14 +147,24 @@
         </div>
     </section>
 
+    <!-- Load More -->
+    <div class="load-more-wrap">
+        <button class="btn-load-more" id="btnLoadMore">
+            Load More Promotions
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="m6 9 6 6 6-6" />
+            </svg>
+        </button>
+    </div>
 
     <!-- Newsletter / Don't Miss Out -->
     <section class="section-newsletter">
         <div class="container">
             <div class="newsletter-inner">
                 <div class="newsletter-text">
-                    <h2>Don't Miss Out</h2>
-                    <p>Subscribe to our newsletter to receive personalized offers and be the first
+                    <h2 data-i18n="promo_newsletter_title">Don't Miss Out</h2>
+                    <p data-i18n="promo_newsletter_desc">Subscribe to our newsletter to receive personalized offers and
+                        be the first
                         to know about upcoming cinematic events.</p>
                 </div>
                 <form class="newsletter-form" onsubmit="handleNewsletter(event)">
@@ -106,7 +184,8 @@
                     <span class="logo-d">D</span>
                     <span class="logo-text">D-CINEMA</span>
                 </a>
-                <p>Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh đỉnh cao.</p>
+                <p data-i18n="footer_desc">Hệ thống rạp chiếu phim hiện đại, âm thanh sống động, trải nghiệm điện ảnh
+                    đỉnh cao.</p>
                 <div class="footer-socials">
                     <a href="#" aria-label="Share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2">
@@ -123,22 +202,24 @@
                 </div>
             </div>
             <div class="footer-col">
-                <h4>DỊCH VỤ</h4>
-                <a href="#">Về chúng tôi</a>
-                <a href="#">Tuyển dụng</a>
-                <a href="#">Liên hệ</a>
+                <h4 data-i18n="footer_services">DỊCH VỤ</h4>
+                <a href="#" data-i18n="footer_about">Về chúng tôi</a>
+                <a href="#" data-i18n="footer_careers">Tuyển dụng</a>
+                <a href="#" data-i18n="footer_contact">Liên hệ</a>
             </div>
             <div class="footer-col">
-                <h4>PHÁP LÝ</h4>
-                <a href="#">Điều khoản sử dụng</a>
-                <a href="#">Chính sách bảo mật</a>
-                <a href="#">Chính sách thanh toán</a>
+                <h4 data-i18n="footer_legal">PHÁP LÝ</h4>
+                <a href="#" data-i18n="footer_terms">Điều khoản sử dụng</a>
+                <a href="#" data-i18n="footer_privacy">Chính sách bảo mật</a>
+                <a href="#" data-i18n="footer_payment">Chính sách thanh toán</a>
             </div>
             <div class="footer-col">
-                <h4>ĐĂNG KÝ NHẬN TIN</h4>
-                <p style="margin-bottom: 5px; font-size: 0.8rem;">Nhận thông tin về phim mới và khuyến mãi.</p>
+                <h4 data-i18n="footer_newsletter">ĐĂNG KÝ NHẬN TIN</h4>
+                <p style="margin-bottom: 5px; font-size: 0.8rem;" data-i18n="footer_newsletter_desc">Nhận thông tin về
+                    phim mới và khuyến mãi.</p>
                 <form class="newsletter-form" onsubmit="event.preventDefault()">
-                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required>
+                    <input type="email" placeholder="Email của bạn" class="newsletter-input" required
+                        data-i18n="footer_email_ph">
                     <button type="submit" class="newsletter-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -149,11 +230,12 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p>
+            <p data-i18n="footer_rights">© 2024 D-CINEMA STUDIOS. ALL RIGHTS RESERVED.</p>
         </div>
     </footer>
 
     <!-- Socket.io & App JS -->
+    <script src="js/i18n.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js?v=7"></script>
     <script>
@@ -200,11 +282,10 @@
                     return;
                 }
 
-                container.innerHTML = '';
-                data.data.forEach((v) => {
-                    const discount = v.DiscountType === 'percent' || v.DiscountType === 'Percentage'
-                        ? `Giảm ${v.DiscountValue}%`
-                        : `Giảm ${Number(v.DiscountValue).toLocaleString('vi-VN')}đ`;
+                data.data.forEach((v, i) => {
+                    const discount = v.DiscountType === 'percent'
+                        ? `<span data-i18n="discount_percent">Giảm</span> ${v.DiscountValue}%`
+                        : `<span data-i18n="discount_amount">Giảm</span> ${Number(v.DiscountValue).toLocaleString('vi-VN')}đ`;
                     const endDate = new Date(v.EndDate).toLocaleDateString('vi-VN');
                     const minOrderStr = Number(v.MinOrderValue || 0) > 0
                         ? ` • Đơn từ ${Number(v.MinOrderValue).toLocaleString('vi-VN')}đ`
@@ -243,9 +324,18 @@
                                 <button class="btn-detail" style="border:none; cursor:pointer; font-size:0.8rem; padding:8px 16px;" onclick="copyVoucher('${v.Code}')">Sao chép mã</button>
                             </div>
                         </div>
+                    ` : `
+                        <div class="card-body">
+                            <span class="card-badge" data-i18n="promo_badge_voucher">VOUCHER</span>
+                            <h3>${v.Code}</h3>
+                            <p>${discount}</p>
+                            <div class="card-validity"><span data-i18n="valid_until">HSD:</span> ${endDate}</div>
+                            <button class="card-cta" onclick="copyVoucher('${v.Code}')" data-i18n="copy_btn">Sao chép</button>
+                        </div>
                     `;
                     container.appendChild(card);
                 });
+                if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
             } catch (e) {
                 console.error('Failed to load vouchers', e);
             }

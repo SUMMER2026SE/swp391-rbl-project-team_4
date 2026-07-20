@@ -21,15 +21,19 @@
                 <span class="auth-logo-text">D-CINEMA</span>
             </a>
             <nav class="auth-nav" aria-label="Điều hướng chính">
-                <a href="movies.html?status=showing">Phim</a>
-                <a href="booking.html">Rạp</a>
-                <a href="promotions.html">Promotions</a>
-                <a href="news-events.html">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html">Giá Vé</a>
+                <a href="movies.html?status=showing" data-i18n="nav_movies">Phim</a>
+                <a href="booking.html" data-i18n="nav_cinemas">Rạp</a>
+                <a href="promotions.html" data-i18n="nav_promotions">Promotions</a>
+                <a href="news-events.html" data-i18n="nav_news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" data-i18n="nav_prices">Giá Vé</a>
             </nav>
             <div class="auth-header-actions">
-                <a href="index.html" class="auth-header-link">Trang chủ</a>
-                <a href="booking.html" class="auth-header-cta">Đặt vé</a>
+                <select id="langSwitcher" class="lang-switcher" style="margin-right: 15px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); outline: none; cursor: pointer; font-weight: 500; font-size: 14px; backdrop-filter: blur(5px);">
+                    <option value="vi" style="color: black;">VI</option>
+                    <option value="en" style="color: black;">EN</option>
+                </select>
+                <a href="index.html" class="auth-header-link" data-i18n="auth_nav_home">Trang chủ</a>
+                <a href="booking.html" class="auth-header-cta" data-i18n="auth_nav_book">Đặt vé</a>
             </div>
         </div>
     </header>
@@ -61,8 +65,8 @@
 
             <!-- Tagline -->
             <div class="hero-tagline">
-                <p class="tagline-label">TRẢI NGHIỆM ĐIỆN ẢNH</p>
-                <h1 class="tagline-heading">MỖI KHUNG HÌNH<br>LÀ MỘT <span class="tagline-accent">TUYỆT TÁC.</span></h1>
+                <p class="tagline-label" data-i18n="auth_hero_label">TRẢI NGHIỆM ĐIỆN ẢNH</p>
+                <h1 class="tagline-heading" data-i18n="auth_hero_heading">MỖI KHUNG HÌNH<br>LÀ MỘT <span class="tagline-accent">TUYỆT TÁC.</span></h1>
             </div>
 
             <!-- Decorative scan lines -->
@@ -75,14 +79,14 @@
 
                 <!-- Welcome header -->
                 <div class="form-header" id="formHeader">
-                    <h2 class="welcome-title" id="welcomeTitle">Chào mừng trở lại</h2>
-                    <p class="welcome-sub" id="welcomeSub">Đăng nhập để tiếp tục hành trình điện ảnh của bạn.</p>
+                    <h2 class="welcome-title" id="welcomeTitle" data-i18n="auth_welcome_login">Chào mừng trở lại</h2>
+                    <p class="welcome-sub" id="welcomeSub" data-i18n="auth_sub_login">Đăng nhập để tiếp tục hành trình điện ảnh của bạn.</p>
                 </div>
 
                 <!-- ─── Tab Switcher ─── -->
                 <div class="tab-switcher">
-                    <button class="tab-btn active" id="tabLogin" data-tab="login">ĐĂNG NHẬP</button>
-                    <button class="tab-btn" id="tabRegister" data-tab="register">ĐĂNG KÝ</button>
+                    <button class="tab-btn active" id="tabLogin" data-tab="login" data-i18n="auth_tab_login">ĐĂNG NHẬP</button>
+                    <button class="tab-btn" id="tabRegister" data-tab="register" data-i18n="auth_tab_register">ĐĂNG KÝ</button>
                     <div class="tab-indicator" id="tabIndicator"></div>
                 </div>
 
@@ -90,10 +94,10 @@
                 <form id="loginForm" class="auth-form active" autocomplete="on">
                     <!-- Email -->
                     <div class="input-group">
-                        <label for="loginEmail">EMAIL HOẶC SỐ ĐIỆN THOẠI</label>
+                        <label for="loginEmail" data-i18n="auth_lbl_email">EMAIL HOẶC SỐ ĐIỆN THOẠI</label>
                         <div class="input-wrapper">
                             <input type="text" id="loginEmail" name="identifier" placeholder="Email hoặc số điện thoại" required
-                                autocomplete="username" inputmode="email" tabindex="1">
+                                autocomplete="username" inputmode="email" tabindex="1" data-i18n="auth_ph_email">
                             <span class="input-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -107,12 +111,12 @@
                     <!-- Password -->
                     <div class="input-group">
                         <div class="label-row">
-                            <label for="loginPassword">MẬT KHẨU</label>
-                            <a href="forgot-password.html" class="forgot-link" tabindex="4">Quên mật khẩu?</a>
+                            <label for="loginPassword" data-i18n="auth_lbl_password">MẬT KHẨU</label>
+                            <a href="forgot-password.html" class="forgot-link" tabindex="4" data-i18n="auth_forgot_pw">Quên mật khẩu?</a>
                         </div>
                         <div class="input-wrapper">
                             <input type="password" id="loginPassword" name="password" placeholder="••••••••" required
-                                autocomplete="current-password" tabindex="2">
+                                autocomplete="current-password" tabindex="2" data-i18n="auth_ph_password">
                             <button type="button" class="toggle-password" data-target="loginPassword"
                                 aria-label="Hiển thị mật khẩu">
                                 <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -135,13 +139,13 @@
                         <label class="custom-checkbox">
                             <input type="checkbox" id="rememberMe">
                             <span class="checkmark"></span>
-                            <span class="check-label">Ghi nhớ đăng nhập</span>
+                            <span class="check-label" data-i18n="auth_remember_me">Ghi nhớ đăng nhập</span>
                         </label>
                     </div>
 
                     <!-- Submit -->
                     <button type="submit" class="btn-submit" id="btnLogin" tabindex="3">
-                        <span class="btn-text">ĐĂNG NHẬP NGAY</span>
+                        <span class="btn-text" data-i18n="auth_btn_login">ĐĂNG NHẬP NGAY</span>
                         <span class="btn-loader" style="display:none">
                             <svg class="spinner" viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
@@ -153,7 +157,7 @@
                     <!-- Divider -->
                     <div class="divider-row">
                         <span class="divider-line"></span>
-                        <span class="divider-text">HOẶC TIẾP TỤC VỚI</span>
+                        <span class="divider-text" data-i18n="auth_divider">HOẶC TIẾP TỤC VỚI</span>
                         <span class="divider-line"></span>
                     </div>
 
@@ -169,7 +173,7 @@
                             <path fill="#1976D2"
                                 d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z" />
                         </svg>
-                        <span>Google</span>
+                        <span data-i18n="auth_btn_google">Google</span>
                     </button>
                 </form>
 
@@ -177,10 +181,10 @@
                 <form id="registerForm" class="auth-form" autocomplete="on">
                     <!-- Full Name -->
                     <div class="input-group">
-                        <label for="regFullName">HỌ VÀ TÊN</label>
+                        <label for="regFullName" data-i18n="auth_lbl_fullname">HỌ VÀ TÊN</label>
                         <div class="input-wrapper">
                             <input type="text" id="regFullName" name="fullName" placeholder="Nguyễn Văn A" required
-                                autocomplete="name">
+                                autocomplete="name" data-i18n="auth_ph_fullname">
                             <span class="input-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -193,10 +197,10 @@
 
                     <!-- Email -->
                     <div class="input-group">
-                        <label for="regEmail">EMAIL</label>
+                        <label for="regEmail" data-i18n="auth_lbl_reg_email">EMAIL</label>
                         <div class="input-wrapper">
                             <input type="email" id="regEmail" name="email" placeholder="name@example.com" required
-                                autocomplete="email">
+                                autocomplete="email" data-i18n="auth_ph_reg_email">
                             <span class="input-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -209,9 +213,9 @@
 
                     <!-- Phone -->
                     <div class="input-group">
-                        <label for="regPhone">SỐ ĐIỆN THOẠI</label>
+                        <label for="regPhone" data-i18n="auth_lbl_phone">SỐ ĐIỆN THOẠI</label>
                         <div class="input-wrapper">
-                            <input type="tel" id="regPhone" name="phone" placeholder="0901 234 567" autocomplete="tel">
+                            <input type="tel" id="regPhone" name="phone" placeholder="0901 234 567" autocomplete="tel" data-i18n="auth_ph_phone">
                             <span class="input-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -224,10 +228,10 @@
 
                     <!-- Password -->
                     <div class="input-group">
-                        <label for="regPassword">MẬT KHẨU</label>
+                        <label for="regPassword" data-i18n="auth_lbl_reg_password">MẬT KHẨU</label>
                         <div class="input-wrapper">
                             <input type="password" id="regPassword" name="password" placeholder="Tối thiểu 6 ký tự"
-                                required minlength="6" autocomplete="new-password">
+                                required minlength="6" autocomplete="new-password" data-i18n="auth_ph_reg_password">
                             <button type="button" class="toggle-password" data-target="regPassword"
                                 aria-label="Hiển thị mật khẩu">
                                 <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -254,10 +258,10 @@
 
                     <!-- Confirm Password -->
                     <div class="input-group">
-                        <label for="regConfirmPassword">XÁC NHẬN MẬT KHẨU</label>
+                        <label for="regConfirmPassword" data-i18n="auth_lbl_confirm_pw">XÁC NHẬN MẬT KHẨU</label>
                         <div class="input-wrapper">
                             <input type="password" id="regConfirmPassword" name="confirmPassword"
-                                placeholder="Nhập lại mật khẩu" required autocomplete="new-password">
+                                placeholder="Nhập lại mật khẩu" required autocomplete="new-password" data-i18n="auth_ph_confirm_pw">
                             <button type="button" class="toggle-password" data-target="regConfirmPassword"
                                 aria-label="Hiển thị mật khẩu">
                                 <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -277,7 +281,7 @@
 
                     <!-- Submit -->
                     <button type="submit" class="btn-submit btn-register" id="btnRegister">
-                        <span class="btn-text">TẠO TÀI KHOẢN</span>
+                        <span class="btn-text" data-i18n="auth_btn_register">TẠO TÀI KHOẢN</span>
                         <span class="btn-loader" style="display:none">
                             <svg class="spinner" viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
@@ -289,24 +293,17 @@
 
                 <!-- Toggle prompt -->
                 <div class="toggle-prompt" id="togglePrompt">
-                    <span id="promptText">Chưa có tài khoản?</span>
-                    <a href="#" id="promptLink">Đăng ký ngay</a>
+                    <span id="promptText" data-i18n="auth_prompt_login">Chưa có tài khoản?</span>
+                    <a href="#" id="promptLink" data-i18n="auth_link_login">Đăng ký ngay</a>
                 </div>
 
-                <!-- Language selector -->
-                <div class="lang-selector">
-                    <button class="lang-btn active" id="langBtn">
-                        <img src="https://flagcdn.com/w20/vn.png" alt="VN" width="16" height="11">
-                        Tiếng Việt
-                    </button>
-                </div>
             </div>
         </div>
     </div>
 
     <!-- Google Identity SDK -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-
+    <script src="js/i18n.js"></script>
     <script src="js/auth.js"></script>
 </body>
 

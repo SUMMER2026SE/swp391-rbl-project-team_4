@@ -1326,39 +1326,48 @@
             </button>
             <nav class="nav-links">
                 <div class="dropdown">
-                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
+                    <a href="movies.html" id="nav-phim" data-i18n="nav_movies">Phim <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav_now_showing">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav_coming_soon">Sắp chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap" class="active">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
-                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" class="active" data-i18n="nav_cinemas">Rạp</a>
+                <a href="promotions.html" id="nav-promo" data-i18n="nav_promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" data-i18n="nav_news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" data-i18n="nav_prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <select id="langSwitcher" class="lang-switcher" style="margin-right: 15px; margin-left: 15px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); outline: none; cursor: pointer; font-weight: 500; font-size: 14px; backdrop-filter: blur(5px);">
+                    <option value="vi" style="color: black;">VI</option>
+                    <option value="en" style="color: black;">EN</option>
+                </select>
+                <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav_login">Đăng Nhập</a>
             </div>
         </div>
     </header>
 
-    <!-- Progress Steps -->
     <div class="steps-bar">
         <div class="steps-container">
             <div class="step-item active">
                 <div class="step-num">1</div>
-                Chọn ghế
+                <span data-i18n="seat_step_1">1 CHỌN GHẾ</span>
             </div>
             <span class="step-arrow">›</span>
             <div class="step-item" id="step2">
                 <div class="step-num">2</div>
-                Bắp & Nước
+                <span data-i18n="seat_step_2">2 BẮP & NƯỚC</span>
             </div>
             <span class="step-arrow">›</span>
             <div class="step-item" id="step3">
                 <div class="step-num">3</div>
-                Thanh toán
+                <span data-i18n="seat_step_3">3 THANH TOÁN</span>
             </div>
         </div>
     </div>
@@ -1384,27 +1393,27 @@
             <div class="screen-wrap">
                 <div class="screen-bar"></div>
                 <div class="screen-glow"></div>
-                <div class="screen-label">Màn Hình</div>
+                <div class="screen-label" data-i18n="seat_screen">Màn Hình</div>
             </div>
 
             <!-- Quy tắc phòng chiếu chuẩn -->
             <div class="cinema-rules-banner">
                 <div class="banner-badge">
                     <span class="pulse-dot"></span>
-                    Quy Tắc Rạp Phim
+                    <span data-i18n="seat_rules_title">Quy Tắc Rạp Phim</span>
                 </div>
                 <div class="banner-content">
                     <div class="rule-item">
                         <span class="rule-icon">✦</span>
-                        <span>Không chừa ghế trống đơn lẻ</span>
+                        <span data-i18n="seat_rule_1">Không chừa ghế trống đơn lẻ</span>
                     </div>
                     <div class="rule-item">
                         <span class="rule-icon">✦</span>
-                        <span>Chọn các ghế liền kề nhau</span>
+                        <span data-i18n="seat_rule_2">Chọn các ghế liền kề nhau</span>
                     </div>
                     <div class="rule-item">
                         <span class="rule-icon">✦</span>
-                        <span>Hàng Sweetbox luôn theo cặp</span>
+                        <span data-i18n="seat_rule_3">Hàng Sweetbox luôn theo cặp</span>
                     </div>
                 </div>
             </div>
@@ -1412,19 +1421,17 @@
             <!-- View Toggle -->
             <div class="view-toggle-bar">
                 <button class="view-toggle-btn active" id="btn2DView" onclick="switchView('2d')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <path d="M3 9h18M9 21V9" />
                     </svg>
-                    Sơ đồ 2D
+                    <span data-i18n="seat_map_2d">Sơ đồ 2D</span>
                 </button>
                 <button class="view-toggle-btn" id="btn3DView" onclick="switchView('3d')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                     </svg>
-                    Xem 3D
+                    <span data-i18n="seat_view_3d">Xem 3D</span>
                 </button>
             </div>
 
@@ -1437,15 +1444,15 @@
                 style="display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 12px; max-width: 90%; margin-left: auto; margin-right: auto;">
                 <button class="nav-back-btn" onclick="zoomSeatMap(1.15)"
                     style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
-                    🔍 Phóng to
+                    🔍 <span data-i18n="seat_zoom_in">Phóng to</span>
                 </button>
                 <button class="nav-back-btn" onclick="zoomSeatMap(0.85)"
                     style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
-                    🔍 Thu nhỏ
+                    🔍 <span data-i18n="seat_zoom_out">Thu nhỏ</span>
                 </button>
                 <button class="nav-back-btn" onclick="resetZoom()"
                     style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
-                    🔄 Đặt lại
+                    🔄 <span data-i18n="seat_reset">Đặt lại</span>
                 </button>
             </div>
 
@@ -1470,23 +1477,23 @@
             <div class="legend">
                 <div class="legend-item">
                     <div class="legend-box normal"></div>
-                    <span>Thường</span>
+                    <span data-i18n="seat_legend_normal">Thường</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box vip"></div>
-                    <span>VIP (+20%)</span>
+                    <span data-i18n="seat_legend_vip">VIP (+20%)</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box couple"></div>
-                    <span>Cặp đôi (+50%)</span>
+                    <span data-i18n="seat_legend_couple">Cặp đôi (+50%)</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box selected"></div>
-                    <span>Đang chọn</span>
+                    <span data-i18n="seat_legend_selecting">Đang chọn</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box booked"></div>
-                    <span>Đã đặt</span>
+                    <span data-i18n="seat_legend_booked">Đã đặt</span>
                 </div>
             </div>
         </section>
@@ -1497,7 +1504,7 @@
             <div class="countdown-card" id="countdownCard"
                 style="display: none; align-items: center; justify-content: center; gap: 10px; background: rgba(229,9,20,0.12); border: 1px solid rgba(229,9,20,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; animation: fadeIn 0.3s ease;">
                 <span style="font-size: 1.15rem; animation: pulse 1s infinite alternate;">⏱️</span>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #ff8080; letter-spacing: 0.5px;">GIỮ GHẾ TRONG:
+                <div style="font-size: 0.85rem; font-weight: 700; color: #ff8080; letter-spacing: 0.5px;"><span data-i18n="seat_hold_time">GIỮ GHẾ TRONG:</span>
                     <span id="countdownTimer"
                         style="font-size: 1.15rem; color: #fff; font-family: monospace; margin-left: 4px;">05:00</span>
                 </div>
@@ -1518,51 +1525,51 @@
             <!-- Showtime info -->
             <div class="info-rows">
                 <div class="info-row">
-                    <span class="info-key">🎬 Rạp chiếu</span>
+                    <span class="info-key">🎬 <span data-i18n="seat_cinema">Rạp chiếu</span></span>
                     <span class="info-val" id="infoCinema">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">🪑 Phòng chiếu</span>
+                    <span class="info-key">🪑 <span data-i18n="seat_room">Phòng chiếu</span></span>
                     <span class="info-val" id="infoRoom">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">📅 Ngày chiếu</span>
+                    <span class="info-key">📅 <span data-i18n="seat_date">Ngày chiếu</span></span>
                     <span class="info-val" id="infoDate">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">⏰ Giờ chiếu</span>
+                    <span class="info-key">⏰ <span data-i18n="seat_time">Giờ chiếu</span></span>
                     <span class="info-val" id="infoTime">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">💰 Giá vé gốc</span>
+                    <span class="info-key">💰 <span data-i18n="seat_price">Giá vé gốc</span></span>
                     <span class="info-val" id="infoPrice">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">🎟️ Ghế đã chọn</span>
-                    <span class="info-val seats-val" id="infoSeats">Chưa chọn</span>
+                    <span class="info-key">🎟️ <span data-i18n="seat_selected">Ghế đã chọn</span></span>
+                    <span class="info-val seats-val" id="infoSeats" data-i18n="seat_none">Chưa chọn</span>
                 </div>
             </div>
 
             <!-- Price breakdown -->
             <div class="price-breakdown" id="priceBreakdown" style="display:none;">
-                <div class="price-breakdown-title">Chi tiết giá</div>
+                <div class="price-breakdown-title" data-i18n="seat_price_breakdown">Chi tiết giá</div>
                 <div id="priceBreakdownRows"></div>
             </div>
 
             <!-- Total -->
             <div class="total-row">
-                <span class="total-label">Tạm tính</span>
+                <span class="total-label" data-i18n="seat_subtotal">Tạm tính</span>
                 <span class="total-amount" id="totalAmount">0 ₫</span>
             </div>
 
             <!-- CTA -->
             <button class="btn-continue" id="btnContinue" disabled onclick="confirmSeats()">
-                Tiếp Tục
+                <span data-i18n="seat_continue">Tiếp Tục</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
             </button>
-            <p class="seat-limit-info">Tối đa 8 ghế mỗi lần đặt</p>
+            <p class="seat-limit-info" data-i18n="seat_max_alert">Tối đa 8 ghế mỗi lần đặt</p>
     </div>
 
     <!-- Mobile Sticky Checkout Bar -->
@@ -1581,6 +1588,7 @@
 
     <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="app.js?v=7"></script>
     <script>
         // ──────────────────────────────────────────────
@@ -1749,6 +1757,16 @@
             }
             initSocket();
             await loadSeats();
+            
+            const ls = document.getElementById('langSwitcher');
+            if (ls) {
+                ls.addEventListener('change', () => {
+                    setTimeout(() => {
+                        if (typeof updateAvailability === 'function') updateAvailability();
+                        if (typeof updateSummary === 'function') updateSummary();
+                    }, 50);
+                });
+            }
         });
 
         function releaseAllHeldSeats() {
@@ -2351,13 +2369,17 @@
                 }
             }
 
+            const lang = localStorage.getItem('dcinema_lang') || 'vi';
+            const trans = window.translations ? window.translations[lang] : null;
+            const tNone = trans ? trans.seat_none : 'Chưa chọn';
+
             if (selectedSeats.size === 0) {
-                seatsDisplay.textContent = 'Chưa chọn';
+                seatsDisplay.textContent = tNone;
                 totalDisplay.textContent = '0 ₫';
                 btnContinue.disabled = true;
                 breakdownSection.style.display = 'none';
 
-                if (mobileSeats) mobileSeats.textContent = 'Chưa chọn';
+                if (mobileSeats) mobileSeats.textContent = tNone;
                 if (mobileTotal) mobileTotal.textContent = '0 ₫';
                 if (mobileBtnContinue) mobileBtnContinue.disabled = true;
                 updateSeatDimming();
@@ -2377,6 +2399,11 @@
                 return a.SeatNumber - b.SeatNumber;
             });
 
+            const tNormal = trans ? trans.seat_legend_normal : 'Ghế thường';
+            const tVip = trans ? trans.seat_legend_vip : 'Ghế VIP';
+            const tCouple = trans ? trans.seat_legend_couple : 'Ghế cặp đôi';
+            const tPair = trans ? trans.seat_pair : 'Cặp';
+
             // Build display names and calculate prices
             // Group couple seats
             const processedCouplePairs = new Set();
@@ -2393,7 +2420,7 @@
                         total += seatPrice;
                         breakdown.couple.count++;
                         breakdown.couple.price += seatPrice;
-                        displayNames.push(`Cặp ${seat.SeatRow}${minNum}-${maxNum}`);
+                        displayNames.push(`${tPair} ${seat.SeatRow}${minNum}-${maxNum}`);
                         processedCouplePairs.add(pairKey);
                     }
                 } else if (seat.SeatType === 'VIP') {
@@ -2413,11 +2440,11 @@
                 }
             });
 
-            seatsDisplay.textContent = displayNames.join(', ') || 'Chưa chọn';
+            seatsDisplay.textContent = displayNames.join(', ') || tNone;
             totalDisplay.textContent = total.toLocaleString('vi-VN') + ' ₫';
             btnContinue.disabled = false;
 
-            if (mobileSeats) mobileSeats.textContent = displayNames.join(', ') || 'Chưa chọn';
+            if (mobileSeats) mobileSeats.textContent = displayNames.join(', ') || tNone;
             if (mobileTotal) mobileTotal.textContent = total.toLocaleString('vi-VN') + ' ₫';
             if (mobileBtnContinue) mobileBtnContinue.disabled = false;
 
@@ -2426,7 +2453,7 @@
             if (breakdown.normal.count > 0) {
                 bdHtml += `
                     <div class="price-row">
-                        <span class="key">Ghế thường × ${breakdown.normal.count}</span>
+                        <span class="key">${tNormal} × ${breakdown.normal.count}</span>
                         <span class="val">${breakdown.normal.price.toLocaleString('vi-VN')} ₫</span>
                     </div>
                 `;
@@ -2434,7 +2461,7 @@
             if (breakdown.vip.count > 0) {
                 bdHtml += `
                     <div class="price-row">
-                        <span class="key">Ghế VIP × ${breakdown.vip.count}</span>
+                        <span class="key">${tVip} × ${breakdown.vip.count}</span>
                         <span class="val">${breakdown.vip.price.toLocaleString('vi-VN')} ₫</span>
                     </div>
                 `;
@@ -2442,7 +2469,7 @@
             if (breakdown.couple.count > 0) {
                 bdHtml += `
                     <div class="price-row">
-                        <span class="key">Ghế cặp đôi × ${breakdown.couple.count}</span>
+                        <span class="key">${tCouple} × ${breakdown.couple.count}</span>
                         <span class="val">${breakdown.couple.price.toLocaleString('vi-VN')} ₫</span>
                     </div>
                 `;
@@ -2464,12 +2491,19 @@
             lockedByOthers.forEach(id => lockedSeatIds.add(id));
             const locked = lockedSeatIds.size;
             const available = physicalSeats.length - booked - locked;
+
+            const lang = localStorage.getItem('dcinema_lang') || 'vi';
+            const trans = window.translations ? window.translations[lang] : null;
+            const tEmpty = trans ? trans.seat_empty : 'ghế trống';
+            const tBooked = trans ? trans.seat_booked : 'đã đặt';
+            const tHolding = trans ? trans.seat_holding : 'đang giữ';
+
             el.innerHTML = `
-                <span style="color:#4ade80;font-weight:700;">${Math.max(0, available)} ghế trống</span>
+                <span style="color:#4ade80;font-weight:700;">${Math.max(0, available)} ${tEmpty}</span>
                 <span style="margin:0 8px;color:#444;">|</span>
-                <span style="color:#ef4444;">${booked} đã đặt</span>
+                <span style="color:#ef4444;">${booked} ${tBooked}</span>
                 <span style="margin:0 8px;color:#444;">|</span>
-                <span style="color:#f59e0b;">${locked} đang giữ</span>
+                <span style="color:#f59e0b;">${locked} ${tHolding}</span>
             `;
         }
 
