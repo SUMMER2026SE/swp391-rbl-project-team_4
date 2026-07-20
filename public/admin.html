@@ -125,7 +125,7 @@
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                     </svg>
-                    <span data-i18n="admin_nav_staff">Nhân viên</span>
+                    <span data-i18n="admin_nav_staff">Khách hàng</span>
                 </button>
                 <button class="sn" data-page="pricing" onclick="navigate('pricing',this)">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1497,7 +1497,7 @@
                 </div>
             </div>
         </div>
-        <!-- ══ STAFF PAGE ══ -->
+        <!-- ══ CUSTOMER PAGE ══ -->
         <div class="page" id="page-staff">
             <div class="content-scroll"
                 style="padding: 30px 40px; display: flex; flex-direction: column; gap: 32px; position: relative;">
@@ -1506,13 +1506,13 @@
                     <div class="sh-left">
                         <h1
                             style="font-size: 1.6rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 8px;">
-                            QUẢN LÝ NHÂN SỰ</h1>
+                            QUẢN LÝ KHÁCH HÀNG</h1>
                         <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.5; max-width: 600px;">Quản lý
-                            quyền truy cập, theo dõi hoạt động nhân viên.</p>
+                            thông tin và theo dõi hoạt động của khách hàng.</p>
                     </div>
                     <div class="sh-right">
                         <div class="sh-stat">
-                            <span class="shs-label">TỔNG NHÂN VIÊN</span>
+                            <span class="shs-label">TỔNG KHÁCH HÀNG</span>
                             <span class="shs-val text-red">124</span>
                         </div>
                         <div class="sh-divider"></div>
@@ -1534,10 +1534,6 @@
                                     <button class="sf-pill active" onclick="filterStaffByRole('Tất cả', this)">Tất
                                         cả</button>
                                     <button class="sf-pill" onclick="filterStaffByRole('Admin', this)">Admin</button>
-                                    <button class="sf-pill" onclick="filterStaffByRole('Quản lý', this)">Quản
-                                        lý</button>
-                                    <button class="sf-pill" onclick="filterStaffByRole('Nhân viên', this)">Nhân
-                                        viên</button>
                                     <button class="sf-pill" onclick="filterStaffByRole('Khách hàng', this)">Khách
                                         hàng</button>
                                 </div>
@@ -1589,14 +1585,13 @@
                         </table>
 
                         <div class="st-footer">
-                            <span class="st-info" id="staffPgInfo">Hiển thị <strong>0</strong> nhân viên</span>
+                            <span class="st-info" id="staffPgInfo">Hiển thị <strong>0</strong> khách hàng</span>
                             <div class="st-pagination">
                                 <button class="st-pg-btn" disabled><svg width="14" height="14" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2.5">
                                         <polyline points="15 18 9 12 15 6" />
                                     </svg></button>
                                 <button class="st-pg-btn active">1</button>
-                                <button class="st-pg-btn">2</button>
                                 <button class="st-pg-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                                         stroke="currentColor" stroke-width="2.5">
                                         <polyline points="9 18 15 12 9 6" />
@@ -1606,89 +1601,105 @@
                     </div>
                 </div>
 
-                <!-- Bottom Role KPIs -->
-                <div class="staff-kpis">
-                    <div class="skpi-card">
-                        <div class="skpi-icon" style="background: rgba(232,25,44,0.1); color: var(--accent);">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                                <circle cx="12" cy="11" r="3" />
-                            </svg>
-                        </div>
-                        <div class="skpi-info">
-                            <div class="skpi-title">Quyền Admin</div>
-                            <div class="skpi-desc">3 người được ủy quyền</div>
-                        </div>
-                    </div>
-                    <div class="skpi-card">
-                        <div class="skpi-icon" style="background: rgba(239,68,68,0.1); color: #ef4444;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                                <polyline points="9 22 9 12 15 12 15 22" />
-                            </svg>
-                        </div>
-                        <div class="skpi-info">
-                            <div class="skpi-title">Vận hành Đồ ăn</div>
-                            <div class="skpi-desc">18 người được ủy quyền</div>
+            </div>
+        </div>
+        <!-- ══ CUSTOMER DETAIL MODAL ══ -->
+        <div id="customerDetailOverlay" style="display:none;position:fixed;inset:0;background:rgba(5,8,15,0.75);z-index:520;backdrop-filter:blur(6px);" onclick="closeCustomerDetail()"></div>
+        <div id="customerDetailModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:521;background:#0f1419;border:1px solid rgba(255,255,255,0.08);border-radius:20px;width:520px;max-width:94vw;max-height:88vh;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,0.7),0 0 0 1px rgba(232,25,44,0.1);">
+
+            <!-- Hero Header -->
+            <div style="background:linear-gradient(135deg,#1a0a0b 0%,#12161e 60%,#0d1520 100%);padding:28px 28px 24px;position:relative;overflow:hidden;">
+                <!-- decorative ring -->
+                <div style="position:absolute;right:-30px;top:-30px;width:150px;height:150px;border-radius:50%;border:1px solid rgba(232,25,44,0.12);pointer-events:none;"></div>
+                <div style="position:absolute;right:-10px;top:-10px;width:100px;height:100px;border-radius:50%;border:1px solid rgba(232,25,44,0.08);pointer-events:none;"></div>
+
+                <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
+                    <div style="display:flex;align-items:center;gap:16px;">
+                        <!-- Avatar -->
+                        <div id="cdAvatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#e8192c,#b30d1f);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.4rem;color:#fff;flex-shrink:0;box-shadow:0 8px 24px rgba(232,25,44,0.35),0 0 0 3px rgba(232,25,44,0.15);">K</div>
+                        <div>
+                            <h2 id="cdName" style="margin:0 0 5px;font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:-0.01em;">Khách hàng</h2>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span id="cdRoleBadge" style="font-size:0.68rem;font-weight:800;padding:3px 9px;border-radius:20px;background:rgba(16,185,129,0.15);color:#10b981;letter-spacing:0.06em;border:1px solid rgba(16,185,129,0.2);">CUSTOMER</span>
+                                <span id="cdUid" style="font-size:0.68rem;color:rgba(255,255,255,0.25);font-weight:600;">ID: —</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="skpi-card">
-                        <div class="skpi-icon" style="background: rgba(248,113,113,0.1); color: #f87171;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-                                <line x1="7" y1="2" x2="7" y2="22" />
-                                <line x1="17" y1="2" x2="17" y2="22" />
-                                <line x1="2" y1="12" x2="22" y2="12" />
-                                <line x1="2" y1="7" x2="7" y2="7" />
-                                <line x1="2" y1="17" x2="7" y2="17" />
-                                <line x1="17" y1="17" x2="22" y2="17" />
-                                <line x1="17" y1="7" x2="22" y2="7" />
-                            </svg>
+                    <button onclick="closeCustomerDetail()" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.1);border-radius:50%;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.background='rgba(232,25,44,0.15)';this.style.color='#e8192c';this.style.borderColor='rgba(232,25,44,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.5)';this.style.borderColor='rgba(255,255,255,0.1)'">×</button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div style="padding:24px 28px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;max-height:calc(88vh - 120px);">
+
+                <!-- Info rows -->
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div style="display:flex;align-items:center;gap:14px;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;">
+                        <div style="width:34px;height:34px;border-radius:8px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                         </div>
-                        <div class="skpi-info">
-                            <div class="skpi-title">Kỹ thuật viên</div>
-                            <div class="skpi-desc">6 người được ủy quyền</div>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Email</div>
+                            <div id="cdEmail" style="font-size:0.9rem;color:#e2e8f0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
                         </div>
                     </div>
-                    <div class="skpi-card">
-                        <div class="skpi-icon" style="background: rgba(252,165,165,0.1); color: #fca5a5;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <rect x="4" y="4" width="16" height="16" rx="2" ry="2" />
-                                <rect x="9" y="9" width="6" height="6" />
-                                <line x1="9" y1="1" x2="9" y2="4" />
-                                <line x1="15" y1="1" x2="15" y2="4" />
-                                <line x1="9" y1="20" x2="9" y2="23" />
-                                <line x1="15" y1="20" x2="15" y2="23" />
-                                <line x1="20" y1="9" x2="23" y2="9" />
-                                <line x1="20" y1="14" x2="23" y2="14" />
-                                <line x1="1" y1="9" x2="4" y2="9" />
-                                <line x1="1" y1="14" x2="4" y2="14" />
-                            </svg>
+                    <div style="display:flex;align-items:center;gap:14px;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;">
+                        <div style="width:34px;height:34px;border-radius:8px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                         </div>
-                        <div class="skpi-info">
-                            <div class="skpi-title">Phòng vé</div>
-                            <div class="skpi-desc">22 người được ủy quyền</div>
+                        <div style="flex:1;">
+                            <div style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Số điện thoại</div>
+                            <div id="cdPhone" style="font-size:0.9rem;color:#e2e8f0;font-weight:600;">—</div>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;">
+                            <div style="width:34px;height:34px;border-radius:8px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            </div>
+                            <div>
+                                <div style="font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Tham gia</div>
+                                <div id="cdJoined" style="font-size:0.85rem;color:#e2e8f0;font-weight:600;">—</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;">
+                            <div id="cdStatusDot" style="width:34px;height:34px;border-radius:8px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            </div>
+                            <div>
+                                <div style="font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Trạng thái</div>
+                                <div id="cdStatus" style="font-size:0.85rem;font-weight:700;color:#10b981;">—</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- FAB Add User -->
-                <button class="fab-add-user" title="Add New User"
-                    onclick="showToast('Thông báo', 'Chức năng Thêm nhân viên đang được phát triển')">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="8.5" cy="7" r="4" />
-                        <line x1="20" y1="8" x2="20" y2="14" />
-                        <line x1="23" y1="11" x2="17" y2="11" />
-                    </svg>
-                </button>
+                <!-- Divider -->
+                <div style="height:1px;background:rgba(255,255,255,0.06);"></div>
+
+                <!-- Actions -->
+                <div style="display:flex;gap:10px;">
+                    <button id="cdToggleStatusBtn" onclick="cdToggleStatus()" style="flex:1;padding:12px 16px;border:1px solid rgba(239,68,68,0.25);border-radius:10px;background:rgba(239,68,68,0.08);color:#f87171;font-weight:700;cursor:pointer;font-size:0.85rem;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;" onmouseover="this.style.background='rgba(239,68,68,0.18)';this.style.borderColor='rgba(239,68,68,0.4)'" onmouseout="this.style.background='rgba(239,68,68,0.08)';this.style.borderColor='rgba(239,68,68,0.25)'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Khóa tài khoản
+                    </button>
+                    <button id="cdChangeRoleBtn" onclick="cdChangeRole()" style="flex:1;padding:12px 16px;border:1px solid rgba(99,102,241,0.25);border-radius:10px;background:rgba(99,102,241,0.08);color:#818cf8;font-weight:700;cursor:pointer;font-size:0.85rem;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;" onmouseover="this.style.background='rgba(99,102,241,0.18)';this.style.borderColor='rgba(99,102,241,0.4)'" onmouseout="this.style.background='rgba(99,102,241,0.08)';this.style.borderColor='rgba(99,102,241,0.25)'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Đổi vai trò
+                    </button>
+                </div>
+
+                <!-- Booking history section -->
+                <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;">
+                    <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                        <span style="font-size:0.7rem;font-weight:800;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.08em;">Lịch sử đặt vé</span>
+                    </div>
+                    <div id="cdBookingHistory" style="padding:18px 16px;font-size:0.83rem;color:rgba(255,255,255,0.3);text-align:center;line-height:1.6;">Đang tải...</div>
+                </div>
             </div>
         </div>
+
         <div class="page" id="page-refunds">
             <div class="content-scroll" style="padding: 30px 40px; display: flex; flex-direction: column; gap: 24px;">
                 <div class="dash-heading">
@@ -2561,164 +2572,170 @@
         </form>
     </div>
 
-    <!-- News Modal -->
+    <!-- ══ NEWS ARTICLE EDITOR MODAL ══ -->
     <div id="newsModalOverlay"
-        style="display:none;position:fixed;inset:0;background:rgba(15,18,24,0.7);backdrop-filter:blur(4px);z-index:410;"
+        style="display:none;position:fixed;inset:0;background:rgba(5,8,15,0.8);backdrop-filter:blur(6px);z-index:410;"
         onclick="closeNewsModal()"></div>
     <div id="newsAdminModal"
-        style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:411;background:var(--bg-white);border-radius:16px;padding:32px;width:720px;max-width:95vw;max-height:92vh;overflow-y:auto;box-shadow:0 20px 50px rgba(15,18,24,0.15);border:1px solid var(--border);font-family:'Inter', sans-serif;">
-        <div
-            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:16px;">
-            <h2 id="newsModalTitle"
-                style="font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;">
-                <span
-                    style="display:inline-block;width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
-                THÊM TIN TỨC
-            </h2>
-            <button onclick="closeNewsModal()"
-                style="background:rgba(15,18,24,0.05);border:none;color:var(--text2);cursor:pointer;font-size:1.2rem;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all var(--tr);line-height:1;"
-                onmouseover="this.style.background='var(--accent-bg)';this.style.color='var(--accent)'"
-                onmouseout="this.style.background='rgba(15,18,24,0.05)';this.style.color='var(--text2)'">×</button>
-        </div>
-        <form id="newsForm" action="/api/admin/news" method="post" enctype="multipart/form-data"
-            onsubmit="saveNewsArticle(event); return false;" style="display:flex;flex-direction:column;gap:20px;">
-            <input type="hidden" id="newsId">
+        style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:411;background:#0f1419;border:1px solid rgba(255,255,255,0.08);border-radius:20px;width:900px;max-width:96vw;max-height:93vh;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,0.7),0 0 0 1px rgba(232,25,44,0.1);display:none;flex-direction:column;">
 
-            <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
-                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
-                    <label
-                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">TIÊU
-                        ĐỀ *</label>
-                    <input type="text" id="newsTitle" required placeholder="Nhập tiêu đề bài viết"
-                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;"
-                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
-                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
+        <!-- Header -->
+        <div style="padding:20px 28px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#1a0a0b,#12161e);flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#e8192c;box-shadow:0 0 8px rgba(232,25,44,0.6);"></div>
+                <h2 id="newsModalTitle" style="margin:0;font-size:1.05rem;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:0.04em;">THÊM BÀI VIẾT</h2>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <!-- Tab: Viết / Xem trước -->
+                <div style="display:flex;background:rgba(255,255,255,0.06);border-radius:8px;padding:3px;gap:2px;">
+                    <button id="tabWrite" onclick="switchEditorTab('write')" style="padding:6px 16px;border:none;border-radius:6px;background:#e8192c;color:#fff;font-weight:700;font-size:0.78rem;cursor:pointer;">✏️ Viết</button>
+                    <button id="tabPreview" onclick="switchEditorTab('preview')" style="padding:6px 16px;border:none;border-radius:6px;background:transparent;color:rgba(255,255,255,0.5);font-weight:700;font-size:0.78rem;cursor:pointer;">👁 Xem trước</button>
                 </div>
-                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
-                    <label
-                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">LOẠI
-                        *</label>
-                    <select id="newsType"
-                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;cursor:pointer;"
-                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
-                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
-                        <option value="news">Tin tức</option>
-                        <option value="events">Sự kiện</option>
+                <button onclick="closeNewsModal()" style="width:34px;height:34px;border:1px solid rgba(255,255,255,0.1);border-radius:50%;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='rgba(232,25,44,0.2)';this.style.color='#e8192c'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.5)'">×</button>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div style="display:flex;flex:1;overflow:hidden;min-height:0;">
+
+            <!-- LEFT: Meta sidebar -->
+            <div style="width:240px;flex-shrink:0;border-right:1px solid rgba(255,255,255,0.06);padding:20px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;background:rgba(255,255,255,0.01);">
+                <input type="hidden" id="newsId">
+
+                <!-- Loại -->
+                <div>
+                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Loại bài viết</label>
+                    <select id="newsType" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.88rem;outline:none;cursor:pointer;">
+                        <option value="news">📰 Tin tức</option>
+                        <option value="events">🎉 Sự kiện</option>
                     </select>
                 </div>
-            </div>
 
-            <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
-                <label
-                    style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">TÓM
-                    TẮT</label>
-                <textarea id="newsSummary" rows="3" placeholder="Mô tả ngắn hiển thị trên thẻ tin tức"
-                    style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;resize:vertical;"
-                    onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
-                    onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'"></textarea>
-            </div>
-
-            <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
-                <label
-                    style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">NỘI
-                    DUNG</label>
-                <textarea id="newsContent" rows="8" placeholder="Có thể nhập HTML cơ bản như <p>, <h3>, <ul>, <li>"
-                    style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;resize:vertical;"
-                    onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
-                    onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'"></textarea>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
-                    <label
-                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">TÁC
-                        GIẢ</label>
-                    <input type="text" id="newsAuthor" placeholder="D-Cinema"
-                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;"
-                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
-                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
+                <!-- Tác giả -->
+                <div>
+                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Tác giả</label>
+                    <input type="text" id="newsAuthor" placeholder="D-Cinema" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.88rem;outline:none;box-sizing:border-box;">
                 </div>
-                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
-                    <label
-                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">NGÀY
-                        ĐĂNG</label>
-                    <input type="date" id="newsPublishedAt"
-                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;"
-                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
-                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
-                </div>
-            </div>
 
-            <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
-                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
-                    <label
-                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">BADGE</label>
-                    <input type="text" id="newsBadge" placeholder="VD: Tin mới, Hot Event"
-                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;"
-                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
-                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
+                <!-- Ngày đăng -->
+                <div>
+                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Ngày đăng</label>
+                    <input type="date" id="newsPublishedAt" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.88rem;outline:none;box-sizing:border-box;">
                 </div>
-                <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
-                    <label
-                        style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">THỨ
-                        TỰ</label>
-                    <input type="number" id="newsSort" value="0" min="0"
-                        style="width:100%;padding:11px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;transition:all var(--tr);outline:none;"
-                        onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff';this.style.boxShadow='0 0 0 3px var(--accent-bg)'"
-                        onblur="this.style.borderColor='var(--border)';this.style.background='#f9fafb';this.style.boxShadow='none'">
-                </div>
-            </div>
 
-            <div class="ff-group" style="display:flex;flex-direction:column;gap:6px;">
-                <label
-                    style="font-size:0.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;">UPLOAD
-                    ẢNH</label>
-                <div style="display:flex;align-items:center;gap:12px;width:100%;">
-                    <input type="file" id="newsImage" accept="image/*" style="display:none;"
-                        onchange="handleNewsFileSelect(this)">
-                    <label for="newsImage"
-                        style="padding:11px 18px;background:#fff;border:1px dashed var(--border);border-radius:8px;color:var(--text2);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all var(--tr);display:inline-block;"
-                        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-                        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
-                        Chọn tập tin ảnh
+                <!-- Badge -->
+                <div>
+                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Badge nhãn</label>
+                    <input type="text" id="newsBadge" placeholder="VD: Tin mới, Hot" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.88rem;outline:none;box-sizing:border-box;">
+                </div>
+
+                <!-- Thứ tự -->
+                <div>
+                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Thứ tự hiển thị</label>
+                    <input type="number" id="newsSort" value="0" min="0" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.88rem;outline:none;box-sizing:border-box;">
+                </div>
+
+                <!-- Ảnh thumbnail -->
+                <div>
+                    <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">Ảnh bìa</label>
+                    <div id="newsDropZone" onclick="document.getElementById('newsImage').click()" ondragover="event.preventDefault();this.style.borderColor='#e8192c'" ondragleave="this.style.borderColor='rgba(255,255,255,0.12)'" ondrop="handleNewsFileDrop(event)"
+                        style="border:2px dashed rgba(255,255,255,0.12);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative;overflow:hidden;">
+                        <img id="newsPreviewImg" style="display:none;width:100%;height:100px;object-fit:cover;border-radius:6px;margin-bottom:8px;">
+                        <div id="newsDropText" style="color:rgba(255,255,255,0.3);font-size:0.78rem;line-height:1.5;">
+                            <div style="font-size:1.4rem;margin-bottom:4px;">🖼</div>
+                            Kéo thả hoặc click<br>để chọn ảnh
+                        </div>
+                        <input type="file" id="newsImage" accept="image/*" style="display:none;" onchange="handleNewsFileSelect(this)">
+                    </div>
+                    <div id="newsCurrentImg" style="font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:6px;"></div>
+                    <span id="newsFileName" style="display:none"></span>
+                </div>
+
+                <!-- Toggles -->
+                <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;display:flex;flex-direction:column;gap:10px;">
+                    <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+                        <span style="font-size:0.82rem;color:rgba(255,255,255,0.6);font-weight:600;">⭐ Nổi bật</span>
+                        <input type="checkbox" id="newsFeatured" style="width:16px;height:16px;accent-color:#e8192c;cursor:pointer;">
                     </label>
-                    <span id="newsFileName" style="font-size:0.85rem;color:var(--text3);">Chưa chọn file</span>
-                </div>
-                <div style="margin-top: 4px;">
-                    <img id="newsPreviewImg" style="display: none; max-height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-xs);" />
-                </div>
-                <div id="newsCurrentImg" style="margin-top:4px;font-size:0.8rem;color:var(--text2);font-style:italic;">
+                    <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+                        <span style="font-size:0.82rem;color:rgba(255,255,255,0.6);font-weight:600;">✅ Hiển thị</span>
+                        <input type="checkbox" id="newsActive" checked style="width:16px;height:16px;accent-color:#10b981;cursor:pointer;">
+                    </label>
                 </div>
             </div>
 
-            <div style="display:flex;gap:24px;border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
-                <label
-                    style="display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:0.9rem;font-weight:600;">
-                    <input type="checkbox" id="newsFeatured"
-                        style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;">
-                    Nổi bật (Featured)
-                </label>
-                <label
-                    style="display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:0.9rem;font-weight:600;">
-                    <input type="checkbox" id="newsActive" checked
-                        style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;">
-                    Đang hiển thị (Active)
-                </label>
-            </div>
+            <!-- RIGHT: Editor -->
+            <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
 
-            <div
-                style="display:flex;gap:12px;justify-content:flex-end;margin-top:12px;border-top:1px solid var(--border);padding-top:16px;">
-                <button type="button" onclick="closeNewsModal()"
-                    style="padding:11px 24px;background:#fff;border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-weight:700;font-size:0.9rem;transition:all var(--tr);"
-                    onmouseover="this.style.background='#f9fafb';this.style.borderColor='var(--text3)'"
-                    onmouseout="this.style.background='#fff';this.style.borderColor='var(--border)'">Hủy</button>
-                <button type="submit"
-                    style="padding:11px 28px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.9rem;transition:all var(--tr);box-shadow:0 4px 12px rgba(232,25,44,0.15);"
-                    onmouseover="this.style.background='var(--accent2)';this.style.transform='translateY(-1px)';"
-                    onmouseout="this.style.background='var(--accent)';this.style.transform='translateY(0)';">Lưu</button>
+                <!-- Title input -->
+                <div style="padding:16px 20px 0;flex-shrink:0;">
+                    <input type="text" id="newsTitle" required placeholder="Tiêu đề bài viết..."
+                        style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.08);color:#fff;font-size:1.25rem;font-weight:700;padding:8px 0;outline:none;margin-bottom:12px;box-sizing:border-box;"
+                        onfocus="this.style.borderBottomColor='#e8192c'" onblur="this.style.borderBottomColor='rgba(255,255,255,0.08)'">
+                    <textarea id="newsSummary" placeholder="Tóm tắt ngắn (hiển thị trên thẻ bài viết)..."
+                        style="width:100%;background:transparent;border:none;color:rgba(255,255,255,0.5);font-size:0.88rem;outline:none;resize:none;height:40px;padding:0;line-height:1.5;box-sizing:border-box;" rows="2"></textarea>
+                </div>
+
+                <!-- Toolbar -->
+                <div id="editorWritePanel" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;">
+                    <div style="padding:8px 20px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0;background:rgba(255,255,255,0.02);">
+                        <button type="button" onclick="editorExec('bold')" title="Đậm" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-weight:900;font-size:0.85rem;">B</button>
+                        <button type="button" onclick="editorExec('italic')" title="Nghiêng" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-style:italic;font-size:0.85rem;">I</button>
+                        <button type="button" onclick="editorExec('underline')" title="Gạch chân" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;text-decoration:underline;font-size:0.85rem;">U</button>
+                        <div style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
+                        <button type="button" onclick="editorFormat('h2')" title="Tiêu đề lớn" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-size:0.78rem;font-weight:700;">H2</button>
+                        <button type="button" onclick="editorFormat('h3')" title="Tiêu đề nhỏ" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-size:0.78rem;font-weight:700;">H3</button>
+                        <button type="button" onclick="editorExec('insertUnorderedList')" title="Danh sách" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-size:0.85rem;">≡</button>
+                        <button type="button" onclick="editorExec('insertOrderedList')" title="Danh sách số" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e2e8f0;cursor:pointer;font-size:0.85rem;">1.</button>
+                        <div style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
+                        <button type="button" onclick="editorInsertLink()" title="Chèn link" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#3b82f6;cursor:pointer;font-size:0.85rem;">🔗</button>
+                        <button type="button" onclick="editorInsertQuote()" title="Trích dẫn" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#f59e0b;cursor:pointer;font-size:0.85rem;">"</button>
+                        <button type="button" onclick="editorExec('removeFormat')" title="Xóa định dạng" style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(255,255,255,0.4);cursor:pointer;font-size:0.85rem;">✕</button>
+                    </div>
+
+                    <!-- ContentEditable editor -->
+                    <div id="newsContentEditor"
+                        contenteditable="true"
+                        data-placeholder="Bắt đầu viết nội dung bài viết tại đây..."
+                        style="flex:1;padding:20px;overflow-y:auto;outline:none;color:#d1d5db;font-size:0.93rem;line-height:1.8;min-height:0;"></div>
+                </div>
+
+                <!-- Preview panel -->
+                <div id="editorPreviewPanel" style="display:none;flex:1;overflow-y:auto;padding:24px 28px;min-height:0;">
+                    <div id="newsPreviewContent" style="max-width:640px;margin:0 auto;color:#d1d5db;font-size:0.95rem;line-height:1.8;"></div>
+                </div>
+
+                <!-- Hidden textarea to sync content for form submit -->
+                <textarea id="newsContent" style="display:none;"></textarea>
             </div>
-        </form>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding:14px 24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;background:rgba(255,255,255,0.01);">
+            <button type="button" onclick="closeNewsModal()" style="padding:10px 22px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-weight:700;font-size:0.88rem;cursor:pointer;">Hủy</button>
+            <button type="button" onclick="submitNewsForm()" style="padding:10px 28px;background:#e8192c;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(232,25,44,0.3);" onmouseover="this.style.background='#c8111f'" onmouseout="this.style.background='#e8192c'">📤 Đăng bài viết</button>
+        </div>
     </div>
+
+    <!-- inline styles for editor -->
+    <style>
+        #newsContentEditor:empty:before { content: attr(data-placeholder); color: rgba(255,255,255,0.2); pointer-events:none; }
+        #newsContentEditor h2 { font-size:1.3rem;font-weight:800;color:#fff;margin:18px 0 8px; }
+        #newsContentEditor h3 { font-size:1.05rem;font-weight:700;color:#f1f5f9;margin:14px 0 6px; }
+        #newsContentEditor p  { margin:0 0 12px; }
+        #newsContentEditor ul, #newsContentEditor ol { padding-left:20px;margin:8px 0 14px; }
+        #newsContentEditor li { margin-bottom:4px; }
+        #newsContentEditor a  { color:#60a5fa;text-decoration:underline; }
+        #newsContentEditor blockquote { border-left:3px solid #e8192c;padding:8px 16px;margin:12px 0;color:rgba(255,255,255,0.55);font-style:italic;background:rgba(232,25,44,0.05);border-radius:0 6px 6px 0; }
+        #newsPreviewContent h2 { font-size:1.3rem;font-weight:800;color:#fff;margin:18px 0 8px; }
+        #newsPreviewContent h3 { font-size:1.05rem;font-weight:700;color:#f1f5f9;margin:14px 0 6px; }
+        #newsPreviewContent p  { margin:0 0 12px; }
+        #newsPreviewContent ul, #newsPreviewContent ol { padding-left:20px;margin:8px 0 14px; }
+        #newsPreviewContent a  { color:#60a5fa; }
+        #newsPreviewContent blockquote { border-left:3px solid #e8192c;padding:8px 16px;margin:12px 0;color:rgba(255,255,255,0.55);font-style:italic;background:rgba(232,25,44,0.05);border-radius:0 6px 6px 0; }
+    </style>
+
+
 
 
     <style>
