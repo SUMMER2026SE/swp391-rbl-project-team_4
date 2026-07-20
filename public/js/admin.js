@@ -465,7 +465,8 @@ function renderLiveRooms(rooms) {
     if (!grid) return;
 
     if (!rooms || rooms.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text3);">Không có phòng chiếu.</p>';
+        grid.innerHTML = '<p style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text3);" data-i18n="admin_live_no_rooms">Không có phòng chiếu.</p>';
+        if (window.changeLanguage) changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
         return;
     }
 
@@ -508,7 +509,7 @@ function renderLiveRooms(rooms) {
                     <div class="lr-name">${r.RoomName}</div>
                     <div class="lr-status-dot ${statusClass}"></div>
                 </div>
-                <div class="lr-movie">${status === 'empty' ? 'Chưa có lịch' : (r.MovieTitle || 'Unknown')}</div>
+                <div class="lr-movie">${status === 'empty' ? '<span data-i18n="admin_live_no_schedule">Chưa có lịch</span>' : (r.MovieTitle || 'Unknown')}</div>
                 ${status !== 'empty' ? `
                     <div class="lr-progress-bg">
                         <div class="lr-progress-fill ${statusClass}" style="width: ${progressPercent}%"></div>
@@ -526,6 +527,8 @@ function renderLiveRooms(rooms) {
     if (!liveRoomsInterval) {
         liveRoomsInterval = setInterval(fetchLiveRoomsStatus, 60000);
     }
+
+    if (window.changeLanguage) changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
 }
 
 /* ══════════════════════════
@@ -616,8 +619,10 @@ function selectCinema(id, label, el) {
 
 function selectPeriod(period, btn) {
     dashPeriod = period;
-    document.querySelectorAll('.period-pill').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
+    if (btn) {
+        document.querySelectorAll('.period-pill').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+    }
     loadDashboardData();
 }
 
@@ -646,7 +651,8 @@ function renderTopMovies(movies) {
     if (!container) return;
 
     if (!movies || movies.length === 0) {
-        container.innerHTML = '<p style="padding:20px; color:#9ca3af; text-align:center;">No data available.</p>';
+        container.innerHTML = '<p style="padding:20px; color:#9ca3af; text-align:center;" data-i18n="admin_rank_no_data">Không có dữ liệu.</p>';
+        if (window.changeLanguage) changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
         return;
     }
 
@@ -662,10 +668,12 @@ function renderTopMovies(movies) {
             </div>
             <div class="rank-revenue">
                 <div class="rank-amount">${formatCurrency(m.TodayRevenue)} đ</div>
-                <div class="rank-today">HÔM NAY</div>
+                <div class="rank-today" data-i18n="admin_rank_today">HÔM NAY</div>
             </div>
         </div>
     `).join('');
+
+    if (window.changeLanguage) changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
 }
 
 /* ══════════════════════════
