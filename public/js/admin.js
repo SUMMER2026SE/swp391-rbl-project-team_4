@@ -2218,15 +2218,93 @@ function renderStaffTable() {
             </td>
             <td><span class="st-date">${new Date(user.CreatedAt).toLocaleDateString('vi-VN')}</span></td>
             <td>
-                <div class="table-actions" style="opacity:0.6">
-                    <button class="tb-icon-sm" title="Action"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <div class="table-actions">
+                    <button class="tb-icon-sm" title="Xem chi tiết" onclick='openCustomerDetail(${JSON.stringify(user)})'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
                 </div>
             </td>
         </tr>
     `}).join('');
 
     const pgInfo = document.getElementById('staffPgInfo');
-    if (pgInfo) pgInfo.innerHTML = `Hiển thị <strong>${FILTERED_STAFF.length}</strong> nhân viên`;
+    if (pgInfo) pgInfo.innerHTML = `Hiển thị <strong>${FILTERED_STAFF.length}</strong> khách hàng`;
+}
+
+/* --- Customer Detail Modal --- */
+let _cdUser = null;
+
+function openCustomerDetail(user) {
+    _cdUser = user;
+    document.getElementById('customerDetailOverlay').style.display = 'block';
+    document.getElementById('customerDetailModal').style.display = 'block';
+
+    // Avatar initial
+    const initial = (user.FullName || 'K').charAt(0).toUpperCase();
+    document.getElementById('cdAvatar').textContent = initial;
+    document.getElementById('cdName').textContent = user.FullName || '—';
+    if (document.getElementById('cdUid')) document.getElementById('cdUid').textContent = 'ID: ' + (user.UserID || '—');
+
+    // Role badge
+    const roleColors = { Admin: '#e8192c', Manager: '#f59e0b', Customer: '#10b981' };
+    const roleColor = roleColors[user.RoleName] || '#6b7280';
+    const badge = document.getElementById('cdRoleBadge');
+    badge.textContent = (user.RoleName || 'CUSTOMER').toUpperCase();
+    badge.style.color = roleColor;
+    badge.style.background = roleColor + '20';
+
+    document.getElementById('cdEmail').textContent = user.Email || '—';
+    document.getElementById('cdPhone').textContent = user.Phone || 'Chưa cập nhật';
+    document.getElementById('cdJoined').textContent = user.CreatedAt
+        ? new Date(user.CreatedAt).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' })
+        : '—';
+
+    const statusEl = document.getElementById('cdStatus');
+    const toggleBtn = document.getElementById('cdToggleStatusBtn');
+    const statusDot = document.getElementById('cdStatusDot');
+    if (user.IsActive) {
+        statusEl.textContent = 'Hoạt động';
+        statusEl.style.color = '#10b981';
+        if (statusDot) { statusDot.style.background = 'rgba(16,185,129,0.12)'; statusDot.querySelector('svg').setAttribute('stroke','#10b981'); }
+        toggleBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Khóa tài khoản';
+        toggleBtn.style.borderColor = 'rgba(239,68,68,0.25)';
+        toggleBtn.style.color = '#f87171';
+        toggleBtn.style.background = 'rgba(239,68,68,0.08)';
+    } else {
+        statusEl.textContent = 'Đang bị khóa';
+        statusEl.style.color = '#ef4444';
+        if (statusDot) { statusDot.style.background = 'rgba(239,68,68,0.12)'; statusDot.querySelector('svg').setAttribute('stroke','#ef4444'); }
+        toggleBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3.27 3.27a4 4 0 0 0-.27 1.73v4a5 5 0 0 0 10 0V7a4 4 0 0 0-.27-1.73M7 11V7"/><rect x="3" y="11" width="18" height="11" rx="2"/></svg> Mở khóa tài khoản';
+        toggleBtn.style.borderColor = 'rgba(16,185,129,0.25)';
+        toggleBtn.style.color = '#10b981';
+        toggleBtn.style.background = 'rgba(16,185,129,0.08)';
+    }
+
+    // Booking history from already-loaded data
+    const histEl = document.getElementById('cdBookingHistory');
+    histEl.innerHTML = '<span style="color:var(--text3);font-size:0.83rem;">📋 Để xem lịch sử đặt vé chi tiết, vui lòng tra cứu theo email trong phần Giao dịch gần đây.</span>';
+}
+
+function closeCustomerDetail() {
+    document.getElementById('customerDetailOverlay').style.display = 'none';
+    document.getElementById('customerDetailModal').style.display = 'none';
+    _cdUser = null;
+}
+
+async function cdToggleStatus() {
+    if (!_cdUser) return;
+    if (!confirm(`Bạn có chắc muốn ${_cdUser.IsActive ? 'khóa' : 'mở khóa'} tài khoản của ${_cdUser.FullName}?`)) return;
+    await toggleStaffStatus(_cdUser.UserID);
+    closeCustomerDetail();
+}
+
+async function cdChangeRole() {
+    if (!_cdUser) return;
+    const newRole = prompt(`Nhập vai trò mới cho ${_cdUser.FullName}\n(Admin / Manager / Customer):`, _cdUser.RoleName);
+    if (!newRole || !['Admin','Manager','Customer'].includes(newRole)) {
+        if (newRole !== null) alert('Vai trò không hợp lệ. Chỉ chấp nhận: Admin, Manager, Customer');
+        return;
+    }
+    await changeStaffRole(_cdUser.UserID, newRole);
+    closeCustomerDetail();
 }
 
 async function changeStaffRole(userId, newRole) {
@@ -4733,28 +4811,37 @@ function renderNewsAdminTable() {
 }
 
 function openNewsModal(id) {
-    document.getElementById('newsForm').reset();
-    document.getElementById('newsCurrentImg').innerHTML = '';
+    // Reset editor
+    const editor = document.getElementById('newsContentEditor');
+    if (editor) editor.innerHTML = '';
     document.getElementById('newsPublishedAt').value = toDateInputValue();
     document.getElementById('newsActive').checked = true;
     document.getElementById('newsFeatured').checked = false;
     document.getElementById('newsId').value = '';
-    document.getElementById('newsModalTitle').textContent = 'THÊM TIN TỨC';
-    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
+    document.getElementById('newsTitle').value = '';
+    document.getElementById('newsSummary').value = '';
+    document.getElementById('newsAuthor').value = '';
+    document.getElementById('newsBadge').value = '';
+    document.getElementById('newsSort').value = 0;
+    document.getElementById('newsType').value = 'news';
+    document.getElementById('newsCurrentImg').innerHTML = '';
+    document.getElementById('newsContent').value = '';
     const preview = document.getElementById('newsPreviewImg');
-    if (preview) {
-        preview.src = '';
-        preview.style.display = 'none';
-    }
+    if (preview) { preview.src = ''; preview.style.display = 'none'; }
+    const dropText = document.getElementById('newsDropText');
+    if (dropText) dropText.style.display = 'block';
+    document.getElementById('newsModalTitle').textContent = 'THÊM BÀI VIẾT';
+    switchEditorTab('write');
+
     if (id) {
         const item = NEWS_DATA.find(x => x.ArticleID === id);
         if (!item) return;
-        document.getElementById('newsModalTitle').textContent = 'SỬA TIN TỨC';
+        document.getElementById('newsModalTitle').textContent = 'S\u1eec A B\u00c0I VI\u1ebeT';
         document.getElementById('newsId').value = item.ArticleID;
         document.getElementById('newsTitle').value = item.Title || '';
         document.getElementById('newsType').value = item.Type || 'news';
         document.getElementById('newsSummary').value = item.Summary || '';
-        document.getElementById('newsContent').value = item.Content || '';
+        if (editor) editor.innerHTML = item.Content || '';
         document.getElementById('newsAuthor').value = item.Author || '';
         document.getElementById('newsPublishedAt').value = toDateInputValue(item.PublishedAt);
         document.getElementById('newsBadge').value = item.BadgeLabel || '';
@@ -4762,28 +4849,93 @@ function openNewsModal(id) {
         document.getElementById('newsFeatured').checked = !!item.IsFeatured;
         document.getElementById('newsActive').checked = !!item.IsActive;
         if (item.ImageURL) {
-            document.getElementById('newsCurrentImg').innerHTML = `Ảnh hiện tại: <a href="${item.ImageURL}" target="_blank" style="color:var(--accent);">${item.ImageURL}</a>`;
-            if (preview) {
-                preview.src = item.ImageURL;
-                preview.style.display = 'block';
-            }
+            document.getElementById('newsCurrentImg').textContent = item.ImageURL;
+            if (preview) { preview.src = item.ImageURL; preview.style.display = 'block'; }
+            if (dropText) dropText.style.display = 'none';
         }
     }
+    // Show as flex
     document.getElementById('newsModalOverlay').style.display = 'block';
-    document.getElementById('newsAdminModal').style.display = 'block';
+    const modal = document.getElementById('newsAdminModal');
+    modal.style.display = 'flex';
+    modal.style.flexDirection = 'column';
 }
 
 function closeNewsModal() {
     document.getElementById('newsModalOverlay').style.display = 'none';
     document.getElementById('newsAdminModal').style.display = 'none';
-
     document.getElementById('newsImage').value = '';
-    document.getElementById('newsFileName').textContent = 'Chưa chọn file';
     const preview = document.getElementById('newsPreviewImg');
-    if (preview) {
-        preview.src = '';
-        preview.style.display = 'none';
+    if (preview) { preview.src = ''; preview.style.display = 'none'; }
+    const dropText = document.getElementById('newsDropText');
+    if (dropText) dropText.style.display = 'block';
+}
+
+/* ── Editor helpers ── */
+function switchEditorTab(tab) {
+    const writeBtn = document.getElementById('tabWrite');
+    const previewBtn = document.getElementById('tabPreview');
+    const writePanel = document.getElementById('editorWritePanel');
+    const previewPanel = document.getElementById('editorPreviewPanel');
+    if (tab === 'write') {
+        writeBtn.style.background = '#e8192c'; writeBtn.style.color = '#fff';
+        previewBtn.style.background = 'transparent'; previewBtn.style.color = 'rgba(255,255,255,0.5)';
+        writePanel.style.display = 'flex'; previewPanel.style.display = 'none';
+    } else {
+        previewBtn.style.background = '#e8192c'; previewBtn.style.color = '#fff';
+        writeBtn.style.background = 'transparent'; writeBtn.style.color = 'rgba(255,255,255,0.5)';
+        writePanel.style.display = 'none'; previewPanel.style.display = 'flex';
+        const editor = document.getElementById('newsContentEditor');
+        const title = document.getElementById('newsTitle').value;
+        const summary = document.getElementById('newsSummary').value;
+        document.getElementById('newsPreviewContent').innerHTML =
+            `<h1 style="font-size:1.5rem;font-weight:900;color:#fff;margin:0 0 10px;">${adminEscape(title)}</h1>` +
+            (summary ? `<p style="color:rgba(255,255,255,0.45);font-size:0.9rem;margin-bottom:20px;border-left:3px solid #e8192c;padding-left:12px;">${adminEscape(summary)}</p>` : '') +
+            (editor ? editor.innerHTML : '');
     }
+}
+
+function editorExec(cmd) {
+    document.getElementById('newsContentEditor').focus();
+    document.execCommand(cmd, false, null);
+}
+
+function editorFormat(tag) {
+    document.getElementById('newsContentEditor').focus();
+    document.execCommand('formatBlock', false, tag);
+}
+
+function editorInsertLink() {
+    const url = prompt('Nhập URL liên kết:');
+    if (url) { document.getElementById('newsContentEditor').focus(); document.execCommand('createLink', false, url); }
+}
+
+function editorInsertQuote() {
+    document.getElementById('newsContentEditor').focus();
+    document.execCommand('formatBlock', false, 'blockquote');
+}
+
+function handleNewsFileDrop(e) {
+    e.preventDefault();
+    document.getElementById('newsDropZone').style.borderColor = 'rgba(255,255,255,0.12)';
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const dt = new DataTransfer(); dt.items.add(file);
+        const input = document.getElementById('newsImage');
+        input.files = dt.files;
+        handleNewsFileSelect(input);
+    }
+}
+
+async function submitNewsForm() {
+    const title = document.getElementById('newsTitle').value.trim();
+    if (!title) { showAdminToast('Vui lòng nhập tiêu đề bài viết.', 'error'); return; }
+    // Sync content from editor to hidden textarea
+    const editor = document.getElementById('newsContentEditor');
+    document.getElementById('newsContent').value = editor ? editor.innerHTML : '';
+    // Build fake event and call existing saveNewsArticle
+    const fakeEvent = { preventDefault: () => {} };
+    await saveNewsArticle(fakeEvent);
 }
 
 async function saveNewsArticle(event) {

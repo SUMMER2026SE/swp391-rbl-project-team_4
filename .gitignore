@@ -130,3 +130,4 @@ seed_showtimes.js
 force_seed.js
 smart_seed.js
 .idea
+config/CinemaManagement.sql

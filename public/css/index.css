@@ -106,6 +106,7 @@ img {
     align-items: center;
     gap: 8px;
     text-decoration: none;
+    white-space: nowrap;
 }
 
 .logo-d {
@@ -119,6 +120,7 @@ img {
     font-weight: 800;
     letter-spacing: 2px;
     color: var(--text-light);
+    white-space: nowrap;
 }
 
 .nav-links {
@@ -133,6 +135,7 @@ img {
     transition: color var(--transition);
     position: relative;
     text-decoration: none !important;
+    white-space: nowrap;
 }
 
 .nav-links a:hover,
