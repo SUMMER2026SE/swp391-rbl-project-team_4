@@ -892,7 +892,7 @@ exports.getPublicBookingDetails = async (req, res) => {
     const foodDisplayItems = fnbResult.recordset.map(item => `${item.Quantity}x ${item.Name}`);
     const fnbSum = fnbResult.recordset.reduce((sum, item) => sum + (item.Quantity * parseFloat(item.Price || 0)), 0);
 
-    const totalAmount = ticketSum + fnbSum;
+    const totalAmount = ticketSum;
 
     res.json({
       success: true,
@@ -911,6 +911,8 @@ exports.getPublicBookingDetails = async (req, res) => {
         paymentMethod: first.PaymentMethod,
         status: first.Status,
         totalAmount: totalAmount,
+        fnbTotal: fnbSum,
+        ticketIds: ids.sort((a, b) => a - b),
         foodItems: foodDisplayItems.join(', ') || 'Không có'
       }
     });

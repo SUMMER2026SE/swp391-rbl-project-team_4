@@ -661,8 +661,7 @@
 
         <!-- Top Header with Back Button -->
         <header class="vt-header no-print">
-            <button class="vt-back-link"
-                onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.replace('payment-success.html' + (id ? '?id=' + id : ''));">
+            <button class="vt-back-link" onclick="goBackToTicketPage()">
                 ← Quay lại trang vé
             </button>
             <div class="vt-brand-inline">
@@ -693,6 +692,18 @@
     </main>
 
     <script>
+        function getTicketReturnUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const returnTo = params.get('returnTo');
+            if (returnTo) return returnTo;
+            const id = params.get('id');
+            return 'payment-success.html' + (id ? '?id=' + encodeURIComponent(id) : '');
+        }
+
+        function goBackToTicketPage() {
+            window.location.replace(getTicketReturnUrl());
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
             const ticketIds = params.get('id');
@@ -932,7 +943,7 @@
 
                 <!-- Actions -->
                 <div class="vt-action-row tp-anim-fade-up tp-delay-5">
-                    <button class="vt-btn vt-btn-ghost vt-action-fill" onclick="const p=new URLSearchParams(window.location.search); const id=p.get('id'); window.location.replace('payment-success.html' + (id ? '?id=' + id : ''));">
+                    <button class="vt-btn vt-btn-ghost vt-action-fill" onclick="goBackToTicketPage()">
                         ← Quay lại trang vé
                     </button>
                     <button class="vt-btn vt-btn-ghost vt-action-fill" onclick="window.location.replace('index.html')">

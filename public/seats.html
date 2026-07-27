@@ -2583,7 +2583,8 @@
                 seatDetails,
                 seatCount: Array.from(selectedSeats).length,
                 ticketPrice: basePrice,
-                ticketTotal
+                ticketTotal,
+                holdExpiresAt: countdownDeadline ? new Date(countdownDeadline).toISOString() : new Date(Date.now() + 5 * 60 * 1000).toISOString()
             };
 
             sessionStorage.setItem('booking', JSON.stringify(bookingPayload));

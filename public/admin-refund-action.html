@@ -251,8 +251,11 @@
 
             try {
                 const data = await api('/api/admin/refunds');
-                const item = data.success && Array.isArray(data.data)
-                    ? data.data.find(x => Number(x.RefundID) === refundId)
+                const refunds = data.success && data.data
+                    ? (Array.isArray(data.data) ? data.data : data.data.refunds)
+                    : [];
+                const item = Array.isArray(refunds)
+                    ? refunds.find(x => Number(x.RefundID) === refundId)
                     : null;
                 if (!item) {
                     els.summary.innerHTML = '<b>Yêu cầu #' + refundId + '</b><br>Không tìm thấy chi tiết, nhưng bạn vẫn có thể gửi thao tác nếu yêu cầu còn tồn tại.';

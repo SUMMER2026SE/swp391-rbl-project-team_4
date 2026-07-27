@@ -1645,6 +1645,10 @@
             const json = await res.json();
             if (json.success && json.data) {
                 const data = json.data;
+                if (!data.discountAmount || data.discountAmount <= 0) {
+                    showToast('Voucher không đủ điều kiện áp dụng cho đơn hàng này.', 'error');
+                    return;
+                }
                 appliedVoucherCode = code;
                 booking.voucherCode = code;
                 discountAmount = data.discountAmount;
@@ -1754,6 +1758,17 @@
             cdMin.style.background = '#444';
             cdSec.style.background = '#444';
             document.getElementById('btnPayNow').disabled = true;
+            if (typeof showToast === 'function') showToast('Thời gian giữ vé đã hết. Vui lòng chọn lại suất chiếu và ghế!', 'error');
+            showPayError(
+                'Hết thời gian giữ vé',
+                'Vé giữ chỗ của bạn đã hết hiệu lực. Hệ thống sẽ chuyển về trang chọn lịch chiếu sau 2.5 giây...',
+                [
+                    { label: '🎬 Chọn lại suất chiếu', href: 'booking.html', primary: true }
+                ]
+            );
+            setTimeout(() => {
+                window.location.replace('booking.html');
+            }, 2500);
         } else {
             countdownSecs--;
         }
@@ -2000,6 +2015,17 @@
         try {
             booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
         } catch(e) { booking = {}; }
+
+        if (booking.holdExpiresAt) {
+            const rem = Math.ceil((new Date(booking.holdExpiresAt).getTime() - Date.now()) / 1000);
+            if (Number.isFinite(rem) && rem > 0) {
+                countdownSecs = rem;
+                updateCountdown();
+            } else {
+                countdownSecs = 0;
+                updateCountdown();
+            }
+        }
 
         console.log('[Checkout] Booking loaded:', {
             showtimeId: booking.showtimeId,

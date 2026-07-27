@@ -6,63 +6,7 @@
     <title>404 - Không tìm thấy trang | D-CINEMA</title>
     <meta name="description" content="Trang bạn đang tìm kiếm không tồn tại.">
     <link rel="stylesheet" href="css/shared-layout.css">
-    <style>
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        .error-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 40px 20px;
-        }
-        .error-code {
-            font-size: 8rem;
-            font-weight: 900;
-            color: var(--accent);
-            line-height: 1;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(232, 25, 44, 0.4);
-        }
-        .error-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-        .error-msg {
-            color: var(--text2);
-            font-size: 1.1rem;
-            max-width: 500px;
-            margin-bottom: 40px;
-            line-height: 1.6;
-        }
-        .btn-home {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 14px 32px;
-            background-color: var(--accent);
-            color: #fff;
-            text-decoration: none;
-            font-weight: 600;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        .btn-home:hover {
-            background-color: #c91423;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(232, 25, 44, 0.3);
-        }
-    </style>
+    <link rel="stylesheet" href="css/404.css">
     <link rel="stylesheet" href="css/chatbot.css">
 </head>
 <body>
@@ -82,7 +26,7 @@
                     </div>
                 </div>
                 <div class="nav-dropdown">
-                    <a href="booking.html" id="nav-rap">Rạp <span style="font-size: 0.8em;">▼</span></a>
+                    <a href="booking.html" id="nav-rap">Rạp <span class="nav-arrow-small">▼</span></a>
                     <div class="nav-dropdown-content" id="cinemaDropdown">
                         <!-- Populated by JS -->
                     </div>
@@ -116,19 +60,19 @@
     </div>
 
     <!-- Footer -->
-    <footer style="margin-top: auto; border-top: 1px solid var(--border); padding: 40px 0; background-color: var(--surface);">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+    <footer class="error-footer">
+        <div class="container error-footer-wrap">
             <div>
-                <a href="index.html" class="logo" style="margin-bottom: 10px; display: inline-flex;">
+                <a href="index.html" class="logo error-footer-logo">
                     <span class="logo-d">D</span>
                     <span class="logo-text">D-CINEMA</span>
                 </a>
-                <p style="color: var(--text2); font-size: 0.9rem;">&copy; 2024 D-CINEMA. All rights reserved.</p>
+                <p class="error-footer-copy">&copy; 2024 D-CINEMA. All rights reserved.</p>
             </div>
-            <div style="display: flex; gap: 20px;">
-                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Về chúng tôi</a>
-                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Điều khoản</a>
-                <a href="#" style="color: var(--text2); text-decoration: none; transition: color 0.3s;">Bảo mật</a>
+            <div class="error-footer-links">
+                <a href="#" class="error-footer-link">Về chúng tôi</a>
+                <a href="#" class="error-footer-link">Điều khoản</a>
+                <a href="#" class="error-footer-link">Bảo mật</a>
             </div>
         </div>
     </footer>

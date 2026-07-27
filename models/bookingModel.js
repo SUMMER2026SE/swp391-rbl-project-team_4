@@ -61,8 +61,53 @@ class BookingModel {
     return result.recordset;
   }
 
+  static async syncVoucherTables(pool) {
+    try {
+      await pool.request().query(`
+        INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxDiscount, UsageLimit, UsedCount, StartDate, EndDate, IsActive)
+        SELECT v.VoucherCode,
+               CASE WHEN v.DiscountType = 'Percentage' THEN 'percent' ELSE 'fixed' END,
+               v.DiscountValue,
+               ISNULL(v.MinimumOrder, 0),
+               ISNULL(v.MaximumDiscount, 0),
+               v.UsageLimit,
+               ISNULL(v.UsedCount, 0),
+               v.StartDate,
+               v.EndDate,
+               CASE WHEN v.Status = 'Active' THEN 1 ELSE 0 END
+        FROM Voucher v
+        WHERE NOT EXISTS (SELECT 1 FROM Vouchers vs WHERE vs.Code = v.VoucherCode);
+
+        INSERT INTO Voucher (VoucherCode, VoucherName, DiscountType, DiscountValue, MinimumOrder, MaximumDiscount, UsageLimit, UsedCount, StartDate, EndDate, Status, Description)
+        SELECT vs.Code,
+               CASE 
+                 WHEN vs.DiscountType = 'percent' THEN N'Ưu đãi giảm ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + '%'
+                 ELSE N'Ưu đãi giảm ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + N'đ'
+               END,
+               CASE WHEN vs.DiscountType = 'percent' THEN 'Percentage' ELSE 'Fixed Amount' END,
+               vs.DiscountValue,
+               ISNULL(vs.MinOrderValue, 0),
+               ISNULL(vs.MaxDiscount, 0),
+               vs.UsageLimit,
+               ISNULL(vs.UsedCount, 0),
+               vs.StartDate,
+               vs.EndDate,
+               CASE WHEN vs.IsActive = 1 THEN 'Active' ELSE 'Inactive' END,
+               CASE 
+                 WHEN vs.DiscountType = 'percent' THEN N'Giảm giá ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + '% cho hóa đơn từ ' + CAST(CAST(ISNULL(vs.MinOrderValue,0) AS INT) AS NVARCHAR(50)) + N'đ.'
+                 ELSE N'Giảm trực tiếp ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + N'đ cho hóa đơn từ ' + CAST(CAST(ISNULL(vs.MinOrderValue,0) AS INT) AS NVARCHAR(50)) + N'đ.'
+               END
+        FROM Vouchers vs
+        WHERE NOT EXISTS (SELECT 1 FROM Voucher v WHERE v.VoucherCode = vs.Code);
+      `);
+    } catch (err) {
+      // ignore if table does not exist yet
+    }
+  }
+
   static async getActiveVouchers() {
     const pool = await getPool();
+    await BookingModel.syncVoucherTables(pool);
     const result = await pool.request().query(`
       SELECT v.VoucherID, v.VoucherCode AS Code, v.VoucherName, v.VoucherType,
              v.DiscountType, v.DiscountValue, v.MinimumOrder AS MinOrderValue,
@@ -80,20 +125,23 @@ class BookingModel {
 
   static async validateVoucher(code, userId) {
     const pool = await getPool();
+    await BookingModel.syncVoucherTables(pool);
+    const cleanCode = (code || '').trim().toUpperCase();
     const result = await pool.request()
-      .input('code', sql.NVarChar, code)
+      .input('code', sql.NVarChar, cleanCode)
+      .input('userId', sql.Int, userId || null)
       .query(`
         SELECT v.VoucherID, v.Code, v.DiscountType, v.DiscountValue,
                v.MinOrderValue, v.MaxDiscount, v.UsageLimit, v.UsedCount,
                v.StartDate, v.EndDate, v.IsActive,
                uv.UserID AS OwnerUserID, uv.IsUsed AS UserVoucherUsed
         FROM   Vouchers v
-        LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID
-        WHERE  v.Code = @code
+        LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID AND uv.UserID = @userId
+        WHERE  UPPER(LTRIM(RTRIM(v.Code))) = @code
           AND  v.IsActive = 1
-          AND  v.StartDate <= GETDATE()
-          AND  v.EndDate   >= GETDATE()
-          AND  (v.UsageLimit IS NULL OR v.UsedCount < v.UsageLimit)
+          AND  (v.StartDate IS NULL OR CAST(v.StartDate AS DATE) <= CAST(GETDATE() AS DATE))
+          AND  (v.EndDate IS NULL OR CAST(v.EndDate AS DATE) >= CAST(GETDATE() AS DATE))
+          AND  (v.UsageLimit IS NULL OR v.UsageLimit = 0 OR v.UsedCount < v.UsageLimit)
       `);
     if (result.recordset.length === 0) return null;
     const voucher = result.recordset[0];
@@ -257,15 +305,20 @@ class BookingModel {
       if (voucherCode) {
         const vReq = transaction.request();
         vReq.input('code', sql.NVarChar, voucherCode.trim().toUpperCase());
+        vReq.input('userId', sql.Int, userId || null);
         const vResult = await vReq.query(`
           SELECT v.VoucherID, v.DiscountType, v.DiscountValue, v.MaxDiscount, v.MinOrderValue,
                  uv.UserID AS OwnerUserID, uv.IsUsed AS UserVoucherUsed
           FROM Vouchers v WITH (UPDLOCK)
-          LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID
+          LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID AND uv.UserID = @userId
           WHERE v.Code = @code AND v.IsActive = 1
-            AND v.StartDate <= GETUTCDATE() AND v.EndDate >= GETUTCDATE()
-            AND (v.UsageLimit IS NULL OR v.UsedCount < v.UsageLimit)
+            AND (v.StartDate IS NULL OR CAST(v.StartDate AS DATE) <= CAST(GETDATE() AS DATE))
+            AND (v.EndDate IS NULL OR CAST(v.EndDate AS DATE) >= CAST(GETDATE() AS DATE))
+            AND (v.UsageLimit IS NULL OR v.UsageLimit = 0 OR v.UsedCount < v.UsageLimit)
         `);
+        if (vResult.recordset.length === 0) {
+          throw new Error('Mã voucher không hợp lệ, đã hết hạn hoặc hết lượt sử dụng.');
+        }
         if (vResult.recordset.length > 0) {
           const v = vResult.recordset[0];
 
@@ -297,6 +350,8 @@ class BookingModel {
             discountAmount = v.DiscountType === 'percent'
               ? Math.min(totalAmount * v.DiscountValue / 100, v.MaxDiscount || Infinity)
               : Math.min(v.DiscountValue, totalAmount);
+          } else {
+            throw new Error(`Đơn hàng tối thiểu ${Number(v.MinOrderValue || 0).toLocaleString('vi-VN')}đ để áp dụng voucher này.`);
           }
         }
       }
@@ -906,15 +961,20 @@ class BookingModel {
     if (voucherCode) {
       const vResult = await pool.request()
         .input('code', sql.NVarChar, voucherCode.trim().toUpperCase())
+        .input('userId', sql.Int, userId || null)
         .query(`
           SELECT v.VoucherID, v.Code, v.DiscountType, v.DiscountValue, v.MaxDiscount, v.MinOrderValue,
                  uv.UserID AS OwnerUserID, uv.IsUsed AS UserVoucherUsed
           FROM Vouchers v
-          LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID
+          LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID AND uv.UserID = @userId
           WHERE v.Code = @code AND v.IsActive = 1
-            AND v.StartDate <= GETUTCDATE() AND v.EndDate >= GETUTCDATE()
-            AND (v.UsageLimit IS NULL OR v.UsedCount < v.UsageLimit)
+            AND (v.StartDate IS NULL OR CAST(v.StartDate AS DATE) <= CAST(GETDATE() AS DATE))
+            AND (v.EndDate IS NULL OR CAST(v.EndDate AS DATE) >= CAST(GETDATE() AS DATE))
+            AND (v.UsageLimit IS NULL OR v.UsageLimit = 0 OR v.UsedCount < v.UsageLimit)
         `);
+      if (vResult.recordset.length === 0) {
+        throw new Error('Mã voucher không hợp lệ, đã hết hạn hoặc hết lượt sử dụng.');
+      }
       if (vResult.recordset.length > 0) {
         const v = vResult.recordset[0];
 
@@ -946,6 +1006,8 @@ class BookingModel {
           discountAmount = v.DiscountType === 'percent'
             ? Math.min(totalAmount * v.DiscountValue / 100, v.MaxDiscount || Infinity)
             : Math.min(v.DiscountValue, totalAmount);
+        } else {
+          throw new Error(`Đơn hàng tối thiểu ${Number(v.MinOrderValue || 0).toLocaleString('vi-VN')}đ để áp dụng voucher này.`);
         }
       }
     }

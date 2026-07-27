@@ -49,15 +49,16 @@ async function buildReportData(query = {}) {
   const cinemaId = query.cinemaId || null;
   const year = parseInt(query.year) || new Date().getFullYear();
 
-  const [stats, topMovies, recentTxns, monthlyRevenue, revenueStats] = await Promise.all([
+  const [stats, topMovies, recentTxns, monthlyRevenue, revenueStats, intelligence] = await Promise.all([
     AdminModel.getDashboardStats({ cinemaId, period }),
     AdminModel.getTopMovies(20),
     AdminModel.getRecentTransactions(50),
     AdminModel.getMonthlyRevenue(year, cinemaId),
     AdminModel.getRevenueStats({ cinemaId }),
+    AdminModel.getRevenueIntelligenceSnapshot({ cinemaId, period }),
   ]);
 
-  return { period, cinemaId, year, stats, topMovies, recentTxns, monthlyRevenue, revenueStats };
+  return { period, cinemaId, year, stats, topMovies, recentTxns, monthlyRevenue, revenueStats, intelligence };
 }
 
 function buildReportRows(report) {
@@ -759,6 +760,7 @@ exports.getRevenueInsight = async (req, res) => {
         insight: result.insight,
         provider: result.provider,
         warning: result.warning || null,
+        metrics: result.metrics || null,
         generatedAt: new Date().toISOString()
       }
     });

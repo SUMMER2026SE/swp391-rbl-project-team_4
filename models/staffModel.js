@@ -109,15 +109,20 @@ class StaffModel {
       if (voucherCode) {
         const vReq = transaction.request();
         vReq.input('code', sql.NVarChar, voucherCode.trim().toUpperCase());
+        vReq.input('customerId', sql.Int, customerId || null);
         const vResult = await vReq.query(`
           SELECT v.VoucherID, v.DiscountType, v.DiscountValue, v.MaxDiscount, v.MinOrderValue,
                  uv.UserID AS OwnerUserID, uv.IsUsed AS UserVoucherUsed
           FROM Vouchers v WITH (UPDLOCK)
-          LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID
+          LEFT JOIN UserVouchers uv ON v.VoucherID = uv.VoucherID AND uv.UserID = @customerId
           WHERE v.Code = @code AND v.IsActive = 1
-            AND v.StartDate <= GETUTCDATE() AND v.EndDate >= GETUTCDATE()
-            AND (v.UsageLimit IS NULL OR v.UsedCount < v.UsageLimit)
+            AND (v.StartDate IS NULL OR CAST(v.StartDate AS DATE) <= CAST(GETDATE() AS DATE))
+            AND (v.EndDate IS NULL OR CAST(v.EndDate AS DATE) >= CAST(GETDATE() AS DATE))
+            AND (v.UsageLimit IS NULL OR v.UsageLimit = 0 OR v.UsedCount < v.UsageLimit)
         `);
+        if (vResult.recordset.length === 0) {
+          throw new Error('Mã voucher không hợp lệ, đã hết hạn hoặc hết lượt sử dụng.');
+        }
         if (vResult.recordset.length > 0) {
           const v = vResult.recordset[0];
           if (v.OwnerUserID && v.OwnerUserID !== customerId) {
@@ -131,6 +136,8 @@ class StaffModel {
             discountAmount = v.DiscountType === 'percent'
               ? Math.min(totalAmount * v.DiscountValue / 100, v.MaxDiscount || Infinity)
               : Math.min(v.DiscountValue, totalAmount);
+          } else {
+            throw new Error(`Đơn hàng tối thiểu ${Number(v.MinOrderValue || 0).toLocaleString('vi-VN')}đ để áp dụng voucher này.`);
           }
         }
       }

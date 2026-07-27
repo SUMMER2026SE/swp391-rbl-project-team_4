@@ -2197,7 +2197,7 @@ function renderStaffTable() {
         <tr>
             <td>
                 <div class="st-user">
-                    <img src="images/default_poster.svg" alt="${user.FullName}" class="stu-avatar">
+                    <img src="${user.AvatarURL || 'images/default_avatar.png'}" alt="${user.FullName}" class="stu-avatar" onerror="this.onerror=null; this.src='images/default_avatar.png';">
                     <div class="stu-info">
                         <span class="stu-name">${user.FullName}</span>
                         <span class="stu-email">${user.Email}</span>

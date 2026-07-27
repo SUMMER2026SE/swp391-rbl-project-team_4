@@ -404,7 +404,10 @@ INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxDisco
 ('GIAM20K',    'fixed',   20000, 100000, NULL,   100, GETDATE(), DATEADD(day, 30, GETDATE()), 1),
 ('GIAM10PT',   'percent', 10,    150000, 50000,  50,  GETDATE(), DATEADD(day, 30, GETDATE()), 1),
 ('WELCOME50',  'percent', 50,    200000, 100000, 200, GETDATE(), DATEADD(day, 60, GETDATE()), 1),
-('HEQUA2025',  'fixed',   30000, 80000,  NULL,   500, GETDATE(), DATEADD(day, 90, GETDATE()), 1);
+('HEQUA2025',  'fixed',   30000, 80000,  NULL,   500, GETDATE(), DATEADD(day, 90, GETDATE()), 1),
+('KM10PERCENT', 'percent', 10,    100000, 50000,  100, '2026-06-01', '2026-08-31', 1),
+('KM100KFIXED', 'fixed',   100000, 500000, 100000, 50,  '2026-06-01', '2026-07-31', 1),
+('KMEXPIRED',  'percent', 20,    50000,  20000,  20,  '2026-01-01', '2026-03-01', 0);
 GO
 -- ═══════════════════ GIAO DỊCH MẪU (BOOKINGS) ═══════════════════
 -- Tìm CustomerRoleID theo tên để tránh hardcode số
@@ -968,6 +971,10 @@ BEGIN
     VALUES 
     ('KM10PERCENT', N'Khuyến mãi 10% mùa hè', 'Percentage', 10.00, 100000.00, 50000.00, 100, 12, '2026-06-01', '2026-08-31', 'Active', N'Giảm giá 10% tối đa 50k cho đơn hàng từ 100k.'),
     ('KM100KFIXED', N'Khuyến mãi 100k tri ân', 'Fixed Amount', 100000.00, 500000.00, 100000.00, 50, 5, '2026-06-01', '2026-07-31', 'Active', N'Giảm trực tiếp 100k cho hóa đơn từ 500k.'),
-    ('KMEXPIRED', N'Khuyến mãi đã hết hạn', 'Percentage', 20.00, 50000.00, 20000.00, 20, 20, '2026-01-01', '2026-03-01', 'Expired', N'Chương trình giảm giá đầu năm.');
+    ('KMEXPIRED', N'Khuyến mãi đã hết hạn', 'Percentage', 20.00, 50000.00, 20000.00, 20, 20, '2026-01-01', '2026-03-01', 'Expired', N'Chương trình giảm giá đầu năm.'),
+    ('GIAM20K', N'Giảm 20K cho đơn từ 100K', 'Fixed Amount', 20000.00, 100000.00, 20000.00, 100, 2, '2026-06-15', '2026-08-31', 'Active', N'Giảm 20.000đ cho đơn hàng từ 100.000đ.'),
+    ('GIAM10PT', N'Giảm 10% cho đơn từ 150K', 'Percentage', 10.00, 150000.00, 50000.00, 50, 0, '2026-06-15', '2026-08-31', 'Active', N'Giảm 10% (tối đa 50K) cho đơn hàng từ 150.000đ.'),
+    ('WELCOME50', N'Ưu đãi thành viên mới', 'Percentage', 50.00, 200000.00, 100000.00, 200, 0, '2026-06-15', '2026-08-31', 'Active', N'Giảm 50% (tối đa 100K) cho đơn hàng từ 200.000đ.'),
+    ('HEQUA2025', N'Ưu đãi tri ân khách hàng', 'Fixed Amount', 30000.00, 80000.00, 30000.00, 500, 1, '2026-06-15', '2026-09-30', 'Active', N'Giảm trực tiếp 30.000đ cho đơn hàng từ 80.000đ.');
 END
 GO

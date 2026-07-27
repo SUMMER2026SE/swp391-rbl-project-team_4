@@ -1,6 +1,50 @@
 const { getPool, sql } = require('../config/db');
 
 class VoucherModel {
+  static async syncVoucherTables(pool) {
+    try {
+      await pool.request().query(`
+        INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxDiscount, UsageLimit, UsedCount, StartDate, EndDate, IsActive)
+        SELECT v.VoucherCode,
+               CASE WHEN v.DiscountType = 'Percentage' THEN 'percent' ELSE 'fixed' END,
+               v.DiscountValue,
+               ISNULL(v.MinimumOrder, 0),
+               ISNULL(v.MaximumDiscount, 0),
+               v.UsageLimit,
+               ISNULL(v.UsedCount, 0),
+               v.StartDate,
+               v.EndDate,
+               CASE WHEN v.Status = 'Active' THEN 1 ELSE 0 END
+        FROM Voucher v
+        WHERE NOT EXISTS (SELECT 1 FROM Vouchers vs WHERE vs.Code = v.VoucherCode);
+
+        INSERT INTO Voucher (VoucherCode, VoucherName, DiscountType, DiscountValue, MinimumOrder, MaximumDiscount, UsageLimit, UsedCount, StartDate, EndDate, Status, Description)
+        SELECT vs.Code,
+               CASE 
+                 WHEN vs.DiscountType = 'percent' THEN N'Ưu đãi giảm ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + '%'
+                 ELSE N'Ưu đãi giảm ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + N'đ'
+               END,
+               CASE WHEN vs.DiscountType = 'percent' THEN 'Percentage' ELSE 'Fixed Amount' END,
+               vs.DiscountValue,
+               ISNULL(vs.MinOrderValue, 0),
+               ISNULL(vs.MaxDiscount, 0),
+               vs.UsageLimit,
+               ISNULL(vs.UsedCount, 0),
+               vs.StartDate,
+               vs.EndDate,
+               CASE WHEN vs.IsActive = 1 THEN 'Active' ELSE 'Inactive' END,
+               CASE 
+                 WHEN vs.DiscountType = 'percent' THEN N'Giảm giá ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + '% cho hóa đơn từ ' + CAST(CAST(ISNULL(vs.MinOrderValue,0) AS INT) AS NVARCHAR(50)) + N'đ.'
+                 ELSE N'Giảm trực tiếp ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + N'đ cho hóa đơn từ ' + CAST(CAST(ISNULL(vs.MinOrderValue,0) AS INT) AS NVARCHAR(50)) + N'đ.'
+               END
+        FROM Vouchers vs
+        WHERE NOT EXISTS (SELECT 1 FROM Voucher v WHERE v.VoucherCode = vs.Code);
+      `);
+    } catch (err) {
+      // ignore if tables don't exist yet
+    }
+  }
+
   static async syncExpired() {
     const pool = await getPool();
     await pool.request().query(`
@@ -13,6 +57,7 @@ class VoucherModel {
   static async getAll({ search, status } = {}) {
     await this.syncExpired();
     const pool = await getPool();
+    await this.syncVoucherTables(pool);
     const request = pool.request();
     
     let query = "SELECT * FROM Voucher WHERE 1=1";

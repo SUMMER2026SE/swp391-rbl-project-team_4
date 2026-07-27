@@ -1071,8 +1071,10 @@
         
         cardContainer.appendChild(wrapper);
         
-        let verifyUrlLan = `${serverLanOrigin || window.location.origin}/verify-ticket.html?id=${validTicketId}`;
-        let verifyUrlLocal = `verify-ticket.html?id=${validTicketId}`;
+        const allTicketIds = qrCarouselTicketIds.join('-');
+        const returnTo = `payment-success.html?id=${encodeURIComponent(allTicketIds)}`;
+        let verifyUrlLan = `${serverLanOrigin || window.location.origin}/verify-ticket.html?id=${encodeURIComponent(validTicketId)}&returnTo=${encodeURIComponent(returnTo)}`;
+        let verifyUrlLocal = `verify-ticket.html?id=${encodeURIComponent(validTicketId)}&returnTo=${encodeURIComponent(returnTo)}`;
         
         // Make entire QR wrapper clickable (relative URL preserves origin and login session)
         wrapper.onclick = () => {
@@ -1180,12 +1182,21 @@
 
         // Parse ticket IDs from bookingId: 'DC-354-355-358-357-359'
         const idsRaw = bookingId.replace(/^DC-/i, '');
-        qrCarouselTicketIds = idsRaw.split('-').map(s => s.trim()).filter(s => /^\d+$/.test(s));
-        if (qrCarouselTicketIds.length === 0) qrCarouselTicketIds = [idsRaw];
+        if (Array.isArray(booking.qrTickets) && booking.qrTickets.length > 0) {
+            qrCarouselTicketIds = booking.qrTickets.map(item => String(item.id)).filter(Boolean);
+        } else {
+            qrCarouselTicketIds = idsRaw.split('-').map(s => s.trim()).filter(s => /^\d+$/.test(s));
+            if (qrCarouselTicketIds.length === 0) qrCarouselTicketIds = [idsRaw];
+        }
 
         // Build seat labels from booking.seats
-        const seatsArr = (booking.seats || '').split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+        const seatsArr = (booking.seats || '').split(',').map(s => s.trim()).filter(Boolean);
+        const qrTicketSeatLabels = Array.isArray(booking.qrTickets) && booking.qrTickets.length > 0
+            ? booking.qrTickets.map((item, i) => item.seat || seatsArr[i] || ('Ghe ' + (i + 1)))
+            : null;
         qrCarouselSeats = qrCarouselTicketIds.map((_, i) => seatsArr[i] || ('Ghế ' + (i + 1)));
+
+        if (qrTicketSeatLabels) qrCarouselSeats = qrTicketSeatLabels;
 
         // User info
         const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');

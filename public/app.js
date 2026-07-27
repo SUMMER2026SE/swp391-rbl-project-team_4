@@ -472,6 +472,42 @@ const app = {
         }).join(', ');
     },
 
+    normalizeFilterText(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+    },
+
+    matchesFilterValue(rawValue, selectedValues) {
+        const haystack = app.normalizeFilterText(rawValue);
+        const parts = haystack.split(',').map(v => v.trim()).filter(Boolean);
+        return selectedValues.some(value => {
+            const needle = app.normalizeFilterText(value);
+            return parts.some(part => part === needle || part.includes(needle) || needle.includes(part))
+                || haystack.includes(needle);
+        });
+    },
+
+    getMovieStatus(movie) {
+        const status = app.normalizeFilterText(movie.Status);
+        if (status.includes('coming') || status.includes('sap')) return 'Coming Soon';
+        return 'Now Showing';
+    },
+
+    sortMovieList(movies) {
+        const sortMode = document.getElementById('sortSelect')?.value || 'popular';
+        if (sortMode === 'title') {
+            movies.sort((a, b) => String(a.Title || '').localeCompare(String(b.Title || ''), 'vi'));
+        } else if (sortMode === 'newest') {
+            movies.sort((a, b) => (Number(b.MovieID) || 0) - (Number(a.MovieID) || 0));
+        } else if (sortMode === 'rating') {
+            movies.sort((a, b) => (Number(b.Rating) || 8.5) - (Number(a.Rating) || 8.5));
+        }
+        return movies;
+    },
+
     async loadDynamicMovies() {
         // 1. For index.html (Now Showing) -> #now-showing .movie-grid
         const nowShowingGrid = document.querySelector('#now-showing .movie-grid');
@@ -667,7 +703,7 @@ const app = {
 
         const filtered = app.allMovies.filter(movie => {
             // 1. Status Tab filter
-            if (movie.Status !== app.filterState.status) {
+            if (app.getMovieStatus(movie) !== app.filterState.status) {
                 return false;
             }
 
@@ -684,20 +720,18 @@ const app = {
 
             // 3. Genre checkbox filter (logical OR within genres)
             if (selectedGenres.length > 0) {
-                const movieGenres = movie.Genres ? movie.Genres.split(',').map(g => g.trim()) : [];
-                const matchesGenre = selectedGenres.some(g => movieGenres.includes(g));
-                if (!matchesGenre) return false;
+                if (!app.matchesFilterValue(movie.Genres || movie.MainCast || '', selectedGenres)) return false;
             }
 
             // 4. Format checkbox filter (logical OR within formats)
             if (selectedFormats.length > 0) {
-                const movieFormats = movie.Formats ? movie.Formats.split(',').map(f => f.trim()) : ['Standard'];
-                const matchesFormat = selectedFormats.some(f => movieFormats.includes(f));
-                if (!matchesFormat) return false;
+                if (!app.matchesFilterValue(movie.Formats || 'Standard', selectedFormats)) return false;
             }
 
             return true;
         });
+
+        app.sortMovieList(filtered);
 
         if (filtered.length === 0) {
             allMoviesGrid.innerHTML = `
@@ -972,6 +1006,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('input[name="genre"], input[name="format"]').forEach(cb => {
             cb.addEventListener('change', () => app.filterAndRenderMovies());
         });
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect) sortSelect.addEventListener('change', () => app.filterAndRenderMovies());
     }
 });
 

@@ -1083,6 +1083,12 @@ img {
     color: var(--text-dark);
 }
 
+.site-footer .logo,
+.site-footer .logo-d,
+.site-footer .logo-text {
+    color: #111111 !important;
+}
+
 .footer-grid {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr;

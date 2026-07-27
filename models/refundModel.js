@@ -52,6 +52,21 @@ async function ensureRefundSchema() {
     IF COL_LENGTH('dbo.Tickets', 'RefundRequestedAt') IS NULL
       ALTER TABLE dbo.Tickets ADD RefundRequestedAt DATETIME NULL;
 
+    IF OBJECT_ID('dbo.RewardPointTransactions', 'U') IS NOT NULL
+       AND EXISTS (
+         SELECT 1
+         FROM sys.check_constraints
+         WHERE parent_object_id = OBJECT_ID('dbo.RewardPointTransactions')
+           AND name = 'CK_RewardPointTransactions_Type'
+           AND definition NOT LIKE '%adjust%'
+       )
+    BEGIN
+      ALTER TABLE dbo.RewardPointTransactions DROP CONSTRAINT CK_RewardPointTransactions_Type;
+      ALTER TABLE dbo.RewardPointTransactions
+      ADD CONSTRAINT CK_RewardPointTransactions_Type
+      CHECK (TransactionType IN ('earn', 'redeem', 'adjust'));
+    END;
+
     IF NOT EXISTS (
       SELECT 1 FROM sys.indexes
       WHERE name = 'IX_RefundRequests_Status_RequestedAt'
@@ -108,7 +123,7 @@ class RefundModel {
           SELECT t.TicketID, t.UserID, t.Status, t.TotalAmount, t.ShowtimeID, t.VoucherID,
                  t.PointsEarned, t.PointsAwardedAt,
                  st.StartTime, m.Title AS MovieTitle,
-                 DATEDIFF(minute, GETDATE(), st.StartTime) AS MinutesToStart
+                 DATEDIFF(minute, GETUTCDATE(), st.StartTime) AS MinutesToStart
           FROM Tickets t WITH (UPDLOCK)
           JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
           JOIN Movies m ON st.MovieID = m.MovieID
@@ -421,7 +436,7 @@ class RefundModel {
           INSERT INTO RewardPointTransactions
             (UserID, TicketID, PointsChange, BalanceAfter, TransactionType, Description)
           VALUES
-            (@userId, @ticketId, @points, @balanceAfter, 'refund', N'Trừ điểm do hoàn tiền vé');
+            (@userId, @ticketId, @points, @balanceAfter, 'adjust', N'Trừ điểm do hoàn tiền vé');
         `);
     }
 

@@ -758,7 +758,7 @@ class AdminModel {
   static async getAllUsers() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT u.UserID, u.FullName, u.Email, u.Phone, u.IsActive, u.CreatedAt,
+      SELECT u.UserID, u.FullName, u.Email, u.Phone, u.IsActive, u.CreatedAt, u.AvatarURL,
              r.RoleName
       FROM   Users u
       JOIN   Roles r ON u.RoleID = r.RoleID
@@ -791,8 +791,53 @@ class AdminModel {
   }
 
   // --- VOUCHER MANAGEMENT ---
+  static async syncVoucherTables(pool) {
+    try {
+      await pool.request().query(`
+        INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxDiscount, UsageLimit, UsedCount, StartDate, EndDate, IsActive)
+        SELECT v.VoucherCode,
+               CASE WHEN v.DiscountType = 'Percentage' THEN 'percent' ELSE 'fixed' END,
+               v.DiscountValue,
+               ISNULL(v.MinimumOrder, 0),
+               ISNULL(v.MaximumDiscount, 0),
+               v.UsageLimit,
+               ISNULL(v.UsedCount, 0),
+               v.StartDate,
+               v.EndDate,
+               CASE WHEN v.Status = 'Active' THEN 1 ELSE 0 END
+        FROM Voucher v
+        WHERE NOT EXISTS (SELECT 1 FROM Vouchers vs WHERE vs.Code = v.VoucherCode);
+
+        INSERT INTO Voucher (VoucherCode, VoucherName, DiscountType, DiscountValue, MinimumOrder, MaximumDiscount, UsageLimit, UsedCount, StartDate, EndDate, Status, Description)
+        SELECT vs.Code,
+               CASE 
+                 WHEN vs.DiscountType = 'percent' THEN N'Ưu đãi giảm ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + '%'
+                 ELSE N'Ưu đãi giảm ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + N'đ'
+               END,
+               CASE WHEN vs.DiscountType = 'percent' THEN 'Percentage' ELSE 'Fixed Amount' END,
+               vs.DiscountValue,
+               ISNULL(vs.MinOrderValue, 0),
+               ISNULL(vs.MaxDiscount, 0),
+               vs.UsageLimit,
+               ISNULL(vs.UsedCount, 0),
+               vs.StartDate,
+               vs.EndDate,
+               CASE WHEN vs.IsActive = 1 THEN 'Active' ELSE 'Inactive' END,
+               CASE 
+                 WHEN vs.DiscountType = 'percent' THEN N'Giảm giá ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + '% cho hóa đơn từ ' + CAST(CAST(ISNULL(vs.MinOrderValue,0) AS INT) AS NVARCHAR(50)) + N'đ.'
+                 ELSE N'Giảm trực tiếp ' + CAST(CAST(vs.DiscountValue AS INT) AS NVARCHAR(50)) + N'đ cho hóa đơn từ ' + CAST(CAST(ISNULL(vs.MinOrderValue,0) AS INT) AS NVARCHAR(50)) + N'đ.'
+               END
+        FROM Vouchers vs
+        WHERE NOT EXISTS (SELECT 1 FROM Voucher v WHERE v.VoucherCode = vs.Code);
+      `);
+    } catch (err) {
+      // ignore if tables don't exist yet
+    }
+  }
+
   static async getAllVouchers() {
     const pool = await getPool();
+    await AdminModel.syncVoucherTables(pool);
     const result = await pool.request().query(`
       SELECT VoucherID, VoucherCode, VoucherCode AS Code, VoucherType, VoucherName,
              DiscountType, DiscountValue, MinimumOrder, MinimumOrder AS MinOrderValue,
@@ -820,7 +865,14 @@ class AdminModel {
                               MaxDiscount, UsageLimit, UsedCount, StartDate, EndDate, IsActive)
         OUTPUT INSERTED.*
         VALUES (@code, @discountType, @discountValue, @minOrderValue,
-                @maxDiscount, @usageLimit, 0, @startDate, @endDate, 1)
+                @maxDiscount, @usageLimit, 0, @startDate, @endDate, 1);
+
+        INSERT INTO Voucher (VoucherCode, VoucherName, DiscountType, DiscountValue, MinimumOrder,
+                             MaximumDiscount, UsageLimit, UsedCount, StartDate, EndDate, Status, Description)
+        VALUES (@code, N'Mã khuyến mãi ' + @code,
+                CASE WHEN @discountType = 'percent' THEN 'Percentage' ELSE 'Fixed Amount' END,
+                @discountValue, @minOrderValue, @maxDiscount, @usageLimit, 0,
+                @startDate, @endDate, 'Active', N'Mã giảm giá ' + @code);
       `);
     return result.recordset[0];
   }
@@ -890,7 +942,12 @@ class AdminModel {
     }
     await pool.request()
       .input('id', sql.Int, id)
-      .query(`DELETE FROM Vouchers WHERE VoucherID = @id`);
+      .query(`
+        DECLARE @code NVARCHAR(50) = (SELECT Code FROM Vouchers WHERE VoucherID = @id);
+        IF (@code IS NULL) SET @code = (SELECT VoucherCode FROM Voucher WHERE VoucherID = @id);
+        DELETE FROM Voucher WHERE VoucherCode = @code OR VoucherID = @id;
+        DELETE FROM Vouchers WHERE Code = @code OR VoucherID = @id;
+      `);
   }
 
   static async toggleVoucherActive(id) {
@@ -898,10 +955,15 @@ class AdminModel {
     const result = await pool.request()
       .input('id', sql.Int, id)
       .query(`
+        DECLARE @code NVARCHAR(50) = (SELECT Code FROM Vouchers WHERE VoucherID = @id);
+        IF (@code IS NULL) SET @code = (SELECT VoucherCode FROM Voucher WHERE VoucherID = @id);
         UPDATE Vouchers
         SET IsActive = CASE WHEN IsActive = 1 THEN 0 ELSE 1 END
         OUTPUT INSERTED.*
-        WHERE VoucherID = @id
+        WHERE Code = @code OR VoucherID = @id;
+        UPDATE Voucher
+        SET Status = CASE WHEN Status = 'Active' THEN 'Inactive' ELSE 'Active' END
+        WHERE VoucherCode = @code OR VoucherID = @id;
       `);
     return result.recordset.length > 0 ? result.recordset[0] : null;
   }
@@ -1265,6 +1327,287 @@ class AdminModel {
     `;
     const result = await request.query(query);
     return result.recordset[0];
+  }
+
+  static getInsightDateRanges(period = 'all') {
+    const now = new Date();
+    const startOfDay = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const addDays = (date, days) => {
+      const next = new Date(date);
+      next.setDate(next.getDate() + days);
+      return next;
+    };
+    const addMonths = (date, months) => {
+      const next = new Date(date);
+      next.setMonth(next.getMonth() + months);
+      return next;
+    };
+
+    if (period === 'today') {
+      const currentStart = startOfDay(now);
+      const currentEnd = addDays(currentStart, 1);
+      return {
+        currentStart,
+        currentEnd,
+        previousStart: addDays(currentStart, -1),
+        previousEnd: currentStart,
+        label: 'Hôm nay',
+        previousLabel: 'Hôm qua'
+      };
+    }
+
+    if (period === 'week') {
+      const currentEnd = addDays(startOfDay(now), 1);
+      const currentStart = addDays(currentEnd, -7);
+      return {
+        currentStart,
+        currentEnd,
+        previousStart: addDays(currentStart, -7),
+        previousEnd: currentStart,
+        label: '7 ngày gần nhất',
+        previousLabel: '7 ngày trước đó'
+      };
+    }
+
+    if (period === 'month') {
+      const currentStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentEnd = addMonths(currentStart, 1);
+      return {
+        currentStart,
+        currentEnd,
+        previousStart: addMonths(currentStart, -1),
+        previousEnd: currentStart,
+        label: 'Tháng này',
+        previousLabel: 'Tháng trước'
+      };
+    }
+
+    const currentStart = new Date(now.getFullYear(), 0, 1);
+    const currentEnd = addDays(startOfDay(now), 1);
+    const days = Math.max(1, Math.ceil((currentEnd - currentStart) / 86400000));
+    return {
+      currentStart,
+      currentEnd,
+      previousStart: addDays(currentStart, -days),
+      previousEnd: currentStart,
+      label: 'Từ đầu năm đến nay',
+      previousLabel: 'Cùng độ dài kỳ trước'
+    };
+  }
+
+  static addInsightInputs(request, ranges, cinemaId) {
+    request
+      .input('currentStart', sql.DateTime, ranges.currentStart)
+      .input('currentEnd', sql.DateTime, ranges.currentEnd)
+      .input('previousStart', sql.DateTime, ranges.previousStart)
+      .input('previousEnd', sql.DateTime, ranges.previousEnd);
+    if (cinemaId) request.input('cinemaId', sql.Int, parseInt(cinemaId));
+    return request;
+  }
+
+  static async getRevenueIntelligenceSnapshot({ period = 'all', cinemaId = null } = {}) {
+    const pool = await getPool();
+    const ranges = AdminModel.getInsightDateRanges(period);
+    const cinemaFilter = cinemaId ? 'AND c.CinemaID = @cinemaId' : '';
+
+    const summaryRequest = AdminModel.addInsightInputs(pool.request(), ranges, cinemaId);
+    const summaryResult = await summaryRequest.query(`
+      WITH TicketScope AS (
+        SELECT
+          CASE
+            WHEN t.BookedAt >= @currentStart AND t.BookedAt < @currentEnd THEN 'current'
+            WHEN t.BookedAt >= @previousStart AND t.BookedAt < @previousEnd THEN 'previous'
+          END AS PeriodName,
+          t.TicketID,
+          t.TotalAmount,
+          t.Status,
+          r.TotalSeats,
+          st.ShowtimeID
+        FROM Tickets t
+        JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+        JOIN Rooms r ON st.RoomID = r.RoomID
+        JOIN Cinemas c ON r.CinemaID = c.CinemaID
+        WHERE t.BookedAt >= @previousStart
+          AND t.BookedAt < @currentEnd
+          ${cinemaFilter}
+      ),
+      FnBByTicket AS (
+        SELECT tf.TicketID, SUM(tf.Quantity * fb.Price) AS FnBRevenue
+        FROM Ticket_FnB tf
+        JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
+        GROUP BY tf.TicketID
+      ),
+      ShowtimeScope AS (
+        SELECT
+          CASE
+            WHEN st.StartTime >= @currentStart AND st.StartTime < @currentEnd THEN 'current'
+            WHEN st.StartTime >= @previousStart AND st.StartTime < @previousEnd THEN 'previous'
+          END AS PeriodName,
+          st.ShowtimeID,
+          r.TotalSeats
+        FROM Showtimes st
+        JOIN Rooms r ON st.RoomID = r.RoomID
+        JOIN Cinemas c ON r.CinemaID = c.CinemaID
+        WHERE st.StartTime >= @previousStart
+          AND st.StartTime < @currentEnd
+          AND st.Status = 'active'
+          ${cinemaFilter}
+      )
+      SELECT
+        p.PeriodName,
+        ISNULL(SUM(CASE WHEN ts.Status IN ('confirmed', 'used') THEN ts.TotalAmount ELSE 0 END), 0) AS TicketRevenue,
+        ISNULL(SUM(CASE WHEN ts.Status IN ('confirmed', 'used') THEN fbt.FnBRevenue ELSE 0 END), 0) AS FnBRevenue,
+        COUNT(CASE WHEN ts.Status IN ('confirmed', 'used') THEN 1 END) AS ConfirmedTickets,
+        COUNT(CASE WHEN ts.Status = 'pending' THEN 1 END) AS PendingTickets,
+        COUNT(CASE WHEN ts.Status IN ('cancelled', 'canceled') THEN 1 END) AS CancelledTickets,
+        (
+          SELECT COUNT(*) FROM ShowtimeScope ss WHERE ss.PeriodName = p.PeriodName
+        ) AS ShowtimesCount,
+        (
+          SELECT ISNULL(SUM(ss.TotalSeats), 0) FROM ShowtimeScope ss WHERE ss.PeriodName = p.PeriodName
+        ) AS AvailableSeats
+      FROM (VALUES ('current'), ('previous')) p(PeriodName)
+      LEFT JOIN TicketScope ts ON ts.PeriodName = p.PeriodName
+      LEFT JOIN FnBByTicket fbt ON fbt.TicketID = ts.TicketID
+      GROUP BY p.PeriodName
+    `);
+
+    const cinemaRequest = AdminModel.addInsightInputs(pool.request(), ranges, cinemaId);
+    const cinemaResult = await cinemaRequest.query(`
+      WITH FnBByTicket AS (
+        SELECT tf.TicketID, SUM(tf.Quantity * fb.Price) AS FnBRevenue
+        FROM Ticket_FnB tf
+        JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
+        GROUP BY tf.TicketID
+      )
+      SELECT TOP 8
+        c.CinemaID,
+        c.CinemaName,
+        c.City,
+        COUNT(CASE WHEN t.Status IN ('confirmed', 'used') THEN 1 END) AS TicketsSold,
+        COUNT(CASE WHEN t.Status = 'pending' THEN 1 END) AS PendingTickets,
+        COUNT(CASE WHEN t.Status IN ('cancelled', 'canceled') THEN 1 END) AS CancelledTickets,
+        ISNULL(SUM(CASE WHEN t.Status IN ('confirmed', 'used') THEN t.TotalAmount ELSE 0 END), 0) AS TicketRevenue,
+        ISNULL(SUM(CASE WHEN t.Status IN ('confirmed', 'used') THEN fbt.FnBRevenue ELSE 0 END), 0) AS FnBRevenue,
+        CAST(COUNT(CASE WHEN t.Status IN ('confirmed', 'used', 'pending') THEN 1 END) * 100.0 / NULLIF(SUM(r.TotalSeats), 0) AS DECIMAL(6,2)) AS OccupancyRate
+      FROM Tickets t
+      JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+      JOIN Rooms r ON st.RoomID = r.RoomID
+      JOIN Cinemas c ON r.CinemaID = c.CinemaID
+      LEFT JOIN FnBByTicket fbt ON fbt.TicketID = t.TicketID
+      WHERE t.BookedAt >= @currentStart
+        AND t.BookedAt < @currentEnd
+        ${cinemaFilter}
+      GROUP BY c.CinemaID, c.CinemaName, c.City
+      ORDER BY
+        ISNULL(SUM(CASE WHEN t.Status IN ('confirmed', 'used') THEN t.TotalAmount ELSE 0 END), 0)
+        + ISNULL(SUM(CASE WHEN t.Status IN ('confirmed', 'used') THEN fbt.FnBRevenue ELSE 0 END), 0) DESC,
+        TicketsSold DESC
+    `);
+
+    const movieRequest = AdminModel.addInsightInputs(pool.request(), ranges, cinemaId);
+    const movieResult = await movieRequest.query(`
+      WITH FnBByTicket AS (
+        SELECT tf.TicketID, SUM(tf.Quantity * fb.Price) AS FnBRevenue
+        FROM Ticket_FnB tf
+        JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
+        GROUP BY tf.TicketID
+      )
+      SELECT TOP 10
+        m.MovieID,
+        m.Title,
+        m.Status,
+        COUNT(CASE WHEN t.Status IN ('confirmed', 'used') THEN 1 END) AS TicketsSold,
+        COUNT(CASE WHEN t.Status IN ('cancelled', 'canceled') THEN 1 END) AS CancelledTickets,
+        ISNULL(SUM(CASE WHEN t.Status IN ('confirmed', 'used') THEN t.TotalAmount ELSE 0 END), 0) AS TicketRevenue,
+        ISNULL(SUM(CASE WHEN t.Status IN ('confirmed', 'used') THEN fbt.FnBRevenue ELSE 0 END), 0) AS FnBRevenue,
+        AVG(CASE WHEN t.Status IN ('confirmed', 'used') THEN t.TotalAmount END) AS AvgTicketValue
+      FROM Movies m
+      JOIN Showtimes st ON st.MovieID = m.MovieID
+      JOIN Rooms r ON st.RoomID = r.RoomID
+      JOIN Cinemas c ON r.CinemaID = c.CinemaID
+      LEFT JOIN Tickets t ON t.ShowtimeID = st.ShowtimeID
+        AND t.BookedAt >= @currentStart
+        AND t.BookedAt < @currentEnd
+      LEFT JOIN FnBByTicket fbt ON fbt.TicketID = t.TicketID
+      WHERE m.Status != 'deleted'
+        ${cinemaFilter}
+      GROUP BY m.MovieID, m.Title, m.Status
+      ORDER BY
+        ISNULL(SUM(CASE WHEN t.Status IN ('confirmed', 'used') THEN t.TotalAmount ELSE 0 END), 0)
+        + ISNULL(SUM(CASE WHEN t.Status IN ('confirmed', 'used') THEN fbt.FnBRevenue ELSE 0 END), 0) DESC,
+        TicketsSold DESC
+    `);
+
+    const lowShowtimeRequest = AdminModel.addInsightInputs(pool.request(), ranges, cinemaId);
+    const lowShowtimeResult = await lowShowtimeRequest.query(`
+      SELECT TOP 8
+        st.ShowtimeID,
+        m.Title AS MovieTitle,
+        c.CinemaName,
+        c.City,
+        r.RoomName,
+        r.TotalSeats,
+        COUNT(CASE WHEN t.Status IN ('confirmed', 'used', 'pending') THEN 1 END) AS TicketsHeld,
+        r.TotalSeats - COUNT(CASE WHEN t.Status IN ('confirmed', 'used', 'pending') THEN 1 END) AS EmptySeats,
+        CAST(COUNT(CASE WHEN t.Status IN ('confirmed', 'used', 'pending') THEN 1 END) * 100.0 / NULLIF(r.TotalSeats, 0) AS DECIMAL(6,2)) AS OccupancyRate,
+        st.StartTime,
+        st.EndTime,
+        COALESCE(st.Price, st.BasePrice, 0) AS Price
+      FROM Showtimes st
+      JOIN Movies m ON st.MovieID = m.MovieID
+      JOIN Rooms r ON st.RoomID = r.RoomID
+      JOIN Cinemas c ON r.CinemaID = c.CinemaID
+      LEFT JOIN Tickets t ON t.ShowtimeID = st.ShowtimeID
+      WHERE st.Status = 'active'
+        AND st.StartTime >= @currentStart
+        AND st.StartTime < @currentEnd
+        ${cinemaFilter}
+      GROUP BY st.ShowtimeID, m.Title, c.CinemaName, c.City, r.RoomName, r.TotalSeats,
+               st.StartTime, st.EndTime, COALESCE(st.Price, st.BasePrice, 0)
+      ORDER BY OccupancyRate ASC, EmptySeats DESC, st.StartTime ASC
+    `);
+
+    const fnbRequest = AdminModel.addInsightInputs(pool.request(), ranges, cinemaId);
+    const fnbResult = await fnbRequest.query(`
+      SELECT TOP 8
+        fb.FnBID,
+        fb.Name,
+        fb.Category,
+        SUM(tf.Quantity) AS QuantitySold,
+        ISNULL(SUM(tf.Quantity * fb.Price), 0) AS Revenue,
+        MIN(fb.Stock) AS CurrentStock
+      FROM Ticket_FnB tf
+      JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
+      JOIN Tickets t ON tf.TicketID = t.TicketID
+      JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+      JOIN Rooms r ON st.RoomID = r.RoomID
+      JOIN Cinemas c ON r.CinemaID = c.CinemaID
+      WHERE t.Status IN ('confirmed', 'used')
+        AND t.BookedAt >= @currentStart
+        AND t.BookedAt < @currentEnd
+        ${cinemaFilter}
+      GROUP BY fb.FnBID, fb.Name, fb.Category
+      ORDER BY Revenue DESC, QuantitySold DESC
+    `);
+
+    return {
+      period,
+      cinemaId: cinemaId ? parseInt(cinemaId) : null,
+      ranges: {
+        label: ranges.label,
+        previousLabel: ranges.previousLabel,
+        currentStart: ranges.currentStart,
+        currentEnd: ranges.currentEnd,
+        previousStart: ranges.previousStart,
+        previousEnd: ranges.previousEnd
+      },
+      summary: summaryResult.recordset,
+      cinemaPerformance: cinemaResult.recordset,
+      moviePerformance: movieResult.recordset,
+      lowOccupancyShowtimes: lowShowtimeResult.recordset,
+      fnbPerformance: fnbResult.recordset
+    };
   }
 
   static async getTopCinemaRevenueToday(limit = 5) {
