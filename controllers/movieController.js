@@ -291,9 +291,7 @@ Mỗi object có cấu trúc:
     let text = result.response.text().trim();
 
     // Clean markdown blocks if AI still returns them
-    if (text.startsWith('```json')) text = text.replace(/```json/g, '');
-    if (text.startsWith('```')) text = text.replace(/```/g, '');
-    text = text.trim();
+    text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
 
     const aiRecommendations = JSON.parse(text);
 
