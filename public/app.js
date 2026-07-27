@@ -35,7 +35,7 @@ if (!bookingSessionId) {
     sessionStorage.setItem('bookingSessionId', bookingSessionId);
 }
 const socket = typeof io !== 'undefined' ? io({ query: { bookingSessionId } }) : { on: () => { }, emit: () => { } };
-const API_BASE = (window.location.protocol === 'file:' || window.location.hostname === '') ? 'http://localhost:9999' : '';
+const API_BASE = (window.location.protocol === 'file:' || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') && window.location.port !== '9999' ? 'http://localhost:9999' : '';
 
 const mockMovies = [
     { id: 1, title: 'LẬT MẶT 7: MỘT ĐIỀU ƯỚC', rating: 'T16', image: 'images/poster.png', genre: 'Hành động', duration: 120, trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
@@ -850,10 +850,10 @@ const app = {
                     title: n.Title,
                     description: n.Summary,
                     badge: n.BadgeLabel || (n.Type === 'events' ? '<span data-i18n="badge_event">Sự kiện</span>' : '<span data-i18n="badge_news">Tin tức</span>'),
-                    img: n.ImageURL,
+                    img: n.ImageURL || n.Thumbnail,
                     link: 'news-events.html',
-                    isFeatured: n.IsFeatured,
-                    sortOrder: n.SortOrder,
+                    isFeatured: n.IsFeatured || false,
+                    sortOrder: n.SortOrder || 0,
                     date: n.PublishedAt
                 })));
             }
@@ -942,6 +942,67 @@ const app = {
                 </div>`;
             if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
         }
+    },
+    async loadAiRecommendations() {
+        const grid = document.querySelector('.ai-grid');
+        if (!grid) return;
+
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) {
+            // Hide AI section if not logged in
+            document.querySelector('.section-ai').style.display = 'none';
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/api/movies/ai-recommendations`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const json = await res.json();
+
+            if (json.success && json.data && json.data.length > 0) {
+                const movies = json.data;
+                const largeMovie = movies[0];
+                const smallMovies = movies.slice(1, 3);
+
+                let html = `
+                    <!-- Large Card -->
+                    <div class="ai-card ai-card-large" style="background: #111;">
+                        <img src="${largeMovie.PosterURL || 'images/default_poster.svg'}" alt="${largeMovie.Title}">
+                        <div class="ai-card-content">
+                            <h3>${largeMovie.Title}</h3>
+                            <p>${largeMovie.AiReason || largeMovie.Description}</p>
+                            <button class="btn-white" onclick="window.location.href='movie-detail.html?id=${largeMovie.MovieID}'" data-i18n="ai_btn_view">Xem Ngay</button>
+                        </div>
+                    </div>
+                `;
+
+                if (smallMovies.length > 0) {
+                    html += `<div class="ai-col-right">`;
+                    smallMovies.forEach(m => {
+                        html += `
+                            <div class="ai-card ai-card-small" style="background: #111;" onclick="window.location.href='movie-detail.html?id=${m.MovieID}'" style="cursor:pointer">
+                                <img src="${m.PosterURL || 'images/default_poster.svg'}" alt="${m.Title}">
+                                <div class="ai-card-content">
+                                    <h3>${m.Title}</h3>
+                                    <div class="ai-match">Phù hợp ${m.AiMatch || '90%'}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+
+                grid.innerHTML = html;
+                document.querySelector('.section-ai').style.display = 'block';
+                if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('dcinema_lang') || 'vi');
+            } else {
+                document.querySelector('.section-ai').style.display = 'none';
+            }
+        } catch (err) {
+            console.error('Failed to load AI recommendations:', err);
+            document.querySelector('.section-ai').style.display = 'none';
+        }
     }
 };
 
@@ -951,6 +1012,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.loadDynamicMovies();
     app.loadPromotions();
     app.loadCinemasNavbar();
+    app.loadAiRecommendations(); // Load AI
 
     const searchInput = document.getElementById('searchInput');
     const isMoviesPage = !!document.querySelector('.movies-grid');

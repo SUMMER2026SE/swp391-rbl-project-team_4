@@ -32,6 +32,9 @@ router.get('/showtimes/:showtimeId',         movieCtrl.getShowtimeDetails);
 // GET /api/movies/promotions                 — Khuyến mãi đang hoạt động (public)
 router.get('/promotions',                    movieCtrl.getPublicPromotions);
 
+// GET /api/movies/ai-recommendations        - Gợi ý phim từ AI (yêu cầu đăng nhập)
+router.get('/ai-recommendations',            verifyToken, movieCtrl.getAiRecommendations);
+
 // GET /api/movies/:id                        — Chi tiết phim
 router.get('/:id',                           movieCtrl.getMovieById);
 
@@ -47,5 +50,6 @@ router.get('/:id/reviews/me',                verifyToken, movieCtrl.getMyMovieRe
 
 // POST /api/movies/:id/reviews               - Tao/cap nhat danh gia phim
 router.post('/:id/reviews',                  verifyToken, movieCtrl.saveMovieReview);
+
 
 module.exports = router;
