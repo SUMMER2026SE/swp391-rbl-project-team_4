@@ -179,6 +179,7 @@ router.delete('/rooms/:id', adminCtrl.deleteRoom);
 // GET    /api/admin/stats/dashboard    — Tổng quan dashboard (hỗ trợ ?cinemaId=&period=)
 router.get('/stats/dashboard', adminCtrl.getDashboardStats);
 router.post('/ai/revenue-insight', adminCtrl.getRevenueInsight);
+router.get('/ai/overflow-alerts', adminCtrl.getOverflowAlerts);
 router.post('/ai/schedule-suggestion', adminCtrl.getScheduleSuggestion);
 router.post('/ai/query', adminCtrl.askAdminAi);
 

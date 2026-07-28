@@ -4,10 +4,21 @@
 // ============================================================
 const BookingModel = require('../models/bookingModel');
 const { getPool } = require('../config/db');
+const sql = require('mssql');
 const { sendBookingEmail } = require('../services/emailService');
 // Socket.IO helper: push real-time payment_confirmed về đúng checkout tab của khách
 const { emitPaymentConfirmed } = require('../sockets/socketManager');
 const os = require('os');
+
+function buildInQuery(pool, ids, prefix = 'id') {
+  const req = pool.request();
+  const params = ids.map((id, index) => {
+    const paramName = `${prefix}_${index}`;
+    req.input(paramName, sql.Int, Number(id));
+    return `@${paramName}`;
+  });
+  return { req, inClause: params.join(',') };
+}
 
 function toUtcDate(value) {
   if (!value) return null;
@@ -72,7 +83,8 @@ async function sendGroupedBookingEmail(ticketIds, req) {
     const pool = await getPool();
 
     // 1. Lấy thông tin chi tiết của nhóm vé
-    const result = await pool.request().query(`
+    const { req: reqTickets, inClause: inTickets } = buildInQuery(pool, ticketIds, 't');
+    const result = await reqTickets.query(`
       SELECT t.TicketID, t.Status, t.TicketPrice, t.TotalAmount, t.PaymentMethod,
              m.Title AS MovieTitle, m.PosterURL, m.Duration,
              CONVERT(varchar(19), st.StartTime, 126) + 'Z' AS StartTime,
@@ -88,7 +100,7 @@ async function sendGroupedBookingEmail(ticketIds, req) {
       JOIN   Cinemas   c  ON r.CinemaID   = c.CinemaID
       JOIN   Seats     s  ON t.SeatID     = s.SeatID
       JOIN   Users     u  ON t.UserID     = u.UserID
-      WHERE  t.TicketID IN (${ticketIds.join(',')})
+      WHERE  t.TicketID IN (${inTickets})
     `);
 
     if (result.recordset.length === 0) {
@@ -109,11 +121,12 @@ async function sendGroupedBookingEmail(ticketIds, req) {
     const ticketSum = recordset.reduce((sum, item) => sum + parseFloat(item.TotalAmount || 0), 0);
 
     // 2. Lấy thông tin đồ ăn F&B đi kèm
-    const fnbResult = await pool.request().query(`
+    const { req: reqFnb, inClause: inFnb } = buildInQuery(pool, ticketIds, 'f');
+    const fnbResult = await reqFnb.query(`
       SELECT fb.Name, tf.Quantity, fb.Price
       FROM   Ticket_FnB tf
       JOIN   FoodBeverages fb ON tf.FnBID = fb.FnBID
-      WHERE  tf.TicketID IN (${ticketIds.join(',')})
+      WHERE  tf.TicketID IN (${inFnb})
     `);
 
     const foodDisplayItems = fnbResult.recordset.map(item => `${item.Quantity}x ${item.Name}`);
@@ -852,7 +865,8 @@ exports.getPublicBookingDetails = async (req, res) => {
     }
 
     const pool = await getPool();
-    const result = await pool.request().query(`
+    const { req: reqTickets, inClause: inTickets } = buildInQuery(pool, ids, 't');
+    const result = await reqTickets.query(`
       SELECT t.TicketID, t.Status, t.TicketPrice, t.TotalAmount, t.PaymentMethod,
              m.Title AS MovieTitle, m.PosterURL, m.Duration,
              CONVERT(varchar(19), st.StartTime, 126) + 'Z' AS StartTime,
@@ -868,7 +882,7 @@ exports.getPublicBookingDetails = async (req, res) => {
       JOIN   Cinemas   c  ON r.CinemaID   = c.CinemaID
       JOIN   Seats     s  ON t.SeatID     = s.SeatID
       JOIN   Users     u  ON t.UserID     = u.UserID
-      WHERE  t.TicketID IN (${ids.join(',')})
+      WHERE  t.TicketID IN (${inTickets})
     `);
 
     if (result.recordset.length === 0) {
@@ -882,17 +896,18 @@ exports.getPublicBookingDetails = async (req, res) => {
     const ticketSum = recordset.reduce((sum, item) => sum + parseFloat(item.TotalAmount || 0), 0);
 
     // Lấy thông tin F&B
-    const fnbResult = await pool.request().query(`
+    const { req: reqFnb, inClause: inFnb } = buildInQuery(pool, ids, 'f');
+    const fnbResult = await reqFnb.query(`
       SELECT fb.Name, tf.Quantity, fb.Price
       FROM   Ticket_FnB tf
       JOIN   FoodBeverages fb ON tf.FnBID = fb.FnBID
-      WHERE  tf.TicketID IN (${ids.join(',')})
+      WHERE  tf.TicketID IN (${inFnb})
     `);
 
     const foodDisplayItems = fnbResult.recordset.map(item => `${item.Quantity}x ${item.Name}`);
     const fnbSum = fnbResult.recordset.reduce((sum, item) => sum + (item.Quantity * parseFloat(item.Price || 0)), 0);
 
-    const totalAmount = ticketSum;
+    const totalAmount = ticketSum + fnbSum;
 
     res.json({
       success: true,

@@ -197,11 +197,200 @@ function formatAdminDateTime(value) {
     });
 }
 
+function execAdminAiQuickAction(actionType, targetPage) {
+    if (typeof toggleAdminAiQuery === 'function') {
+        toggleAdminAiQuery(false);
+    }
+    const navBtn = targetPage ? document.querySelector('[data-page="' + targetPage + '"]') : null;
+    if (actionType === 'navigate') {
+        if (typeof navigate === 'function') {
+            navigate(targetPage, navBtn);
+        }
+    } else if (actionType === 'revenueChart') {
+        if (typeof navigate === 'function') {
+            navigate('dashboard', document.querySelector('[data-page="dashboard"]'));
+        }
+        setTimeout(() => {
+            const chartEl = document.getElementById('revenueChart');
+            if (chartEl) chartEl.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+    } else if (actionType === 'aiSchedule') {
+        if (typeof navigate === 'function') {
+            navigate('schedule', document.querySelector('[data-page="schedule"]'));
+        }
+        setTimeout(() => {
+            if (typeof loadAiScheduleSuggestion === 'function') {
+                loadAiScheduleSuggestion();
+            }
+        }, 400);
+    } else if (actionType === 'aiRevenue') {
+        if (typeof navigate === 'function') {
+            navigate('dashboard', document.querySelector('[data-page="dashboard"]'));
+        }
+        setTimeout(() => {
+            if (typeof loadAiRevenueInsight === 'function') {
+                loadAiRevenueInsight();
+            }
+        }, 300);
+    }
+}
+if (typeof window !== 'undefined') {
+    window.execAdminAiQuickAction = execAdminAiQuickAction;
+}
+
+function getAdminAiActions(intent) {
+    const actionsMap = {
+        top_cinema_revenue_today: {
+            suggestions: [
+                'So sánh tỷ lệ lấp đầy giữa các rạp?',
+                'Phim nào bán chạy nhất hôm nay?',
+                'Món ăn F&B nào bán chạy nhất tháng này?'
+            ],
+            quickActions: [
+                { label: '📊 Xem bảng điều khiển doanh thu', onclick: "execAdminAiQuickAction('revenueChart')" },
+                { label: '🏢 Quản lý chi nhánh rạp', onclick: "execAdminAiQuickAction('navigate', 'cinema')" }
+            ]
+        },
+        least_sold_movie_this_week: {
+            suggestions: [
+                'Suất chiếu nào còn nhiều ghế trống?',
+                'Suất chiếu có tỷ lệ lấp đầy thấp?',
+                'Giờ cao điểm đông khách nhất là mấy giờ?'
+            ],
+            quickActions: [
+                { label: '⚡ AI gợi ý tối ưu lịch chiếu', onclick: "execAdminAiQuickAction('aiSchedule')" },
+                { label: '🎟️ Quản lý ưu đãi', onclick: "execAdminAiQuickAction('navigate', 'voucher')" }
+            ]
+        },
+        showtimes_most_empty_seats: {
+            suggestions: [
+                'Suất chiếu có tỷ lệ lấp đầy thấp?',
+                'Giờ cao điểm đông khách nhất là mấy giờ?',
+                'Phim nào bán ít vé nhất tuần này?'
+            ],
+            quickActions: [
+                { label: '🗓️ Quản lý lịch chiếu', onclick: "execAdminAiQuickAction('navigate', 'schedule')" },
+                { label: '⚡ AI đề xuất xếp lịch', onclick: "execAdminAiQuickAction('aiSchedule')" }
+            ]
+        },
+        top_movie_today: {
+            suggestions: [
+                'Hôm nay rạp nào doanh thu cao nhất?',
+                'Giờ cao điểm đông khách nhất là mấy giờ?',
+                'Món ăn F&B nào bán chạy nhất tháng này?'
+            ],
+            quickActions: [
+                { label: '📈 Xem báo cáo phim', onclick: "execAdminAiQuickAction('navigate', 'movies')" },
+                { label: '➕ Quản lý suất chiếu', onclick: "execAdminAiQuickAction('navigate', 'schedule')" }
+            ]
+        },
+        low_occupancy_showtimes: {
+            suggestions: [
+                'Suất chiếu nào còn nhiều ghế trống?',
+                'Phim nào bán ít vé nhất tuần này?',
+                'Tỷ lệ hủy vé trong tuần qua là bao nhiêu?'
+            ],
+            quickActions: [
+                { label: '⚡ AI đề xuất lịch chiếu tối ưu', onclick: "execAdminAiQuickAction('aiSchedule')" },
+                { label: '🎟️ Xem Voucher giảm giá', onclick: "execAdminAiQuickAction('navigate', 'voucher')" }
+            ]
+        },
+        top_fnb_this_month: {
+            suggestions: [
+                'Hôm nay rạp nào doanh thu cao nhất?',
+                'Voucher mã khuyến mãi nào được dùng nhiều nhất?',
+                'Phim nào bán chạy nhất hôm nay?'
+            ],
+            quickActions: [
+                { label: '🍿 Quản lý kho F&B', onclick: "execAdminAiQuickAction('navigate', 'fnb')" },
+                { label: '➕ Xem combo F&B', onclick: "execAdminAiQuickAction('navigate', 'combos')" }
+            ]
+        },
+        peak_hours_analysis: {
+            suggestions: [
+                'Suất chiếu nào còn nhiều ghế trống?',
+                'Hôm nay rạp nào doanh thu cao nhất?',
+                'Phim nào bán chạy nhất hôm nay?'
+            ],
+            quickActions: [
+                { label: '🗓️ Quản lý khung giờ chiếu', onclick: "execAdminAiQuickAction('navigate', 'schedule')" },
+                { label: '📊 Tối ưu doanh thu AI', onclick: "execAdminAiQuickAction('aiRevenue')" }
+            ]
+        },
+        cancellation_rate_stats: {
+            suggestions: [
+                'Voucher mã khuyến mãi nào được dùng nhiều nhất?',
+                'Phim nào bán ít vé nhất tuần này?',
+                'Suất chiếu có tỷ lệ lấp đầy thấp?'
+            ],
+            quickActions: [
+                { label: '📋 Xem danh sách đơn hoàn', onclick: "execAdminAiQuickAction('navigate', 'refunds')" },
+                { label: '🎟️ Quản lý Vouchers tri ân', onclick: "execAdminAiQuickAction('navigate', 'voucher')" }
+            ]
+        },
+        voucher_usage_stats: {
+            suggestions: [
+                'Tỷ lệ hủy vé trong tuần qua là bao nhiêu?',
+                'Hôm nay rạp nào doanh thu cao nhất?',
+                'Món ăn F&B nào bán chạy nhất tháng này?'
+            ],
+            quickActions: [
+                { label: '🎟️ Quản lý Vouchers', onclick: "execAdminAiQuickAction('navigate', 'voucher')" },
+                { label: '📢 Chương trình khuyến mãi', onclick: "execAdminAiQuickAction('navigate', 'promotions')" }
+            ]
+        },
+        cinema_occupancy_compare: {
+            suggestions: [
+                'Hôm nay rạp nào doanh thu cao nhất?',
+                'Giờ cao điểm đông khách nhất là mấy giờ?',
+                'Suất chiếu có tỷ lệ lấp đầy thấp?'
+            ],
+            quickActions: [
+                { label: '🏢 Quản lý chi nhánh rạp', onclick: "execAdminAiQuickAction('navigate', 'cinema')" },
+                { label: '⚡ AI phân tích chuyên sâu', onclick: "execAdminAiQuickAction('aiRevenue')" }
+            ]
+        }
+    };
+
+    return actionsMap[intent] || {
+        suggestions: [
+            'Hôm nay rạp nào doanh thu cao nhất?',
+            'Phim nào bán chạy nhất hôm nay?',
+            'Món ăn F&B nào bán chạy nhất tháng này?'
+        ],
+        quickActions: [
+            { label: '📊 Xem doanh thu tổng thể', onclick: "execAdminAiQuickAction('aiRevenue')" },
+            { label: '⚡ AI đề xuất lịch chiếu', onclick: "execAdminAiQuickAction('aiSchedule')" }
+        ]
+    };
+}
+
 function renderAdminQueryTable(intent, rows) {
     const table = document.getElementById('aiAdminQueryTable');
     if (!table) return;
+
+    const actions = getAdminAiActions(intent);
+    const suggestionsHtml = actions.suggestions.map(q => 
+        `<button type="button" class="ai-next-question-chip" onclick="askAdminAi(null, '${escapeAdminHtml(q)}')">👉 ${escapeAdminHtml(q)}</button>`
+    ).join('');
+    const quickActionsHtml = actions.quickActions.map(act =>
+        `<button type="button" class="ai-quick-action-btn" onclick="${act.onclick}">${act.label}</button>`
+    ).join('');
+    const actionsContainerHtml = `
+        <div class="ai-query-footer-actions">
+            <div class="ai-next-suggestions-box">
+                <div class="ai-action-label"><span class="ai-sparkle">✨</span> Gợi ý câu hỏi tiếp theo:</div>
+                <div class="ai-suggestions-chips">${suggestionsHtml}</div>
+            </div>
+            <div class="ai-quick-actions-box">
+                <div class="ai-action-label"><span class="ai-sparkle">⚡</span> Hành động nhanh:</div>
+                <div class="ai-quick-btn-group">${quickActionsHtml}</div>
+            </div>
+        </div>
+    `;
+
     if (!Array.isArray(rows) || rows.length === 0) {
-        table.innerHTML = '';
+        table.innerHTML = actionsContainerHtml;
         return;
     }
 
@@ -212,23 +401,92 @@ function renderAdminQueryTable(intent, rows) {
     if (intent === 'top_cinema_revenue_today') {
         headers = ['Rạp', 'Thành phố', 'Vé', 'Doanh thu'];
         cells = limitedRows.map(row => [
-            row.CinemaName,
-            row.City,
+            row.CinemaName || '',
+            row.City || '',
             row.TicketsSold || 0,
             formatAdminMoney(row.TotalRevenue)
         ]);
     } else if (intent === 'least_sold_movie_this_week' || intent === 'top_movie_today') {
         headers = ['Phim', 'Vé', 'Doanh thu', 'Trạng thái'];
         cells = limitedRows.map(row => [
-            row.Title,
+            row.Title || row.MovieTitle || '',
             row.TicketsSold || 0,
             formatAdminMoney(row.TotalRevenue),
             row.Status || ''
         ]);
+    } else if (intent === 'top_fnb_this_month') {
+        headers = ['Món F&B', 'Danh mục', 'Số lượng', 'Doanh thu', 'Tồn kho'];
+        cells = limitedRows.map(row => [
+            row.ItemName || '',
+            row.Category || '',
+            row.QuantitySold || 0,
+            formatAdminMoney(row.TotalRevenue),
+            row.CurrentStock || 0
+        ]);
+    } else if (intent === 'peak_hours_analysis') {
+        headers = ['Khung giờ', 'Số suất', 'Vé bán', 'Doanh thu'];
+        cells = limitedRows.map(row => [
+            row.HourOfDay !== undefined ? `${row.HourOfDay}h00` : '',
+            row.ShowtimesCount || 0,
+            row.TicketsSold || 0,
+            formatAdminMoney(row.TotalRevenue)
+        ]);
+    } else if (intent === 'cancellation_rate_stats') {
+        headers = ['Tổng đặt', 'Vé hủy', 'Tỷ lệ hủy', 'Thất thoát'];
+        cells = limitedRows.map(row => [
+            row.TotalBookings || 0,
+            row.CancelledBookings || 0,
+            `${row.CancellationRate || 0}%`,
+            formatAdminMoney(row.LostRevenue)
+        ]);
+    } else if (intent === 'voucher_usage_stats') {
+        headers = ['Mã Voucher', 'Loại giảm', 'Đã dùng', 'Giới hạn', 'Đơn xác nhận'];
+        cells = limitedRows.map(row => [
+            row.Code || '',
+            row.DiscountType === 'percent' ? `${row.DiscountValue}%` : formatAdminMoney(row.DiscountValue),
+            row.UsedCount || 0,
+            row.UsageLimit || 0,
+            row.ConfirmedBookingsCount || 0
+        ]);
+    } else if (intent === 'cinema_occupancy_compare') {
+        headers = ['Rạp', 'Thành phố', 'Vé / Ghế', 'Lấp đầy', 'Doanh thu'];
+        cells = limitedRows.map(row => [
+            row.CinemaName || '',
+            row.City || '',
+            `${row.TicketsSold || 0}/${row.TotalSeatsAvailable || 0}`,
+            `${row.OccupancyRate || 0}%`,
+            formatAdminMoney(row.TotalRevenue)
+        ]);
+    } else if (intent === 'schedule_consultation') {
+        const cardsHtml = limitedRows.map(r => `
+            <div class="schedule-suggestion-card ${r.priority === 'high' ? 'priority-high' : 'priority-normal'}">
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:0.75rem; font-weight:800; color:${r.priority === 'high' ? '#e11d48' : '#2563eb'}">
+                            ${r.priority === 'high' ? '🔥 PHIM HOT' : '✨ PHIM ỔN ĐỊNH'}
+                        </span>
+                        <span style="font-size:0.75rem; font-weight:700; color:#64748b;">${escapeAdminHtml(r.roomName || '')} (${r.roomSeats || 0} ghế)</span>
+                    </div>
+                    <div class="suggestion-card-title">${escapeAdminHtml(r.movieTitle || 'Phim')}</div>
+                    <div class="suggestion-card-time">🕒 ${escapeAdminHtml(r.startFormatted || '')} - ${escapeAdminHtml(r.endFormatted || '')} (+${r.bufferMinutes || 15}p dọn phòng)</div>
+                    <div class="suggestion-card-reason">${escapeAdminHtml(r.reason || '')}</div>
+                </div>
+                <button type="button" class="btn-apply-showtime" onclick="applyAiShowtime(${r.movieId}, ${r.roomId}, '${r.startTime}', '${r.endTime}', ${r.price || 80000}, this)">
+                    ⚡ Tạo suất này ngay
+                </button>
+            </div>
+        `).join('');
+        table.innerHTML = `
+            <div class="schedule-suggestion-grid" style="margin-bottom:16px;">
+                ${cardsHtml}
+            </div>
+            ${actionsContainerHtml}
+        `;
+        return;
     } else {
         headers = ['Phim', 'Rạp / Phòng', 'Giờ chiếu', 'Đã bán', 'Ghế trống'];
         cells = limitedRows.map(row => [
-            row.MovieTitle,
+            row.MovieTitle || '',
             `${row.CinemaName || ''} - ${row.RoomName || ''}`,
             formatAdminDateTime(row.StartTime),
             `${row.TicketsSold || 0}/${row.TotalSeats || 0}`,
@@ -247,6 +505,7 @@ function renderAdminQueryTable(intent, rows) {
                 `).join('')}
             </tbody>
         </table>
+        ${actionsContainerHtml}
     `;
 }
 
@@ -2529,6 +2788,7 @@ async function loadShowtimes() {
             SHOWTIME_DATA = res.data;
             renderShowtimeTable();
             updateScheduleSummary();
+            if (typeof loadOverflowAlerts === 'function') loadOverflowAlerts(selectedCinemaId);
         }
     } catch (err) {
         console.error('Failed to load showtimes:', err);
@@ -2544,44 +2804,67 @@ function renderShowtimeTable() {
         return;
     }
 
-    container.innerHTML = `
-        <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
-            <thead>
-                <tr style="border-bottom:1px solid rgba(255,255,255,0.08);color:#9ca3af;text-align:left;">
-                    <th style="padding:12px 16px;">Phim</th>
-                    <th style="padding:12px 16px;">Rạp / Phòng</th>
-                    <th style="padding:12px 16px;">Giờ chiếu</th>
-                    <th style="padding:12px 16px;">Giá vé</th>
-                    <th style="padding:12px 16px;">Đã bán</th>
-                    <th style="padding:12px 16px;">Trạng thái</th>
-                    <th style="padding:12px 16px;">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${SHOWTIME_DATA.map(st => {
+    const rows = SHOWTIME_DATA.map(st => {
         const start = new Date(st.StartTime);
         const end = new Date(st.EndTime);
-        const timeStr = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false }) +
-            ' - ' + end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
+        const fmtTime = d => {
+            const h = String(d.getHours()).padStart(2, '0');
+            const m = String(d.getMinutes()).padStart(2, '0');
+            return `${h}:${m}`;
+        };
+        const timeStr = fmtTime(start) + ' – ' + fmtTime(end);
         const soldPct = st.TotalSeats ? Math.round((st.TicketsSold / st.TotalSeats) * 100) : 0;
         return `
-                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <td style="padding:12px 16px;font-weight:700;">${st.MovieTitle}</td>
-                        <td style="padding:12px 16px;">${st.CinemaName}<br><span style="color:#9ca3af;font-size:0.78rem;">${st.RoomName}</span></td>
-                        <td style="padding:12px 16px;">${timeStr}</td>
-                        <td style="padding:12px 16px;">${Number(st.Price).toLocaleString('vi-VN')} đ</td>
-                        <td style="padding:12px 16px;">${st.TicketsSold}/${st.TotalSeats} (${soldPct}%)</td>
-                        <td style="padding:12px 16px;"><span class="status-badge ${st.Status}">${st.Status === 'active' ? 'Đang chiếu' : st.Status === 'cancelled' ? 'Đã hủy' : st.Status === 'finished' ? 'Đã kết thúc' : st.Status}</span></td>
-                        <td style="padding:12px 16px;">
-                            <div style="display:flex;gap:8px;">
-                                <button onclick="openShowtimeModal(${st.ShowtimeID})" title="Sửa" style="background:none;border:none;color:#3b82f6;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                                <button onclick="deleteShowtime(${st.ShowtimeID})" title="Hủy" style="background:none;border:none;color:#ef4444;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-                            </div>
-                        </td>
-                    </tr>`;
-    }).join('')}
-            </tbody>
-        </table>
+            <tr style="border-bottom:1px solid #f1f5f9;transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                <td style="padding:12px 14px;font-weight:700;color:#0f172a;white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis;">${st.MovieTitle}</td>
+                <td style="padding:12px 14px;white-space:nowrap;">
+                    <div style="font-size:0.85rem;color:#334155;">${st.CinemaName}</div>
+                    <div style="font-size:0.76rem;color:#64748b;margin-top:2px;">${st.RoomName}</div>
+                </td>
+                <td style="padding:12px 14px;font-weight:600;white-space:nowrap;color:#0f172a;">${timeStr}</td>
+                <td style="padding:12px 14px;font-weight:600;white-space:nowrap;color:#0f172a;">${Number(st.Price).toLocaleString('vi-VN')} đ</td>
+                <td style="padding:12px 14px;white-space:nowrap;">${st.TicketsSold}/${st.TotalSeats} <span style="color:#64748b;font-size:0.78rem;">(${soldPct}%)</span></td>
+                <td style="padding:12px 14px;"><span class="status-badge ${st.Status}">${st.Status === 'active' ? 'Đang chiếu' : st.Status === 'cancelled' ? 'Đã hủy' : st.Status === 'finished' ? 'Đã kết thúc' : 'Sắp chiếu'}</span></td>
+                <td style="padding:12px 14px;">
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <button onclick="openShowtimeModal(${st.ShowtimeID})" title="Sửa" style="background:none;border:none;color:#3b82f6;cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                        <button onclick="deleteShowtime(${st.ShowtimeID})" title="Hủy" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                    </div>
+                </td>
+            </tr>`;
+    }).join('');
+
+    container.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #e2e8f0;background:#fff;border-radius:12px 12px 0 0;">
+            <div style="display:flex;align-items:center;gap:10px;font-size:0.92rem;font-weight:800;color:#0f172a;">
+                <span>🗓️ Danh sách Suất chiếu</span>
+                <span style="font-size:0.72rem;font-weight:700;background:#eff6ff;color:#2563eb;padding:3px 10px;border-radius:99px;border:1px solid #dbeafe;">${SHOWTIME_DATA.length} suất</span>
+            </div>
+            ${SHOWTIME_DATA.length > 3 ? `<span style="font-size:0.72rem;font-weight:600;color:#64748b;background:#f8fafc;padding:4px 12px;border-radius:99px;border:1px solid #e2e8f0;">↕ Lướt xuống xem thêm</span>` : ''}
+        </div>
+        <div style="max-height:260px;overflow-y:auto;overflow-x:auto;border-radius:0 0 12px 12px;">
+            <style>
+                #showtimeListContainer ::-webkit-scrollbar{width:7px;height:7px}
+                #showtimeListContainer ::-webkit-scrollbar-track{background:#f8fafc}
+                #showtimeListContainer ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px;border:2px solid #f8fafc}
+                #showtimeListContainer ::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+                #showtimeListContainer table thead th{position:sticky;top:0;z-index:10}
+            </style>
+            <table style="width:100%;border-collapse:collapse;font-size:0.84rem;table-layout:auto;">
+                <thead>
+                    <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;">
+                        <th style="padding:11px 14px;text-align:left;font-weight:700;color:#475569;white-space:nowrap;font-size:0.82rem;">Phim</th>
+                        <th style="padding:11px 14px;text-align:left;font-weight:700;color:#475569;white-space:nowrap;font-size:0.82rem;">Rạp / Phòng</th>
+                        <th style="padding:11px 14px;text-align:left;font-weight:700;color:#475569;white-space:nowrap;font-size:0.82rem;">Giờ chiếu</th>
+                        <th style="padding:11px 14px;text-align:left;font-weight:700;color:#475569;white-space:nowrap;font-size:0.82rem;">Giá vé</th>
+                        <th style="padding:11px 14px;text-align:left;font-weight:700;color:#475569;white-space:nowrap;font-size:0.82rem;">Đã bán</th>
+                        <th style="padding:11px 14px;text-align:left;font-weight:700;color:#475569;white-space:nowrap;font-size:0.82rem;">Trạng thái</th>
+                        <th style="padding:11px 14px;text-align:left;font-weight:700;color:#475569;white-space:nowrap;font-size:0.82rem;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>
     `;
 
     container.querySelectorAll('tbody tr').forEach((row, index) => {
@@ -2655,6 +2938,23 @@ function populateAiScheduleMovieSelect() {
     }
 }
 
+function toggleAiInsightBody() {
+    const box = document.getElementById('aiScheduleSuggestion');
+    const btn = document.getElementById('aiInsightToggleBtn');
+    const icon = document.getElementById('aiToggleIcon');
+    if (!box || !btn) return;
+    const isCollapsed = box.style.display === 'none';
+    if (isCollapsed) {
+        box.style.display = '';
+        icon.innerHTML = '<polyline points="18 15 12 9 6 15"/>';
+        btn.childNodes[btn.childNodes.length - 1].textContent = ' Thu gọn';
+    } else {
+        box.style.display = 'none';
+        icon.innerHTML = '<polyline points="6 9 12 15 18 9"/>';
+        btn.childNodes[btn.childNodes.length - 1].textContent = ' Mở rộng';
+    }
+}
+
 async function loadAiScheduleSuggestion() {
     const box = document.getElementById('aiScheduleSuggestion');
     const providerEl = document.getElementById('aiScheduleProvider');
@@ -2686,9 +2986,45 @@ async function loadAiScheduleSuggestion() {
             if (providerEl) {
                 providerEl.textContent = res.data.provider === 'gemini' ? 'Gemini' : 'Dự phòng';
             }
-            box.textContent = res.data.warning
+            const textStr = res.data.warning
                 ? `${res.data.warning}\n\n${res.data.suggestion || ''}`
                 : (res.data.suggestion || 'AI chưa trả về gợi ý xếp lịch.');
+            
+            let htmlContent = '';
+            const list = res.data.suggestionsList || [];
+            if (list.length > 0) {
+                htmlContent += `
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0;">⚡ Danh sách Suất chiếu đề xuất (1-Click Apply - Đã kiểm tra Không Trùng Lịch)</h4>
+                            <span style="font-size:0.75rem; font-weight:700; background:#10b981; color:#fff; padding:3px 10px; border-radius:99px;">✅ Không trùng lịch</span>
+                        </div>
+                        <div class="schedule-suggestion-grid">
+                            ${list.map(r => `
+                                <div class="schedule-suggestion-card ${r.priority === 'high' ? 'priority-high' : 'priority-normal'}">
+                                    <div>
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                            <span style="font-size:0.75rem; font-weight:800; color:${r.priority === 'high' ? '#e11d48' : '#2563eb'}">
+                                                ${r.priority === 'high' ? '🔥 PHIM HOT' : '✨ PHIM ỔN ĐỊNH'}
+                                            </span>
+                                            <span style="font-size:0.75rem; font-weight:700; color:#64748b;">${escapeAdminHtml(r.roomName || '')} (${r.roomSeats || 0} ghế)</span>
+                                        </div>
+                                        <div class="suggestion-card-title">${escapeAdminHtml(r.movieTitle || 'Phim')}</div>
+                                        <div class="suggestion-card-time">🕒 ${escapeAdminHtml(r.startFormatted || '')} - ${escapeAdminHtml(r.endFormatted || '')} (+${r.bufferMinutes || 15}p dọn phòng)</div>
+                                        <div class="suggestion-card-reason">${escapeAdminHtml(r.reason || '')}</div>
+                                    </div>
+                                    <button type="button" class="btn-apply-showtime" onclick="applyAiShowtime(${r.movieId}, ${r.roomId}, '${r.startTime}', '${r.endTime}', ${r.price || 80000}, this)">
+                                        ⚡ Tạo suất này ngay
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            htmlContent += `<div style="white-space: pre-wrap; margin-bottom: 16px; line-height: 1.6;">${escapeAdminHtml(textStr)}</div>`;
+            box.style.whiteSpace = 'normal';
+            box.innerHTML = htmlContent;
         } else {
             if (providerEl) providerEl.textContent = 'Lỗi';
             box.textContent = res.status
@@ -2700,6 +3036,113 @@ async function loadAiScheduleSuggestion() {
         if (providerEl) providerEl.textContent = 'Lỗi';
         box.textContent = `Không thể kết nối tới dịch vụ gợi ý lịch chiếu AI: ${err.message || 'lỗi không xác định'}`;
         console.error('AI schedule suggestion failed:', err);
+    }
+}
+
+async function loadOverflowAlerts(cinemaId = null) {
+    const sec = document.getElementById('aiOverflowAlertSection');
+    if (!sec) return;
+
+    try {
+        let url = '/api/admin/ai/overflow-alerts';
+        if (cinemaId) url += `?cinemaId=${cinemaId}`;
+        const res = await apiFetch(url);
+
+        if (!res.success || !Array.isArray(res.data) || res.data.length === 0) {
+            sec.style.display = 'none';
+            sec.innerHTML = '';
+            return;
+        }
+
+        const alerts = res.data;
+        sec.style.display = 'block';
+        sec.innerHTML = `
+            <div class="overflow-alert-box">
+                <div class="overflow-alert-header">
+                    <div class="overflow-alert-title">
+                        <span style="font-size:1.3rem;">🚨</span> CẢNH BÁO SUẤT CHIẾU SẮP CHÁY VÉ & ĐỀ XUẤT TĂNG CƯỜNG (AI AI-MONITOR)
+                    </div>
+                    <span style="font-size:0.75rem; font-weight:700; background:#f43f5e; color:#fff; padding:4px 10px; border-radius:99px;">
+                        ${alerts.length} suất cần chú ý
+                    </span>
+                </div>
+                ${alerts.map(a => {
+                    const sug = a.suggestedShowtime || {};
+                    return `
+                        <div class="overflow-alert-card">
+                            <div class="overflow-alert-info">
+                                <h4>🔥 [${escapeAdminHtml(a.cinemaName)}] ${escapeAdminHtml(a.movieTitle)} — Phòng ${escapeAdminHtml(a.roomName)} (${a.occupancyRate}% lấp đầy)</h4>
+                                <p><strong>Suất hiện tại:</strong> ${escapeAdminHtml(a.startTimeFormatted)} | Đã đặt <strong>${a.bookedSeats}/${a.totalSeats}</strong> ghế</p>
+                                <p style="color:#e11d48; margin-top:4px;"><strong>💡 Đề xuất tăng cường:</strong> ${escapeAdminHtml(sug.reason || '')}</p>
+                            </div>
+                            <div class="overflow-alert-action">
+                                <span style="font-size:0.75rem; color:#64748b; font-weight:600;">Phòng gợi ý: ${escapeAdminHtml(sug.roomName || 'N/A')}</span>
+                                ${sug.roomId ? `
+                                    <button type="button" class="btn-apply-showtime" onclick="applyAiShowtime(${sug.movieId}, ${sug.roomId}, '${sug.startTime}', '${sug.endTime}', ${sug.price || 80000}, this)">
+                                        ⚡ Tạo suất này ngay
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    } catch (err) {
+        console.error('loadOverflowAlerts error:', err);
+        sec.style.display = 'none';
+    }
+}
+
+async function applyAiShowtime(movieId, roomId, startTime, endTime, price, btnEl) {
+    if (!movieId || !roomId || !startTime || !endTime) {
+        alert('Thông tin suất chiếu không hợp lệ hoặc thiếu phòng.');
+        return;
+    }
+    const origText = btnEl ? btnEl.innerHTML : '';
+    if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerHTML = '⏳ Đang kiểm tra trùng lịch...';
+    }
+
+    try {
+        const payload = {
+            movieId: Number(movieId),
+            roomId: Number(roomId),
+            startTime: startTime,
+            endTime: endTime,
+            price: Number(price) || 80000,
+            MovieID: Number(movieId),
+            RoomID: Number(roomId),
+            StartTime: startTime,
+            EndTime: endTime,
+            Price: Number(price) || 80000
+        };
+        const res = await apiFetch('/api/admin/showtimes', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        if (res.success) {
+            if (btnEl) {
+                btnEl.innerHTML = '✅ Đã tạo (Không trùng lịch)!';
+                btnEl.style.background = '#10b981';
+            }
+            if (typeof loadShowtimes === 'function') loadShowtimes();
+            if (typeof loadOverflowAlerts === 'function') loadOverflowAlerts(selectedCinemaId);
+        } else {
+            alert('⚠️ Không thể tạo suất chiếu: ' + (res.message || 'Phòng chiếu có thể đã bị trùng lịch trong khung giờ này.'));
+            if (btnEl) {
+                btnEl.disabled = false;
+                btnEl.innerHTML = origText || '⚡ Tạo suất này ngay';
+            }
+        }
+    } catch (err) {
+        alert('⚠️ Lỗi kết nối khi tạo suất chiếu: ' + err.message);
+        if (btnEl) {
+            btnEl.disabled = false;
+            btnEl.innerHTML = origText || '⚡ Tạo suất này ngay';
+        }
     }
 }
 

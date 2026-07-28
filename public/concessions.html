@@ -869,7 +869,8 @@
         booking.foodItems = [];
         booking.foodDisplayItems = [];
         booking.fnbTotal = 0;
-        booking.totalAmount = BASE_TICKET;
+        booking.totalAmount = Number(booking.ticketTotal) || 0;
+        booking.bookingSessionId = sessionStorage.getItem('bookingSessionId') || booking.bookingSessionId;
         sessionStorage.setItem('booking', JSON.stringify(booking));
         localStorage.setItem('booking', JSON.stringify(booking));
         window.location.href = 'checkout.html';
@@ -922,7 +923,8 @@
         booking.foodItems = foodItems;
         booking.foodDisplayItems = foodDisplayItems;
         booking.fnbTotal = fbTotal;
-        booking.totalAmount = BASE_TICKET + fbTotal;
+        booking.totalAmount = (Number(booking.ticketTotal) || 0) + fbTotal;
+        booking.bookingSessionId = sessionStorage.getItem('bookingSessionId') || booking.bookingSessionId;
 
         sessionStorage.setItem('booking', JSON.stringify(booking));
         localStorage.setItem('booking', JSON.stringify(booking));
@@ -1091,10 +1093,20 @@
         const warnBanner = document.getElementById('bookingWarnBanner');
         if (!booking || !booking.showtimeId) {
             if (warnBanner) warnBanner.style.display = 'flex';
-            // Still allow browsing but disable checkout button
             const btnContinue = document.getElementById('btnContinue');
             const btnSkip = document.getElementById('btnSkip');
-            if (btnContinue) btnContinue.title = 'Vui lòng chọn phim và ghế trước';
+            if (btnContinue) {
+                btnContinue.title = 'Vui lòng chọn phim và ghế trước';
+                btnContinue.disabled = true;
+                btnContinue.style.opacity = '0.5';
+                btnContinue.style.pointerEvents = 'none';
+            }
+            if (btnSkip) {
+                btnSkip.title = 'Vui lòng chọn phim và ghế trước';
+                btnSkip.disabled = true;
+                btnSkip.style.opacity = '0.5';
+                btnSkip.style.pointerEvents = 'none';
+            }
         } else {
             if (warnBanner) warnBanner.style.display = 'none';
         }

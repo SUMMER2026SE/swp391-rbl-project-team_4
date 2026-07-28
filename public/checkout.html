@@ -835,7 +835,7 @@
         <div class="left-col">
 
             <div class="page-heading">
-                <a href="concessions.html" class="back-btn" aria-label="Quay lại">
+                <a href="javascript:void(0)" onclick="backToConcessions()" class="back-btn" aria-label="Quay lại">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M19 12H5M12 5l-7 7 7 7"/>
                     </svg>
@@ -1476,19 +1476,24 @@
         localStorage.setItem('booking', JSON.stringify(booking));
 
         // Nếu có vé đang pending, gọi API huỷ để giải phóng ghế ngay lập tức
-        if (createdTicketIds && createdTicketIds.length > 0) {
+        const idsToCancel = (createdTicketIds && createdTicketIds.length > 0) ? createdTicketIds : (booking.ticketIds && booking.ticketIds.length > 0 ? booking.ticketIds : []);
+        if (idsToCancel.length > 0) {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             try {
                 await fetch('/api/bookings/cancel', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ ticketIds: createdTicketIds })
+                    body: JSON.stringify({ ticketIds: idsToCancel })
                 });
-                console.log('[Payment] Đã huỷ các vé pending:', createdTicketIds);
+                console.log('[Payment] Đã huỷ các vé pending:', idsToCancel);
             } catch (e) {
                 console.error('Lỗi khi huỷ vé pending:', e);
             }
             createdTicketIds = [];
+            delete booking.ticketIds;
+            delete booking.qrModalOpen;
+            sessionStorage.setItem('booking', JSON.stringify(booking));
+            localStorage.setItem('booking', JSON.stringify(booking));
         }
 
         pendingPayload = null;
@@ -1725,7 +1730,26 @@
     }
 
     /* ─── BACK TO CONCESSIONS ─── */
-    function backToConcessions() {
+    async function backToConcessions() {
+        const idsToCancel = (createdTicketIds && createdTicketIds.length > 0) ? createdTicketIds : (booking.ticketIds && booking.ticketIds.length > 0 ? booking.ticketIds : []);
+        if (idsToCancel.length > 0) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                await fetch('/api/bookings/cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ ticketIds: idsToCancel })
+                });
+                console.log('[Checkout] Đã huỷ vé pending trước khi quay lại:', idsToCancel);
+            } catch (e) {
+                console.warn('Lỗi khi huỷ vé pending khi quay lại:', e);
+            }
+            createdTicketIds = [];
+            delete booking.ticketIds;
+            delete booking.qrModalOpen;
+            sessionStorage.setItem('booking', JSON.stringify(booking));
+            localStorage.setItem('booking', JSON.stringify(booking));
+        }
         window.location.replace('concessions.html');
     }
 
@@ -1850,13 +1874,18 @@
         btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite;flex-shrink:0"><path d="M21 12a9 9 0 1 1-9-9"/></svg> Đang tạo vé...';
 
         try {
+            let sessId = sessionStorage.getItem('bookingSessionId') || booking.bookingSessionId;
+            if (!sessId) {
+                sessId = 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
+                sessionStorage.setItem('bookingSessionId', sessId);
+            }
             const payload = {
                 showtimeId: booking.showtimeId,
                 seatIds: booking.seatIds,
                 foodItems: booking.foodItems || [],
                 voucherCode: appliedVoucherCode || null,
                 paymentMethod: currentPayment,
-                sessionId: sessionStorage.getItem('bookingSessionId')
+                sessionId: sessId
             };
 
             console.log('[Payment] Gửi yêu cầu tạo vé:', payload);
@@ -1998,6 +2027,13 @@
             console.warn('[Socket] Socket.IO chưa load, chỉ dùng HTTP polling.');
         }
 
+        window.addEventListener('beforeunload', (e) => {
+            if (createdTicketIds && createdTicketIds.length > 0 && !paymentHandled) {
+                e.preventDefault();
+                e.returnValue = 'Bạn có vé đang chờ thanh toán. Đóng trang có thể hủy quá trình giữ chỗ của bạn!';
+                return e.returnValue;
+            }
+        });
         document.getElementById('qrModal').addEventListener('click', function(e) {
             if (e.target === this) closeQrModal();
         });
@@ -2111,6 +2147,7 @@
                     discountAmount = data.discountAmount;
                     
                     // Lưu lại cấu hình chuẩn từ Backend vào storage
+                    booking.bookingSessionId = sessionStorage.getItem('bookingSessionId') || booking.bookingSessionId;
                     sessionStorage.setItem('booking', JSON.stringify(booking));
                     localStorage.setItem('booking', JSON.stringify(booking));
                     

@@ -1745,6 +1745,125 @@ class AdminModel {
     return result.recordset;
   }
 
+  static async getTopFnBThisMonth(limit = 5) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('limit', sql.Int, limit)
+      .query(`
+        SELECT TOP (@limit)
+          fb.FnBID,
+          fb.Name AS ItemName,
+          fb.Category,
+          SUM(tf.Quantity) AS QuantitySold,
+          ISNULL(SUM(tf.Quantity * fb.Price), 0) AS TotalRevenue,
+          MIN(fb.Stock) AS CurrentStock
+        FROM Ticket_FnB tf
+        JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
+        JOIN Tickets t ON tf.TicketID = t.TicketID
+        WHERE t.Status IN ('confirmed', 'used')
+          AND MONTH(t.BookedAt) = MONTH(GETDATE())
+          AND YEAR(t.BookedAt) = YEAR(GETDATE())
+        GROUP BY fb.FnBID, fb.Name, fb.Category
+        ORDER BY TotalRevenue DESC, QuantitySold DESC
+      `);
+    return result.recordset;
+  }
+
+  static async getPeakHoursAnalysis(limit = 6) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('limit', sql.Int, limit)
+      .query(`
+        SELECT TOP (@limit)
+          DATEPART(hour, st.StartTime) AS HourOfDay,
+          COUNT(t.TicketID) AS TicketsSold,
+          ISNULL(SUM(t.TotalAmount), 0) AS TotalRevenue,
+          COUNT(DISTINCT st.ShowtimeID) AS ShowtimesCount
+        FROM Showtimes st
+        LEFT JOIN Tickets t ON t.ShowtimeID = st.ShowtimeID AND t.Status IN ('confirmed', 'used')
+        WHERE st.StartTime >= CAST(DATEADD(day, -30, GETDATE()) AS DATE)
+          AND st.StartTime < CAST(DATEADD(day, 1, GETDATE()) AS DATE)
+        GROUP BY DATEPART(hour, st.StartTime)
+        ORDER BY TicketsSold DESC, TotalRevenue DESC
+      `);
+    return result.recordset;
+  }
+
+  static async getCancellationRateStats() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT 
+        COUNT(t.TicketID) AS TotalBookings,
+        COUNT(CASE WHEN t.Status IN ('cancelled', 'canceled') THEN 1 END) AS CancelledBookings,
+        COUNT(CASE WHEN t.Status IN ('confirmed', 'used') THEN 1 END) AS ConfirmedBookings,
+        COUNT(CASE WHEN t.Status = 'pending' THEN 1 END) AS PendingBookings,
+        CAST(COUNT(CASE WHEN t.Status IN ('cancelled', 'canceled') THEN 1 END) * 100.0 / NULLIF(COUNT(t.TicketID), 0) AS DECIMAL(5,2)) AS CancellationRate,
+        ISNULL(SUM(CASE WHEN t.Status IN ('cancelled', 'canceled') THEN t.TotalAmount ELSE 0 END), 0) AS LostRevenue
+      FROM Tickets t
+      WHERE CAST(t.BookedAt AS DATE) >= CAST(DATEADD(day, -7, GETDATE()) AS DATE)
+    `);
+    return result.recordset;
+  }
+
+  static async getVoucherUsageStats(limit = 5) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('limit', sql.Int, limit)
+      .query(`
+        SELECT TOP (@limit)
+          v.Code,
+          v.DiscountType,
+          v.DiscountValue,
+          v.UsedCount,
+          v.UsageLimit,
+          COUNT(t.TicketID) AS ConfirmedBookingsCount
+        FROM Vouchers v
+        LEFT JOIN Tickets t ON t.VoucherID = v.VoucherID AND t.Status IN ('confirmed', 'used')
+        GROUP BY v.VoucherID, v.Code, v.DiscountType, v.DiscountValue, v.UsedCount, v.UsageLimit
+        ORDER BY v.UsedCount DESC, ConfirmedBookingsCount DESC
+      `);
+    return result.recordset;
+  }
+
+  static async getCinemaOccupancyCompare(limit = 6) {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('limit', sql.Int, limit)
+      .query(`
+        WITH CinemaSeats AS (
+          SELECT c.CinemaID, c.CinemaName, c.City, ISNULL(SUM(r.TotalSeats), 0) AS TotalSeats
+          FROM Showtimes st
+          JOIN Rooms r ON st.RoomID = r.RoomID
+          JOIN Cinemas c ON r.CinemaID = c.CinemaID
+          WHERE st.Status = 'active'
+            AND st.StartTime >= CAST(DATEADD(day, -7, GETDATE()) AS DATE)
+          GROUP BY c.CinemaID, c.CinemaName, c.City
+        ),
+        CinemaTickets AS (
+          SELECT c.CinemaID, COUNT(t.TicketID) AS TicketsSold, ISNULL(SUM(t.TotalAmount), 0) AS TotalRevenue
+          FROM Tickets t
+          JOIN Showtimes st ON t.ShowtimeID = st.ShowtimeID
+          JOIN Rooms r ON st.RoomID = r.RoomID
+          JOIN Cinemas c ON r.CinemaID = c.CinemaID
+          WHERE t.Status IN ('confirmed', 'used', 'pending')
+            AND t.BookedAt >= CAST(DATEADD(day, -7, GETDATE()) AS DATE)
+          GROUP BY c.CinemaID
+        )
+        SELECT TOP (@limit)
+          cs.CinemaID,
+          cs.CinemaName,
+          cs.City,
+          ISNULL(ct.TicketsSold, 0) AS TicketsSold,
+          cs.TotalSeats AS TotalSeatsAvailable,
+          CAST(ISNULL(ct.TicketsSold, 0) * 100.0 / NULLIF(cs.TotalSeats, 0) AS DECIMAL(5,2)) AS OccupancyRate,
+          ISNULL(ct.TotalRevenue, 0) AS TotalRevenue
+        FROM CinemaSeats cs
+        LEFT JOIN CinemaTickets ct ON cs.CinemaID = ct.CinemaID
+        ORDER BY OccupancyRate DESC, TotalRevenue DESC
+      `);
+    return result.recordset;
+  }
+
   static async getRecentTransactions(limit = 10) {
     const pool = await getPool();
     const result = await pool.request()
@@ -2033,7 +2152,124 @@ class AdminModel {
     return result.recordset.length > 0 ? result.recordset[0] : null;
   }
 
+  static async getOverflowShowtimeAlerts(cinemaId = null) {
+    const pool = await getPool();
+    let whereClause = `st.Status = 'active' AND st.StartTime >= DATEADD(HOUR, -6, GETDATE()) AND st.StartTime <= DATEADD(DAY, 3, GETDATE())`;
+    if (cinemaId) {
+      whereClause += ` AND r.CinemaID = @cinemaId`;
+    }
+
+    const query = `
+      SELECT 
+        st.ShowtimeID,
+        st.MovieID,
+        m.Title AS MovieTitle,
+        m.HotRank,
+        m.Duration,
+        st.RoomID,
+        r.RoomName,
+        r.TotalSeats,
+        c.CinemaID,
+        c.CinemaName,
+        st.StartTime,
+        st.EndTime,
+        COALESCE(st.Price, st.BasePrice, 75000) AS Price,
+        COUNT(DISTINCT CASE WHEN b.BookingStatus != 'Cancelled' THEN t.TicketID END) AS TicketsSold
+      FROM Showtimes st
+      JOIN Movies m ON st.MovieID = m.MovieID
+      JOIN Rooms r ON st.RoomID = r.RoomID
+      JOIN Cinemas c ON r.CinemaID = c.CinemaID
+      LEFT JOIN Tickets t ON st.ShowtimeID = t.ShowtimeID
+      LEFT JOIN Bookings b ON t.BookingID = b.BookingID
+      WHERE ${whereClause}
+      GROUP BY st.ShowtimeID, st.MovieID, m.Title, m.HotRank, m.Duration,
+               st.RoomID, r.RoomName, r.TotalSeats, c.CinemaID, c.CinemaName,
+               st.StartTime, st.EndTime, st.Price, st.BasePrice
+      HAVING (COUNT(DISTINCT CASE WHEN b.BookingStatus != 'Cancelled' THEN t.TicketID END) * 100.0 / NULLIF(r.TotalSeats, 0)) >= 75
+          OR (m.HotRank <= 3 AND r.TotalSeats <= 65)
+      ORDER BY st.StartTime ASC
+    `;
+
+    const request = pool.request();
+    if (cinemaId) {
+      request.input('cinemaId', sql.Int, parseInt(cinemaId));
+    }
+
+    const result = await request.query(query);
+    const alerts = result.recordset || [];
+
+    const [allRooms, allShowtimes] = await Promise.all([
+      AdminModel.getRooms(),
+      AdminModel.getAllShowtimes({ cinemaId })
+    ]);
+
+    return alerts.map(item => {
+      const sold = parseInt(item.TicketsSold || 0);
+      const total = parseInt(item.TotalSeats || 0);
+      const occRate = total > 0 ? Math.round((sold * 100) / total) : 0;
+      const isHighOcc = occRate >= 75;
+      const severity = isHighOcc ? 'critical' : 'warning';
+      const reasonText = isHighOcc 
+        ? `Suất chiếu đã đạt ${occRate}% lượng ghế (${sold}/${total}), nguy cơ cháy vé cao.`
+        : `Phim Hot (Rank #${item.HotRank || 1}) được xếp ở phòng nhỏ (${total} ghế), nhu cầu rất cao.`;
+
+      const cinemaRooms = allRooms.filter(rm => Number(rm.CinemaID) === Number(item.CinemaID) && Number(rm.RoomID) !== Number(item.RoomID));
+      const origStart = new Date(item.StartTime);
+      const origEnd = new Date(item.EndTime);
+      const durationMs = origEnd.getTime() - origStart.getTime();
+
+      const suggestStart = new Date(origStart.getTime() + 30 * 60000);
+      const suggestEnd = new Date(suggestStart.getTime() + durationMs);
+
+      let candidateRoom = null;
+      for (const rm of cinemaRooms.sort((a, b) => b.TotalSeats - a.TotalSeats)) {
+        const hasConflict = allShowtimes.some(st => {
+          if (Number(st.RoomID) !== Number(rm.RoomID) || st.Status !== 'active') return false;
+          const stStart = new Date(st.StartTime);
+          const stEnd = new Date(st.EndTime);
+          return !(suggestEnd <= stStart || suggestStart >= stEnd);
+        });
+        if (!hasConflict) {
+          candidateRoom = rm;
+          break;
+        }
+      }
+
+      const suggestedShowtime = candidateRoom ? {
+        movieId: item.MovieID,
+        movieTitle: item.MovieTitle,
+        roomId: candidateRoom.RoomID,
+        roomName: candidateRoom.RoomName,
+        cinemaId: item.CinemaID,
+        cinemaName: item.CinemaName,
+        startTime: suggestStart.toISOString(),
+        endTime: suggestEnd.toISOString(),
+        price: item.Price || 80000,
+        reason: `Mở thêm suất tăng cường lúc ${suggestStart.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})} tại ${candidateRoom.RoomName} (${candidateRoom.TotalSeats} ghế) để đáp ứng nhu cầu.`
+      } : null;
+
+      return {
+        showtimeId: item.ShowtimeID,
+        movieId: item.MovieID,
+        movieTitle: item.MovieTitle,
+        roomId: item.RoomID,
+        roomName: item.RoomName,
+        cinemaId: item.CinemaID,
+        cinemaName: item.CinemaName,
+        startTime: item.StartTime,
+        endTime: item.EndTime,
+        price: item.Price,
+        ticketsSold: sold,
+        totalSeats: total,
+        occupancyRate: occRate,
+        hotRank: item.HotRank,
+        severity,
+        reason: reasonText,
+        suggestedShowtime
+      };
+    });
+  }
+
 }
 
 module.exports = AdminModel;
-

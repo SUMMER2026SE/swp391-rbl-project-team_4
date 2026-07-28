@@ -773,6 +773,23 @@ exports.getRevenueInsight = async (req, res) => {
   }
 };
 
+exports.getOverflowAlerts = async (req, res) => {
+  try {
+    const cinemaId = req.query.cinemaId ? parseInt(req.query.cinemaId) : null;
+    const alerts = await AdminModel.getOverflowShowtimeAlerts(cinemaId);
+    res.json({
+      success: true,
+      data: alerts
+    });
+  } catch (err) {
+    console.error('[adminController] getOverflowAlerts error:', err.message);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi lấy cảnh báo suất chiếu sắp cháy vé.'
+    });
+  }
+};
+
 exports.getScheduleSuggestion = async (req, res) => {
   try {
     const date = req.body?.date || req.query?.date;
@@ -826,6 +843,7 @@ exports.getScheduleSuggestion = async (req, res) => {
       success: true,
       data: {
         suggestion: result.suggestion,
+        suggestionsList: result.suggestionsList || [],
         provider: result.provider,
         warning: result.warning || null,
         generatedAt: new Date().toISOString()
@@ -869,13 +887,45 @@ exports.askAdminAi = async (req, res) => {
       case 'low_occupancy_showtimes':
         rows = await AdminModel.getLowOccupancyShowtimes(8);
         break;
+      case 'top_fnb_this_month':
+        rows = await AdminModel.getTopFnBThisMonth(5);
+        break;
+      case 'peak_hours_analysis':
+        rows = await AdminModel.getPeakHoursAnalysis(6);
+        break;
+      case 'cancellation_rate_stats':
+        rows = await AdminModel.getCancellationRateStats();
+        break;
+      case 'voucher_usage_stats':
+        rows = await AdminModel.getVoucherUsageStats(5);
+        break;
+      case 'cinema_occupancy_compare':
+        rows = await AdminModel.getCinemaOccupancyCompare(6);
+        break;
+      case 'schedule_consultation': {
+        const [allMovies, rooms, existingShowtimes, topMovies] = await Promise.all([
+          MovieModel.getAllMovies({}),
+          AdminModel.getRooms(),
+          AdminModel.getAllShowtimes({ date: new Date().toISOString().slice(0, 10) }),
+          AdminModel.getTopMovies(10)
+        ]);
+        const movies = allMovies.filter(movie => movie.Status === 'Now Showing');
+        rows = AiInsightService.buildStructuredScheduleSuggestions({
+          date: new Date().toISOString().slice(0, 10),
+          movies,
+          rooms,
+          existingShowtimes,
+          topMovies
+        });
+        break;
+      }
       default:
         return res.json({
           success: true,
           data: {
             intent: 'unknown',
             provider: 'fallback',
-            answer: 'Mình chưa có query an toàn cho câu hỏi này. Bạn có thể hỏi về: doanh thu rạp hôm nay, phim bán ít vé trong tuần, suất còn nhiều ghế trống, phim bán chạy hôm nay, hoặc suất có tỷ lệ lấp đầy thấp.',
+            answer: 'Mình chưa có query an toàn cho câu hỏi này. Bạn có thể hỏi về: gợi ý lịch chiếu tối ưu, doanh thu rạp hôm nay, phim bán ít vé trong tuần, suất còn nhiều ghế trống, phim bán chạy hôm nay, suất có tỷ lệ lấp đầy thấp, món ăn F&B bán chạy tháng này, giờ cao điểm đông khách, tỷ lệ hủy vé, hiệu quả voucher, hoặc so sánh tỷ lệ lấp đầy giữa các chi nhánh.',
             rows: [],
             confidence: classification.confidence,
             generatedAt: new Date().toISOString()

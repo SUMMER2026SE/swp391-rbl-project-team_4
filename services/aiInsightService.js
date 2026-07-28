@@ -426,41 +426,56 @@ function compactScheduleRoom(room = {}) {
   };
 }
 
+function formatTimeHourMinute(d) {
+  if (!d || Number.isNaN(d.getTime())) return '';
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
 function compactScheduleShowtime(showtime = {}) {
   const start = showtime.StartTime ? new Date(showtime.StartTime) : null;
   const end = showtime.EndTime ? new Date(showtime.EndTime) : null;
-  const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' };
   return {
     movie: showtime.MovieTitle || '',
     roomId: showtime.RoomID,
     room: showtime.RoomName || '',
-    start: start && !Number.isNaN(start.getTime()) ? start.toLocaleTimeString('vi-VN', timeOptions) : '',
-    end: end && !Number.isNaN(end.getTime()) ? end.toLocaleTimeString('vi-VN', timeOptions) : '',
+    start: formatTimeHourMinute(start),
+    end: formatTimeHourMinute(end),
     seats: Number(showtime.TotalSeats || 0),
     sold: Number(showtime.TicketsSold || 0),
     status: showtime.Status || ''
   };
 }
 
-function buildSchedulePrompt(data) {
-  return `
-Bạn là trợ lý xếp lịch chiếu phim cho hệ thống rạp D-CINEMA.
-Hãy gợi ý lịch chiếu tối ưu bằng tiếng Việt cho ngày và rạp dưới đây.
-
-Yêu cầu bắt buộc:
-- Không tạo lịch trùng phòng với existingShowtimes.
-- Ưu tiên khung giờ cao điểm 18:00-22:30 cho phim hot.
-- Nếu phim hot, ưu tiên phòng nhiều ghế; phim ít dữ liệu hoặc ít khách, ưu tiên phòng nhỏ/vừa.
-- Mỗi đề xuất cần có phim, phòng, giờ bắt đầu - kết thúc và lý do ngắn.
-- Không dùng bảng Markdown.
-- Nếu thiếu dữ liệu phòng, phim hoặc rạp, nói rõ thiếu dữ liệu.
-
-Dữ liệu:
-${JSON.stringify(data, null, 2)}
-`;
+function getCleaningBufferMinutes(roomSeats) {
+  const seats = Number(roomSeats) || 0;
+  if (seats >= 100) return 25;
+  if (seats >= 60) return 20;
+  return 15;
 }
 
-function buildFallbackScheduleSuggestion(rawData = {}) {
+function calculateDemandScore(dateStr, movie = {}) {
+  let score = 1.0;
+  if (dateStr) {
+    const d = new Date(dateStr);
+    const day = d.getDay();
+    if (day === 0 || day === 6 || day === 5) {
+      score *= 1.4; // Cuối tuần hoặc tối thứ 6 (+40% demand)
+    }
+  }
+  const rank = Number(movie.hotRank) || 999;
+  if (rank === 1) score *= 1.5;
+  else if (rank <= 3) score *= 1.3;
+  else if (rank <= 5) score *= 1.15;
+
+  const tickets = Number(movie.tickets) || 0;
+  if (tickets > 50) score *= 1.2;
+
+  return Math.round(score * 100) / 100;
+}
+
+function buildStructuredScheduleSuggestions(rawData = {}) {
   const rooms = (rawData.rooms || []).map(compactScheduleRoom).filter(room => room.roomId);
   const topMovies = rawData.topMovies || [];
   const movies = (rawData.movies || [])
@@ -472,15 +487,16 @@ function buildFallbackScheduleSuggestion(rawData = {}) {
     : movies
         .slice()
         .sort((a, b) => {
+          const scoreA = calculateDemandScore(rawData.date, a);
+          const scoreB = calculateDemandScore(rawData.date, b);
+          if (scoreA !== scoreB) return scoreB - scoreA;
           const rankA = a.hotRank || 999;
           const rankB = b.hotRank || 999;
-          if (rankA !== rankB) return rankA - rankB;
-          return b.tickets - a.tickets;
+          return rankA - rankB;
         })
-        .slice(0, 4);
+        .slice(0, 5);
 
-  if (!rooms.length) return 'Chưa có dữ liệu phòng chiếu để AI gợi ý lịch.';
-  if (!candidates.length) return 'Chưa có dữ liệu phim phù hợp để AI gợi ý lịch.';
+  if (!rooms.length || !candidates.length) return [];
 
   const occupied = new Map();
   (rawData.existingShowtimes || []).forEach(showtime => {
@@ -495,8 +511,8 @@ function buildFallbackScheduleSuggestion(rawData = {}) {
 
   const sortedRooms = rooms.slice().sort((a, b) => b.seats - a.seats);
   const peakSlots = ['18:00', '19:30', '20:30', '21:30'];
-  const normalSlots = ['09:30', '11:45', '14:00', '16:15', '18:30', '20:45', '22:15'];
-  const suggestions = [];
+  const normalSlots = ['09:30', '11:45', '14:00', '16:15', '18:30', '20:45'];
+  const suggestionsList = [];
 
   function canUse(roomId, start, end) {
     const list = occupied.get(roomId) || [];
@@ -509,19 +525,23 @@ function buildFallbackScheduleSuggestion(rawData = {}) {
     occupied.set(roomId, list);
   }
 
+  const baseDateStr = rawData.date || new Date().toISOString().slice(0, 10);
+
   candidates.forEach(movie => {
-    const isHot = movie.hotRank && movie.hotRank <= 3;
+    const demandScore = calculateDemandScore(rawData.date, movie);
+    const isHot = demandScore >= 1.3 || (movie.hotRank && movie.hotRank <= 3);
     const slots = isHot ? peakSlots.concat(normalSlots) : normalSlots.concat(peakSlots);
     const preferredRooms = isHot ? sortedRooms : sortedRooms.slice().reverse();
     let chosen = null;
 
     for (const room of preferredRooms) {
+      const buffer = getCleaningBufferMinutes(room.seats);
       for (const slot of slots) {
         const start = minutesFromTime(slot);
         if (start === null) continue;
-        const end = start + movie.duration + 15;
+        const end = start + movie.duration + buffer;
         if (!canUse(room.roomId, start, end)) continue;
-        chosen = { room, start, end };
+        chosen = { room, start, end, buffer };
         break;
       }
       if (chosen) break;
@@ -529,36 +549,81 @@ function buildFallbackScheduleSuggestion(rawData = {}) {
 
     if (chosen) {
       reserve(chosen.room.roomId, chosen.start, chosen.end);
-      suggestions.push({
-        movie,
-        room: chosen.room,
-        start: timeFromMinutes(chosen.start),
-        end: timeFromMinutes(chosen.end),
-        reason: isHot
-          ? 'phim đang có sức hút, nên ưu tiên phòng nhiều ghế và khung giờ tối'
-          : 'phim cần thêm suất ổn định, ưu tiên phòng vừa/nhỏ để giữ tỷ lệ lấp đầy'
+      const startStr = timeFromMinutes(chosen.start);
+      const endStr = timeFromMinutes(chosen.end);
+      const startISO = `${baseDateStr}T${startStr}:00`;
+      const endISO = `${baseDateStr}T${endStr}:00`;
+      const priority = isHot ? 'high' : 'normal';
+      const reasonText = isHot
+        ? `Phim có nhu cầu cao (Điểm cầu: ${demandScore}x) ➔ Phân bổ phòng lớn ${chosen.room.name} (${chosen.room.seats} ghế) giờ Vàng 18:00-22:00, đã cộng ${chosen.buffer}p dọn phòng.`
+        : `Phim duy trì lượng khách ổn định (Điểm cầu: ${demandScore}x) ➔ Ghép phòng ${chosen.room.name} (${chosen.room.seats} ghế) tối ưu công suất, đã cộng ${chosen.buffer}p dọn phòng.`;
+
+      suggestionsList.push({
+        movieId: movie.movieId,
+        movieTitle: movie.title || 'Phim đang chiếu',
+        roomId: chosen.room.roomId,
+        roomName: chosen.room.name,
+        roomSeats: chosen.room.seats,
+        startTime: startISO,
+        endTime: endISO,
+        startFormatted: startStr,
+        endFormatted: endStr,
+        price: 80000,
+        priority,
+        demandScore,
+        bufferMinutes: chosen.buffer,
+        reason: reasonText
       });
     }
   });
 
-  if (!suggestions.length) {
-    return 'Tất cả khung giờ gợi ý đều bị trùng với lịch hiện có. Nên kiểm tra lại ngày chiếu hoặc mở thêm phòng trống.';
+  return suggestionsList;
+}
+
+function buildSchedulePrompt(data) {
+  return `
+Bạn là Trợ lý Giám đốc Kinh doanh & Xếp lịch chiếu phim cho hệ thống rạp D-CINEMA.
+Hãy phân tích và viết báo cáo gợi ý lịch chiếu tối ưu bằng tiếng Việt (sử dụng định dạng Markdown) cho ngày và rạp dưới đây.
+
+Các quy tắc và cải tiến đã được tích hợp trong thuật toán gợi ý:
+1. **Chỉ số Dự báo Nhu cầu (Demand Score)**: Đã tính toán trọng số cuối tuần (+40%), lịch sử giờ cao điểm 18:00-21:30 và độ Hot của phim.
+2. **Ghép đôi Phòng - Phim thông minh (Room-Movie Matching)**: Phim Hot được ưu tiên phòng lớn nhất (80+ ghế) giờ Vàng; phim lượng khách vừa phải được xếp phòng vừa/nhỏ.
+3. **Quản lý Thời gian Dọn phòng (Smart Buffer Time)**: Đã tự động cộng 15-25 phút dọn phòng tuỳ quy mô (100+ ghế: 25p, 60-99 ghế: 20p, <60 ghế: 15p).
+
+Dưới đây là Danh sách các Suất chiếu Đề xuất tối ưu nhất (được tính bởi hệ thống):
+${JSON.stringify(data.structuredSuggestions || [], null, 2)}
+
+Yêu cầu bài viết của bạn:
+- Phân tích ngắn gọn vì sao danh sách đề xuất trên tối ưu doanh thu cho rạp.
+- Trình bày danh sách từng suất đề xuất TUYỆT ĐỐI giữ đúng Tên phim, Phòng, và Khung giờ (\`startFormatted - endFormatted\`) theo danh sách "structuredSuggestions" phía trên, không tự ý thay đổi khung giờ.
+- Văn phong chuyên nghiệp, thuyết phục, ngắt đoạn rõ ràng, có biểu tượng cảm xúc (emoji).
+- Không dùng bảng Markdown (Table).
+
+Dữ liệu đầu vào bổ sung:
+- Ngày: ${data.date || 'Hôm nay'}
+- Rạp: ${data.cinema ? JSON.stringify(data.cinema) : 'Tất cả rạp'}
+`;
+}
+
+function buildFallbackScheduleSuggestion(rawData = {}, structuredList = null) {
+  const list = structuredList || buildStructuredScheduleSuggestions(rawData);
+  if (!list.length) {
+    return 'Tất cả khung giờ gợi ý đều bị trùng với lịch hiện có hoặc chưa có phòng trống. Hãy thử chọn ngày chiếu khác hoặc bổ sung phòng.';
   }
 
   return [
-    'Gợi ý xếp lịch chiếu',
-    ...suggestions.map((item, index) => (
-      `${index + 1}. ${item.movie.title} - ${item.room.name} (${item.room.seats} ghế): ${item.start} - ${item.end}. Lý do: ${item.reason}.`
+    '### Gợi ý Lịch Chiếu Tối Ưu (Đã cộng Buffer dọn phòng)',
+    ...list.map((item, idx) => (
+      `**${idx + 1}. [${item.priority === 'high' ? '🔥 HOT' : '✨ NORMAL'}] ${item.movieTitle} - ${item.roomName} (${item.roomSeats} ghế)**\n- **Khung giờ**: \`${item.startFormatted} - ${item.endFormatted}\` (Đã cộng ${item.bufferMinutes}p dọn phòng)\n- **Lý do**: ${item.reason}`
     )),
     '',
-    'Lưu ý',
-    '- Các khung giờ trên đã né lịch phòng đang có trong ngày được chọn.',
-    '- Khi lưu suất chiếu, backend vẫn sẽ kiểm tra trùng phòng lần cuối.'
-  ].join('\n');
+    '💡 **Ghi chú kỹ thuật**:\n- Áp dụng hệ số nhu cầu \`Demand Score\` & thuật toán ghép phòng theo dung lượng ghế.\n- Bạn có thể nhấp nút **"⚡ Tạo suất này ngay"** phía dưới mỗi thẻ để áp dụng vào hệ thống ngay lập tức.'
+  ].join('\n\n');
 }
 
 async function generateScheduleSuggestions(rawData = {}) {
   const topMovies = rawData.topMovies || [];
+  const suggestionsList = buildStructuredScheduleSuggestions(rawData);
   const data = {
     generatedAt: new Date().toISOString(),
     date: rawData.date || null,
@@ -567,12 +632,17 @@ async function generateScheduleSuggestions(rawData = {}) {
     movies: (rawData.movies || []).slice(0, 12).map(movie => compactScheduleMovie(movie, topMovies)),
     rooms: (rawData.rooms || []).map(compactScheduleRoom),
     existingShowtimes: (rawData.existingShowtimes || []).map(compactScheduleShowtime),
-    topMovies: topMovies.slice(0, 8).map(compactMovie)
+    topMovies: topMovies.slice(0, 8).map(compactMovie),
+    structuredSuggestions: suggestionsList
   };
 
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    return { provider: 'fallback', suggestion: buildFallbackScheduleSuggestion(rawData) };
+    return {
+      provider: 'fallback',
+      suggestion: buildFallbackScheduleSuggestion(rawData, suggestionsList),
+      suggestionsList
+    };
   }
 
   try {
@@ -580,13 +650,18 @@ async function generateScheduleSuggestions(rawData = {}) {
     const model = genAI.getGenerativeModel({ model: 'gemini-flash-lite-latest' });
     const result = await model.generateContent(buildSchedulePrompt(data));
     const suggestion = result.response.text().trim();
-    return { provider: 'gemini', suggestion: suggestion || buildFallbackScheduleSuggestion(rawData) };
+    return {
+      provider: 'gemini',
+      suggestion: suggestion || buildFallbackScheduleSuggestion(rawData, suggestionsList),
+      suggestionsList
+    };
   } catch (error) {
     console.error('[aiInsightService] Gemini schedule suggestion failed:', error.message);
     return {
       provider: 'fallback',
       warning: 'Gemini không phản hồi, đã dùng gợi ý dự phòng.',
-      suggestion: buildFallbackScheduleSuggestion(rawData)
+      suggestion: buildFallbackScheduleSuggestion(rawData, suggestionsList),
+      suggestionsList
     };
   }
 }
@@ -616,18 +691,39 @@ function classifyAdminQuestion(question) {
     (text.includes('lap day thap') || text.includes('it khach') || text.includes('vang') || text.includes('ti le thap') || text.includes('ty le thap'))) {
     return { intent: 'low_occupancy_showtimes', confidence: 0.86 };
   }
+  if (text.includes('fnb') || text.includes('bap') || text.includes('nuoc') || text.includes('mon an') || text.includes('combo')) {
+    return { intent: 'top_fnb_this_month', confidence: 0.92 };
+  }
+  if (text.includes('cao diem') || text.includes('khung gio') || text.includes('dong khach') || text.includes('gio ban nhieu')) {
+    return { intent: 'peak_hours_analysis', confidence: 0.91 };
+  }
+  if (text.includes('huy ve') || text.includes('ty le huy') || text.includes('ti le huy') || text.includes('don huy') || text.includes('cancellation')) {
+    return { intent: 'cancellation_rate_stats', confidence: 0.93 };
+  }
+  if (text.includes('voucher') || text.includes('khuyen mai') || text.includes('giam gia') || text.includes('uu dai') || text.includes('code')) {
+    return { intent: 'voucher_usage_stats', confidence: 0.91 };
+  }
+  if (text.includes('so sanh') || (text.includes('lap day') && (text.includes('chi nhanh') || text.includes('cac rap') || text.includes('rap')))) {
+    return { intent: 'cinema_occupancy_compare', confidence: 0.89 };
+  }
+  if (text.includes('xep lich') || text.includes('goi y lich') || text.includes('lich chieu') ||
+      text.includes('khung gio trong') || text.includes('phong trong') || text.includes('toi uu lich') ||
+      text.includes('de xuat lich')) {
+    return { intent: 'schedule_consultation', confidence: 0.95 };
+  }
 
   return { intent: 'unknown', confidence: 0.25 };
 }
 
 function compactAdminQueryRows(rows = []) {
   return rows.slice(0, 8).map(row => ({
-    cinema: row.CinemaName || '',
+    ...row,
+    cinema: row.CinemaName || row.branch || '',
     city: row.City || '',
-    movie: row.Title || row.MovieTitle || '',
+    movie: row.Title || row.MovieTitle || row.item || '',
     room: row.RoomName || '',
     ticketsSold: Number(row.TicketsSold || 0),
-    totalSeats: Number(row.TotalSeats || 0),
+    totalSeats: Number(row.TotalSeats || row.TotalSeatsAvailable || 0),
     emptySeats: Number(row.EmptySeats || 0),
     occupancyRate: Number(row.OccupancyRate || 0),
     totalRevenue: Number(row.TotalRevenue || 0),
@@ -695,6 +791,50 @@ function formatAdminQueryFallback(question, intent, rows = []) {
       `Giờ chiếu: ${formatDateTime(first.StartTime)}.`
     ].join('\n');
   }
+  if (intent === 'top_fnb_this_month') {
+    return [
+      `Món F&B bán chạy nhất tháng này là ${first.ItemName || 'không rõ'} (${first.Category || 'không rõ'}).`,
+      `Số lượng bán: ${first.QuantitySold || 0}, doanh thu: ${money(first.TotalRevenue)}.`,
+      `Tồn kho hiện tại: ${first.CurrentStock || 0}.`
+    ].join('\n');
+  }
+  if (intent === 'peak_hours_analysis') {
+    return [
+      `Khung giờ đông khách nhất là ${first.HourOfDay !== undefined ? `${first.HourOfDay}h00` : 'không rõ'}.`,
+      `Đã bán ${first.TicketsSold || 0} vé, doanh thu ${money(first.TotalRevenue)} trong ${first.ShowtimesCount || 0} suất chiếu.`,
+      'Nên tăng cường nhân sự và mở thêm suất chiếu vào khung giờ này.'
+    ].join('\n');
+  }
+  if (intent === 'cancellation_rate_stats') {
+    return [
+      `Trong 7 ngày qua, tỷ lệ hủy vé là ${percent(first.CancellationRate)} (${first.CancelledBookings || 0}/${first.TotalBookings || 0} đơn).`,
+      `Số vé xác nhận: ${first.ConfirmedBookings || 0}, số vé chờ: ${first.PendingBookings || 0}.`,
+      `Doanh thu thất thoát do hủy vé: ${money(first.LostRevenue)}.`
+    ].join('\n');
+  }
+  if (intent === 'voucher_usage_stats') {
+    return [
+      `Voucher được sử dụng nhiều nhất là ${first.Code || 'không rõ'} (giảm ${first.DiscountType === 'percent' ? `${first.DiscountValue}%` : money(first.DiscountValue)}).`,
+      `Đã sử dụng ${first.UsedCount || 0}/${first.UsageLimit || 0} lượt.`,
+      `Đóng góp vào ${first.ConfirmedBookingsCount || 0} đơn hàng thành công.`
+    ].join('\n');
+  }
+  if (intent === 'cinema_occupancy_compare') {
+    return [
+      `Rạp có tỷ lệ lấp đầy cao nhất 7 ngày qua là ${first.CinemaName || 'không rõ'} (${first.City || 'không rõ'}).`,
+      `Tỷ lệ lấp đầy: ${percent(first.OccupancyRate)} (${first.TicketsSold || 0}/${first.TotalSeatsAvailable || 0} ghế).`,
+      `Doanh thu trong kỳ: ${money(first.TotalRevenue)}.`
+    ].join('\n');
+  }
+  if (intent === 'schedule_consultation') {
+    return [
+      `Gợi ý lịch chiếu tối ưu dựa trên nhu cầu (Demand Score) & Thời gian dọn phòng (Buffer Time):`,
+      ...rows.slice(0, 5).map((r, i) => (
+        `**${i + 1}. [${r.priority === 'high' ? '🔥 HOT' : '✨ NORMAL'}] ${r.movieTitle || 'Phim'} - ${r.roomName || 'Phòng'} (${r.roomSeats || 0} ghế)**\n- **Khung giờ**: \`${r.startFormatted || '18:00'} - ${r.endFormatted || '20:15'}\` (Đã cộng buffer ${r.bufferMinutes || 15}p dọn phòng)\n- **Lý do**: ${r.reason || ''}`
+      )),
+      `\n💡 **Ghi chú**: Bạn có thể nhấp nút **"⚡ Tạo suất này ngay"** trên mỗi thẻ đề xuất bên dưới để áp dụng vào hệ thống.`
+    ].join('\n');
+  }
 
   return `Đã tìm thấy ${rows.length} dòng dữ liệu liên quan đến câu hỏi: "${question}".`;
 }
@@ -744,5 +884,8 @@ module.exports = {
   generateRevenueInsight,
   generateScheduleSuggestions,
   classifyAdminQuestion,
-  answerAdminDataQuestion
+  answerAdminDataQuestion,
+  getCleaningBufferMinutes,
+  calculateDemandScore,
+  buildStructuredScheduleSuggestions
 };

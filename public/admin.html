@@ -362,9 +362,15 @@
                         </button>
                     </form>
                     <div class="ai-query-examples">
+                        <button type="button" onclick="askAdminAi(null, 'Hãy gợi ý xếp lịch chiếu tối ưu tuần này')" style="border-color:#f43f5e; color:#e11d48; font-weight:700;">🔥 Gợi ý lịch chiếu tối ưu</button>
                         <button type="button" onclick="askAdminAi(null, 'Hôm nay rạp nào doanh thu cao nhất?')">Rạp doanh thu cao nhất</button>
-                        <button type="button" onclick="askAdminAi(null, 'Phim nào bán ít vé nhất tuần này?')">Phim bán ít vé</button>
+                        <button type="button" onclick="askAdminAi(null, 'Phim nào bán chạy nhất hôm nay?')">Phim bán chạy top</button>
                         <button type="button" onclick="askAdminAi(null, 'Suất chiếu nào còn nhiều ghế trống?')">Suất nhiều ghế trống</button>
+                        <button type="button" onclick="askAdminAi(null, 'Món ăn F&B nào bán chạy nhất tháng này?')">F&B bán chạy tháng</button>
+                        <button type="button" onclick="askAdminAi(null, 'Giờ cao điểm đông khách nhất là mấy giờ?')">Giờ cao điểm</button>
+                        <button type="button" onclick="askAdminAi(null, 'Tỷ lệ hủy vé trong tuần qua là bao nhiêu?')">Tỷ lệ hủy vé</button>
+                        <button type="button" onclick="askAdminAi(null, 'Voucher mã khuyến mãi nào được dùng nhiều nhất?')">Voucher phổ biến</button>
+                        <button type="button" onclick="askAdminAi(null, 'So sánh tỷ lệ lấp đầy giữa các rạp?')">So sánh lấp đầy rạp</button>
                     </div>
                     <div class="ai-insight-body" id="aiAdminQueryAnswer" data-i18n="admin_ai_query_desc">
                         Nhập câu hỏi để xem câu trả lời kèm số liệu từ database.
@@ -954,6 +960,7 @@
         <div class="page" id="page-schedule">
             <!-- Main Area -->
             <div class="sch-main content-scroll">
+                <div id="aiOverflowAlertSection" style="display: none;"></div>
 
                 <div class="sch-header" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <div class="week-nav">
@@ -990,7 +997,13 @@
                             <div class="ai-insight-kicker">AI SCHEDULE PLANNER</div>
                             <h3>Gợi ý xếp lịch chiếu</h3>
                         </div>
-                        <span class="ai-insight-provider" id="aiScheduleProvider">Sẵn sàng</span>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span class="ai-insight-provider" id="aiScheduleProvider">Sẵn sàng</span>
+                            <button id="aiInsightToggleBtn" onclick="toggleAiInsightBody()" title="Thu gọn / Mở rộng kết quả AI" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:0.78rem;font-weight:700;color:#64748b;display:flex;align-items:center;gap:4px;transition:all 0.2s;">
+                                <svg id="aiToggleIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                                Thu gọn
+                            </button>
+                        </div>
                     </div>
                     <div class="ai-schedule-controls">
                         <select id="aiScheduleMovieSelect" class="form-control">
@@ -1017,7 +1030,7 @@
                 </div>
 
                 <!-- Showtime List -->
-                <div class="timeline-card" id="showtimeListContainer" style="min-height:200px;">
+                <div class="timeline-card" id="showtimeListContainer">
                     <p style="padding:24px;color:#9ca3af;text-align:center;">Đang tải lịch chiếu...</p>
                 </div>
 

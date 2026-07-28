@@ -46,12 +46,21 @@ module.exports = (io) => {
             }
         });
 
-        socket.on('reclaimSeats', async ({ showtimeId, seatIds }) => {
-            if (!Array.isArray(seatIds) || !bookingSessionId) return;
+        socket.on('leavePaymentRoom', (ticketIds) => {
+            if (!Array.isArray(ticketIds) || ticketIds.length === 0) return;
+            const sortedIds = [...ticketIds].map(Number).sort((a, b) => a - b);
+            const room = `payment_${sortedIds.join('_')}`;
+            socket.leave(room);
+            console.log(`[Socket] Client ${socket.id} left payment room: ${room}`);
+        });
+
+        socket.on('reclaimSeats', async ({ showtimeId, seatIds, sessionId }) => {
+            const sid = sessionId || bookingSessionId;
+            if (!Array.isArray(seatIds) || !sid) return;
 
             try {
-                await BookingModel.reclaimSeatsDB(showtimeId, seatIds, bookingSessionId, socket.id);
-                console.log(`[Socket] Reclaimed seat sockets for session ${bookingSessionId}`);
+                await BookingModel.reclaimSeatsDB(showtimeId, seatIds, sid, socket.id);
+                console.log(`[Socket] Reclaimed seat sockets for session ${sid}`);
             } catch (err) {
                 console.error('[Socket reclaimSeats error]', err);
             }
@@ -105,9 +114,18 @@ module.exports = (io) => {
             }
         });
 
-        socket.on('releaseSeat', ({ showtimeId, seatId }) => {
-            socket.emit('seatReleaseIgnored', { showtimeId, seatId, reason: 'timer_only_lock' });
-            console.log(`[Socket] Ignored releaseSeat for seat ${seatId} | showtime ${showtimeId}; lock expires by timer only.`);
+        socket.on('releaseSeat', async ({ showtimeId, seatId, bookingSessionId: payloadSessionId }) => {
+            const sid = payloadSessionId || bookingSessionId;
+            try {
+                const released = await BookingModel.releaseSeatDB(showtimeId, seatId, sid);
+                if (released) {
+                    const room = `room_showtime_${showtimeId}`;
+                    io.to(room).emit('seatStatusUpdated', { showtimeId, seatId, status: 'Trống' });
+                    console.log(`[Socket] Released seat ${seatId} | showtime ${showtimeId} by session ${sid}`);
+                }
+            } catch (err) {
+                console.error('[Socket releaseSeat error]', err);
+            }
         });
 
         socket.on('disconnect', () => {

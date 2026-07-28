@@ -249,13 +249,9 @@ class BookingModel {
 
         if (isCoupleSeat(seat)) {
           const pairKey = couplePairKey(seat);
+          couplePairsCharged.add(pairKey);
           const halfMult = parseFloat(seat.PriceMultiplier || 1.5) / 2;
-          if (!couplePairsCharged.has(pairKey)) {
-            couplePairsCharged.add(pairKey);
-            seatPrice = ticketPrice * halfMult;
-          } else {
-            seatPrice = ticketPrice * halfMult;
-          }
+          seatPrice = ticketPrice * halfMult;
         } else {
           seatPrice = ticketPrice * getSeatMultiplier(seat);
         }

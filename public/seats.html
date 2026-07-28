@@ -1742,6 +1742,7 @@
         if (!token) {
             alert('Vui lòng đăng nhập trước khi chọn ghế!');
             window.location.href = `auth.html?redirect=${encodeURIComponent('seats.html?showtimeId=' + showtimeId)}`;
+            throw new Error('Redirecting to auth...');
         }
 
         // ──────────────────────────────────────────────
@@ -1849,12 +1850,13 @@
         //  Socket.IO for real-time seat locking
         // ──────────────────────────────────────────────
         function initSocket() {
-            if (socket.connected) {
-                socket.emit('joinShowtime', showtimeId);
-            }
+            socket.off('connect');
             socket.on('connect', () => {
                 socket.emit('joinShowtime', showtimeId);
             });
+            if (socket.connected) {
+                socket.emit('joinShowtime', showtimeId);
+            }
 
             socket.on('seatStatusUpdated', (data) => {
                 if (parseInt(data.showtimeId) !== showtimeId) return;
@@ -1908,7 +1910,11 @@
         // ──────────────────────────────────────────────
         async function loadSeats() {
             try {
-                const sessId = sessionStorage.getItem('bookingSessionId') || '';
+                let sessId = sessionStorage.getItem('bookingSessionId');
+                if (!sessId) {
+                    sessId = 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
+                    sessionStorage.setItem('bookingSessionId', sessId);
+                }
                 const res = await fetch(
                     `/api/movies/showtimes/${showtimeId}/seats?sessionId=${encodeURIComponent(sessId)}&_=${Date.now()}`,
                     { cache: 'no-store' }
@@ -1959,7 +1965,7 @@
                     // Emit reclaimSeats sau khi socket đã kết nối để đồng bộ quyền sở hữu
                     if (selectedSeats.size > 0) {
                         if (socket.connected) {
-                            socket.emit('reclaimSeats', { showtimeId, seatIds: Array.from(selectedSeats) });
+                            socket.emit('reclaimSeats', { showtimeId, seatIds: Array.from(selectedSeats), sessionId: sessId });
                         }
                         refreshTimerFromSeatLocks(); // Khôi phục đúng thời gian còn lại từ DB
                     }

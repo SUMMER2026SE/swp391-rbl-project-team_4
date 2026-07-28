@@ -41,24 +41,24 @@ router.post('/calculate-price',             bookingCtrl.calculatePrice);
 router.post('/validate-voucher',            bookingCtrl.validateVoucher);
 
 // GET  /api/bookings/my-bookings            — Lịch sử đặt vé của tôi
-router.get('/my-bookings',                  bookingCtrl.getMyBookings);
+router.get('/my-bookings',                  isCustomer, bookingCtrl.getMyBookings);
 
 // GET  /api/bookings/check-status           — Kiểm tra trạng thái thanh toán
 router.get('/check-status',                 bookingCtrl.checkBookingStatus);
 
 // POST /api/bookings/cancel                 — Huỷ vé pending ngay lập tức
-router.post('/cancel',                      bookingCtrl.cancelBooking);
+router.post('/cancel',                      isCustomer, bookingCtrl.cancelBooking);
 
 // POST /api/bookings/request-refund         — Khách hàng gửi yêu cầu hoàn tiền kèm thông tin ngân hàng
-router.post('/request-refund',              bookingCtrl.requestRefundBooking);
+router.post('/request-refund',              isCustomer, bookingCtrl.requestRefundBooking);
 
 // POST /api/bookings/:ticketId/request-cancel — Khách hàng yêu cầu huỷ vé đã xác nhận
-router.post('/:ticketId/request-cancel',    bookingCtrl.requestCancelBooking);
+router.post('/:ticketId/request-cancel',    isCustomer, bookingCtrl.requestCancelBooking);
 
 // GET  /api/bookings/:ticketId              — Chi tiết một vé
 router.get('/:ticketId',                    bookingCtrl.getBookingDetail);
 
 // POST /api/bookings                        — Tạo đơn đặt vé mới
-router.post('/',                            bookingCtrl.createBooking);
+router.post('/',                            isCustomer, bookingCtrl.createBooking);
 
 module.exports = router;

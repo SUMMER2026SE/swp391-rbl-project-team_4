@@ -836,13 +836,6 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js?v=7"></script>
     <script>
-    // Tự động chuyển hướng thêm cache-buster nếu URL chưa có tham số v để chống cache cứng đầu
-    if (!window.location.search.includes('v=')) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('v', Date.now());
-        window.location.replace(url.toString());
-    }
-    
     let booking = {};
     let qrTimers = {};
     let serverLanOrigin = window.location.origin;
@@ -1393,19 +1386,19 @@
                     const d = json.data;
                     const dDate = d.startTime ? new Date(d.startTime) : new Date();
                     booking = {
-                        movieTitle: d.movieTitle || 'DORAEMON MOVIE 45 (2026): NOBITA VÀ LÂU ĐÀI DƯỚI ĐÁY BIỂN',
-                        poster: (d.poster && d.poster.includes('.')) ? d.poster : 'images/doraemon_sea.png',
+                        movieTitle: d.movieTitle || 'Phim đang cập nhật',
+                        poster: (d.poster && d.poster.includes('.')) ? d.poster : 'images/default_poster.svg',
                         date: dDate.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }),
                         time: dDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false }),
-                        hall: d.roomName ? `${d.roomName} — ${d.cinemaName || 'D-CINEMA'}` : 'IMAX Laser — D-CINEMA Sense City Cần Thơ',
-                        seats: d.seats || 'H7, J7, J8, J9',
-                        seatCount: d.seats ? d.seats.split(',').length : 4,
+                        hall: d.roomName ? `${d.roomName} — ${d.cinemaName || 'D-CINEMA'}` : 'D-CINEMA',
+                        seats: d.seats || '',
+                        seatCount: d.seats ? d.seats.split(',').length : 0,
                         seatType: d.seatType || 'Standard',
-                        finalAmount: d.totalAmount || 2400,
-                        totalAmount: d.totalAmount || 2400,
+                        finalAmount: d.totalAmount || 0,
+                        totalAmount: d.totalAmount || 0,
                         paymentMethod: d.paymentMethod || 'qrpay',
                         bookingId: d.bookingId || ('DC-' + queryId),
-                        customerName: d.customerName || 'nmhuy',
+                        customerName: d.customerName || 'Khách hàng',
                         foodDisplayItems: (d.foodItems && d.foodItems !== 'Không có') ? [{ name: d.foodItems, quantity: 1 }] : [],
                         completed: true
                     };
@@ -1425,23 +1418,16 @@
             return;
         }
 
-        // Demo mode — no real booking
         if (!booking.showtimeId && !booking.bookingId) {
-            booking = {
-                movieTitle: 'Demo Movie',
-                date: new Date().toLocaleDateString('vi-VN'),
-                time: '20:00',
-                hall: 'Standard 1',
-                seats: 'A7',
-                seatCount: 1,
-                finalAmount: 100000,
-                totalAmount: 100000,
-                paymentMethod: 'qrpay',
-                bookingId: 'DC-' + Math.floor(1000000 + Math.random() * 9000000),
-                completed: true
-            };
-            setTicketPageMode('view');
-            showTicket();
+            const container = document.querySelector('.ticket-card');
+            if (container) {
+                container.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #fff;">
+                        <h3 style="margin-bottom: 15px;">Không tìm thấy thông tin vé</h3>
+                        <p style="color: #8a8f9a; margin-bottom: 25px;">Vui lòng kiểm tra lại đường dẫn hoặc xem lịch sử đặt vé trong tài khoản của bạn.</p>
+                        <a href="profile.html" style="background: #e50914; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700;">Xem lịch sử đặt vé</a>
+                    </div>`;
+            }
             return;
         }
 
