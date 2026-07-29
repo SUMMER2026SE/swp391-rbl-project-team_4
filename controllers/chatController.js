@@ -28,7 +28,6 @@ const chatController = {
       const cinemasResult = await pool.request().query(`
         SELECT CinemaID, CinemaName, City, Address
         FROM Cinemas
-        WHERE Status = 'Active' OR Status IS NULL
       `);
       const cinemaList = cinemasResult.recordset || [];
       const cinemaContext = cinemaList.map(c => {
