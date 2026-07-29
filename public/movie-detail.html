@@ -150,7 +150,7 @@
                             <div class="reviews-summary">
                                 <span class="reviews-score" id="reviewAverage">0.0</span>
                                 <span class="reviews-stars" id="reviewStars">-----</span>
-                                <span class="reviews-count" id="reviewCount" data-i18n="empty_review">Chưa có đánh giá</span>
+                                <span class="reviews-count" id="reviewCount">Chưa có đánh giá</span>
                             </div>
                         </div>
 
@@ -356,9 +356,10 @@
         }
 
         async function loadMovieReviews(movieId) {
+            try {
             const response = await fetch(`/api/movies/${movieId}/reviews`);
             const json = await response.json();
-            if (!json.success) return;
+            if (!json.success) { renderReviewList([]); return; }
 
             const summary = json.data.summary || {};
             const avg = Number(summary.averageRating || 0);
@@ -370,10 +371,11 @@
 
             if (averageEl) averageEl.textContent = avg ? avg.toFixed(1) : '0.0';
             if (starsEl) starsEl.textContent = renderStars(avg);
-            if (countEl) countEl.innerHTML = count ? `${count} <span data-i18n="review_count_suffix">đánh giá</span>` : '<span data-i18n="review_no_reviews">Chưa có đánh giá</span>';
+            if (countEl) { countEl.innerHTML = count ? `${count} <span data-i18n="review_count_suffix">đánh giá</span>` : '<span data-i18n="review_no_reviews">Chưa có đánh giá</span>'; countEl.removeAttribute('data-i18n'); }
             if (heroScore) heroScore.innerHTML = avg ? `★ ${avg.toFixed(1)}/5` : '★ <span data-i18n="review_no_reviews">Chưa có đánh giá</span>';
 
             renderReviewList(json.data.reviews || []);
+            } catch(e) { renderReviewList([]); }
         }
 
         async function initReviewForm(movieId) {
@@ -608,7 +610,10 @@
 
                 if (infoLanguage) infoLanguage.innerHTML = '<span data-i18n="info_lang_val">Tiếng Việt (Phụ đề Tiếng Anh)</span>';
                 const infoReleaseDate = document.getElementById('infoReleaseDate');
-                if (infoReleaseDate) infoReleaseDate.setAttribute('data-i18n', 'nav_now_showing');
+                if (infoReleaseDate) {
+                    const isComingSoon = movie.Status && (movie.Status === 'Coming Soon' || movie.Status.toLowerCase().includes('coming'));
+                    infoReleaseDate.setAttribute('data-i18n', isComingSoon ? 'nav_coming_soon' : 'nav_now_showing');
+                }
 
                 // Render Cast & Director
                 if (castGrid) {

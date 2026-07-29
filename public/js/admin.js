@@ -1683,7 +1683,34 @@ function editFnB(id) {
         if (dropZoneText) dropZoneText.textContent = 'Chọn file hoặc kéo thả vào đây';
     }
 
-    document.querySelector('.fnb-form-side').scrollIntoView({ behavior: 'smooth' });
+    const formSide = document.querySelector('.fnb-form-side');
+    if (formSide) {
+        formSide.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Flash highlight so user knows the form is in EDIT mode
+        const formCard = formSide.querySelector('.fnb-form-card');
+        if (formCard) {
+            formCard.style.transition = 'box-shadow 0.1s, border-color 0.1s';
+            formCard.style.boxShadow = '0 0 0 3px #e50914, 0 8px 32px rgba(229,9,20,0.3)';
+            formCard.style.borderColor = '#e50914';
+            setTimeout(() => {
+                formCard.style.boxShadow = '';
+                formCard.style.borderColor = '';
+            }, 1800);
+        }
+    }
+    // Auto-focus first input
+    const nameInput = document.getElementById('fnbName');
+    if (nameInput) setTimeout(() => nameInput.focus(), 400);
+
+    // Show edit mode toast
+    const existing = document.getElementById('fnb-edit-toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.id = 'fnb-edit-toast';
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#e50914;color:#fff;padding:12px 20px;border-radius:8px;font-weight:600;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);animation:slideInRight 0.3s ease;';
+    toast.textContent = `✏️ Đang chỉnh sửa: ${item.Name}`;
+    document.body.appendChild(toast);
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
 }
 
 function cancelEditFnB() {

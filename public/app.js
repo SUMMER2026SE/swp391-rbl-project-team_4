@@ -530,7 +530,7 @@ const app = {
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${app.renderGenres(movie.Genres)} | ${movie.Duration} <span data-i18n="movie_minutes">phút</span></div>
+                                <div class="movie-genre">${app.renderGenres(movie.Genres)} | ${movie.Duration || '---'} <span data-i18n="movie_minutes">phút</span></div>
                                 <div class="movie-rating">★ 8.5</div>
                             </div>
                         </div>
@@ -553,7 +553,7 @@ const app = {
                                     </div>
                                     <div class="movie-info">
                                         <h3 class="movie-title">${movie.Title}</h3>
-                                        <div class="movie-genre">${app.renderGenres(movie.Genres)} | ${movie.Duration} <span data-i18n="movie_minutes">phút</span></div>
+                                        <div class="movie-genre">${app.renderGenres(movie.Genres)} | ${movie.Duration || '---'} <span data-i18n="movie_minutes">phút</span></div>
                                         <div class="movie-rating">★ 8.5</div>
                                     </div>
                                 </div>
@@ -588,7 +588,7 @@ const app = {
                             </div>
                             <div class="movie-info">
                                 <h3 class="movie-title">${movie.Title}</h3>
-                                <div class="movie-genre">${movie.Genres ? app.renderGenres(movie.Genres) : '<span data-i18n="genre_scifi">Khoa học viễn tưởng</span>'} | ${movie.Duration} <span data-i18n="movie_minutes">phút</span></div>
+                                <div class="movie-genre">${movie.Genres ? app.renderGenres(movie.Genres) : '<span data-i18n="genre_scifi">Khoa học viễn tưởng</span>'} | ${movie.Duration || '---'} <span data-i18n="movie_minutes">phút</span></div>
                                 <div class="movie-rating" style="color:var(--primary); font-size:0.9rem;" data-i18n="movie_coming_soon">Sắp chiếu</div>
                             </div>
                         </div>
@@ -664,7 +664,7 @@ const app = {
                     <h3 class="movie-title" title="${movie.Title}">${movie.Title}</h3>
                     <div class="movie-rating">
                         <span class="stars">★ 8.5</span>
-                        <span class="genres">${app.renderGenres(movie.Genres)} | ${movie.Duration} <span data-i18n="movie_minutes">phút</span></span>
+                        <span class="genres">${app.renderGenres(movie.Genres)} | ${movie.Duration || '---'} <span data-i18n="movie_minutes">phút</span></span>
                     </div>
                 </div>
             </div>
@@ -760,7 +760,7 @@ const app = {
                     <h3 class="movie-title" title="${movie.Title}">${movie.Title}</h3>
                     <div class="movie-rating">
                         <span class="stars">★ 8.5</span>
-                        <span class="genres">${app.renderGenres(movie.Genres)} | ${movie.Duration} <span data-i18n="movie_minutes">phút</span></span>
+                        <span class="genres">${app.renderGenres(movie.Genres)} | ${movie.Duration || '---'} <span data-i18n="movie_minutes">phút</span></span>
                     </div>
                 </div>
             </div>
