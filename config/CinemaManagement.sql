@@ -339,7 +339,8 @@ GO
 -- ═══════════════════ THỂ LOẠI PHIM ═══════════════════
 INSERT INTO Genres (GenreName) VALUES
 (N'Hành động'), (N'Hài'), (N'Kinh dị'), (N'Tình cảm'),
-(N'Viễn tưởng'), (N'Hoạt hình'), (N'Tâm lý'), (N'Phiêu lưu');
+(N'Viễn tưởng'), (N'Hoạt hình'), (N'Tâm lý'), (N'Phiêu lưu'),
+(N'Ca Nhạc'), (N'Ly Kì');
 GO
 -- ═══════════════════ PHIM ═══════════════════
 INSERT INTO Movies (Title, Description, Director, Duration, AgeRating, TrailerURL, PosterURL, Status, MainCast) VALUES

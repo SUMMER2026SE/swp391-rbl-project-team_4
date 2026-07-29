@@ -214,6 +214,20 @@ class MovieModel {
     const request = pool.request().input('movieId', sql.Int, parseInt(movieId));
 
     let dateFilter = '';
+        FROM   Movies m
+        WHERE  m.MovieID = @movieId
+      `);
+    if (result.recordset.length > 0) {
+      assignDynamicPoster(result.recordset[0]);
+    }
+    return result.recordset.length > 0 ? result.recordset[0] : null;
+  }
+
+  static async getShowtimesByMovie(movieId, date) {
+    const pool = await getPool();
+    const request = pool.request().input('movieId', sql.Int, parseInt(movieId));
+
+    let dateFilter = '';
     if (date) {
       request.input('date', sql.Date, date);
       dateFilter = 'AND CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date';
@@ -237,8 +251,8 @@ class MovieModel {
       JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
       WHERE  st.MovieID = @movieId
         AND  st.Status  = 'active'
-        AND  m.Status   = 'Now Showing'
-        AND  st.EndTime > GETUTCDATE()
+        AND  m.Status   != 'deleted'
+        AND  st.EndTime > DATEADD(hour, -12, GETDATE())
         ${dateFilter}
       ORDER BY st.StartTime ASC
     `);
@@ -258,14 +272,10 @@ class MovieModel {
         LEFT   JOIN Tickets t ON t.SeatID = s.SeatID AND t.ShowtimeID = @showtimeId
                               AND t.Status IN ('confirmed', 'pending', 'refund_requested')
         WHERE  st.ShowtimeID = @showtimeId
-          AND  st.Status = 'active'
-          AND  st.EndTime > GETUTCDATE()
-          AND  m.Status = 'Now Showing'
         ORDER BY s.SeatRow, s.SeatNumber
       `);
     return result.recordset;
   }
-
 
   static async getCinemas() {
     const pool = await getPool();
@@ -300,8 +310,6 @@ class MovieModel {
         JOIN   Movies  m ON st.MovieID  = m.MovieID
         WHERE  st.ShowtimeID = @showtimeId
           AND  st.Status = 'active'
-          AND  st.EndTime > GETUTCDATE()
-          AND  m.Status = 'Now Showing'
       `);
     if (result.recordset.length > 0) {
       assignDynamicPoster(result.recordset[0]);
@@ -355,25 +363,12 @@ class MovieModel {
       JOIN   Cinemas c ON r.CinemaID  = c.CinemaID
       JOIN   Movies  m ON st.MovieID  = m.MovieID
       WHERE  r.CinemaID = @cinemaId
-        AND  CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date
+        AND  (CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date OR CAST(st.StartTime AS DATE) = @date)
         AND  st.Status  = 'active'
-        AND  m.Status   = 'Now Showing'
-        AND  st.EndTime > GETUTCDATE()
+        AND  m.Status   != 'deleted'
+        AND  st.EndTime > DATEADD(hour, -12, GETDATE())
         ${movieFilter}
       ORDER BY m.Title, st.StartTime ASC
-    `);
-    result.recordset.forEach(assignDynamicPoster);
-    return result.recordset;
-  }
-
-  static async getMovieReviews(movieId) {
-    await ensureReviewTable();
-
-    const pool = await getPool();
-    const result = await pool.request()
-      .input('movieId', sql.Int, parseInt(movieId))
-      .query(`
-        SELECT
           CAST(ROUND(ISNULL(AVG(CAST(Rating AS decimal(4,2))), 0), 1) AS decimal(3,1)) AS AverageRating,
           COUNT(*) AS ReviewCount
         FROM MovieReviews
