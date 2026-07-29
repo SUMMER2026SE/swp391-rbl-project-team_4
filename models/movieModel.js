@@ -214,20 +214,6 @@ class MovieModel {
     const request = pool.request().input('movieId', sql.Int, parseInt(movieId));
 
     let dateFilter = '';
-        FROM   Movies m
-        WHERE  m.MovieID = @movieId
-      `);
-    if (result.recordset.length > 0) {
-      assignDynamicPoster(result.recordset[0]);
-    }
-    return result.recordset.length > 0 ? result.recordset[0] : null;
-  }
-
-  static async getShowtimesByMovie(movieId, date) {
-    const pool = await getPool();
-    const request = pool.request().input('movieId', sql.Int, parseInt(movieId));
-
-    let dateFilter = '';
     if (date) {
       request.input('date', sql.Date, date);
       dateFilter = 'AND CAST(DATEADD(hour, 7, st.StartTime) AS DATE) = @date';
