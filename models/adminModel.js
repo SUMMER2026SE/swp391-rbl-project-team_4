@@ -2174,7 +2174,7 @@ class AdminModel {
         st.StartTime,
         st.EndTime,
         COALESCE(st.Price, st.BasePrice, 75000) AS Price,
-        COUNT(DISTINCT CASE WHEN b.BookingStatus != 'Cancelled' THEN t.TicketID END) AS TicketsSold
+        COUNT(DISTINCT CASE WHEN b.Status != 'Cancelled' THEN t.TicketID END) AS TicketsSold
       FROM Showtimes st
       JOIN Movies m ON st.MovieID = m.MovieID
       JOIN Rooms r ON st.RoomID = r.RoomID
@@ -2185,7 +2185,7 @@ class AdminModel {
       GROUP BY st.ShowtimeID, st.MovieID, m.Title, m.HotRank, m.Duration,
                st.RoomID, r.RoomName, r.TotalSeats, c.CinemaID, c.CinemaName,
                st.StartTime, st.EndTime, st.Price, st.BasePrice
-      HAVING (COUNT(DISTINCT CASE WHEN b.BookingStatus != 'Cancelled' THEN t.TicketID END) * 100.0 / NULLIF(r.TotalSeats, 0)) >= 75
+      HAVING (COUNT(DISTINCT CASE WHEN b.Status != 'Cancelled' THEN t.TicketID END) * 100.0 / NULLIF(r.TotalSeats, 0)) >= 75
           OR (m.HotRank <= 3 AND r.TotalSeats <= 65)
       ORDER BY st.StartTime ASC
     `;

@@ -4,6 +4,11 @@ class VoucherModel {
   static async syncVoucherTables(pool) {
     try {
       await pool.request().query(`
+        IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE Name = N'ImageUrl' AND Object_ID = Object_ID(N'Voucher'))
+        BEGIN
+          ALTER TABLE Voucher ADD ImageUrl NVARCHAR(MAX) NULL;
+        END
+
         INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxDiscount, UsageLimit, UsedCount, StartDate, EndDate, IsActive)
         SELECT v.VoucherCode,
                CASE WHEN v.DiscountType = 'Percentage' THEN 'percent' ELSE 'fixed' END,
