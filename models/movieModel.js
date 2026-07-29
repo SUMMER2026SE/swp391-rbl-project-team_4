@@ -355,6 +355,18 @@ class MovieModel {
         AND  st.EndTime > DATEADD(hour, -12, GETDATE())
         ${movieFilter}
       ORDER BY m.Title, st.StartTime ASC
+    `);
+    return result.recordset;
+  }
+
+  static async getMovieReviews(movieId) {
+    await ensureReviewTable();
+
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('movieId', sql.Int, parseInt(movieId))
+      .query(`
+        SELECT
           CAST(ROUND(ISNULL(AVG(CAST(Rating AS decimal(4,2))), 0), 1) AS decimal(3,1)) AS AverageRating,
           COUNT(*) AS ReviewCount
         FROM MovieReviews

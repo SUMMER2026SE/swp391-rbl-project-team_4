@@ -4,6 +4,55 @@ const SettingsModel = require('./settingsModel');
 const RewardModel = require('./rewardModel');
 const RefundModel = require('./refundModel');
 
+let bookingSchemaReady = false;
+
+async function ensureBookingSchema() {
+  if (bookingSchemaReady) return;
+  const pool = await getPool();
+  await pool.request().query(`
+    IF OBJECT_ID('dbo.SeatLocks', 'U') IS NULL
+    BEGIN
+      CREATE TABLE dbo.SeatLocks (
+        ShowtimeID INT NOT NULL,
+        SeatID     INT NOT NULL,
+        SessionID  NVARCHAR(255) NOT NULL,
+        SocketID   NVARCHAR(255) NULL,
+        ExpiresAt  DATETIME NOT NULL,
+        PRIMARY KEY (ShowtimeID, SeatID)
+      );
+    END;
+
+    IF OBJECT_ID('dbo.UserVouchers', 'U') IS NULL
+    BEGIN
+      CREATE TABLE dbo.UserVouchers (
+        UserVoucherID INT IDENTITY(1,1) PRIMARY KEY,
+        UserID        INT NOT NULL,
+        VoucherID     INT NOT NULL,
+        PointsSpent   INT DEFAULT 0,
+        Source        VARCHAR(50) DEFAULT 'reward',
+        IsUsed        BIT DEFAULT 0,
+        UsedAt        DATETIME NULL,
+        CreatedAt     DATETIME DEFAULT GETDATE()
+      );
+    END;
+
+    IF OBJECT_ID('dbo.RewardPointTransactions', 'U') IS NULL
+    BEGIN
+      CREATE TABLE dbo.RewardPointTransactions (
+        TransactionID   INT IDENTITY(1,1) PRIMARY KEY,
+        UserID          INT NOT NULL,
+        TicketID        INT NULL,
+        PointsChange    INT NOT NULL,
+        BalanceAfter    INT NOT NULL,
+        TransactionType VARCHAR(30) NOT NULL,
+        Description     NVARCHAR(255) NULL,
+        CreatedAt       DATETIME DEFAULT GETDATE()
+      );
+    END;
+  `);
+  bookingSchemaReady = true;
+}
+
 function isCoupleSeat(seat) {
   return seat.SeatType && seat.SeatType.toLowerCase().includes('couple');
 }
@@ -1026,6 +1075,7 @@ class BookingModel {
   // ==========================================
 
   static async holdSeatDB(showtimeId, seatId, sessionId, socketId, expiryMinutes = 5) {
+    await ensureBookingSchema();
     const pool = await getPool();
     const result = await pool.request()
       .input('showtimeId', sql.Int, showtimeId)
@@ -1156,7 +1206,12 @@ class BookingModel {
     return result.recordset || []; // Trả về danh sách ghế bị giải phóng để emit socket
   }
 
+  static async ensureSchema() {
+    await ensureBookingSchema();
+  }
+
   static async getLockedSeatsDB(showtimeId) {
+    await ensureBookingSchema();
     const pool = await getPool();
     const result = await pool.request()
       .input('showtimeId', sql.Int, showtimeId)

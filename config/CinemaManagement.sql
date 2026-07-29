@@ -253,6 +253,42 @@ CREATE TABLE ShowtimeSeats (
     FOREIGN KEY (SeatID) REFERENCES Seats(SeatID),
     FOREIGN KEY (LockedBy) REFERENCES Users(UserID)
 );
+
+CREATE TABLE SeatLocks (
+    ShowtimeID INT NOT NULL,
+    SeatID     INT NOT NULL,
+    SessionID  NVARCHAR(255) NOT NULL,
+    SocketID   NVARCHAR(255) NULL,
+    ExpiresAt  DATETIME NOT NULL,
+    PRIMARY KEY (ShowtimeID, SeatID),
+    FOREIGN KEY (ShowtimeID) REFERENCES Showtimes(ShowtimeID),
+    FOREIGN KEY (SeatID) REFERENCES Seats(SeatID)
+);
+
+CREATE TABLE UserVouchers (
+    UserVoucherID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID        INT NOT NULL,
+    VoucherID     INT NOT NULL,
+    PointsSpent   INT DEFAULT 0,
+    Source        VARCHAR(50) DEFAULT 'reward',
+    IsUsed        BIT DEFAULT 0,
+    UsedAt        DATETIME NULL,
+    CreatedAt     DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (VoucherID) REFERENCES Vouchers(VoucherID)
+);
+
+CREATE TABLE RewardPointTransactions (
+    TransactionID   INT IDENTITY(1,1) PRIMARY KEY,
+    UserID          INT NOT NULL,
+    TicketID        INT NULL,
+    PointsChange    INT NOT NULL,
+    BalanceAfter    INT NOT NULL,
+    TransactionType VARCHAR(30) NOT NULL,
+    Description     NVARCHAR(255) NULL,
+    CreatedAt       DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
 GO
 -- ╔══════════════════════════════════════════════════════════════════════════╗
 -- ║                     CHÈN DỮ LIỆU MẪU (SEED DATA)                       ║

@@ -132,6 +132,7 @@ exports.getSeatsByShowtime = async (req, res) => {
     const sessionId = req.query.sessionId;
     
     const BookingModel = require('../models/bookingModel');
+    if (BookingModel.ensureSchema) await BookingModel.ensureSchema();
     const lockedSeatsDB = await BookingModel.getLockedSeatsDB(req.params.showtimeId);
     
     const lockMap = new Map();
