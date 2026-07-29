@@ -397,7 +397,7 @@
 
             const tags = [
                 `<span class="tag tag-pg">${escapeHtml(movie.AgeRating || 'ALL')}</span>`,
-                '<span class="tag tag-now">Đang chiếu</span>',
+                `<span class="tag tag-now">${movie.Status === 'Coming Soon' ? 'Sắp chiếu' : 'Đang chiếu'}</span>`,
                 movie.Duration ? `<span class="tag tag-dur">⏱ ${escapeHtml(movie.Duration)} phút</span>` : '',
                 movie.Genre ? `<span class="tag tag-genre">${escapeHtml(String(movie.Genre).split(',')[0].trim())}</span>` : ''
             ].filter(Boolean).join('');
@@ -464,7 +464,7 @@
             $('modalMeta').innerHTML = `
                 <span class="tag tag-pg">${escapeHtml(movie.AgeRating || 'ALL')}</span>
                 ${movie.Duration ? `<span class="tag tag-dur">⏱ ${escapeHtml(movie.Duration)} phút</span>` : ''}
-                <span class="tag tag-now">Đang chiếu</span>
+                <span class="tag tag-now">${movie.Status === 'Coming Soon' ? 'Sắp chiếu' : 'Đang chiếu'}</span>
                 ${movie.Genre ? `<span class="tag tag-genre">${escapeHtml(movie.Genre)}</span>` : ''}`;
         }
 
