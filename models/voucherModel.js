@@ -105,6 +105,7 @@ class VoucherModel {
 
   static async create(data) {
     const pool = await getPool();
+    await this.syncVoucherTables(pool);
     const result = await pool.request()
       .input('voucherCode', sql.NVarChar(50), data.voucherCode)
       .input('voucherType', sql.NVarChar(255), data.voucherType || 'Mã Khuyến Mãi')
@@ -131,6 +132,7 @@ class VoucherModel {
 
   static async update(id, data) {
     const pool = await getPool();
+    await this.syncVoucherTables(pool);
     const request = pool.request().input('id', sql.Int, id);
     
     let updateFields = [];
