@@ -828,8 +828,8 @@ class BookingModel {
         SELECT t.TicketID, t.BookedAt, t.Status, t.TotalAmount, t.PaymentMethod,
                t.RefundStatus, t.RefundRequestedAt, t.CancelReason, t.CancelledAt, t.RefundedAt,
                m.Title AS MovieTitle, m.PosterURL,
-               CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
-               CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
+               CONVERT(varchar(19), st.StartTime, 126) + 'Z' AS StartTime,
+               CONVERT(varchar(19), st.EndTime, 126) + 'Z' AS EndTime,
                r.RoomName,
                CASE
                  WHEN r.RoomName LIKE '%3D%' THEN '3D'
@@ -874,8 +874,8 @@ class BookingModel {
                t.TotalAmount, t.PaymentMethod, t.QRCode,
                t.RefundStatus, t.RefundRequestedAt, t.CancelReason, t.CancelledAt, t.RefundedAt,
                m.Title AS MovieTitle, m.PosterURL, m.Duration,
-               CONVERT(varchar(19), st.StartTime, 126) AS StartTime,
-               CONVERT(varchar(19), st.EndTime, 126) AS EndTime,
+               CONVERT(varchar(19), st.StartTime, 126) + 'Z' AS StartTime,
+               CONVERT(varchar(19), st.EndTime, 126) + 'Z' AS EndTime,
                r.RoomName,
                CASE
                  WHEN r.RoomName LIKE '%3D%' THEN '3D'
