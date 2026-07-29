@@ -836,13 +836,6 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js?v=7"></script>
     <script>
-    // Tự động chuyển hướng thêm cache-buster nếu URL chưa có tham số v để chống cache cứng đầu
-    if (!window.location.search.includes('v=')) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('v', Date.now());
-        window.location.replace(url.toString());
-    }
-    
     let booking = {};
     let qrTimers = {};
     let serverLanOrigin = window.location.origin;
@@ -975,7 +968,9 @@
 
         const finalAmount = booking.finalAmount || booking.totalAmount || 0;
         const amountStr = finalAmount.toLocaleString('vi-VN') + ' VND';
-        const bookingId = booking.bookingId || ('DC-' + Math.floor(1000000 + Math.random() * 9000000));
+        // [FIX #11] Không tự tạo bookingId giả bằng Math.random()
+        // Nếu không có bookingId thật thì dùng placeholder, KHÔNG random
+        const bookingId = booking.bookingId || 'DC-PENDING';
         const qrData = `DCINEMA|${bookingId}|${finalAmount}|${method}|${Date.now()}`;
 
         if (['momo','zalopay','vnpay','shopeepay'].includes(method)) {
@@ -997,10 +992,13 @@
             const screen = document.getElementById('screen-card');
             if (screen) screen.classList.add('active');
 
-            // masked card (use last 4 from session if available)
-            const last4 = booking.cardLast4 || Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('cardMasked').textContent = `•••• •••• •••• ${last4}`;
-            document.getElementById('txnCode').textContent = 'TXN-' + bookingId;
+            // [FIX #18] KHÔNG dùng Math.random() cho last4 — nếu không có thông tin thẻ thật
+            // thì hiển thị placeholder ổn định, KHÔNG tạo số ngẫu nhiên mỗi lần load
+            const last4 = booking.cardLast4 || '••••';
+            const cardMaskedEl = document.getElementById('cardMasked');
+            const txnCodeEl = document.getElementById('txnCode');
+            if (cardMaskedEl) cardMaskedEl.textContent = `•••• •••• •••• ${last4}`;
+            if (txnCodeEl) txnCodeEl.textContent = 'TXN-' + bookingId;
         }
     }
 
@@ -1071,8 +1069,10 @@
         
         cardContainer.appendChild(wrapper);
         
-        let verifyUrlLan = `${serverLanOrigin || window.location.origin}/verify-ticket.html?id=${validTicketId}`;
-        let verifyUrlLocal = `verify-ticket.html?id=${validTicketId}`;
+        const allTicketIds = qrCarouselTicketIds.join('-');
+        const returnTo = `payment-success.html?id=${encodeURIComponent(allTicketIds)}`;
+        let verifyUrlLan = `${serverLanOrigin || window.location.origin}/verify-ticket.html?id=${encodeURIComponent(validTicketId)}&returnTo=${encodeURIComponent(returnTo)}`;
+        let verifyUrlLocal = `verify-ticket.html?id=${encodeURIComponent(validTicketId)}&returnTo=${encodeURIComponent(returnTo)}`;
         
         // Make entire QR wrapper clickable (relative URL preserves origin and login session)
         wrapper.onclick = () => {
@@ -1175,17 +1175,30 @@
 
         const method = booking.paymentMethod || 'default';
         const finalAmount = booking.finalAmount || booking.totalAmount || 0;
-        const bookingId = booking.bookingId || ('DC-' + Math.floor(1000000 + Math.random() * 9000000));
+        // [FIX #11] Không tự tạo bookingId giả bằng Math.random()
+        const bookingId = booking.bookingId || 'DC-PENDING';
         const seatCount = booking.seatCount || 1;
 
         // Parse ticket IDs from bookingId: 'DC-354-355-358-357-359'
         const idsRaw = bookingId.replace(/^DC-/i, '');
-        qrCarouselTicketIds = idsRaw.split('-').map(s => s.trim()).filter(s => /^\d+$/.test(s));
-        if (qrCarouselTicketIds.length === 0) qrCarouselTicketIds = [idsRaw];
+        if (Array.isArray(booking.qrTickets) && booking.qrTickets.length > 0) {
+            qrCarouselTicketIds = booking.qrTickets.map(item => String(item.id)).filter(Boolean);
+        } else {
+            qrCarouselTicketIds = idsRaw.split('-').map(s => s.trim()).filter(s => /^\d+$/.test(s));
+            if (qrCarouselTicketIds.length === 0) qrCarouselTicketIds = [idsRaw];
+        }
 
-        // Build seat labels from booking.seats
-        const seatsArr = (booking.seats || '').split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+        // Build seat labels from booking.seatLabels or fallback to booking.seats
+        const seatsArr = (booking.seatLabels && Array.isArray(booking.seatLabels)) 
+            ? booking.seatLabels 
+            : (booking.seats || '').split(',').map(s => s.trim()).filter(Boolean);
+            
+        const qrTicketSeatLabels = Array.isArray(booking.qrTickets) && booking.qrTickets.length > 0
+            ? booking.qrTickets.map((item, i) => item.seat || seatsArr[i] || ('Ghe ' + (i + 1)))
+            : null;
         qrCarouselSeats = qrCarouselTicketIds.map((_, i) => seatsArr[i] || ('Ghế ' + (i + 1)));
+
+        if (qrTicketSeatLabels) qrCarouselSeats = qrTicketSeatLabels;
 
         // User info
         const u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
@@ -1195,7 +1208,17 @@
         if (booking.date) document.getElementById('ticketDate').textContent = booking.date;
         if (booking.time) document.getElementById('ticketTime').textContent = booking.time;
         const typeEl = document.getElementById('ticketType');
-        if (typeEl) typeEl.textContent = booking.seatType || booking.ticketType || 'Standard';
+        if (typeEl) {
+            // [FIX P3] Aggregate tất cả loại ghế (tránh chỉ lấy ghế đầu tiên khi booking mix type)
+            let seatTypeLabel = 'Standard';
+            if (booking.seatDetails && Array.isArray(booking.seatDetails) && booking.seatDetails.length > 0) {
+                const types = [...new Set(booking.seatDetails.map(s => s.type || s.SeatType || 'Standard'))];
+                seatTypeLabel = types.join(' / ');
+            } else if (booking.seatType || booking.ticketType) {
+                seatTypeLabel = booking.seatType || booking.ticketType;
+            }
+            typeEl.textContent = seatTypeLabel;
+        }
         const ticketIdEl = document.getElementById('ticketTicketId');
         if (ticketIdEl) ticketIdEl.textContent = qrCarouselTicketIds[0] || '1';
 
@@ -1212,21 +1235,23 @@
         // Poster
         const poster = document.getElementById('ticketPoster');
         const posterBg = document.getElementById('ticketPosterBg');
-        let posterUrl = booking.poster || 'images/doraemon_sea.png';
+        // [FIX #11] Dùng default_poster.svg thay cho doraemon_sea.png hardcode
+        let posterUrl = booking.poster || 'images/default_poster.svg';
         if (posterUrl && !posterUrl.startsWith('http') && !posterUrl.startsWith('/') && !posterUrl.startsWith('images/')) {
             posterUrl = 'images/' + posterUrl;
         }
         if (poster) {
             poster.src = posterUrl;
-            poster.onerror = () => { poster.src = 'images/doraemon_sea.png'; };
+            poster.onerror = () => { poster.src = 'images/default_poster.svg'; };
         }
         if (posterBg) {
             posterBg.src = posterUrl;
-            posterBg.onerror = () => { posterBg.src = 'images/doraemon_sea.png'; };
+            posterBg.onerror = () => { posterBg.src = 'images/default_poster.svg'; };
         }
 
         // Fill info
-        const title = (booking.movieTitle || 'PHIM').toUpperCase();
+        // [FIX #11] Hiển thị placeholder rõ ràng hơn khi không có tiêu đề phim
+        const title = (booking.movieTitle || 'Phim đang cập nhật').toUpperCase();
         const titleEl = document.getElementById('ticketTitle');
         if (titleEl) titleEl.textContent = title;
 
@@ -1382,19 +1407,19 @@
                     const d = json.data;
                     const dDate = d.startTime ? new Date(d.startTime) : new Date();
                     booking = {
-                        movieTitle: d.movieTitle || 'DORAEMON MOVIE 45 (2026): NOBITA VÀ LÂU ĐÀI DƯỚI ĐÁY BIỂN',
-                        poster: (d.poster && d.poster.includes('.')) ? d.poster : 'images/doraemon_sea.png',
+                        movieTitle: d.movieTitle || 'Phim đang cập nhật',
+                        poster: (d.poster && d.poster.includes('.')) ? d.poster : 'images/default_poster.svg',
                         date: dDate.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }),
                         time: dDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false }),
-                        hall: d.roomName ? `${d.roomName} — ${d.cinemaName || 'D-CINEMA'}` : 'IMAX Laser — D-CINEMA Sense City Cần Thơ',
-                        seats: d.seats || 'H7, J7, J8, J9',
-                        seatCount: d.seats ? d.seats.split(',').length : 4,
+                        hall: d.roomName ? `${d.roomName} — ${d.cinemaName || 'D-CINEMA'}` : 'D-CINEMA',
+                        seats: d.seats || '',
+                        seatCount: d.seats ? d.seats.split(',').length : 0,
                         seatType: d.seatType || 'Standard',
-                        finalAmount: d.totalAmount || 2400,
-                        totalAmount: d.totalAmount || 2400,
+                        finalAmount: d.totalAmount || 0,
+                        totalAmount: d.totalAmount || 0,
                         paymentMethod: d.paymentMethod || 'qrpay',
                         bookingId: d.bookingId || ('DC-' + queryId),
-                        customerName: d.customerName || 'nmhuy',
+                        customerName: d.customerName || 'Khách hàng',
                         foodDisplayItems: (d.foodItems && d.foodItems !== 'Không có') ? [{ name: d.foodItems, quantity: 1 }] : [],
                         completed: true
                     };
@@ -1405,32 +1430,39 @@
             } catch(e) {}
         }
         try {
-            booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
+            // [FIX #23] sessionStorage luôn ưu tiên (same-tab, fresh hơn). localStorage là fallback.
+            const _sesRaw = sessionStorage.getItem('booking');
+            const _lsRaw  = localStorage.getItem('booking');
+            if (_sesRaw && _lsRaw && _sesRaw !== _lsRaw) {
+                console.warn('[FIX #23] [payment-success] sessionStorage và localStorage khác nhau — ưu tiên sessionStorage');
+            }
+            booking = JSON.parse(_sesRaw || _lsRaw || '{}');
         } catch(e) { booking = {}; }
 
         if (booking.completed && (booking.bookingId || booking.showtimeId)) {
             setTicketPageMode('success');
             showTicket();
+            // [FIX P3] Cleanup: xoá booking khỏi sessionStorage sau khi hiển thị vé thành công.
+            // localStorage được giữ lại để user có thể mở lại tab payment-success.
+            // sessionStorage sẽ không gây conflict với booking mới trong cùng tab.
+            setTimeout(() => {
+                sessionStorage.removeItem('booking');
+                sessionStorage.removeItem('concessionItems');
+                console.log('[payment-success] [FIX P3] Đã xoá booking khỏi sessionStorage sau khi hiển thị vé.');
+            }, 2000); // Delay 2s để đảm bảo showTicket() đã hoàn thành render
             return;
         }
 
-        // Demo mode — no real booking
         if (!booking.showtimeId && !booking.bookingId) {
-            booking = {
-                movieTitle: 'Demo Movie',
-                date: new Date().toLocaleDateString('vi-VN'),
-                time: '20:00',
-                hall: 'Standard 1',
-                seats: 'A7',
-                seatCount: 1,
-                finalAmount: 100000,
-                totalAmount: 100000,
-                paymentMethod: 'qrpay',
-                bookingId: 'DC-' + Math.floor(1000000 + Math.random() * 9000000),
-                completed: true
-            };
-            setTicketPageMode('view');
-            showTicket();
+            const container = document.querySelector('.ticket-card');
+            if (container) {
+                container.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #fff;">
+                        <h3 style="margin-bottom: 15px;">Không tìm thấy thông tin vé</h3>
+                        <p style="color: #8a8f9a; margin-bottom: 25px;">Vui lòng kiểm tra lại đường dẫn hoặc xem lịch sử đặt vé trong tài khoản của bạn.</p>
+                        <a href="profile.html" style="background: #e50914; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700;">Xem lịch sử đặt vé</a>
+                    </div>`;
+            }
             return;
         }
 

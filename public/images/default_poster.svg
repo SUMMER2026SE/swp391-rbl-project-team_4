@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="200" height="300">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1d24"/>
+      <stop offset="100%" stop-color="#0c0d10"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="300" fill="url(#bg)" rx="8"/>
+  <rect x="1" y="1" width="198" height="298" fill="none" stroke="#252830" stroke-width="1.5" rx="8"/>
+  <!-- Film strip top -->
+  <rect x="0" y="8" width="200" height="20" fill="#13151a"/>
+  <rect x="6" y="11" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="28" y="11" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="50" y="11" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="72" y="11" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="94" y="11" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="116" y="11" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="138" y="11" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="160" y="11" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="182" y="11" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <!-- Film strip bottom -->
+  <rect x="0" y="272" width="200" height="20" fill="#13151a"/>
+  <rect x="6" y="275" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="28" y="275" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="50" y="275" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="72" y="275" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="94" y="275" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="116" y="275" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="138" y="275" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="160" y="275" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <rect x="182" y="275" width="14" height="14" fill="#0c0d10" rx="2"/>
+  <!-- Center icon -->
+  <circle cx="100" cy="145" r="36" fill="none" stroke="#252830" stroke-width="2"/>
+  <!-- Play icon -->
+  <polygon points="90,130 120,145 90,160" fill="#2e3240"/>
+  <!-- Film text -->
+  <text x="100" y="205" font-family="Inter,Arial,sans-serif" font-size="11" fill="#8a8f9a" text-anchor="middle" letter-spacing="2" font-weight="600">D-CINEMA</text>
+  <text x="100" y="222" font-family="Inter,Arial,sans-serif" font-size="9" fill="#4a4f5a" text-anchor="middle" letter-spacing="1">POSTER KHÔNG CÓ SẴN</text>
+</svg>

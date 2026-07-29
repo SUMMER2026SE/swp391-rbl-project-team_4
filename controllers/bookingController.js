@@ -745,11 +745,13 @@ exports.getPendingWebhooks = async (req, res) => {
 
     // Bổ sung thêm phần F&B vào mỗi nhóm vé
     for (const b of bookings) {
-      const fnbResult = await pool.request().query(`
+      // [FIX P1] Dùng buildInQuery thay vì template literal để nhất quán với các nơi khác
+      const { req: reqFnbPending, inClause: inFnbPending } = buildInQuery(pool, b.ticketIds, 'fp');
+      const fnbResult = await reqFnbPending.query(`
         SELECT SUM(tf.Quantity * fb.Price) AS FnBSum
         FROM Ticket_FnB tf
         JOIN FoodBeverages fb ON tf.FnBID = fb.FnBID
-        WHERE tf.TicketID IN (${b.ticketIds.join(',')})
+        WHERE tf.TicketID IN (${inFnbPending})
       `);
       const fnbSum = parseFloat(fnbResult.recordset[0].FnBSum || 0);
       b.totalAmount = b.ticketAmount + fnbSum;

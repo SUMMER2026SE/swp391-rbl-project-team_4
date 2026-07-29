@@ -1326,39 +1326,48 @@
             </button>
             <nav class="nav-links">
                 <div class="dropdown">
-                    <a href="movies.html" id="nav-phim">Phim <span class="nav-arrow">▾</span></a>
+                    <a href="movies.html" id="nav-phim" data-i18n="nav_movies">Phim <span class="nav-arrow">▾</span></a>
                     <div class="dropdown-menu">
-                        <a href="movies.html?status=showing" class="dropdown-item">Đang chiếu</a>
-                        <a href="movies.html?status=coming" class="dropdown-item">Sắp chiếu</a>
+                        <a href="movies.html?status=showing" class="dropdown-item" data-i18n="nav_now_showing">Đang chiếu</a>
+                        <a href="movies.html?status=coming" class="dropdown-item" data-i18n="nav_coming_soon">Sắp chiếu</a>
                     </div>
                 </div>
-                <a href="booking.html" id="nav-rap" class="active">Rạp</a>
-                <a href="promotions.html" id="nav-promo">Promotions</a>
-                <a href="news-events.html" id="nav-news">Tin Tức &amp; Sự Kiện</a>
-                <a href="ticket-prices.html" id="nav-prices">Giá Vé</a>
+                <a href="booking.html" id="nav-rap" class="active" data-i18n="nav_cinemas">Rạp</a>
+                <a href="promotions.html" id="nav-promo" data-i18n="nav_promotions">Promotions</a>
+                <a href="news-events.html" id="nav-news" data-i18n="nav_news">Tin Tức &amp; Sự Kiện</a>
+                <a href="ticket-prices.html" id="nav-prices" data-i18n="nav_prices">Giá Vé</a>
             </nav>
             <div class="nav-actions">
-                <a href="auth.html" class="btn-login" id="btnLogin">Đăng Nhập</a>
+                <select id="langSwitcher" class="lang-switcher" style="margin-right: 15px; margin-left: 15px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); outline: none; cursor: pointer; font-weight: 500; font-size: 14px; backdrop-filter: blur(5px);">
+                    <option value="vi" style="color: black;">VI</option>
+                    <option value="en" style="color: black;">EN</option>
+                </select>
+                <a href="profile.html" class="nav-user-icon" title="Hồ sơ">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </a>
+                <a href="auth.html" class="btn-login" id="btnLogin" data-i18n="nav_login">Đăng Nhập</a>
             </div>
         </div>
     </header>
 
-    <!-- Progress Steps -->
     <div class="steps-bar">
         <div class="steps-container">
             <div class="step-item active">
                 <div class="step-num">1</div>
-                Chọn ghế
+                <span data-i18n="seat_step_1">1 CHỌN GHẾ</span>
             </div>
             <span class="step-arrow">›</span>
             <div class="step-item" id="step2">
                 <div class="step-num">2</div>
-                Bắp & Nước
+                <span data-i18n="seat_step_2">2 BẮP & NƯỚC</span>
             </div>
             <span class="step-arrow">›</span>
             <div class="step-item" id="step3">
                 <div class="step-num">3</div>
-                Thanh toán
+                <span data-i18n="seat_step_3">3 THANH TOÁN</span>
             </div>
         </div>
     </div>
@@ -1384,27 +1393,27 @@
             <div class="screen-wrap">
                 <div class="screen-bar"></div>
                 <div class="screen-glow"></div>
-                <div class="screen-label">Màn Hình</div>
+                <div class="screen-label" data-i18n="seat_screen">Màn Hình</div>
             </div>
 
             <!-- Quy tắc phòng chiếu chuẩn -->
             <div class="cinema-rules-banner">
                 <div class="banner-badge">
                     <span class="pulse-dot"></span>
-                    Quy Tắc Rạp Phim
+                    <span data-i18n="seat_rules_title">Quy Tắc Rạp Phim</span>
                 </div>
                 <div class="banner-content">
                     <div class="rule-item">
                         <span class="rule-icon">✦</span>
-                        <span>Không chừa ghế trống đơn lẻ</span>
+                        <span data-i18n="seat_rule_1">Không chừa ghế trống đơn lẻ</span>
                     </div>
                     <div class="rule-item">
                         <span class="rule-icon">✦</span>
-                        <span>Chọn các ghế liền kề nhau</span>
+                        <span data-i18n="seat_rule_2">Chọn các ghế liền kề nhau</span>
                     </div>
                     <div class="rule-item">
                         <span class="rule-icon">✦</span>
-                        <span>Hàng Sweetbox luôn theo cặp</span>
+                        <span data-i18n="seat_rule_3">Hàng Sweetbox luôn theo cặp</span>
                     </div>
                 </div>
             </div>
@@ -1412,19 +1421,17 @@
             <!-- View Toggle -->
             <div class="view-toggle-bar">
                 <button class="view-toggle-btn active" id="btn2DView" onclick="switchView('2d')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <path d="M3 9h18M9 21V9" />
                     </svg>
-                    Sơ đồ 2D
+                    <span data-i18n="seat_map_2d">Sơ đồ 2D</span>
                 </button>
                 <button class="view-toggle-btn" id="btn3DView" onclick="switchView('3d')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                     </svg>
-                    Xem 3D
+                    <span data-i18n="seat_view_3d">Xem 3D</span>
                 </button>
             </div>
 
@@ -1437,15 +1444,15 @@
                 style="display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 12px; max-width: 90%; margin-left: auto; margin-right: auto;">
                 <button class="nav-back-btn" onclick="zoomSeatMap(1.15)"
                     style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
-                    🔍 Phóng to
+                    🔍 <span data-i18n="seat_zoom_in">Phóng to</span>
                 </button>
                 <button class="nav-back-btn" onclick="zoomSeatMap(0.85)"
                     style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
-                    🔍 Thu nhỏ
+                    🔍 <span data-i18n="seat_zoom_out">Thu nhỏ</span>
                 </button>
                 <button class="nav-back-btn" onclick="resetZoom()"
                     style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
-                    🔄 Đặt lại
+                    🔄 <span data-i18n="seat_reset">Đặt lại</span>
                 </button>
             </div>
 
@@ -1470,23 +1477,23 @@
             <div class="legend">
                 <div class="legend-item">
                     <div class="legend-box normal"></div>
-                    <span>Thường</span>
+                    <span data-i18n="seat_legend_normal">Thường</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box vip"></div>
-                    <span>VIP (+20%)</span>
+                    <span data-i18n="seat_legend_vip">VIP (+20%)</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box couple"></div>
-                    <span>Cặp đôi (+50%)</span>
+                    <span data-i18n="seat_legend_couple">Cặp đôi (+50%)</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box selected"></div>
-                    <span>Đang chọn</span>
+                    <span data-i18n="seat_legend_selecting">Đang chọn</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box booked"></div>
-                    <span>Đã đặt</span>
+                    <span data-i18n="seat_legend_booked">Đã đặt</span>
                 </div>
             </div>
         </section>
@@ -1497,7 +1504,7 @@
             <div class="countdown-card" id="countdownCard"
                 style="display: none; align-items: center; justify-content: center; gap: 10px; background: rgba(229,9,20,0.12); border: 1px solid rgba(229,9,20,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; animation: fadeIn 0.3s ease;">
                 <span style="font-size: 1.15rem; animation: pulse 1s infinite alternate;">⏱️</span>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #ff8080; letter-spacing: 0.5px;">GIỮ GHẾ TRONG:
+                <div style="font-size: 0.85rem; font-weight: 700; color: #ff8080; letter-spacing: 0.5px;"><span data-i18n="seat_hold_time">GIỮ GHẾ TRONG:</span>
                     <span id="countdownTimer"
                         style="font-size: 1.15rem; color: #fff; font-family: monospace; margin-left: 4px;">05:00</span>
                 </div>
@@ -1518,51 +1525,51 @@
             <!-- Showtime info -->
             <div class="info-rows">
                 <div class="info-row">
-                    <span class="info-key">🎬 Rạp chiếu</span>
+                    <span class="info-key">🎬 <span data-i18n="seat_cinema">Rạp chiếu</span></span>
                     <span class="info-val" id="infoCinema">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">🪑 Phòng chiếu</span>
+                    <span class="info-key">🪑 <span data-i18n="seat_room">Phòng chiếu</span></span>
                     <span class="info-val" id="infoRoom">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">📅 Ngày chiếu</span>
+                    <span class="info-key">📅 <span data-i18n="seat_date">Ngày chiếu</span></span>
                     <span class="info-val" id="infoDate">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">⏰ Giờ chiếu</span>
+                    <span class="info-key">⏰ <span data-i18n="seat_time">Giờ chiếu</span></span>
                     <span class="info-val" id="infoTime">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">💰 Giá vé gốc</span>
+                    <span class="info-key">💰 <span data-i18n="seat_price">Giá vé gốc</span></span>
                     <span class="info-val" id="infoPrice">--</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-key">🎟️ Ghế đã chọn</span>
-                    <span class="info-val seats-val" id="infoSeats">Chưa chọn</span>
+                    <span class="info-key">🎟️ <span data-i18n="seat_selected">Ghế đã chọn</span></span>
+                    <span class="info-val seats-val" id="infoSeats" data-i18n="seat_none">Chưa chọn</span>
                 </div>
             </div>
 
             <!-- Price breakdown -->
             <div class="price-breakdown" id="priceBreakdown" style="display:none;">
-                <div class="price-breakdown-title">Chi tiết giá</div>
+                <div class="price-breakdown-title" data-i18n="seat_price_breakdown">Chi tiết giá</div>
                 <div id="priceBreakdownRows"></div>
             </div>
 
             <!-- Total -->
             <div class="total-row">
-                <span class="total-label">Tạm tính</span>
+                <span class="total-label" data-i18n="seat_subtotal">Tạm tính</span>
                 <span class="total-amount" id="totalAmount">0 ₫</span>
             </div>
 
             <!-- CTA -->
             <button class="btn-continue" id="btnContinue" disabled onclick="confirmSeats()">
-                Tiếp Tục
+                <span data-i18n="seat_continue">Tiếp Tục</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
             </button>
-            <p class="seat-limit-info">Tối đa 8 ghế mỗi lần đặt</p>
+            <p class="seat-limit-info" data-i18n="seat_max_alert">Tối đa 8 ghế mỗi lần đặt</p>
     </div>
 
     <!-- Mobile Sticky Checkout Bar -->
@@ -1581,6 +1588,7 @@
 
     <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="app.js?v=7"></script>
     <script>
         // ──────────────────────────────────────────────
@@ -1602,9 +1610,11 @@
         let seatsList = [];
         let selectedSeats = new Set();   // Set<SeatID>
         let lockedByOthers = new Set();  // Set<SeatID>
+        let holdExpiryBySeat = new Map(); // SeatID -> deadline timestamp (ms)
         let currentZoom = 1.0;
         let countdownInterval = null;
         let secondsLeft = 300; // 5 minutes (300 seconds)
+        let countdownDeadline = null;
 
         // ──────────────────────────────────────────────
         //  Zoom & Timer & Tooltip Helpers
@@ -1626,15 +1636,42 @@
             }
         }
 
+        function setSeatHoldExpiry(seatId, remainingSeconds) {
+            const seconds = Number(remainingSeconds);
+            if (!Number.isFinite(seconds) || seconds <= 0) return;
+            holdExpiryBySeat.set(Number(seatId), Date.now() + seconds * 1000);
+            refreshTimerFromSeatLocks();
+        }
+
+        function refreshTimerFromSeatLocks(fallbackSeconds = 300) {
+            if (selectedSeats.size === 0) {
+                stopTimer();
+                return;
+            }
+
+            const deadlines = Array.from(selectedSeats)
+                .map(seatId => holdExpiryBySeat.get(Number(seatId)))
+                .filter(deadline => Number.isFinite(deadline) && deadline > Date.now());
+
+            countdownDeadline = deadlines.length
+                ? Math.min(...deadlines)
+                : Date.now() + fallbackSeconds * 1000;
+
+            startTimer();
+        }
+
         function startTimer() {
-            if (countdownInterval) return; // Already running
-            secondsLeft = 300;
             const card = document.getElementById('countdownCard');
             if (card) card.style.display = 'flex';
             updateTimerDisplay();
+            if (countdownInterval) return; // Already running
 
             countdownInterval = setInterval(() => {
-                secondsLeft--;
+                if (countdownDeadline) {
+                    secondsLeft = Math.max(0, Math.ceil((countdownDeadline - Date.now()) / 1000));
+                } else {
+                    secondsLeft--;
+                }
                 updateTimerDisplay();
 
                 if (secondsLeft <= 0) {
@@ -1652,11 +1689,15 @@
                 clearInterval(countdownInterval);
                 countdownInterval = null;
             }
+            countdownDeadline = null;
             const card = document.getElementById('countdownCard');
             if (card) card.style.display = 'none';
         }
 
         function updateTimerDisplay() {
+            if (countdownDeadline) {
+                secondsLeft = Math.max(0, Math.ceil((countdownDeadline - Date.now()) / 1000));
+            }
             const min = Math.floor(secondsLeft / 60);
             const sec = secondsLeft % 60;
             const timerEl = document.getElementById('countdownTimer');
@@ -1695,18 +1736,43 @@
         }
 
         // ──────────────────────────────────────────────
-        //  Auth check
-        // ──────────────────────────────────────────────
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) {
-            alert('Vui lòng đăng nhập trước khi chọn ghế!');
-            window.location.href = `auth.html?redirect=${encodeURIComponent('seats.html?showtimeId=' + showtimeId)}`;
-        }
-
-        // ──────────────────────────────────────────────
-        //  Init
+        //  Init (Auth check + socket + seat load)
+        //  [FIX P2] Auth check đã được chuyển VÀO DOMContentLoaded để tránh:
+        //   1. Race condition giữa redirect và DOMContentLoaded chạy đồng thời
+        //   2. Vòng lặp redirect khi showtimeId = NaN
         // ──────────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', async () => {
+            // [FIX P2] Kiểm tra auth TRONG DOMContentLoaded — không nằm ngoài script nữa
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                // Guard: chỉ redirect nếu showtimeId hợp lệ để tránh loop
+                const redirectTarget = (!isNaN(showtimeId) && showtimeId > 0)
+                    ? `auth.html?redirect=${encodeURIComponent('seats.html?showtimeId=' + showtimeId)}`
+                    : 'auth.html';
+                window.location.href = redirectTarget;
+            }
+
+            // [FIX] Nếu user quay lại từ checkout, huỷ các vé pending cũ để họ có thể chọn lại ghế.
+            // Nếu không huỷ, ghế sẽ bị coi là 'booked' trong CSDL và hiển thị màu xám thay vì đỏ.
+            try {
+                let _sesRaw = sessionStorage.getItem('booking');
+                let _lsRaw = localStorage.getItem('booking');
+                let savedBooking = JSON.parse(_sesRaw || _lsRaw || '{}');
+                if (savedBooking && savedBooking.ticketIds && savedBooking.ticketIds.length > 0 && !savedBooking.completed) {
+                    console.log('[Seats] Đang quay lại từ checkout. Hủy vé pending cũ để cho phép chọn lại ghế...');
+                    await fetch('/api/bookings/cancel', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ ticketIds: savedBooking.ticketIds })
+                    });
+                    delete savedBooking.ticketIds;
+                    sessionStorage.setItem('booking', JSON.stringify(savedBooking));
+                    localStorage.setItem('booking', JSON.stringify(savedBooking));
+                }
+            } catch (err) {
+                console.error('[Seats] Lỗi khi huỷ vé pending:', err);
+            }
+
             updateNavbar();
             await loadShowtimeDetails();
             if (showtimeData && new Date(showtimeData.StartTime) < new Date()) {
@@ -1714,18 +1780,39 @@
                 window.location.replace('booking.html');
                 return;
             }
+            // [FIX P0] Tạo bookingSessionId TRƯỚC khi initSocket() để socket handshake
+            // mang đúng session ID. Nếu không, LockSessionID trong DB ≠ sessId socket
+            // → khôi phục ghế khi Back từ concessions luôn thất bại.
+            let sessId = sessionStorage.getItem('bookingSessionId');
+            if (!sessId) {
+                sessId = 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
+                sessionStorage.setItem('bookingSessionId', sessId);
+                console.log('[Seats] [FIX P0] Tạo bookingSessionId mới:', sessId);
+            } else {
+                console.log('[Seats] [FIX P0] Dùng bookingSessionId có sẵn:', sessId);
+            }
             initSocket();
             await loadSeats();
-            window.addEventListener('beforeunload', releaseAllHeldSeats);
+            
+            const ls = document.getElementById('langSwitcher');
+            if (ls) {
+                ls.addEventListener('change', () => {
+                    setTimeout(() => {
+                        if (typeof updateAvailability === 'function') updateAvailability();
+                        if (typeof updateSummary === 'function') updateSummary();
+                    }, 50);
+                });
+            }
         });
 
         function releaseAllHeldSeats() {
-            if (!socket || selectedSeats.size === 0) return;
-            selectedSeats.forEach(seatId => {
-                socket.emit('releaseSeat', { showtimeId, seatId });
-            });
             selectedSeats.clear();
+            holdExpiryBySeat.clear();
+            sessionStorage.removeItem('booking');
+            localStorage.removeItem('booking');
             stopTimer();
+            renderSeatGrid();
+            updateSummary();
         }
 
         function updateNavbar() {
@@ -1798,27 +1885,40 @@
         //  Socket.IO for real-time seat locking
         // ──────────────────────────────────────────────
         function initSocket() {
-            if (socket.connected) {
-                socket.emit('joinShowtime', showtimeId);
-            }
+            socket.off('connect');
             socket.on('connect', () => {
                 socket.emit('joinShowtime', showtimeId);
             });
+            if (socket.connected) {
+                socket.emit('joinShowtime', showtimeId);
+            }
 
             socket.on('seatStatusUpdated', (data) => {
                 if (parseInt(data.showtimeId) !== showtimeId) return;
                 const seatId = parseInt(data.seatId);
-                if (data.status === 'Đang chọn') {
+                if (data.status === 'Đang chọn' || data.status === 'Dang chon') {
                     if (!selectedSeats.has(seatId)) {
                         lockedByOthers.add(seatId);
+                        const seatData = seatsList.find(s => s.SeatID === seatId);
+                        if (seatData && seatData.SeatStatus === 'available') seatData.SeatStatus = 'locked';
                         markSeatEl(seatId, 'locked');
                     }
-                } else if (data.status === 'Trống') {
+                } else if (data.status === 'Trống' || data.status === 'Trong') {
                     lockedByOthers.delete(seatId);
+                    const seatData = seatsList.find(s => s.SeatID === seatId);
+                    if (seatData && seatData.SeatStatus === 'locked') seatData.SeatStatus = 'available';
                     unmarkSeatEl(seatId);
                 }
                 if (typeof update3DSeatColors === 'function') {
                     update3DSeatColors();
+                }
+            });
+
+            socket.on('seatHoldConfirmed', (data) => {
+                if (parseInt(data.showtimeId) !== showtimeId) return;
+                const seatId = parseInt(data.seatId);
+                if (selectedSeats.has(seatId)) {
+                    setSeatHoldExpiry(seatId, data.remainingSeconds);
                 }
             });
 
@@ -1845,22 +1945,52 @@
         // ──────────────────────────────────────────────
         async function loadSeats() {
             try {
-                const sessId = sessionStorage.getItem('bookingSessionId') || '';
-                const res = await fetch(`/api/movies/showtimes/${showtimeId}/seats?sessionId=${encodeURIComponent(sessId)}`);
+                let sessId = sessionStorage.getItem('bookingSessionId');
+                if (!sessId) {
+                    sessId = 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
+                    sessionStorage.setItem('bookingSessionId', sessId);
+                }
+                const res = await fetch(
+                    `/api/movies/showtimes/${showtimeId}/seats?sessionId=${encodeURIComponent(sessId)}&_=${Date.now()}`,
+                    { cache: 'no-store' }
+                );
                 const json = await res.json();
                 if (json.success && json.data) {
                     seatsList = json.data;
+
+                    // Khôi phục mọi ghế DB báo còn đang được giữ bởi đúng phiên hiện tại.
+                    seatsList.forEach(seatData => {
+                        const remaining = Number(seatData.LockRemainingSeconds || 0);
+                        if (
+                            seatData.SeatStatus === 'available'
+                            && seatData.LockSessionID === sessId
+                            && remaining > 0
+                        ) {
+                            selectedSeats.add(Number(seatData.SeatID));
+                            setSeatHoldExpiry(seatData.SeatID, remaining);
+                        }
+                    });
                     
                     // Khôi phục danh sách ghế đã chọn từ session
                     try {
-                        const savedBooking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
+                        // [FIX #23] sessionStorage luôn ưu tiên (same-tab, fresh hơn). localStorage là fallback.
+                        const _sesRaw = sessionStorage.getItem('booking');
+                        const _lsRaw  = localStorage.getItem('booking');
+                        if (_sesRaw && _lsRaw && _sesRaw !== _lsRaw) {
+                            console.warn('[FIX #23] [seats] sessionStorage và localStorage khác nhau — ưu tiên sessionStorage');
+                        }
+                        const savedBooking = JSON.parse(_sesRaw || _lsRaw || '{}');
                         if (savedBooking && parseInt(savedBooking.showtimeId, 10) === showtimeId && Array.isArray(savedBooking.seatIds)) {
                             savedBooking.seatIds.forEach(id => {
                                 const parsedId = parseInt(id, 10);
                                 const seatData = seatsList.find(s => s.SeatID === parsedId);
-                                // Chỉ khôi phục nếu ghế thực sự còn trống (hoặc thuộc quyền khóa của mình)
-                                if (seatData && seatData.SeatStatus === 'available') {
+                                const isOwnedLock = seatData
+                                    && seatData.LockSessionID === sessId
+                                    && Number(seatData.LockRemainingSeconds || 0) > 0;
+                                // Chỉ khôi phục nếu lock DB còn thuộc đúng phiên hiện tại.
+                                if (seatData && seatData.SeatStatus === 'available' && isOwnedLock) {
                                     selectedSeats.add(parsedId);
+                                    setSeatHoldExpiry(parsedId, seatData.LockRemainingSeconds);
                                 }
                             });
                             console.log('[Seats] Đã khôi phục các ghế đã chọn từ trước:', Array.from(selectedSeats));
@@ -1876,9 +2006,9 @@
                     // Emit reclaimSeats sau khi socket đã kết nối để đồng bộ quyền sở hữu
                     if (selectedSeats.size > 0) {
                         if (socket.connected) {
-                            socket.emit('reclaimSeats', { showtimeId, seatIds: Array.from(selectedSeats) });
+                            socket.emit('reclaimSeats', { showtimeId, seatIds: Array.from(selectedSeats), sessionId: sessId });
                         }
-                        startTimer(); // Khôi phục bộ đếm ngược hiển thị ở client
+                        refreshTimerFromSeatLocks(); // Khôi phục đúng thời gian còn lại từ DB
                     }
                 } else {
                     document.getElementById('seatMapContainer').innerHTML = `
@@ -1911,6 +2041,22 @@
         // ──────────────────────────────────────────────
         //  Render Seat Grid
         // ──────────────────────────────────────────────
+        function buildRenderableRowsMap() {
+            const rowsMap = {};
+            seatsList.forEach(seat => {
+                if (!rowsMap[seat.SeatRow]) rowsMap[seat.SeatRow] = [];
+                rowsMap[seat.SeatRow].push(seat);
+            });
+
+            Object.keys(rowsMap).forEach(row => {
+                if (!rowsMap[row].some(seat => seat.SeatType !== 'None')) {
+                    delete rowsMap[row];
+                }
+            });
+
+            return rowsMap;
+        }
+
         function renderSeatGrid() {
             const container = document.getElementById('seatMapContainer');
             container.innerHTML = '';
@@ -1929,41 +2075,10 @@
                 return;
             }
 
-            // Group by row
-            const rowsMap = {};
-            seatsList.forEach(seat => {
-                if (!rowsMap[seat.SeatRow]) rowsMap[seat.SeatRow] = [];
-                rowsMap[seat.SeatRow].push(seat);
-            });
+            const rowsMap = buildRenderableRowsMap();
 
-            // Determine couple rows based on alphabetical order first
             const alphabetRows = Object.keys(rowsMap).sort();
-            const coupleRows = new Set();
-            alphabetRows.forEach(row => {
-                const seats = rowsMap[row];
-                if (seats.some(s => s.SeatType && s.SeatType.toLowerCase().includes('couple'))) {
-                    coupleRows.add(row);
-                }
-            });
-            if (coupleRows.size === 0 && alphabetRows.length > 0) {
-                coupleRows.add(alphabetRows[alphabetRows.length - 1]);
-            }
-
-            // Priority-based sort: Standard (3) > VIP (2) > Couple (1)
-            const getRowPriority = (row) => {
-                if (coupleRows.has(row)) return 1;
-                const seats = rowsMap[row] || [];
-                const hasVip = seats.some(s => s.SeatType === 'VIP');
-                if (hasVip) return 2;
-                return 3;
-            };
-
-            const sortedRows = [...alphabetRows].sort((a, b) => {
-                const prioA = getRowPriority(a);
-                const prioB = getRowPriority(b);
-                if (prioA !== prioB) return prioB - prioA;
-                return a.localeCompare(b);
-            });
+            const sortedRows = alphabetRows;
 
             sortedRows.forEach(row => {
                 const rowDiv = document.createElement('div');
@@ -2087,12 +2202,7 @@
         function validateSeatSelection(proposedSet) {
             if (proposedSet.size === 0) return { valid: true };
 
-            // Build row → sorted seats map
-            const rowsMap = {};
-            seatsList.forEach(s => {
-                if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = [];
-                rowsMap[s.SeatRow].push(s);
-            });
+            const rowsMap = buildRenderableRowsMap();
 
             for (const row of Object.keys(rowsMap)) {
                 const rowSeats = [...rowsMap[row]].sort((a, b) => a.SeatNumber - b.SeatNumber);
@@ -2140,14 +2250,14 @@
                         const s = segment[i];
                         
                         // We only care if the seat is EMPTY (not selected, booked, or locked)
-                        if (proposedSet.has(s.SeatID) || s.SeatStatus === 'booked' || lockedByOthers.has(s.SeatID)) continue;
+                        if (proposedSet.has(s.SeatID) || s.SeatStatus === 'booked' || s.SeatStatus === 'locked' || lockedByOthers.has(s.SeatID)) continue;
                         if (s.SeatType && s.SeatType.toLowerCase().includes('couple')) continue;
 
                         const leftSeat = i > 0 ? segment[i-1] : null;
                         const rightSeat = i < segLen - 1 ? segment[i+1] : null;
 
-                        const isLeftBlocked = leftSeat && (proposedSet.has(leftSeat.SeatID) || leftSeat.SeatStatus === 'booked' || lockedByOthers.has(leftSeat.SeatID));
-                        const isRightBlocked = rightSeat && (proposedSet.has(rightSeat.SeatID) || rightSeat.SeatStatus === 'booked' || lockedByOthers.has(rightSeat.SeatID));
+                        const isLeftBlocked = leftSeat && (proposedSet.has(leftSeat.SeatID) || leftSeat.SeatStatus === 'booked' || leftSeat.SeatStatus === 'locked' || lockedByOthers.has(leftSeat.SeatID));
+                        const isRightBlocked = rightSeat && (proposedSet.has(rightSeat.SeatID) || rightSeat.SeatStatus === 'booked' || rightSeat.SeatStatus === 'locked' || lockedByOthers.has(rightSeat.SeatID));
 
                         if (isLeftBlocked && isRightBlocked) {
                             return { valid: false, message: "GalaxyAlert", isGalaxyAlert: true };
@@ -2186,8 +2296,8 @@
                 }
 
                 selectedSeats.delete(seatId);
+                holdExpiryBySeat.delete(Number(seatId));
                 el.classList.remove('selected');
-                if (socket) socket.emit('releaseSeat', { showtimeId, seatId });
             } else {
                 const proposedSet = new Set(selectedSeats);
                 proposedSet.add(seatId);
@@ -2205,9 +2315,10 @@
                 selectedSeats.add(seatId);
                 el.classList.add('selected');
                 if (socket) socket.emit('holdSeat', { showtimeId, seatId });
-                startTimer();
+                refreshTimerFromSeatLocks();
             }
             if (selectedSeats.size === 0) stopTimer();
+            else refreshTimerFromSeatLocks();
             updateSummary();
         }
 
@@ -2230,11 +2341,9 @@
 
                 selectedSeats.delete(seatId1);
                 selectedSeats.delete(seatId2);
+                holdExpiryBySeat.delete(Number(seatId1));
+                holdExpiryBySeat.delete(Number(seatId2));
                 el.classList.remove('selected');
-                if (socket) {
-                    socket.emit('releaseSeat', { showtimeId, seatId: seatId1 });
-                    socket.emit('releaseSeat', { showtimeId, seatId: seatId2 });
-                }
             } else {
                 const proposedSet = new Set(selectedSeats);
                 proposedSet.add(seatId1);
@@ -2257,14 +2366,16 @@
                     socket.emit('holdSeat', { showtimeId, seatId: seatId1 });
                     socket.emit('holdSeat', { showtimeId, seatId: seatId2 });
                 }
-                startTimer();
+                refreshTimerFromSeatLocks();
             }
             if (selectedSeats.size === 0) stopTimer();
+            else refreshTimerFromSeatLocks();
             updateSummary();
         }
 
         function deselectSeatLocally(seatId) {
             selectedSeats.delete(seatId);
+            holdExpiryBySeat.delete(Number(seatId));
             const el = document.querySelector(`.seat[data-id="${seatId}"]`);
             if (el) el.classList.remove('selected');
             const coupleEl = document.querySelector(`.seat.couple[data-id-1="${seatId}"], .seat.couple[data-id-2="${seatId}"]`);
@@ -2274,8 +2385,11 @@
                 const id2 = parseInt(coupleEl.getAttribute('data-id-2'));
                 selectedSeats.delete(id1);
                 selectedSeats.delete(id2);
+                holdExpiryBySeat.delete(Number(id1));
+                holdExpiryBySeat.delete(Number(id2));
             }
             if (selectedSeats.size === 0) stopTimer();
+            else refreshTimerFromSeatLocks();
             updateSummary();
         }
 
@@ -2302,13 +2416,17 @@
                 }
             }
 
+            const lang = localStorage.getItem('dcinema_lang') || 'vi';
+            const trans = window.translations ? window.translations[lang] : null;
+            const tNone = trans ? trans.seat_none : 'Chưa chọn';
+
             if (selectedSeats.size === 0) {
-                seatsDisplay.textContent = 'Chưa chọn';
+                seatsDisplay.textContent = tNone;
                 totalDisplay.textContent = '0 ₫';
                 btnContinue.disabled = true;
                 breakdownSection.style.display = 'none';
 
-                if (mobileSeats) mobileSeats.textContent = 'Chưa chọn';
+                if (mobileSeats) mobileSeats.textContent = tNone;
                 if (mobileTotal) mobileTotal.textContent = '0 ₫';
                 if (mobileBtnContinue) mobileBtnContinue.disabled = true;
                 updateSeatDimming();
@@ -2328,6 +2446,11 @@
                 return a.SeatNumber - b.SeatNumber;
             });
 
+            const tNormal = trans ? trans.seat_legend_normal : 'Ghế thường';
+            const tVip = trans ? trans.seat_legend_vip : 'Ghế VIP';
+            const tCouple = trans ? trans.seat_legend_couple : 'Ghế cặp đôi';
+            const tPair = trans ? trans.seat_pair : 'Cặp';
+
             // Build display names and calculate prices
             // Group couple seats
             const processedCouplePairs = new Set();
@@ -2344,7 +2467,7 @@
                         total += seatPrice;
                         breakdown.couple.count++;
                         breakdown.couple.price += seatPrice;
-                        displayNames.push(`Cặp ${seat.SeatRow}${minNum}-${maxNum}`);
+                        displayNames.push(`${tPair} ${seat.SeatRow}${minNum}-${maxNum}`);
                         processedCouplePairs.add(pairKey);
                     }
                 } else if (seat.SeatType === 'VIP') {
@@ -2364,11 +2487,11 @@
                 }
             });
 
-            seatsDisplay.textContent = displayNames.join(', ') || 'Chưa chọn';
+            seatsDisplay.textContent = displayNames.join(', ') || tNone;
             totalDisplay.textContent = total.toLocaleString('vi-VN') + ' ₫';
             btnContinue.disabled = false;
 
-            if (mobileSeats) mobileSeats.textContent = displayNames.join(', ') || 'Chưa chọn';
+            if (mobileSeats) mobileSeats.textContent = displayNames.join(', ') || tNone;
             if (mobileTotal) mobileTotal.textContent = total.toLocaleString('vi-VN') + ' ₫';
             if (mobileBtnContinue) mobileBtnContinue.disabled = false;
 
@@ -2377,7 +2500,7 @@
             if (breakdown.normal.count > 0) {
                 bdHtml += `
                     <div class="price-row">
-                        <span class="key">Ghế thường × ${breakdown.normal.count}</span>
+                        <span class="key">${tNormal} × ${breakdown.normal.count}</span>
                         <span class="val">${breakdown.normal.price.toLocaleString('vi-VN')} ₫</span>
                     </div>
                 `;
@@ -2385,7 +2508,7 @@
             if (breakdown.vip.count > 0) {
                 bdHtml += `
                     <div class="price-row">
-                        <span class="key">Ghế VIP × ${breakdown.vip.count}</span>
+                        <span class="key">${tVip} × ${breakdown.vip.count}</span>
                         <span class="val">${breakdown.vip.price.toLocaleString('vi-VN')} ₫</span>
                     </div>
                 `;
@@ -2393,7 +2516,7 @@
             if (breakdown.couple.count > 0) {
                 bdHtml += `
                     <div class="price-row">
-                        <span class="key">Ghế cặp đôi × ${breakdown.couple.count}</span>
+                        <span class="key">${tCouple} × ${breakdown.couple.count}</span>
                         <span class="val">${breakdown.couple.price.toLocaleString('vi-VN')} ₫</span>
                     </div>
                 `;
@@ -2411,14 +2534,23 @@
             if (!el || !seatsList.length) return;
             const physicalSeats = seatsList.filter(s => s.SeatType !== 'None');
             const booked = physicalSeats.filter(s => s.SeatStatus === 'booked').length;
-            const locked = physicalSeats.filter(s => s.SeatStatus === 'locked').length + lockedByOthers.size;
+            const lockedSeatIds = new Set(physicalSeats.filter(s => s.SeatStatus === 'locked').map(s => s.SeatID));
+            lockedByOthers.forEach(id => lockedSeatIds.add(id));
+            const locked = lockedSeatIds.size;
             const available = physicalSeats.length - booked - locked;
+
+            const lang = localStorage.getItem('dcinema_lang') || 'vi';
+            const trans = window.translations ? window.translations[lang] : null;
+            const tEmpty = trans ? trans.seat_empty : 'ghế trống';
+            const tBooked = trans ? trans.seat_booked : 'đã đặt';
+            const tHolding = trans ? trans.seat_holding : 'đang giữ';
+
             el.innerHTML = `
-                <span style="color:#4ade80;font-weight:700;">${Math.max(0, available)} ghế trống</span>
+                <span style="color:#4ade80;font-weight:700;">${Math.max(0, available)} ${tEmpty}</span>
                 <span style="margin:0 8px;color:#444;">|</span>
-                <span style="color:#ef4444;">${booked} đã đặt</span>
+                <span style="color:#ef4444;">${booked} ${tBooked}</span>
                 <span style="margin:0 8px;color:#444;">|</span>
-                <span style="color:#f59e0b;">${locked} đang giữ</span>
+                <span style="color:#f59e0b;">${locked} ${tHolding}</span>
             `;
         }
 
@@ -2448,6 +2580,7 @@
             let ticketTotal = 0;
             const seatDetails = [];
             const displayNames = [];
+            const seatLabels = [];
             const processedCouplePairs = new Set();
 
             const seatsArr = seatsList.filter(s => selectedSeats.has(s.SeatID));
@@ -2471,6 +2604,7 @@
                         displayNames.push(name);
                         seatDetails.push({ seatId: seat.SeatID, name, type: 'Couple', price: seatPrice });
                     }
+                    seatLabels.push(`${seat.SeatRow}${seat.SeatNumber}`);
                 } else {
                     const isVip = seat.SeatType === 'VIP';
                     const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : (isVip ? 1.2 : 1.0);
@@ -2479,6 +2613,7 @@
                     const name = `${seat.SeatRow}${seat.SeatNumber}`;
                     displayNames.push(name);
                     seatDetails.push({ seatId: seat.SeatID, name, type: isVip ? 'VIP' : 'Normal', price: seatPrice });
+                    seatLabels.push(name);
                 }
             });
 
@@ -2494,11 +2629,13 @@
                 hall: `${showtimeData.RoomName || '--'} [${rTypePay}] — ${showtimeData.CinemaName}`,
                 roomType: rTypePay,
                 seats: displayNames.join(', '),
-                seatIds: Array.from(selectedSeats),
+                seatIds: seatsArr.map(s => s.SeatID),
+                seatLabels,
                 seatDetails,
-                seatCount: Array.from(selectedSeats).length,
+                seatCount: seatsArr.length,
                 ticketPrice: basePrice,
-                ticketTotal
+                ticketTotal,
+                holdExpiresAt: countdownDeadline ? new Date(countdownDeadline).toISOString() : new Date(Date.now() + 5 * 60 * 1000).toISOString()
             };
 
             sessionStorage.setItem('booking', JSON.stringify(bookingPayload));
@@ -2664,38 +2801,10 @@
             // PRE-CALCULATE SEAT LAYOUT DIMENSIONS
             // (must be done BEFORE building scene so screen width matches)
             // ============================================================
-            const rowsMap = {};
-            seatsList.forEach(s => {
-                if (!rowsMap[s.SeatRow]) rowsMap[s.SeatRow] = [];
-                rowsMap[s.SeatRow].push(s);
-            });
+            const rowsMap = buildRenderableRowsMap();
             
             const alphabetRows = Object.keys(rowsMap).sort();
-            const coupleRows = new Set();
-            alphabetRows.forEach(row => {
-                const seats = rowsMap[row];
-                if (seats.some(s => s.SeatType && s.SeatType.toLowerCase().includes('couple'))) {
-                    coupleRows.add(row);
-                }
-            });
-            if (coupleRows.size === 0 && alphabetRows.length > 0) {
-                coupleRows.add(alphabetRows[alphabetRows.length - 1]);
-            }
-
-            const getRowPriority = (row) => {
-                if (coupleRows.has(row)) return 1;
-                const seats = rowsMap[row] || [];
-                const hasVip = seats.some(s => s.SeatType === 'VIP');
-                if (hasVip) return 2;
-                return 3;
-            };
-
-            const sortedRows = [...alphabetRows].sort((a, b) => {
-                const prioA = getRowPriority(a);
-                const prioB = getRowPriority(b);
-                if (prioA !== prioB) return prioB - prioA;
-                return a.localeCompare(b);
-            });
+            const sortedRows = alphabetRows;
             const totalRows  = sortedRows.length;
 
             const SEAT_STEP = 1.08;
@@ -2989,6 +3098,7 @@
             function getSeatCK(seat) {
                 if (selectedSeats.has(seat.SeatID)) return 'selected';
                 if (seat.SeatStatus === 'booked') return 'booked';
+                if (seat.SeatStatus === 'locked') return 'locked';
                 if (lockedByOthers.has(seat.SeatID)) return 'locked';
                 if (seat.SeatType && seat.SeatType.toLowerCase().includes('couple')) return 'couple';
                 if (seat.SeatType === 'VIP') return 'vip';
@@ -3063,11 +3173,13 @@
                     for (let i = 0; i < seats.length; i += 2) {
                         const s1 = seats[i], s2 = seats[i+1];
                         if (s1.SeatType === 'None') continue; // skip spacer
-                        const gap = Math.floor(i/6) * 0.28;
+                        const half = Math.floor(nSeats/2);
+                        const gap  = (i >= half && nSeats > 4) ? 0.5 : 0;
                         const px  = startX + i*SEAT_STEP + SEAT_STEP*0.5 + gap;
                         const sel = selectedSeats.has(s1.SeatID)||(s2&&selectedSeats.has(s2.SeatID));
                         const bkd = s1.SeatStatus==='booked'||(s2&&s2.SeatStatus==='booked');
-                        const ck  = sel ? 'selected' : bkd ? 'booked' : 'couple';
+                        const lck = s1.SeatStatus === 'locked' || (s2 && s2.SeatStatus === 'locked') || lockedByOthers.has(s1.SeatID) || (s2 && lockedByOthers.has(s2.SeatID));
+                        const ck  = sel ? 'selected' : bkd ? 'booked' : lck ? 'locked' : 'couple';
                         const mat = makeSeatMat(ck);
                         const body = new THREE.Mesh(gCBody, mat.clone());
                         body.position.set(px, y+0.18, z); scene.add(body);
