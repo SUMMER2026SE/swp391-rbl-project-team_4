@@ -1195,7 +1195,7 @@
         <div class="qr-modal-box">
             <div class="qr-modal-header">
                 <div class="qr-modal-title" id="qrModalTitle">Quét mã QR để thanh toán</div>
-                <button class="qr-modal-close" onclick="closeQrModal()">
+                <button class="qr-modal-close" onclick="dismissQrModal()" title="Thu nhỏ — vé vẫn giữ nguyên">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
@@ -1239,6 +1239,10 @@
                         <span class="qr-status-text" style="font-size:0.83rem; font-weight:600; color:#e50914;">⏳ Đang chờ xác nhận chuyển khoản...</span>
                     </div>
                     <span style="font-size:0.72rem; color:#8a8f9a; text-align:center;">Hệ thống sẽ tự động xác nhận ngay khi nhận được thanh toán.<br>Bạn không cần làm gì thêm.</span>
+                </div>
+                <!-- [FIX #2] Nút huỷ vé — chỉ hiện khi user chủ động muốn huỷ -->
+                <div style="margin-top:16px; text-align:center;">
+                    <button onclick="cancelAndCloseQrModal()" style="background:transparent; border:1px solid rgba(229,9,20,0.4); color:#e50914; padding:7px 18px; border-radius:8px; font-size:0.78rem; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s;" onmouseover="this.style.background='rgba(229,9,20,0.1)'" onmouseout="this.style.background='transparent'" title="Huỷ đặt vé và giải phóng ghế">✕ Huỷ đặt vé</button>
                 </div>
             </div>
         </div>
@@ -1462,21 +1466,39 @@
         startPaymentPolling(ticketIds);
     }
 
-    async function closeQrModal() {
+    // [FIX #2] dismissQrModal — Chỉ đóng UI modal, KHÔNG huỷ vé.
+    // Dùng cho: nút X (góc phải modal), click vùng overlay bên ngoài.
+    // Vé pending vẫn còn sống. User có thể mở lại QR và thanh toán tiếp.
+    function dismissQrModal() {
         document.getElementById('qrModal').classList.remove('open');
+        pendingPayload = null;
+        const btn = document.getElementById('btnPayNow');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> THANH TOÁN NGAY';
+        }
+    }
+
+    // [FIX #2] cancelAndCloseQrModal — Yêu cầu user xác nhận trước khi huỷ vé.
+    // Dùng cho: nút "Huỷ đặt vé" bên trong QR modal.
+    // Gọi cancel API để giải phóng ghế khi user chủ động huỷ.
+    async function cancelAndCloseQrModal() {
+        const confirmed = window.confirm('Bạn có chắc muốn huỷ đặt vé không?\nGhế sẽ được giải phóng và bạn cần chọn lại.');
+        if (!confirmed) return;
+
+        dismissQrModal();
+
+        // Dừng polling trước khi cancel để tránh race condition
         if (checkPaymentInterval) {
             clearInterval(checkPaymentInterval);
             checkPaymentInterval = null;
         }
 
-        // Xoá thông tin QR khỏi booking object
-        delete booking.ticketIds;
-        delete booking.qrModalOpen;
-        sessionStorage.setItem('booking', JSON.stringify(booking));
-        localStorage.setItem('booking', JSON.stringify(booking));
+        // Gọi API huỷ vé — chỉ chạy khi user chủ động xác nhận
+        const idsToCancel = (createdTicketIds && createdTicketIds.length > 0)
+            ? createdTicketIds
+            : (booking.ticketIds && booking.ticketIds.length > 0 ? [...booking.ticketIds] : []);
 
-        // Nếu có vé đang pending, gọi API huỷ để giải phóng ghế ngay lập tức
-        const idsToCancel = (createdTicketIds && createdTicketIds.length > 0) ? createdTicketIds : (booking.ticketIds && booking.ticketIds.length > 0 ? booking.ticketIds : []);
         if (idsToCancel.length > 0) {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             try {
@@ -1485,22 +1507,17 @@
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                     body: JSON.stringify({ ticketIds: idsToCancel })
                 });
-                console.log('[Payment] Đã huỷ các vé pending:', idsToCancel);
+                console.log('[Payment] [FIX #2] Đã huỷ vé theo yêu cầu user:', idsToCancel);
+                showToast('Đã huỷ đặt vé. Ghế đã được giải phóng.', 'info');
             } catch (e) {
-                console.error('Lỗi khi huỷ vé pending:', e);
+                console.error('[Payment] Lỗi khi huỷ vé:', e);
+                showToast('Có lỗi khi huỷ vé. Vui lòng thử lại.', 'error');
             }
             createdTicketIds = [];
             delete booking.ticketIds;
             delete booking.qrModalOpen;
             sessionStorage.setItem('booking', JSON.stringify(booking));
             localStorage.setItem('booking', JSON.stringify(booking));
-        }
-
-        pendingPayload = null;
-        const btn = document.getElementById('btnPayNow');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> THANH TOÁN NGAY';
         }
     }
 
@@ -1552,7 +1569,12 @@
             checkoutSocket.emit('leavePaymentRoom', ticketIds);
         }
 
-        const finalAmt = Math.max(0, (booking.totalAmount || 0) - discountAmount);
+        // [FIX #4] Ưu tiên booking.finalAmount đã được sync từ backend (lưu lúc tạo vé).
+        // Chỉ fallback tính lại phía client nếu thực sự không có giá trị backend.
+        // Tránh overwrite giá đúng bằng giá client có thể thiếu F&B.
+        const finalAmt = (booking.finalAmount != null && booking.finalAmount > 0)
+            ? booking.finalAmount
+            : Math.max(0, (booking.totalAmount || 0) - discountAmount);
         booking.bookingId = 'DC-' + ticketIds.join('-');
         booking.finalAmount = finalAmt;
         booking.completed = true;
@@ -1754,12 +1776,18 @@
     }
 
     /* ─── COUNTDOWN ─── */
-    let countdownSecs = 5 * 60; // 5 minutes
-    const cdMin = document.getElementById('cdMin');
-    const cdSec = document.getElementById('cdSec');
-    const cdWarning = document.getElementById('cdWarning');
+    // [FIX #5] Khai báo biến ở scope ngoài để handlePaymentSuccess có thể clearInterval.
+    // countdownTimer được khởi động BÊN TRONG DOMContentLoaded (sau khi sync holdExpiresAt)
+    // để countdown luôn dùng giá trị chính xác từ DB, không phải mặc định 5 phút.
+    let countdownSecs = 5 * 60; // giá trị mặc định, sẽ được sync lại sau khi load booking
+    let countdownTimer = null;  // [FIX #5] đổi const → let để có thể assign bên trong DOM
 
     function updateCountdown() {
+        const cdMin = document.getElementById('cdMin');
+        const cdSec = document.getElementById('cdSec');
+        const cdWarning = document.getElementById('cdWarning');
+        if (!cdMin || !cdSec || !cdWarning) return; // guard: DOM chưa sẵn sàng
+
         const m = Math.floor(countdownSecs / 60);
         const s = countdownSecs % 60;
         cdMin.textContent = String(m).padStart(2, '0');
@@ -1798,8 +1826,14 @@
         }
     }
 
-    const countdownTimer = setInterval(updateCountdown, 1000);
-    updateCountdown();
+    // [FIX #5] KHÔNG start countdown ở đây nữa.
+    // Việc khởi động setInterval được chuyển vào startCountdown() gọi từ DOMContentLoaded,
+    // SAU KHI booking.holdExpiresAt đã được đọc và sync vào countdownSecs.
+    function startCountdown() {
+        if (countdownTimer) clearInterval(countdownTimer); // tránh double-start
+        countdownTimer = setInterval(updateCountdown, 1000);
+        updateCountdown(); // render ngay lập tức với giá trị đã sync
+    }
 
     /* ─── HELPER: Hiển thị banner lỗi cố định bên cạnh nút thanh toán ─── */
     function showPayError(title, msg, actions = []) {
@@ -1866,6 +1900,27 @@
                 ]
             );
             return;
+        }
+
+        // [FIX] Auto-cancel previous pending tickets if they exist
+        // This ensures the user can change voucher and click Pay again without getting "Seat already booked"
+        const oldTicketIds = (createdTicketIds && createdTicketIds.length > 0) ? createdTicketIds : (booking.ticketIds && booking.ticketIds.length > 0 ? booking.ticketIds : []);
+        if (oldTicketIds.length > 0) {
+            console.log('[Payment] Đang huỷ các vé pending cũ trước khi tạo vé mới...', oldTicketIds);
+            try {
+                await fetch('/api/bookings/cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ ticketIds: oldTicketIds })
+                });
+                createdTicketIds = [];
+                delete booking.ticketIds;
+                delete booking.qrModalOpen;
+                sessionStorage.setItem('booking', JSON.stringify(booking));
+                localStorage.setItem('booking', JSON.stringify(booking));
+            } catch(e) {
+                console.warn('[Payment] Lỗi khi huỷ vé cũ:', e);
+            }
         }
 
         const btn = document.getElementById('btnPayNow');
@@ -2034,8 +2089,9 @@
                 return e.returnValue;
             }
         });
+        // [FIX #15] Click overlay chỉ đóng UI — KHÔNG huỷ vé (dùng dismissQrModal)
         document.getElementById('qrModal').addEventListener('click', function(e) {
-            if (e.target === this) closeQrModal();
+            if (e.target === this) dismissQrModal();
         });
         // User
         try {
@@ -2049,19 +2105,31 @@
 
         // Load booking
         try {
-            booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
+            // [FIX #23] _loadBookingFromStorage: sessionStorage luôn ưu tiên (same-tab, fresh hơn).
+            // localStorage chỉ là fallback khi sessionStorage rỗng (ví dụ: reload hoặc restore tab).
+            // Nếu hai bên khác nhau → log warning để debug, vẫn dùng sessionStorage.
+            const _sesRaw = sessionStorage.getItem('booking');
+            const _lsRaw  = localStorage.getItem('booking');
+            if (_sesRaw && _lsRaw && _sesRaw !== _lsRaw) {
+                console.warn('[FIX #23] [checkout] sessionStorage và localStorage khác nhau — ưu tiên sessionStorage');
+            }
+            booking = JSON.parse(_sesRaw || _lsRaw || '{}');
         } catch(e) { booking = {}; }
 
+        // [FIX #5] Sync holdExpiresAt TRƯỚC, rồi mới start countdown.
+        // Đảm bảo timer bắt đầu với giá trị thực từ DB chứ không phải 5 phút mặc định.
         if (booking.holdExpiresAt) {
             const rem = Math.ceil((new Date(booking.holdExpiresAt).getTime() - Date.now()) / 1000);
             if (Number.isFinite(rem) && rem > 0) {
                 countdownSecs = rem;
-                updateCountdown();
+                console.log('[Countdown] [FIX #5] Sync từ holdExpiresAt:', rem, 'giây còn lại');
             } else {
                 countdownSecs = 0;
-                updateCountdown();
+                console.warn('[Countdown] [FIX #5] holdExpiresAt đã qua — countdown = 0');
             }
         }
+        // Khởi động countdown SAU KHI đã sync countdownSecs từ holdExpiresAt
+        startCountdown();
 
         console.log('[Checkout] Booking loaded:', {
             showtimeId: booking.showtimeId,
@@ -2071,20 +2139,15 @@
             completed: booking.completed
         });
 
-        // Nghiệp vụ: Nếu giao dịch đã hoàn thành → reset flag và cho phép đặt mới
+        // [FIX #1] Nếu giao dịch đã hoàn thành → KHÔNG xoá storage (payment-success.html cần đọc lại dữ liệu này)
+        // Chỉ block UI và hiển thị banner hướng dẫn. Data booking vẫn được giữ nguyên.
         if (booking.completed) {
-            // Xóa flag completed để user có thể đặt vé mới nếu muốn
-            // (không redirect bắt buộc vì user có thể refresh trang)
-            booking.completed = false;
-            sessionStorage.removeItem('booking');
-            localStorage.removeItem('booking');
-            // Hiện banner thông báo đặt vé mới
             showPayError(
-                'Giao dịch trước đã hoàn thành',
-                'Đơn đặt vé trước đã được thanh toán. Vui lòng bắt đầu đặt vé mới từ bước chọn phim.',
+                'Giao dịch đã hoàn thành',
+                'Đơn đặt vé này đã được thanh toán thành công. Bạn có thể xem lại vé hoặc đặt vé mới.',
                 [
-                    { label: '🎬 Đặt vé mới', href: 'booking.html', primary: true },
-                    { label: '📋 Xem lịch sử vé', href: 'profile.html', primary: false },
+                    { label: '🎟️ Xem vé đã đặt', href: 'payment-success.html', primary: true },
+                    { label: '🎬 Đặt vé mới', href: 'booking.html', primary: false },
                 ]
             );
             const btn = document.getElementById('btnPayNow');
@@ -2193,7 +2256,13 @@
         if (booking.qrModalOpen && booking.ticketIds && booking.ticketIds.length > 0 && !booking.completed) {
             console.log('[Checkout] Phục hồi trạng thái QR modal cho vé:', booking.ticketIds);
             createdTicketIds = booking.ticketIds;
-            const finalAmt = booking.finalAmount || (booking.totalAmount || 0) - discountAmount;
+            // [FIX P2] Restore discountAmount từ storage trước khi tính finalAmt
+            // Tránh dùng discountAmount = 0 (giá trị mặc định) khi page reload
+            if (booking.discountAmount != null && discountAmount === 0) {
+                discountAmount = Number(booking.discountAmount) || 0;
+                console.log('[Checkout] [FIX P2] Restore discountAmount từ storage:', discountAmount);
+            }
+            const finalAmt = booking.finalAmount || Math.max(0, (booking.totalAmount || 0) - discountAmount);
             openQrModal(booking.paymentMethod || currentPayment, finalAmt, booking.ticketIds);
         }
     });

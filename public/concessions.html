@@ -845,6 +845,9 @@
             fbLines.innerHTML = '';
         }
 
+        // [FIX #13] Tổng cộng = tiền vé (lấy từ server qua seats.html) + tiền F&B (giá từ DB)
+        // Bảo mật: checkout gửi foodItems[] lên server, server tính lại tổng thật từ DB
+        // booking.totalAmount ở đây chỉ là preview hiển thị UI, không ảnh hưởng giá thật
         totalEl.textContent = (BASE_TICKET + fbTotal).toLocaleString('vi-VN') + ' VND';
     }
 
@@ -869,6 +872,7 @@
         booking.foodItems = [];
         booking.foodDisplayItems = [];
         booking.fnbTotal = 0;
+        // [FIX #13] Chỉ dùng ticketTotal từ seats.html (giá từ server)
         booking.totalAmount = Number(booking.ticketTotal) || 0;
         booking.bookingSessionId = sessionStorage.getItem('bookingSessionId') || booking.bookingSessionId;
         sessionStorage.setItem('booking', JSON.stringify(booking));
@@ -923,7 +927,10 @@
         booking.foodItems = foodItems;
         booking.foodDisplayItems = foodDisplayItems;
         booking.fnbTotal = fbTotal;
-        booking.totalAmount = (Number(booking.ticketTotal) || 0) + fbTotal;
+        // [FIX #13] Chỉ dùng booking.ticketTotal đã lưu từ seats.html (từ giá seat của server)
+        // KHÔNG dựa vào booking.totalAmount cũ có thể stale, tránh double-count fnbTotal
+        const verifiedTicketTotal = Number(booking.ticketTotal) || 0;
+        booking.totalAmount = verifiedTicketTotal + fbTotal;
         booking.bookingSessionId = sessionStorage.getItem('bookingSessionId') || booking.bookingSessionId;
 
         sessionStorage.setItem('booking', JSON.stringify(booking));
@@ -994,7 +1001,10 @@
             card.dataset.desc = displayDesc;
             card.dataset.price = p.Price;
 
-            const displayImage = p.ImageURL || 'images/combo_mega.png';
+            let displayImage = p.ImageURL || 'images/combo_mega.png';
+            if (displayImage.includes('default_poster')) {
+                displayImage = 'images/combo_mega.png';
+            }
 
             const tOut = trans ? trans.fnb_out_of_stock : 'Hết hàng';
             const tLeft = trans ? trans.fnb_left : 'Còn';
@@ -1086,7 +1096,13 @@
 
         // Load booking session
         try {
-            booking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
+            // [FIX #23] sessionStorage luôn ưu tiên (same-tab, fresh hơn). localStorage là fallback.
+            const _sesRaw = sessionStorage.getItem('booking');
+            const _lsRaw  = localStorage.getItem('booking');
+            if (_sesRaw && _lsRaw && _sesRaw !== _lsRaw) {
+                console.warn('[FIX #23] [concessions] sessionStorage và localStorage khác nhau — ưu tiên sessionStorage');
+            }
+            booking = JSON.parse(_sesRaw || _lsRaw || '{}');
         } catch (e) { booking = {}; }
 
         // Show warning if no active booking
@@ -1122,7 +1138,12 @@
             posterEl.onerror = () => { posterEl.src = 'images/default_poster.svg'; };
         }
 
+        // [FIX #13] ticketTotal từ seats.html (giá từ server). Nếu thiếu → hiện cảnh báo
         BASE_TICKET = booking.ticketTotal || 0;
+        if (BASE_TICKET === 0 && (booking.seatCount || 0) > 0) {
+            console.warn('[FIX #13] booking.ticketTotal bị thiếu — giá vé có thể chưa đúng');
+            showToast('Lưu ý: Không tìm thấy giá vé trong phiên. Tiếp tục sẽ được xác thực lại tại bước thanh toán.', 'warn');
+        }
         function updateTicketLines() {
             const lang = localStorage.getItem('dcinema_lang') || 'vi';
             const trans = window.translations ? window.translations[lang] : null;

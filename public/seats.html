@@ -1736,25 +1736,60 @@
         }
 
         // ──────────────────────────────────────────────
-        //  Auth check
-        // ──────────────────────────────────────────────
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) {
-            alert('Vui lòng đăng nhập trước khi chọn ghế!');
-            window.location.href = `auth.html?redirect=${encodeURIComponent('seats.html?showtimeId=' + showtimeId)}`;
-            throw new Error('Redirecting to auth...');
-        }
-
-        // ──────────────────────────────────────────────
-        //  Init
+        //  Init (Auth check + socket + seat load)
+        //  [FIX P2] Auth check đã được chuyển VÀO DOMContentLoaded để tránh:
+        //   1. Race condition giữa redirect và DOMContentLoaded chạy đồng thời
+        //   2. Vòng lặp redirect khi showtimeId = NaN
         // ──────────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', async () => {
+            // [FIX P2] Kiểm tra auth TRONG DOMContentLoaded — không nằm ngoài script nữa
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                // Guard: chỉ redirect nếu showtimeId hợp lệ để tránh loop
+                const redirectTarget = (!isNaN(showtimeId) && showtimeId > 0)
+                    ? `auth.html?redirect=${encodeURIComponent('seats.html?showtimeId=' + showtimeId)}`
+                    : 'auth.html';
+                window.location.href = redirectTarget;
+            }
+
+            // [FIX] Nếu user quay lại từ checkout, huỷ các vé pending cũ để họ có thể chọn lại ghế.
+            // Nếu không huỷ, ghế sẽ bị coi là 'booked' trong CSDL và hiển thị màu xám thay vì đỏ.
+            try {
+                let _sesRaw = sessionStorage.getItem('booking');
+                let _lsRaw = localStorage.getItem('booking');
+                let savedBooking = JSON.parse(_sesRaw || _lsRaw || '{}');
+                if (savedBooking && savedBooking.ticketIds && savedBooking.ticketIds.length > 0 && !savedBooking.completed) {
+                    console.log('[Seats] Đang quay lại từ checkout. Hủy vé pending cũ để cho phép chọn lại ghế...');
+                    await fetch('/api/bookings/cancel', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ ticketIds: savedBooking.ticketIds })
+                    });
+                    delete savedBooking.ticketIds;
+                    sessionStorage.setItem('booking', JSON.stringify(savedBooking));
+                    localStorage.setItem('booking', JSON.stringify(savedBooking));
+                }
+            } catch (err) {
+                console.error('[Seats] Lỗi khi huỷ vé pending:', err);
+            }
+
             updateNavbar();
             await loadShowtimeDetails();
             if (showtimeData && new Date(showtimeData.StartTime) < new Date()) {
                 alert('Suất chiếu này đã qua. Vui lòng chọn suất khác.');
                 window.location.replace('booking.html');
                 return;
+            }
+            // [FIX P0] Tạo bookingSessionId TRƯỚC khi initSocket() để socket handshake
+            // mang đúng session ID. Nếu không, LockSessionID trong DB ≠ sessId socket
+            // → khôi phục ghế khi Back từ concessions luôn thất bại.
+            let sessId = sessionStorage.getItem('bookingSessionId');
+            if (!sessId) {
+                sessId = 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
+                sessionStorage.setItem('bookingSessionId', sessId);
+                console.log('[Seats] [FIX P0] Tạo bookingSessionId mới:', sessId);
+            } else {
+                console.log('[Seats] [FIX P0] Dùng bookingSessionId có sẵn:', sessId);
             }
             initSocket();
             await loadSeats();
@@ -1938,7 +1973,13 @@
                     
                     // Khôi phục danh sách ghế đã chọn từ session
                     try {
-                        const savedBooking = JSON.parse(sessionStorage.getItem('booking') || localStorage.getItem('booking') || '{}');
+                        // [FIX #23] sessionStorage luôn ưu tiên (same-tab, fresh hơn). localStorage là fallback.
+                        const _sesRaw = sessionStorage.getItem('booking');
+                        const _lsRaw  = localStorage.getItem('booking');
+                        if (_sesRaw && _lsRaw && _sesRaw !== _lsRaw) {
+                            console.warn('[FIX #23] [seats] sessionStorage và localStorage khác nhau — ưu tiên sessionStorage');
+                        }
+                        const savedBooking = JSON.parse(_sesRaw || _lsRaw || '{}');
                         if (savedBooking && parseInt(savedBooking.showtimeId, 10) === showtimeId && Array.isArray(savedBooking.seatIds)) {
                             savedBooking.seatIds.forEach(id => {
                                 const parsedId = parseInt(id, 10);
@@ -2539,6 +2580,7 @@
             let ticketTotal = 0;
             const seatDetails = [];
             const displayNames = [];
+            const seatLabels = [];
             const processedCouplePairs = new Set();
 
             const seatsArr = seatsList.filter(s => selectedSeats.has(s.SeatID));
@@ -2562,6 +2604,7 @@
                         displayNames.push(name);
                         seatDetails.push({ seatId: seat.SeatID, name, type: 'Couple', price: seatPrice });
                     }
+                    seatLabels.push(`${seat.SeatRow}${seat.SeatNumber}`);
                 } else {
                     const isVip = seat.SeatType === 'VIP';
                     const mult = seat.PriceMultiplier ? parseFloat(seat.PriceMultiplier) : (isVip ? 1.2 : 1.0);
@@ -2570,6 +2613,7 @@
                     const name = `${seat.SeatRow}${seat.SeatNumber}`;
                     displayNames.push(name);
                     seatDetails.push({ seatId: seat.SeatID, name, type: isVip ? 'VIP' : 'Normal', price: seatPrice });
+                    seatLabels.push(name);
                 }
             });
 
@@ -2585,9 +2629,10 @@
                 hall: `${showtimeData.RoomName || '--'} [${rTypePay}] — ${showtimeData.CinemaName}`,
                 roomType: rTypePay,
                 seats: displayNames.join(', '),
-                seatIds: Array.from(selectedSeats),
+                seatIds: seatsArr.map(s => s.SeatID),
+                seatLabels,
                 seatDetails,
-                seatCount: Array.from(selectedSeats).length,
+                seatCount: seatsArr.length,
                 ticketPrice: basePrice,
                 ticketTotal,
                 holdExpiresAt: countdownDeadline ? new Date(countdownDeadline).toISOString() : new Date(Date.now() + 5 * 60 * 1000).toISOString()
@@ -3128,7 +3173,8 @@
                     for (let i = 0; i < seats.length; i += 2) {
                         const s1 = seats[i], s2 = seats[i+1];
                         if (s1.SeatType === 'None') continue; // skip spacer
-                        const gap = Math.floor(i/6) * 0.28;
+                        const half = Math.floor(nSeats/2);
+                        const gap  = (i >= half && nSeats > 4) ? 0.5 : 0;
                         const px  = startX + i*SEAT_STEP + SEAT_STEP*0.5 + gap;
                         const sel = selectedSeats.has(s1.SeatID)||(s2&&selectedSeats.has(s2.SeatID));
                         const bkd = s1.SeatStatus==='booked'||(s2&&s2.SeatStatus==='booked');

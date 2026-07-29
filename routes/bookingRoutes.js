@@ -5,6 +5,8 @@
 const express      = require('express');
 const router       = express.Router();
 const bookingCtrl  = require('../controllers/bookingController');
+// [FIX #22] isCustomer được import VÀ sử dụng tại các routes bên dưới (L44, L50, L53, L56, L62)
+// Audit trước nhầm kết luận là "không dùng" — thực tế đây là guard middleware cần thiết
 const { verifyToken, isCustomer } = require('../middleware/authMiddleware');
 
 // GET  /api/bookings/food-beverages         — Danh sách F&B (Public)
@@ -47,7 +49,7 @@ router.get('/my-bookings',                  isCustomer, bookingCtrl.getMyBooking
 router.get('/check-status',                 bookingCtrl.checkBookingStatus);
 
 // POST /api/bookings/cancel                 — Huỷ vé pending ngay lập tức
-router.post('/cancel',                      isCustomer, bookingCtrl.cancelBooking);
+router.post('/cancel',                      verifyToken, bookingCtrl.cancelBooking);
 
 // POST /api/bookings/request-refund         — Khách hàng gửi yêu cầu hoàn tiền kèm thông tin ngân hàng
 router.post('/request-refund',              isCustomer, bookingCtrl.requestRefundBooking);
